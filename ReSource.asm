@@ -650,16 +650,16 @@ lbC000602	move.l	#MEMF_CLEAR,d1
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
-	beq.w	.nomem
+	beq.w	syms_nomem
 	movea.l	d0,a5	;A5 = $CA bytes
 	jsr	(open_resourcesyms).l
-	beq.w	.nosyms
+	beq.w	syms_nosyms
 	lea	(gadgets_sym_hires,pc),a0
 	tst.b	(hiresflag-datasegment,a6)
 	bne.b	_creategadgets
 	lea	(gadget_sym_lores,pc),a0
 _creategadgets	bsr.w	creategadgets
-	beq.w	.nosyms
+	beq.w	syms_nosyms
 	clr.l	-(sp)
 	move.l	(screenptr-datasegment,a6),-(sp)
 	move.l	#WA_CustomScreen,-(sp)
@@ -707,7 +707,7 @@ lbC0006A8	move.l	d0,-(sp)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
 	move.l	d0,(symwindowptr-datasegment,a6)
-	beq.w	.nowin
+	beq.w	syms_nowin
 	movea.l	d0,a3
 	move.l	#$400778,d0
 	bsr.w	lbC002A28
@@ -807,20 +807,20 @@ _setgadget1	bsr.w	setgadget
 lbC000820	andi.b	#$FB,ccr
 	bra.b	lbC000852
 
-.nowin	jsr	(error_38-datasegment,a6)
+syms_nowin	jsr	(error_38-datasegment,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-datasegment,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
-.nosyms	movea.l	a5,a1
+syms_nosyms	movea.l	a5,a1
 	move.l	a6,-(sp)
 	movea.l	(execbase-datasegment,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC00084E
 
-.nomem	jsr	(error_3a-datasegment,a6)
+syms_nomem	jsr	(error_3a-datasegment,a6)
 lbC00084E	ori.b	#4,ccr
 lbC000852	movem.l	(sp)+,d2-d6/a2-a5
 	rts
@@ -41714,7 +41714,7 @@ lbC0248DE	move.b	#$23,(a4)+
 lbC0248FA	bra.w	lbC022292
 
 	bfextu	d5{4:3},d0
-	move.w	(START+$02A9EF,pc,d0.w*2),(a4)+
+	move.w	(D0D1D2D3D4D5D.MSG.l,pc,d0.w*2),(a4)+
 	rts
 
 lbC02490C	move.l	d5,d0
@@ -42017,7 +42017,7 @@ lbC024C5A	move.l	d5,d0
 	jmp	(a0)
 
 	bfextu	d5{4:3},d0
-	move.w	(START+$02A9FF,pc,d0.w*2),(a4)+
+	move.w	(A0A1A2A3A4A5A.MSG.l,pc,d0.w*2),(a4)+
 	rts
 
 lbC024C8A	move.l	d5,d0
@@ -44182,9 +44182,9 @@ lbC02636A	moveq	#0,d0
 lbC02638A	rts
 
 	bfextu	d5{8:2},d0
-	move.b	d0,($42A8,a6)
+	move.b	d0,($42A8.l,a6)
 	addq.w	#2,d6
-	move.w	($4A8.w,a6,d0.w*2),(a4)+
+	move.w	($4A8.l,a6,d0.w*2),(a4)+
 	beq.b	lbC02635A
 	rts
 
@@ -44335,21 +44335,21 @@ lbC026510	move.b	($48A,a6),(a4)+
 	bra.w	lbC022292
 
 	bfextu	d5{4:4},d0
-	move.w	(lbW02AC7A.w,pc,d0.w*2),(a4)+
+	move.w	(lbW02AC7A.l,pc,d0.w*2),(a4)+
 	move.b	#$2E,(a4)+
 	movea.l	a2,a0
 	move.b	(-1,a2),d1
 	beq.b	lbC0265B0
 	cmpi.b	#$FF,d1
 	beq.w	lbC0265D6
-	move.b	($495,a6),(a4)+
+	move.b	($495.l,a6),(a4)+
 	bsr.w	lbC02A018
 	extb.l	d1
 	btst	#0,d1
 	bne.w	lbC023C8E
 	add.l	a0,d1
 	move.l	d1,d0
-	cmp2.l	(8,a6),d0
+	cmp2.l	(8.l,a6),d0
 	bcs.b	lbC026570
 	bsr.w	lbC02289C
 	rts
@@ -50411,9 +50411,11 @@ simpleasmbase	dl	0
 lbL02A9A4	dl	lbL034D20
 lbL02A9A8	dl	lbL035128
 	db	'WL',0
-	db	'(D0)(D1)(D2)(D3)(D4)(D5)(D6)(D7)(A0)(A1)(A2)(A3)(A4)(A5)(A6)(SP)D0D1D2D3D4D5D6D7A0A1A2A3A4A5A6SP,A0),A1),A2),A3),A4),A5),A6)'
-	db	',SP)(A0,(A1,(A2,(A3,(A4,(A5,(A6,(SP,,A0,,A1,,A2,,A3,,A4,,A5,,A6,,SP,D0.WD0.LD1.WD1.LD2.WD2.LD3.WD3.LD4.WD4.LD5.WD5.LD6.WD6.L'
-	db	'D7.WD7.LA0.WA0.LA1.WA1.LA2.WA2.LA3.WA3.LA4.WA4.LA5.WA5.LA6.WA6.LSP.WSP.L*1*2*4*8ZPCAD,USPUSP,,MMUMMUSR,FCFPFPIAR',0
+	db	'(D0)(D1)(D2)(D3)(D4)(D5)(D6)(D7)(A0)(A1)(A2)(A3)(A4)(A5)(A6)(SP)'
+D0D1D2D3D4D5D.MSG	db	'D0D1D2D3D4D5D6D7'
+A0A1A2A3A4A5A.MSG	db	'A0A1A2A3A4A5A6SP,A0),A1),A2),A3),A4),A5),A6),SP)(A0,(A1,(A2,(A3,(A4,(A5,(A6,(SP,,A0,,A1,,A2,,A3,,A4,,A5,,A6,,SP,D0.WD0.LD1.W'
+	db	'D1.LD2.WD2.LD3.WD3.LD4.WD4.LD5.WD5.LD6.WD6.LD7.WD7.LA0.WA0.LA1.WA1.LA2.WA2.LA3.WA3.LA4.WA4.LA5.WA5.LA6.WA6.LSP.WSP.L*1*2*4*8'
+	db	'ZPCAD,USPUSP,,MMUMMUSR,FCFPFPIAR',0
 	db	'FPSR',0
 	db	'FPCR',0
 	db	',PC),PC,(PC)(PC,'
