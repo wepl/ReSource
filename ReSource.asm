@@ -15316,7 +15316,7 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC00B1A0-
 	dw	$321
 	dl	0
-	dl	lbL01455E-
+	dl	lbC01455E-
 	dw	$299
 	dl	0
 	dl	lbC017A6C-
@@ -15325,10 +15325,10 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC013F5A-
 	dw	$45
 	dl	0
-	dl	lbL013C98-
+	dl	lbC013C98-
 	dw	$36C
 	dl	0
-	dl	lbL013CC6-
+	dl	lbC013CC6-
 	dw	$370
 	dl	0
 	dl	lbC013CF4-
@@ -15346,7 +15346,7 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC02028C-
 	dw	8
 	dl	0
-	dl	lbL0202B0-
+	dl	lbC0202B0-
 	dw	$325
 	dl	0
 	dl	lbC01ED8E-
@@ -15376,67 +15376,67 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC01EDCE-
 	dw	$5D
 	dl	0
-	dl	a.MSG9-
+	dl	lbC01EDD6-
 	dw	$393
 	dl	0
-	dl	av.MSG0-
+	dl	lbC01EDDC-
 	dw	$23
 	dl	0
-	dl	ap.MSG-
+	dl	lbC01EDE2-
 	dw	$394
 	dl	0
-	dl	ajQ.MSG-
+	dl	lbC01EDE8-
 	dw	$151
 	dl	0
-	dl	adQ.MSG-
+	dl	lbC01EDEE-
 	dw	$395
 	dl	0
-	dl	aR.MSG-
+	dl	lbC01EDF4-
 	dw	$152
 	dl	0
-	dl	aXR.MSG-
+	dl	lbC01EDFA-
 	dw	$396
 	dl	0
-	dl	aRS.MSG-
+	dl	lbC01EE00-
 	dw	$153
 	dl	0
-	dl	aLS.MSG-
+	dl	lbC01EE06-
 	dw	$397
 	dl	0
-	dl	aFT.MSG-
+	dl	lbC01EE0C-
 	dw	$154
 	dl	0
-	dl	aT.MSG-
+	dl	lbC01EE12-
 	dw	$398
 	dl	0
-	dl	a.MSG10-
+	dl	lbC01EE18-
 	dw	$2B9
 	dl	0
-	dl	a4.MSG0-
+	dl	lbC01EE1E-
 	dw	$399
 	dl	0
-	dl	a.MSG11-
+	dl	lbC01EE24-
 	dw	$2CB
 	dl	0
-	dl	a.MSG12-
+	dl	lbC01EE2A-
 	dw	$39A
 	dl	0
-	dl	a.MSG13-
+	dl	lbC01EE30-
 	dw	$2CD
 	dl	0
-	dl	lbW01EE36-
+	dl	lbC01EE36-
 	dw	$39B
 	dl	0
-	dl	lbW01EE3C-
+	dl	lbC01EE3C-
 	dw	$34E
 	dl	0
-	dl	lbW01EE42-
+	dl	lbC01EE42-
 	dw	$39C
 	dl	0
-	dl	aO.MSG-
+	dl	lbC01EE48-
 	dw	$34F
 	dl	0
-	dl	lbW01EE4E-
+	dl	lbC01EE4E-
 	dw	$39D
 	dl	0
 	dl	lbC020030-
@@ -15550,10 +15550,10 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC015CAC-
 	dw	$3B2
 	dl	0
-	dl	lbL01A386-
+	dl	lbC01A386-
 	dw	$195
 	dl	0
-	dl	lbL01A3A6-
+	dl	lbC01A3A6-
 	dw	$196
 	dl	0
 	dl	lbC015F4C-
@@ -15604,7 +15604,7 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC0150FE-
 	dw	$374
 	dl	0
-	dl	lbL015042-
+	dl	lbC015042-
 	dw	$375
 	dl	0
 	dl	lbC015060-
@@ -15613,7 +15613,7 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC015104-
 	dw	$377
 	dl	0
-	dl	lbL01504C-
+	dl	lbC01504C-
 	dw	$378
 	dl	0
 	dl	lbC015F68-
@@ -15640,10 +15640,10 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC0163F2-
 	dw	$5F
 	dl	0
-	dl	lbL01F9E4-
+	dl	lbC01F9E4-
 	dw	$11
 	dl	0
-	dl	lbL01FA00-
+	dl	lbC01FA00-
 	dw	$12
 	dl	0
 	dl	lbC01FAFE-
@@ -22337,30 +22337,31 @@ lbC013C90	move.l	d1,(a0)+
 	dbra	d0,lbC013C90
 	rts
 
-lbL013C98	dl	$50EE0B52
-	dl	$422E0B53
-	dl	$422E0B54
-	dl	$41EE2724
-	dl	$30FC036C
-	dl	$30FC0001
-	dl	$30FC0370
-	dl	$30FC0000
-	dl	$30FC0368
-	dl	$30FC0000
-	dl	$42506000
-	dw	$254
-lbL013CC6	dl	$422E0B52
-	dl	$50EE0B53
-	dl	$422E0B54
-	dl	$41EE2724
-	dl	$30FC036C
-	dl	$30FC0000
-	dl	$30FC0370
-	dl	$30FC0001
-	dl	$30FC0368
-	dl	$30FC0000
-	dl	$42506000
-	dw	$226
+lbC013C98	st	(lbB02B3E2-datasegment,a6)
+	clr.b	(lbB02B3E3-datasegment,a6)
+	clr.b	(lbB02B3E4-datasegment,a6)
+	lea	(lbB02CFB4-datasegment,a6),a0
+	move.w	#$36C,(a0)+
+	move.w	#1,(a0)+
+	move.w	#$370,(a0)+
+	move.w	#0,(a0)+
+	move.w	#$368,(a0)+
+	move.w	#0,(a0)+
+	clr.w	(a0)
+	bra.w	lbC013F18
+
+lbC013CC6	clr.b	(lbB02B3E2-datasegment,a6)
+	st	(lbB02B3E3-datasegment,a6)
+	clr.b	(lbB02B3E4-datasegment,a6)
+	lea	(lbB02CFB4-datasegment,a6),a0
+	move.w	#$36C,(a0)+
+	move.w	#0,(a0)+
+	move.w	#$370,(a0)+
+	move.w	#1,(a0)+
+	move.w	#$368,(a0)+
+	move.w	#0,(a0)+
+	clr.w	(a0)
+	bra.w	lbC013F18
 
 lbC013CF4	move.w	#$2719,d0
 	jsr	(gettextbynum-datasegment,a6)
@@ -22907,26 +22908,23 @@ ThePuzzleFact.MSG	db	'     The Puzzle Factory, Inc.         Helios Software',$A
 	db	'     USA                              Nottinghamshire NG17 2HB',$A
 	db	'                                      UK',$A,$A
 	db	'     +(503) 935-3709                  +(623) 554828',$A,$A,$A,0
-lbL01455E	dl	$4AAE0C18
-	dl	$6700FDF2
-	dl	$303C274B
-	dl	$4EAEFEEE
-	dl	$41EE7570
-	dl	$42102208
-	dw	$4EB9
-	dl	lbC020566
-	dw	$6700
-	dw	$FDD8
-	dw	$C10
-	dw	$2A
-	dw	$661E
-	dw	$4A28
-	dw	1
-	dw	$6618
-	dw	$204A
-	dw	$202E
-	dw	lbB02B4A8-datasegment
-	dw	$6002
+
+lbC01455E	tst.l	(lbB02B4A8-datasegment,a6)
+	beq.w	_nosymdata
+	move.w	#$274B,d0
+	jsr	(gettextbynum-datasegment,a6)
+	lea	(lbB031E00-datasegment,a6),a0
+	clr.b	(a0)
+	move.l	a0,d1
+	jsr	(lbC020566).l
+	beq.w	_nosymdata
+	cmpi.b	#$2A,(a0)
+	bne.b	lbC0145A4
+	tst.b	(1,a0)
+	bne.b	lbC0145A4
+	movea.l	a2,a0
+	move.l	(lbB02B4A8-datasegment,a6),d0
+	bra.b	lbC014596
 
 lbC014594	clr.b	(a0)+
 lbC014596	dbra	d0,lbC014594
@@ -23948,13 +23946,13 @@ lbC01503C	subq.l	#1,a0
 	cmp.w	d0,d0
 	rts
 
-lbL015042	dl	$70FF23C0
-	dl	lbL034D20
-	dl	$4E7570FF
-lbL01504C	equ	*-2
-	dw	$23C0
-	dl	lbL035128
-	dw	$4E75
+lbC015042	moveq	#-1,d0
+	move.l	d0,(lbL034D20).l
+	rts
+
+lbC01504C	moveq	#-1,d0
+	move.l	d0,(lbL035128).l
+	rts
 
 lbC015056	move.l	#lbL034D20,(lbL02D358-datasegment,a6)
 	bra.b	lbC015068
@@ -30581,23 +30579,24 @@ lbC01A37A	lea	(lbB02CFB4-datasegment,a6),a0
 	jsr	(lbC02A668-datasegment,a6)
 	jmp	(lbC02A422-datasegment,a6)
 
-lbL01A386	dl	$50EE0B74
-	dl	$422E0B75
-	dl	$41EE2724
-	dl	$30FC0195
-	dl	$30FC0001
-	dl	$30FC0196
-	dl	$30FC0000
-	dl	$4250601E
-lbL01A3A6	dl	$422E0B74
-	dl	$50EE0B75
-	dl	$41EE2724
-	dl	$30FC0195
-	dl	$30FC0000
-	dl	$30FC0196
-	dl	$30FC0001
-	dw	$4250
+lbC01A386	st	(lbB02B404-datasegment,a6)
+	clr.b	(lbB02B405-datasegment,a6)
+	lea	(lbB02CFB4-datasegment,a6),a0
+	move.w	#$195,(a0)+
+	move.w	#1,(a0)+
+	move.w	#$196,(a0)+
+	move.w	#0,(a0)+
+	clr.w	(a0)
+	bra.b	lbC01A3C4
 
+lbC01A3A6	clr.b	(lbB02B404-datasegment,a6)
+	st	(lbB02B405-datasegment,a6)
+	lea	(lbB02CFB4-datasegment,a6),a0
+	move.w	#$195,(a0)+
+	move.w	#0,(a0)+
+	move.w	#$196,(a0)+
+	move.w	#1,(a0)+
+	clr.w	(a0)
 lbC01A3C4	lea	(lbB02CFB4-datasegment,a6),a0
 	jsr	(lbC02A668-datasegment,a6)
 	jmp	(lbC02A422-datasegment,a6)
@@ -36157,67 +36156,88 @@ lbC01EDC6	bsr.w	lbC01EE54
 lbC01EDCE	bsr.w	lbC01EE54
 	dw	$5D
 	dw	$40F
-a.MSG9	db	'a|'
+
+lbC01EDD6	bsr.b	lbC01EE54
 	dw	$5D
 	dw	$4F1
-av.MSG0	db	'av'
+
+lbC01EDDC	bsr.b	lbC01EE54
 	dw	$23
 	dw	$51A
-ap.MSG	db	'ap'
+
+lbC01EDE2	bsr.b	lbC01EE54
 	dw	$23
 	dw	$5E6
-ajQ.MSG	db	'aj'
+
+lbC01EDE8	bsr.b	lbC01EE54
 	dw	$151
 	dw	$615
-adQ.MSG	db	'ad'
+
+lbC01EDEE	bsr.b	lbC01EE54
 	dw	$151
 	dw	$6EB
-aR.MSG	db	'a^'
+
+lbC01EDF4	bsr.b	lbC01EE54
 	dw	$152
 	dw	$709
-aXR.MSG	db	'aX'
+
+lbC01EDFA	bsr.b	lbC01EE54
 	dw	$152
 	dw	$7F7
-aRS.MSG	db	'aR'
+
+lbC01EE00	bsr.b	lbC01EE54
 	dw	$153
 	dw	$808
-aLS.MSG	db	'aL'
+
+lbC01EE06	bsr.b	lbC01EE54
 	dw	$153
 	dw	$8F8
-aFT.MSG	db	'aF'
+
+lbC01EE0C	bsr.b	lbC01EE54
 	dw	$154
 	dw	$914
-aT.MSG	db	'a@'
+
+lbC01EE12	bsr.b	lbC01EE54
 	dw	$154
 	dw	$9EC
-a.MSG10	db	'a:'
+
+lbC01EE18	bsr.b	lbC01EE54
 	dw	$2B9
 	dw	$A0B
-a4.MSG0	db	'a4'
+
+lbC01EE1E	bsr.b	lbC01EE54
 	dw	$2B9
 	dw	$AF5
-a.MSG11	db	'a.'
+
+lbC01EE24	bsr.b	lbC01EE54
 	dw	$2CB
 	dw	$B0D
-a.MSG12	db	'a('
+
+lbC01EE2A	bsr.b	lbC01EE54
 	dw	$2CB
 	dw	$BF3
-a.MSG13	db	'a"'
+
+lbC01EE30	bsr.b	lbC01EE54
 	dw	$2CD
 	dw	$C00
-lbW01EE36	dw	$611C
+
+lbC01EE36	bsr.b	lbC01EE54
 	dw	$2CD
 	dw	$C80
-lbW01EE3C	dw	$6116
+
+lbC01EE3C	bsr.b	lbC01EE54
 	dw	$34E
 	dw	$D00
-lbW01EE42	dw	$6110
+
+lbC01EE42	bsr.b	lbC01EE54
 	dw	$34E
 	dw	$D80
-aO.MSG	db	'a',$A
+
+lbC01EE48	bsr.b	lbC01EE54
 	dw	$34F
 	dw	$E00
-lbW01EE4E	dw	$6104
+
+lbC01EE4E	bsr.b	lbC01EE54
 	dw	$34F
 	dw	$E80
 
@@ -36726,21 +36746,24 @@ Sourceprofile.MSG	db	'Source profile of "%s"',$A
 	db	'Lines........................%6ld',$A,0
 saved.MSG	db	'saved',0
 counted.MSG	db	'counted',0,0
-lbL01F9E4	dl	$4EAEF288
-	dl	$528AB5EE
-	dl	lbL02A8A0-datasegment
-	dl	$4EAEFC16
-	dl	$538A4EEE
-	dw	_dummy_st-datasegment
+
+lbC01F9E4	jsr	(lbC029B18-datasegment,a6)
+	addq.l	#1,a2
+	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	bne.b	lbC01F9FA
+	jsr	(lbC02A4A6-datasegment,a6)
+	subq.l	#1,a2
+	jmp	(_dummy_st-datasegment,a6)
 
 lbC01F9FA	addq.l	#4,a3
 	jmp	(lbC02AF74-datasegment,a6)
 
-lbL01FA00	dl	$4EAEF288
-	dl	$200A90AE
-	dl	datasegment-datasegment
-	dl	$4EAEFC16
-	dl	$4EEEFBAC
+lbC01FA00	jsr	(lbC029B18-datasegment,a6)
+	move.l	a2,d0
+	sub.l	(datasegment-datasegment,a6),d0
+	bne.b	lbC01FA14
+	jsr	(lbC02A4A6-datasegment,a6)
+	jmp	(_dummy_st-datasegment,a6)
 
 lbC01FA14	subq.l	#1,a2
 	subq.l	#4,a3
@@ -37485,10 +37508,12 @@ lbC0202A2	jsr	(_gettextbynum3-datasegment,a6)
 	bne.b	lbC0202C0
 	jmp	(_dummy_st-datasegment,a6)
 
-lbL0202B0	dl	$4A2E42B1
-	dl	$670A4A2E
-	dl	lbB02EB4B-datasegment
-	dl	$70014E75
+lbC0202B0	tst.b	(lbB02EB41-datasegment,a6)
+	beq.b	lbC0202C0
+	tst.b	(lbB02EB4B-datasegment,a6)
+	beq.b	lbC0202C0
+	moveq	#1,d0
+	rts
 
 lbC0202C0	tst.b	(lbB02EBF7-datasegment,a6)
 	beq.b	lbC0202EC
@@ -51760,9 +51785,7 @@ lbC02A58A	movem.l	d0-d2/a0-a2/a6,-(sp)
 	beq.b	lbC02A5DA
 	cmpi.w	#$314,d2
 	beq.b	lbC02A5CC
-	dw	$C42
-
-lbC02A5BA	bchg	d1,-(a6)
+	cmpi.w	#$366,d2
 	bne.b	lbC02A5FA
 	move.w	#$4EB,d0
 	tst.b	d1
