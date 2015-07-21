@@ -15595,7 +15595,7 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC0161F2-
 	dw	$2C5
 	dl	0
-	dl	lbL015178-
+	dl	lbC015178-
 	dw	$384
 	dl	0
 	dl	lbC015056-
@@ -15619,10 +15619,10 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC015F68-
 	dw	$50
 	dl	0
-	dl	lbL015FA8-
+	dl	lbC015FA8-
 	dw	$51
 	dl	0
-	dl	lbL015FE6-
+	dl	lbC015FE6-
 	dw	$312
 	dl	0
 	dl	lbC016024-
@@ -24055,12 +24055,13 @@ lbC01516E	movem.l	d0-d2,(a0)
 lbC015174	moveq	#0,d0
 	rts
 
-lbL015178	dl	$303C274A
-	dl	$4EAEFEEE
-	dl	$2200202E
-	dl	lbW02B474-datasegment
-	dl	$3D410BE6
-	dl	$4EEEFB92
+lbC015178	move.w	#$274A,d0
+	jsr	(gettextbynum-datasegment,a6)
+	move.l	d0,d1
+	move.l	(lbW02B474-datasegment,a6),d0
+	bsr.b	lbC015190
+	move.w	d1,(lbL02B476-datasegment,a6)
+	jmp	(lbC02A422-datasegment,a6)
 
 lbC015190	jsr	(lbC02ADA2-datasegment,a6)
 	beq.b	lbC0151A0
@@ -25316,38 +25317,39 @@ lbC015F68	move.b	#1,(lbB02EB56-datasegment,a6)
 	clr.w	(a0)
 	bra.w	lbC016060
 
-lbL015FA8	dl	$1D7C0002
-	dl	lbB02EB56-datasegment
-	dl	lbB02B406-datasegment
-	dl	lbB02B407-datasegment
-	dl	lbB02B408-datasegment
-	dl	lbB02B409-datasegment
-	dl	lbB02CFB4-datasegment
-	dl	$5030FC
-	dl	$30FC
-	dl	$5130FC
-	dl	$130FC
-	dl	$31230FC
-	dl	$30FC
-	dl	$31330FC
-	dl	$4250
-	dw	$607A
-lbL015FE6	dl	$1D7C0003
-	dl	lbB02EB56-datasegment
-	dl	lbB02B406-datasegment
-	dl	lbB02B407-datasegment
-	dl	lbB02B408-datasegment
-	dl	lbB02B409-datasegment
-	dl	lbB02CFB4-datasegment
-	dl	$5030FC
-	dl	$30FC
-	dl	$5130FC
-	dl	$30FC
-	dl	$31230FC
-	dl	$130FC
-	dl	$31330FC
-	dl	$4250
-	dw	$603C
+lbC015FA8	move.b	#2,(lbB02EB56-datasegment,a6)
+	clr.b	(lbB02B406-datasegment,a6)
+	st	(lbB02B407-datasegment,a6)
+	clr.b	(lbB02B408-datasegment,a6)
+	clr.b	(lbB02B409-datasegment,a6)
+	lea	(lbB02CFB4-datasegment,a6),a0
+	move.w	#$50,(a0)+
+	move.w	#0,(a0)+
+	move.w	#$51,(a0)+
+	move.w	#1,(a0)+
+	move.w	#$312,(a0)+
+	move.w	#0,(a0)+
+	move.w	#$313,(a0)+
+	move.w	#0,(a0)+
+	clr.w	(a0)
+	bra.b	lbC016060
+
+lbC015FE6	move.b	#3,(lbB02EB56-datasegment,a6)
+	clr.b	(lbB02B406-datasegment,a6)
+	clr.b	(lbB02B407-datasegment,a6)
+	st	(lbB02B408-datasegment,a6)
+	clr.b	(lbB02B409-datasegment,a6)
+	lea	(lbB02CFB4-datasegment,a6),a0
+	move.w	#$50,(a0)+
+	move.w	#0,(a0)+
+	move.w	#$51,(a0)+
+	move.w	#0,(a0)+
+	move.w	#$312,(a0)+
+	move.w	#1,(a0)+
+	move.w	#$313,(a0)+
+	move.w	#0,(a0)+
+	clr.w	(a0)
+	bra.b	lbC016060
 
 lbC016024	move.b	#4,(lbB02EB56-datasegment,a6)
 	clr.b	(lbB02B406-datasegment,a6)
@@ -34822,7 +34824,7 @@ lbL01DA3A	dl	lbC023C14-datasegment
 	dl	lbL00DF24-datasegment
 	dl	lbC024B6E-datasegment
 	dl	lbL00DF3C-datasegment
-	dl	lbL024C7C-datasegment
+	dl	lbC024C7C-datasegment
 	dl	lbL00DF40-datasegment
 	dl	lbC0249BA-datasegment
 	dl	lbL00DF74-datasegment
@@ -34832,9 +34834,9 @@ lbL01DA3A	dl	lbC023C14-datasegment
 	dl	lbL00DFB4-datasegment
 	dl	lbC024C28-datasegment
 	dl	lbL00DFB8-datasegment
-	dl	lbL02638C-datasegment
+	dl	lbC02638C-datasegment
 	dl	lbL00E068-datasegment
-	dl	lbL026524-datasegment
+	dl	lbC026524-datasegment
 	dl	lbL00E07C-datasegment
 	dl	0
 
@@ -42021,7 +42023,7 @@ lbC023A0C	cmpi.b	#$1D,d6
 	move.l	(sp)+,d1
 	bra.b	lbC023A26
 
-lbC023A1C	jsr	(lbL02A13C-datasegment,a6)
+lbC023A1C	jsr	(lbC02A13C-datasegment,a6)
 	bra.b	lbC023A26
 
 lbC023A22	move.b	d0,(a4)+
@@ -43711,8 +43713,7 @@ lbC024C5A	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbL024C7C	dl	$E9C50103
-
+lbC024C7C	bfextu	d5{4:3},d0
 	move.w	(A0A1A2A3A4A5A.MSG,pc,d0.w*2),(a4)+
 	rts
 
@@ -45877,15 +45878,14 @@ lbC02636A	moveq	#0,d0
 	move.b	(a0)+,(a4)+
 lbC02638A	rts
 
-lbL02638C	dl	$E9C50202
-	dl	$1D800170
-	dl	$42A8
-	dl	$544638F6
-	dl	$3300000
-	dl	$4A867B6
-	dl	$4E752005
-lbC0263A6	equ	*-2
+lbC02638C	bfextu	d5{8:2},d0
+	move.b	d0,($42A8,a6)
+	addq.w	#2,d6
+	move.w	($4A8,a6,d0.w*2),(a4)+
+	beq.b	lbC02635A
+	rts
 
+lbC0263A6	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
@@ -46031,25 +46031,25 @@ lbC026510	move.b	(L.MSG0-datasegment,a6),(a4)+
 	move.b	#$23,(a4)+
 	bra.w	lbC022292
 
-lbL026524	dl	$E9C50104
-	dl	$38FB0330
-	dl	$4750
-	dl	$18FC002E
-	dl	$204A122A
-	dl	$FFFF6774
-	dl	$C0100FF
-	dl	$67000094
-	dl	$18F60170
-	dl	$495
-	dl	$61003ACA
-	dl	$49C10801
-	dl	$6600
-	dl	$D736D288
-	dl	$200104F6
-	dl	$170
-	dl	8
-	dl	$65066100
-	dl	$C3304E75
+lbC026524	bfextu	d5{4:4},d0
+	move.w	(lbW02AC7A,pc,d0.w*2),(a4)+
+	move.b	#$2E,(a4)+
+	movea.l	a2,a0
+	move.b	(-1,a2),d1
+	beq.b	lbC0265B0
+	cmpi.b	#$FF,d1
+	beq.w	lbC0265D6
+	move.b	($495,a6),(a4)+
+	bsr.w	lbC02A018
+	extb.l	d1
+	btst	#0,d1
+	bne.w	set4q
+	add.l	a0,d1
+	move.l	d1,d0
+	cmp2.l	(8,a6),d0
+	bcs.b	lbC026570
+	bsr.w	lbC02289C
+	rts
 
 lbC026570	bset	#3,(lbB02D3A5-datasegment,a6)
 	move.b	#$2A,(a4)+
@@ -51358,9 +51358,9 @@ lbC02A134	move.b	#$20,(a4)+
 lbC02A138	moveq	#$14,d6
 	rts
 
-lbL02A13C	dl	$52464A6E
-	dl	lbW02B478-datasegment
-
+lbC02A13C	addq.w	#1,d6
+	tst.w	(lbW02B478-datasegment,a6)
+	beq.b	lbC02A14A
 lbC02A144	move.b	#$20,(a4)+
 	rts
 
