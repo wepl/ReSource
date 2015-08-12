@@ -47050,7 +47050,7 @@ lbB025A1E	db	pi.MSG-lbB025A1E
 	db	e.MSG-lbB025A1E
 	db	Log2e.MSG-lbB025A1E
 	db	Log10e.MSG-lbB025A1E
-	db	0dot0.MSG-lbB025A1E
+	db	_0dot0.MSG-lbB025A1E
 	db	0
 	db	0
 	db	0
@@ -47085,10 +47085,10 @@ lbB025A1E	db	pi.MSG-lbB025A1E
 	db	0
 	db	ln2.MSG-lbB025A1E
 	db	ln10.MSG-lbB025A1E
-	db	1dot0.MSG-lbB025A1E
-	db	10dot0.MSG-lbB025A1E
-	db	100dot0.MSG-lbB025A1E
-	db	10000dot.0.MSG-lbB025A1E
+	db	_1dot0.MSG-lbB025A1E
+	db	_10dot0.MSG-lbB025A1E
+	db	_100dot0.MSG-lbB025A1E
+	db	_10000dot.0.MSG-lbB025A1E
 	db	E8.MSG-lbB025A1E
 	db	E16.MSG-lbB025A1E
 	db	E32.MSG-lbB025A1E
@@ -47104,13 +47104,13 @@ Log102.MSG	db	'Log10(2)',0
 e.MSG	db	'e',0
 Log2e.MSG	db	'Log2(e)',0
 Log10e.MSG	db	'Log10(e)',0
-0dot0.MSG	db	'0.0',0
+_0dot0.MSG	db	'0.0',0
 ln2.MSG	db	'ln(2)',0
 ln10.MSG	db	'ln(10)',0
-1dot0.MSG	db	'1.0',0
-10dot0.MSG	db	'10.0',0
-100dot0.MSG	db	'100.0',0
-10000dot.0.MSG	db	'10000.0',0
+_1dot0.MSG	db	'1.0',0
+_10dot0.MSG	db	'10.0',0
+_100dot0.MSG	db	'100.0',0
+_10000dot.0.MSG	db	'10000.0',0
 E8.MSG	db	'1E8',0
 E16.MSG	db	'1E16',0
 E32.MSG	db	'1E32',0
