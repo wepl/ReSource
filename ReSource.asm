@@ -6,25 +6,37 @@ _object_SIZEOF	equ	$C
 PGA_NewLook	equ	$8003100A
 _LVOAllocVec	equ	-$2AC
 _LVOWindowToFront	equ	-$138
+CHECKBOX_KIND	equ	$2
 _LVOCurrentTime	equ	-$54
 _LVOFreeRemember	equ	-$198
 LN_NAME	equ	$A
 LIB_SIZE	equ	$22
+GACT_STRINGLEFT	equ	$0
+MX_KIND	equ	$5
 WA_DragBar	equ	$80000082
 _LVOOpenDevice	equ	-$1BC
 WA_Height	equ	$80000067
 TABLETA_InProximity	equ	$8003A008
 pr_CLI	equ	$AC
 _LVOInitBitMap	equ	-$186
+PLACETEXT_RIGHT	equ	$2
 _LVOCreateGadgetA	equ	-$1E
 MEMF_CLEAR	equ	$10000
 _LVOGT_GetIMsg	equ	-$48
 _LVOMatchPattern	equ	-$34E
+LV_DRAW	equ	$202
 pr_COS	equ	$A0
+WA_NewLookMenus	equ	$80000093
+GTCB_Checked	equ	$80080004
 _LVOSetRGB4	equ	-$120
 AttnFlags	equ	$128
+BUTTON_KIND	equ	$1
+gg_NextGadget	equ	$0
+POINTERA_YResolution	equ	$80039006
 gpgi_Abort	equ	$8
+pr_WindowPtr	equ	$B8
 _LVORequest	equ	-$F0
+CYCLE_KIND	equ	$7
 _LVODisownBlitter	equ	-$1CE
 wd_UserPort	equ	$56
 _LVOForbid	equ	-$84
@@ -32,15 +44,20 @@ _LVOAddPart	equ	-$372
 _LVOUnLoadSeg	equ	-$9C
 sm_ArgList	equ	$24
 _LVOInitRequester	equ	-$8A
+GFLG_RELWIDTH	equ	$20
 AFB_68881	equ	$4
 _LVOFreeRaster	equ	-$1F2
+GTCY_Active	equ	$8008000F
+GTLV_ShowSelected	equ	$80080035
 _LVOOpen	equ	-$1E
 _LVOWaitPort	equ	-$180
 gpl_Initial	equ	$8
 pr_CIS	equ	$9C
 _LVOFreeAslRequest	equ	-$36
+GFLG_GADGHIMAGE	equ	$2
 _LVOInitRastPort	equ	-$C6
 WA_CloseGadget	equ	$80000084
+WA_Borderless	equ	$80000088
 _LVODoubleClick	equ	-$66
 GM_LAYOUT	equ	$6
 _LVOPutStr	equ	-$3B4
@@ -48,34 +65,52 @@ _LVORead	equ	-$2A
 _LVOGetMsg	equ	-$174
 fh_Type	equ	$8
 _LVOFreeMem	equ	-$D2
+GMORE_GADGETHELP	equ	$2
 _LVOCloseLibrary	equ	-$19E
 GMR_REUSE	equ	$4
+GMORE_SCROLLRASTER	equ	$4
 _LVOExamine	equ	-$66
 LORIENT_VERT	equ	$2
+VTAG_DEFSPRITERESN_GET	equ	$8000003C
 _LVOCloseWindow	equ	-$48
 _LVOSeek	equ	-$42
 AFF_68030	equ	$4
 _LVOSetPointer	equ	-$10E
+HC_GADGETHELP	equ	$1
+nw_Width	equ	$4
+gg_Height	equ	$A
 _LVOGT_EndRefresh	equ	-$60
 _LVOCurrentDir	equ	-$7E
+gg_Width	equ	$8
 AFB_68020	equ	$1
+nw_Height	equ	$6
 _LVOAllocRemember	equ	-$18C
 _LVOAllocRaster	equ	-$1EC
 _LVOText	equ	-$3C
+nw_IDCMPFlags	equ	$A
 MODE_NEWFILE	equ	$3EE
+GTMX_Labels	equ	$80080009
 _LVOOpenWindowTagList	equ	-$25E
 _LVOGetDiskObject	equ	-$4E
+WA_SimpleRefresh	equ	$8000008C
 _LVOUnLock	equ	-$5A
 _LVOBltBitMapRastPort	equ	-$25E
 _LVOWaitBlit	equ	-$E4
 ggi_DrInfo	equ	$1E
+GTTX_Text	equ	$8008000B
 _LVOGetProgramDir	equ	-$258
 _LVOFindToolType	equ	-$60
+GTBB_Recessed	equ	$80080033
 GTLV_Labels	equ	$80080006
+TEXT_KIND	equ	$D
 _LVOQueryOverscan	equ	-$1DA
 LIB_VERSION	equ	$14
 GMR_NOREUSE	equ	$2
+GFLG_GADGHCOMP	equ	$0
+STRING_KIND	equ	$C
+GTST_String	equ	$8008002D
 _LVONameFromLock	equ	-$192
+SA_Reserved	equ	$80000048
 WA_HelpGroupWindow	equ	$8000009C
 _LVOClipBlit	equ	-$228
 _LVOModifyIDCMP	equ	-$96
@@ -85,6 +120,7 @@ _LVOOwnBlitter	equ	-$1C8
 WA_Width	equ	$80000066
 _LVOLoadSeg	equ	-$96
 _LVORawDoFmt	equ	-$20A
+GTCY_Labels	equ	$8008000E
 NUM_KINDS	equ	$E
 _LVODoIO	equ	-$1C8
 _LVOSetTaskPri	equ	-$12C
@@ -97,14 +133,17 @@ TC_SIZE	equ	$5C
 WA_CustomScreen	equ	$80000070
 WA_Left	equ	$80000064
 _LVOResetMenuStrip	equ	-$2BE
+nw_DetailPen	equ	$8
 LAYOUTA_Orientation	equ	$80038003
 _LVOWrite	equ	-$30
 wa_Name	equ	$4
 GA_Disabled	equ	$8003000E
 _LVOClearPointer	equ	-$3C
+WA_Gadgets	equ	$8000006C
 _LVOGT_ReplyIMsg	equ	-$4E
 _LVOAllocSignal	equ	-$14A
 ib_Micros	equ	$4C
+GTMX_Spacing	equ	$8008003D
 _LVOObtainSemaphore	equ	-$234
 _LVODeleteFile	equ	-$48
 _LVOSetMenuStrip	equ	-$108
@@ -137,8 +176,10 @@ _LVOFreeDiskObject	equ	-$5A
 gg_SIZEOF	equ	$2C
 _LVOGetVPModeID	equ	-$318
 _LVOParsePattern	equ	-$348
+GFLG_GADGIMAGE	equ	$4
 GMR_PREVACTIVE	equ	$20
 _LVOAslRequest	equ	-$3C
+NG_HIGHLABEL	equ	$20
 _LVOFreeSignal	equ	-$150
 _LVOGetBitMapAttr	equ	-$3C0
 _LVOFreeGadgets	equ	-$24
@@ -146,30 +187,44 @@ GTYP_SDRAGGING	equ	$30
 _LVOCloseScreen	equ	-$42
 _LVOUnlockPubScreen	equ	-$204
 _LVOMatchPatternNoCase	equ	-$3CC
+WA_Backdrop	equ	$80000085
+GACT_ENDGADGET	equ	$4
 GMR_HELPCODE	equ	$10000
 GA_RelSpecial	equ	$80030027
+GTYP_STRGADGET	equ	$4
+gg_LeftEdge	equ	$4
 _LVOIoErr	equ	-$84
 LIB_EXTFUNC	equ	$FFFFFFE8
+gg_TopEdge	equ	$6
+PLACETEXT_ABOVE	equ	$4
+PLACETEXT_IN	equ	$10
 _LVOClose	equ	-$24
+nw_LeftEdge	equ	$0
 ICSPECIAL_CODE	equ	$80040003
 _LVOLockPubScreen	equ	-$1FE
 _LVOAutoRequest	equ	-$15C
 _LVOBltClear	equ	-$12C
 _LVOReplyMsg	equ	-$17A
 IA_FrameType	equ	$8002001B
+GTJ_CENTER	equ	$2
+BBFT_ICONDROPBOX	equ	$3
 _LVOCloseDevice	equ	-$1C2
+LISTVIEW_KIND	equ	$4
 _LVOLock	equ	-$54
 GMR_MEACTIVE	equ	$0
 WA_DepthGadget	equ	$80000083
 wa_SIZEOF	equ	$8
 WA_Title	equ	$8000006E
 _LVORemIntServer	equ	-$AE
+PLACETEXT_LEFT	equ	$1
 sm_SIZEOF	equ	$28
 _LVOEndRequest	equ	-$78
 _LVOAlert	equ	-$6C
 _LVOCopyMem	equ	-$270
 _LVOGT_SetGadgetAttrsA	equ	-$2A
 _LVOGT_RefreshWindow	equ	-$54
+gng_LeftEdge	equ	$0
+GTST_MaxChars	equ	$8008002E
 STRINGA_ExitHelp	equ	$80032013
 _LVOGT_BeginRefresh	equ	-$5A
 WA_SmartRefresh	equ	$8000008D
@@ -178,18 +233,20 @@ _LVOScreenToBack	equ	-$F6
 gpi_TabletData	equ	$14
 WA_Top	equ	$80000065
 _LVOParsePatternNoCase	equ	-$3C6
+GACT_IMMEDIATE	equ	$2
 _LVOSetSignal	equ	-$132
 _LVOAddIntServer	equ	-$A8
+STRINGA_Justification	equ	$80032010
 pr_ConsoleTask	equ	$A4
 ****************************************************************************
 	exeobj
 	errfile	'ram:assem.output'
-	objfile	'ReSource.7'
+	objfile	'ReSource.10'
 ;_[]
-	SECTION	ReSource7rs000000,CODE
+	SECTION	ReSource10rs000000,CODE
 ProgStart
 ; datasegment = $2a890 (sometimes a5, sometimes a6)
-lbC000000	jmp	(lbC01D572).l
+lbC000000	jmp	(Start).l
 
 	db	'$VER: ReSource 6.06 (07.02.95)',$D,$A,0
 	db	0
@@ -499,11 +556,11 @@ lbC000362	movem.l	d3-d6,-(sp)
 lbC00037A	movem.l	(sp)+,d3-d6
 	rts
 
-lbC000380	movem.l	d2/d3/a0/a1,-(sp)
+SetGadgetPosition	movem.l	d2/d3/a0/a1,-(sp)
 	move.w	d0,d3
 	moveq	#0,d1
 	move.w	(lbB02CF3C-datasegment,a6),d1
-	move.w	(8,a0),d2
+	move.w	(gg_Width,a0),d2
 	move.w	d2,d0
 	mulu.w	d3,d0
 	sub.w	d0,d1
@@ -514,13 +571,13 @@ lbC000380	movem.l	d2/d3/a0/a1,-(sp)
 	bra.b	lbC0003B8
 
 lbC0003A0	bsr.b	lbC0003C2
-	move.w	d1,(4,a0)
+	move.w	d1,(gg_LeftEdge,a0)
 	add.w	d2,d1
 	move.w	(lbB02CEEA-datasegment,a6),d0
-	sub.w	(10,a0),d0
+	sub.w	(gg_Height,a0),d0
 	subq.w	#2,d0
-	move.w	d0,(6,a0)
-	movea.l	(a0),a0
+	move.w	d0,(gg_TopEdge,a0)
+	movea.l	(gg_NextGadget,a0),a0
 lbC0003B8	dbra	d3,lbC0003A0
 	movem.l	(sp)+,d2/d3/a0/a1
 	rts
@@ -548,162 +605,140 @@ lbC0003DC	tst.b	(a0)+
 	movem.l	(sp)+,d0/d1/a0/a1
 	rts
 
-lbL00040C	dl	lbL00044E
-	dl	$A00B4
-	dl	$50000E
+gglist_screen	dl	gg_search
+	dl	$A00B4	;Left Top
+	dl	$50000E	;Width Height
 	dl	$40001
 	dw	1
-	dl	lbL0005DA
-	dw	0
-	dw	0
-	dl	lbL000438
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	$5342
-	dl	opensymwindow
-lbL000438	dl	0
+	dl	GadgetRender
+	dl	0
+	dl	ggtext_symbols
+	dl	0
+	dl	0
+	db	'SB'
+	dl	openwindow_symbols
+ggtext_symbols	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dw	10
-lbL00044E	dl	lbL000490
-	dl	$6400B4
-	dl	$50000E
+gg_search	dl	gg_macros1
+	dl	$6400B4	;Left Top
+	dl	$50000E	;Width Height
 	dl	$40001
 	dw	1
-	dl	lbL0005DA
-	dw	0
-	dw	0
-	dl	lbL00047A
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	$5345
-	dl	lbC000E30
-lbL00047A	dl	0
+	dl	GadgetRender
+	dl	0
+	dl	ggtext_search
+	dl	0
+	dl	0
+	db	'SE'
+	dl	openwindow_search
+ggtext_search	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dw	11
-lbL000490	dl	lbL0004D2
-	dl	$BE00B4
-	dl	$50000E
+gg_macros1	dl	gg_macros2
+	dl	$BE00B4	;Left Top
+	dl	$50000E	;Width Height
 	dl	$40001
 	dw	1
-	dl	lbL0005DA
-	dw	0
-	dw	0
-	dl	lbL0004BC
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	$4D31
-	dl	lbC001724
-lbL0004BC	dl	0
+	dl	GadgetRender
+	dl	0
+	dl	ggtext_macros1
+	dl	0
+	dl	0
+	db	'M1'
+	dl	openwindow_macros1
+ggtext_macros1	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dw	12
-lbL0004D2	dl	lbL000514
-	dl	$11800B4
-	dl	$50000E
+gg_macros2	dl	gg_macros3
+	dl	$11800B4	;Left Top
+	dl	$50000E	;Width Height
 	dl	$40001
 	dw	1
-	dl	lbL0005DA
-	dw	0
-	dw	0
-	dl	lbL0004FE
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	$4D32
-	dl	lbC001728
-lbL0004FE	dl	0
+	dl	GadgetRender
+	dl	0
+	dl	ggtext_macros2
+	dl	0
+	dl	0
+	db	'M2'
+	dl	openwindow_macros2
+ggtext_macros2	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dw	13
-lbL000514	dl	lbL000556
-	dl	$17200B4
-	dl	$50000E
+gg_macros3	dl	gg_options1
+	dl	$17200B4	;Left Top
+	dl	$50000E	;Width Height
 	dl	$40001
 	dw	1
-	dl	lbL0005DA
-	dw	0
-	dw	0
-	dl	lbL000540
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	$4D33
-	dl	lbC00172C
-lbL000540	dl	0
+	dl	GadgetRender
+	dl	0
+	dl	ggtext_macros3
+	dl	0
+	dl	0
+	db	'M3'
+	dl	openwindow_macros3
+ggtext_macros3	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dw	14
-lbL000556	dl	lbL000598
-	dl	$1CC00B4
-	dl	$50000E
+gg_options1	dl	gg_options2
+	dl	$1CC00B4	;Left Top
+	dl	$50000E	;Width Height
 	dl	$40001
 	dw	1
-	dl	lbL0005DA
-	dw	0
-	dw	0
-	dl	lbL000582
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	$4F31
-	dl	lbC001D78
-lbL000582	dl	0
+	dl	GadgetRender
+	dl	0
+	dl	ggtext_options1
+	dl	0
+	dl	0
+	db	'O1'
+	dl	openwindow_options1
+ggtext_options1	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dw	15
-lbL000598	dl	0
-	dl	$22600B4
-	dl	$50000E
+gg_options2	dl	0
+	dl	$22600B4	;Left Top
+	dl	$50000E	;Width Height
 	dl	$40001
 	dw	1
-	dl	lbL0005DA
-	dw	0
-	dw	0
-	dl	lbL0005C4
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	$4F32
-	dl	lbC00246C
-lbL0005C4	dl	0
+	dl	GadgetRender
+	dl	0
+	dl	ggtext_options2
+	dl	0
+	dl	0
+	db	'O2'
+	dl	openwindow_options2
+ggtext_options2	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dl	0
 	dw	$10
-lbL0005DA	dl	0
-	dl	$50000E
-	dw	2
-	dl	lbL039F0C
-	dw	$300
-	dw	0
-	dw	0
+GadgetRender	dl	0	;Left Top
+	dl	$50000E	;Width Height
+	dw	2	;Depth
+	dl	GadgetImageData
+	dw	$300	;PlanePick PlaneOnOff
+	dl	0	;NextImage
 
-opensymwindow	movem.l	d2-d6/a2-a5,-(sp)
+openwindow_symbols	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	(symwindowptr-datasegment,a6),d0
 	beq.b	lbC000602
 	movea.l	d0,a0
@@ -724,7 +759,7 @@ lbC000602	move.l	#MEMF_CLEAR,d1
 	lea	(gadgets_sym_hires,pc),a0
 	tst.b	(laceflag-datasegment,a6)
 	bne.b	_creategadgets
-	lea	(gadget_sym_lores,pc),a0
+	lea	(gadgets_sym_lores,pc),a0
 _creategadgets	bsr.w	creategadgets
 	beq.w	syms_nosyms
 	clr.l	-(sp)
@@ -851,11 +886,11 @@ lbC0007A4	move.w	d2,d0
 	cmpi.w	#$2EA,d0
 	bhi.b	lbC0007E8
 	movea.l	($36,a5),a0
-	lea	(lbL000984,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_0,pc),a1
+	bsr.w	SetGadgetAttrs
 lbC0007E8	movea.l	($3A,a5),a0
-	lea	(lbL000984,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_0,pc),a1
+	bsr.w	SetGadgetAttrs
 	movem.l	(sp)+,a0/a1
 	bra.b	lbC0007FC
 
@@ -892,61 +927,61 @@ lbC00084E	ori.b	#4,ccr
 lbC000852	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
-gadgets_sym_hires	dw	11	;left
-	dw	25	;top
-	dw	117	;width
-	dw	134	;height
-	dw	$FA2
-	dl	$24
-	dl	gadcode_sym_dir
-	dl	4
-	dl	lbL000964
+gadgets_sym_hires	dw	11	;LeftEdge
+	dw	25	;TopEdge
+	dw	117	;Width
+	dw	134	;Height
+	dw	$FA2	;text number
+	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)	;Flags
+	dl	gadcode_sym_dir	;UserData
+	dl	LISTVIEW_KIND	;kind
+	dl	gtlv_tags	;tags
 	dw	140
 	dw	25
 	dw	231
 	dw	134
 	dw	$FA3
-	dl	$24
+	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)
 	dl	gadcode_sym_inc
-	dl	4
-	dl	lbL000964
+	dl	LISTVIEW_KIND
+	dl	gtlv_tags
 	dw	384
 	dw	25
 	dw	231
 	dw	134
 	dw	$FA4
-	dl	$24
+	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)
 	dl	gadcode_sym_ind
-	dl	4
-	dl	lbL000964
+	dl	LISTVIEW_KIND
+	dl	gtlv_tags
 	dw	383
 	dw	166
 	dw	172
 	dw	12
 	dw	$11
-	dl	$10
+	dl	PLACETEXT_IN
 	dl	gadcode_sym_use
-	dl	1
-	dl	lbL000978
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
 	dw	88
 	dw	166
 	dw	172
 	dw	12
 	dw	$FA5
-	dl	$10
+	dl	PLACETEXT_IN
 	dl	gadcode_sym_load
-	dl	1
-	dl	lbL000978
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
 	dl	0
-gadget_sym_lores	dw	10
+gadgets_sym_lores	dw	10
 	dw	14
 	dw	117
 	dw	64
 	dw	0
 	dl	0
 	dl	gadcode_sym_dir
-	dl	4
-	dl	lbL000964
+	dl	LISTVIEW_KIND
+	dl	gtlv_tags
 	dw	139
 	dw	14
 	dw	231
@@ -954,8 +989,8 @@ gadget_sym_lores	dw	10
 	dw	0
 	dl	0
 	dl	gadcode_sym_inc
-	dl	4
-	dl	lbL000964
+	dl	LISTVIEW_KIND
+	dl	gtlv_tags
 	dw	383
 	dw	14
 	dw	231
@@ -963,36 +998,36 @@ gadget_sym_lores	dw	10
 	dw	0
 	dl	0
 	dl	gadcode_sym_ind
-	dl	4
-	dl	lbL000964
+	dl	LISTVIEW_KIND
+	dl	gtlv_tags
 	dw	383
 	dw	77
 	dw	172
 	dw	12
 	dw	$11
-	dl	$10
+	dl	PLACETEXT_IN
 	dl	gadcode_sym_use
-	dl	1
-	dl	lbL000978
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
 	dw	88
 	dw	77
 	dw	172
 	dw	12
 	dw	$FA5
-	dl	$10
+	dl	PLACETEXT_IN
 	dl	gadcode_sym_load
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
+	dl	0
+gtlv_tags	dl	GTLV_Labels
+	dl	0
+	dl	GTLV_ShowSelected
+	dl	0
+	dl	0
+ga_disabled_1	dl	GA_Disabled
 	dl	1
-	dl	lbL000978
 	dl	0
-lbL000964	dl	$80080006
-	dl	0
-	dl	$80080035
-	dl	0
-	dl	0
-lbL000978	dl	GA_Disabled
-	dl	1
-	dl	0
-lbL000984	dl	GA_Disabled
+ga_disabled_0	dl	GA_Disabled
 	dl	0
 	dl	0
 
@@ -1030,11 +1065,11 @@ _setgadget4	bsr.w	setgadget
 	moveq	#5,d1
 _setgadget5	bsr.w	setgadget
 	movea.l	($36,a5),a0
-	lea	(lbL000978,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_1,pc),a1
+	bsr.w	SetGadgetAttrs
 	movea.l	($3A,a5),a0
-	lea	(lbL000978,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_1,pc),a1
+	bsr.w	SetGadgetAttrs
 	move.w	#$169,($C8,a5)
 lbC000A12	move.w	#$169,d0
 	rts
@@ -1062,11 +1097,11 @@ lbC000A3A	lsl.w	#2,d3
 	moveq	#5,d1
 _setgadget6	bsr.w	setgadget
 	movea.l	($36,a5),a0
-	lea	(lbL000978,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_1,pc),a1
+	bsr.w	SetGadgetAttrs
 	movea.l	($3A,a5),a0
-	lea	(lbL000978,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_1,pc),a1
+	bsr.w	SetGadgetAttrs
 	move.w	#$169,($C8,a5)
 lbC000A80	move.w	#$169,d0
 	rts
@@ -1074,7 +1109,7 @@ lbC000A80	move.w	#$169,d0
 gadcode_sym_ind	cmp.w	(lbB02CFF6-datasegment,a6),d3
 	beq.b	lbC000ACC
 	move.w	d3,(lbB02CFF6-datasegment,a6)
-	lea	(lbL000978,pc),a1
+	lea	(ga_disabled_1,pc),a1
 	movea.l	($C4,a5),a0
 	lsl.w	#2,d3
 	move.w	(2,a0,d3.w),d0
@@ -1083,12 +1118,12 @@ gadcode_sym_ind	cmp.w	(lbB02CFF6-datasegment,a6),d3
 	bcs.b	lbC000AB2
 	cmpi.w	#$2EA,d0
 	bhi.b	lbC000AB2
-	lea	(lbL000984,pc),a1
+	lea	(ga_disabled_0,pc),a1
 lbC000AB2	movea.l	($36,a5),a0
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	movea.l	($3A,a5),a0
-	lea	(lbL000984,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_0,pc),a1
+	bsr.w	SetGadgetAttrs
 	bsr.w	lbC002B6C
 	bra.b	lbC000AF8
 
@@ -1192,7 +1227,7 @@ lbC000BAC	tst.b	(a3)+
 	move.l	a1,(a0)
 	bra.b	lbC000BAA
 
-lbC000BEC	lea	(lbL000DAE,pc),a0
+lbC000BEC	lea	(lbW000DAE,pc),a0
 	bsr.w	creategadgets
 	beq.w	lbC000D6A
 	clr.l	-(sp)
@@ -1334,45 +1369,41 @@ lbC000DA2	move.l	d5,d0
 	movem.l	(sp)+,d2-d7/a2-a5
 	rts
 
-lbL000DAE	dl	$A001D
-	dl	$F80082
-	dl	$17710000
-	dw	$24
+lbW000DAE	dw	10
+	dw	$1D
+	dw	$F8
+	dw	$82
+	dw	$1771
+	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)
 	dl	lbC000E00
-	dw	0
-	dw	4
-	dl	lbL000964
+	dl	LISTVIEW_KIND
+	dl	gtlv_tags
 	dw	14
 	dw	$A6
 	dw	$3D
 	dw	12
 	dw	4
-	dw	0
-	dw	$10
+	dl	PLACETEXT_IN
 	dl	lbC000E24
-	dw	0
-	dw	1
-	dl	lbL000978
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
 	dw	$C1
 	dw	$A6
 	dw	$3D
 	dw	12
 	dw	3
-	dw	0
-	dw	$10
+	dl	PLACETEXT_IN
 	dl	lbC000E2A
-	dw	0
-	dw	1
-	dl	lbL0022A2
-	dw	0
-	dw	0
+	dl	BUTTON_KIND
+	dl	tagdone
+	dl	0
 
 lbC000E00	cmp.w	($C8,a5),d2
 	beq.b	lbC000E1C
 	move.w	d2,($C8,a5)
 	movea.l	($2E,a5),a0
-	lea	(lbL000984,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_0,pc),a1
+	bsr.w	SetGadgetAttrs
 	bsr.w	lbC002B6C
 	rts
 
@@ -1388,7 +1419,7 @@ lbC000E2A	moveq	#0,d5
 	moveq	#1,d4
 	rts
 
-lbC000E30	movem.l	d2-d6/a2-a5,-(sp)
+openwindow_search	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	(window2ptr-datasegment,a6),d0
 	beq.b	lbC000E44
 	movea.l	d0,a0
@@ -1412,35 +1443,35 @@ lbC000E6E	move.w	(a0)+,d0
 	move.l	d0,(a1)+
 	dbra	d2,lbC000E6E
 	lea	(lbW001484,pc),a0
-	lea	(lbB02D01A-datasegment,a6),a1
+	lea	(searchcaselabels-datasegment,a6),a1
 	moveq	#1,d2
 lbC000E84	move.w	(a0)+,d0
 	jsr	(gettextbynum-datasegment,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC000E84
 	lea	(lbW001488,pc),a0
-	lea	(lbB02D026-datasegment,a6),a1
+	lea	(searchalignlabels-datasegment,a6),a1
 	moveq	#1,d2
 lbC000E9A	move.w	(a0)+,d0
 	jsr	(gettextbynum-datasegment,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC000E9A
 	lea	(lbW00148C,pc),a0
-	lea	(lbB02D032-datasegment,a6),a1
+	lea	(searchfromlabels-datasegment,a6),a1
 	moveq	#2,d2
 lbC000EB0	move.w	(a0)+,d0
 	jsr	(gettextbynum-datasegment,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC000EB0
 	lea	(lbW001492,pc),a0
-	lea	(lbB02D042-datasegment,a6),a1
+	lea	(searchdummylabels-datasegment,a6),a1
 	move.l	a0,(a1)+
 	move.l	a0,(a1)
-	lea	(lbL0010B8,pc),a0
+	lea	(gadgets_search_hires,pc),a0
 	tst.b	(laceflag-datasegment,a6)
-	bne.b	_creategadgets0
-	lea	(lbL00125C,pc),a0
-_creategadgets0	bsr.w	creategadgets
+	bne.b	.go
+	lea	(gadgets_search_lores,pc),a0
+.go	bsr.w	creategadgets
 	beq.w	lbC000FE2
 	clr.l	-(sp)
 	move.l	(screenptr-datasegment,a6),-(sp)
@@ -1548,7 +1579,7 @@ lbC001018	lea	($2A,a5),a2
 	move.l	d0,-(sp)
 	move.l	#$8008000A,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d0
 	tst.b	(lbB02B411-datasegment,a6)
@@ -1559,7 +1590,7 @@ lbC001048	movea.l	(12,a2),a0
 	move.l	d0,-(sp)
 	move.l	#$8008000F,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d0
 	tst.b	(lbB02B413-datasegment,a6)
@@ -1570,7 +1601,7 @@ lbC00106A	movea.l	($10,a2),a0
 	move.l	d0,-(sp)
 	move.l	#$8008000F,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#1,d0
 	tst.b	(lbB02B415-datasegment,a6)
@@ -1584,399 +1615,333 @@ lbC001094	movea.l	($14,a2),a0
 	move.l	d0,-(sp)
 	move.l	#$8008000F,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d3
 	move.b	(lbB02D06E-datasegment,a6),d3
-	bsr.w	lbC001494
+	bsr.w	select_searchtype
 	rts
 
-lbL0010B8	dl	$D0016
-	dl	$580008
-	dl	$11960000
-	dl	$300000
-	dl	0
+gadgets_search_hires
 	dw	13
-	dl	lbL0022A2
+	dw	$16
+	dw	$58
+	dw	8
+	dw	$1196
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$4D
 	dw	$26
 	dw	$10
 	dw	10
 	dw	0
-	dw	0
-	dw	1
-	dl	lbC001494
-	dw	0
-	dw	5
-	dl	lbL001400
+	dl	PLACETEXT_LEFT
+	dl	select_searchtype
+	dl	MX_KIND
+	dl	gtmx_tags
 	dw	$7A
 	dw	$16
 	dw	$88
 	dw	8
 	dw	$1198
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$76
 	dw	$24
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC001602
-	dw	0
-	dw	7
-	dl	lbL001414
+	dl	0
+	dl	select_searchcase
+	dl	CYCLE_KIND
+	dl	gtcy_case_tags
 	dw	$76
 	dw	$34
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC001610
-	dw	0
-	dw	7
-	dl	lbL001428
+	dl	0
+	dl	select_searchalign
+	dl	CYCLE_KIND
+	dl	gtcy_align_tags
 	dw	$76
 	dw	$44
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC00161E
-	dw	0
-	dw	7
-	dl	lbL00143C
+	dl	0
+	dl	select_searchfrom
+	dl	CYCLE_KIND
+	dl	gtcy_from_tags
 	dw	$76
 	dw	$54
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	7
-	dl	lbL001450
+	dl	0
+	dl	0
+	dl	CYCLE_KIND
+	dl	gtcy_dummy
 	dw	$76
 	dw	$64
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	7
-	dl	lbL001450
+	dl	0
+	dl	0
+	dl	CYCLE_KIND
+	dl	gtcy_dummy
 	dw	$119
 	dw	$16
 	dw	$68
 	dw	8
 	dw	$1197
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$120
 	dw	$24
 	dw	$60
 	dw	11
 	dw	$11A4
-	dw	0
-	dw	$10
-	dl	lbC001590
-	dw	0
-	dw	1
-	dl	lbL002272
+	dl	PLACETEXT_IN
+	dl	select_searchforward
+	dl	BUTTON_KIND
+	dl	gtcb_checked_1
 	dw	$120
 	dw	$34
 	dw	$60
 	dw	11
 	dw	$11A5
-	dw	0
-	dw	$10
-	dl	lbC001594
-	dw	0
-	dw	1
-	dl	lbL00227E
+	dl	PLACETEXT_IN
+	dl	select_searchbackward
+	dl	BUTTON_KIND
+	dl	gtcb_checked_0
 	dw	$120
 	dw	$44
 	dw	$60
 	dw	11
 	dw	$11A6
-	dw	0
-	dw	$10
-	dl	lbC001598
-	dw	0
-	dw	1
-	dl	lbL00227E
+	dl	PLACETEXT_IN
+	dl	select_searchnearest
+	dl	BUTTON_KIND
+	dl	gtcb_checked_0
 	dw	$120
 	dw	$54
 	dw	$60
 	dw	11
 	dw	$11A7
-	dw	0
-	dw	$10
-	dl	lbC00159C
-	dw	0
-	dw	1
-	dl	lbL00227E
+	dl	PLACETEXT_IN
+	dl	select_searchthisline
+	dl	BUTTON_KIND
+	dl	gtcb_checked_0
 	dw	$120
 	dw	$64
 	dw	$60
 	dw	11
 	dw	$11A8
-	dw	0
-	dw	$10
-	dl	lbC0015A0
-	dw	0
-	dw	1
-	dl	lbL00227E
+	dl	PLACETEXT_IN
+	dl	select_searchaccu
+	dl	BUTTON_KIND
+	dl	gtcb_checked_0
 	dw	$16
 	dw	$73
 	dw	$70
 	dw	8
 	dw	0
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$16
 	dw	$7F
 	dw	$169
 	dw	14
 	dw	0
+	dl	0
+	dl	select_searchlabel
+	dl	STRING_KIND
+	dl	gtst_tags
+	dl	0
+gadgets_search_lores
+	dw	1
+	dw	1
 	dw	0
 	dw	0
-	dl	lbC001636
 	dw	0
-	dw	12
-	dl	lbL001464
-	dw	0
-	dw	0
-lbL00125C	dl	$10001
 	dl	0
 	dl	0
-	dl	0
-	dl	0
-	dw	13
-	dl	lbL0022A2
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$4D
 	dw	15
 	dw	$10
 	dw	10
 	dw	0
-	dw	0
-	dw	1
-	dl	lbC001494
-	dw	0
-	dw	5
-	dl	lbL001400
+	dl	PLACETEXT_LEFT
+	dl	select_searchtype
+	dl	MX_KIND
+	dl	gtmx_tags
 	dw	1
 	dw	1
 	dw	0
 	dw	0
 	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	0
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$76
 	dw	14
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC001602
-	dw	0
-	dw	7
-	dl	lbL001414
+	dl	0
+	dl	select_searchcase
+	dl	CYCLE_KIND
+	dl	gtcy_case_tags
 	dw	$76
 	dw	$1D
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC001610
-	dw	0
-	dw	7
-	dl	lbL001428
+	dl	0
+	dl	select_searchalign
+	dl	CYCLE_KIND
+	dl	gtcy_align_tags
 	dw	$76
 	dw	$2C
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC00161E
-	dw	0
-	dw	7
-	dl	lbL00143C
+	dl	0
+	dl	select_searchfrom
+	dl	CYCLE_KIND
+	dl	gtcy_from_tags
 	dw	$76
 	dw	$3B
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	7
-	dl	lbL001450
+	dl	0
+	dl	0
+	dl	CYCLE_KIND
+	dl	gtcy_dummy
 	dw	$76
 	dw	$4A
 	dw	$90
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	7
-	dl	lbL001450
+	dl	0
+	dl	0
+	dl	CYCLE_KIND
+	dl	gtcy_dummy
 	dw	1
 	dw	1
 	dw	0
 	dw	0
 	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	0
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$120
 	dw	14
 	dw	$60
 	dw	11
 	dw	$11A4
-	dw	0
-	dw	$10
-	dl	lbC001590
-	dw	0
-	dw	1
-	dl	lbL002272
+	dl	PLACETEXT_IN
+	dl	select_searchforward
+	dl	BUTTON_KIND
+	dl	gtcb_checked_1
 	dw	$120
 	dw	$1D
 	dw	$60
 	dw	11
 	dw	$11A5
-	dw	0
-	dw	$10
-	dl	lbC001594
-	dw	0
-	dw	1
-	dl	lbL00227E
+	dl	PLACETEXT_IN
+	dl	select_searchbackward
+	dl	BUTTON_KIND
+	dl	gtcb_checked_0
 	dw	$120
 	dw	$2C
 	dw	$60
 	dw	11
 	dw	$11A6
-	dw	0
-	dw	$10
-	dl	lbC001598
-	dw	0
-	dw	1
-	dl	lbL00227E
+	dl	PLACETEXT_IN
+	dl	select_searchnearest
+	dl	BUTTON_KIND
+	dl	gtcb_checked_0
 	dw	$120
 	dw	$3B
 	dw	$60
 	dw	11
 	dw	$11A7
-	dw	0
-	dw	$10
-	dl	lbC00159C
-	dw	0
-	dw	1
-	dl	lbL00227E
+	dl	PLACETEXT_IN
+	dl	select_searchthisline
+	dl	BUTTON_KIND
+	dl	gtcb_checked_0
 	dw	$120
 	dw	$4A
 	dw	$60
 	dw	11
 	dw	$11A8
-	dw	0
-	dw	$10
-	dl	lbC0015A0
-	dw	0
-	dw	1
-	dl	lbL00227E
+	dl	PLACETEXT_IN
+	dl	select_searchaccu
+	dl	BUTTON_KIND
+	dl	gtcb_checked_0
 	dw	1
 	dw	1
 	dw	0
 	dw	0
 	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	0
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$16
 	dw	$59
 	dw	$169
 	dw	14
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC001636
-	dw	0
-	dw	12
-	dl	lbL001464
-	dw	0
-	dw	0
-lbL001400	dl	$80080009
+	dl	0
+	dl	select_searchlabel
+	dl	STRING_KIND
+	dl	gtst_tags
+	dl	0
+gtmx_tags	dl	GTMX_Labels
 	dl	lbB02CFFE
-	dl	$8008003D
+	dl	GTMX_Spacing
 	dl	4
 	dl	0
-lbL001414	dl	$8008000E
-	dl	lbB02D01A
-	dl	$8003000E
+gtcy_case_tags	dl	GTCY_Labels
+	dl	searchcaselabels
+	dl	GA_Disabled
 	dl	1
 	dl	0
-lbL001428	dl	$8008000E
-	dl	lbB02D026
-	dl	$8003000E
+gtcy_align_tags	dl	GTCY_Labels
+	dl	searchalignlabels
+	dl	GA_Disabled
 	dl	1
 	dl	0
-lbL00143C	dl	$8008000E
-	dl	lbB02D032
-	dl	$8003000E
+gtcy_from_tags	dl	GTCY_Labels
+	dl	searchfromlabels
+	dl	GA_Disabled
 	dl	1
 	dl	0
-lbL001450	dl	$8008000E
-	dl	lbB02D042
-	dl	$8003000E
+gtcy_dummy	dl	GTCY_Labels
+	dl	searchdummylabels
+	dl	GA_Disabled
 	dl	1
 	dl	0
-lbL001464	dl	$80032010
+gtst_tags	dl	STRINGA_Justification
 	dl	$200
-	dl	$8008002E
+	dl	GTST_MaxChars
 	dl	$7F
 	dl	0
 lbW001478	dw	$1199
@@ -1994,7 +1959,7 @@ lbW00148C	dw	$11AF
 	dw	$11AE
 lbW001492	dw	$2000
 
-lbC001494	move.l	a2,-(sp)
+select_searchtype	move.l	a2,-(sp)
 	move.b	d3,($CA,a5)
 	add.w	d3,d3
 	tst.b	(laceflag-datasegment,a6)
@@ -2006,11 +1971,11 @@ lbC001494	move.l	a2,-(sp)
 	movea.l	($38,a0),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8008000B,-(sp)
+	move.l	#GTTX_Text,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-lbC0014CA	lea	(lbL001584,pc),a1
+lbC0014CA	lea	(lbW001584,pc),a1
 	moveq	#0,d0
 	move.w	(a1,d3.w),d0
 	lea	(a6,d0.l),a1
@@ -2021,9 +1986,9 @@ lbC0014CA	lea	(lbL001584,pc),a1
 	movea.l	($3C,a0),a0
 	clr.l	-(sp)
 	move.l	a1,-(sp)
-	move.l	#$8008002D,-(sp)
+	move.l	#GTST_String,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	lea	(lbW001548,pc),a2
 	adda.w	(a2,d3.w),a2
@@ -2037,9 +2002,9 @@ lbC001508	lea	($2A,a5),a0
 	movea.l	(a0,d1.w),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8003000E,-(sp)
+	move.l	#GA_Disabled,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	dbra	d2,lbC001508
 	move.w	#$169,d0
@@ -2070,24 +2035,31 @@ lbL001574	dl	$2428ACB0
 	dl	$B48C9094
 lbL00157C	dl	$2428ACB0
 	dl	$B48C9094
-lbL001584	dl	$30383138
-	dl	$30383438
-	dl	$363836B8
+lbW001584	dw	lbB02D8C8-datasegment
+	dw	lbB02D9C8-datasegment
+	dw	lbB02D8C8-datasegment
+	dw	lbB02DCC8-datasegment
+	dw	lbB02DEC8-datasegment
+	dw	lbB02DF48-datasegment
 
-lbC001590	moveq	#0,d0
-	bra.b	lbC0015A2
+select_searchforward
+	moveq	#0,d0
+	bra.b	search
 
-lbC001594	moveq	#1,d0
-	bra.b	lbC0015A2
+select_searchbackward
+	moveq	#1,d0
+	bra.b	search
 
-lbC001598	moveq	#2,d0
-	bra.b	lbC0015A2
+select_searchnearest
+	moveq	#2,d0
+	bra.b	search
 
-lbC00159C	moveq	#3,d0
-	bra.b	lbC0015A2
+select_searchthisline
+	moveq	#3,d0
+	bra.b	search
 
-lbC0015A0	moveq	#4,d0
-lbC0015A2	lea	(lbW0015BA,pc),a0
+select_searchaccu	moveq	#4,d0
+search	lea	(lbW0015BA,pc),a0
 	moveq	#0,d1
 	move.b	($CA,a5),d1
 	add.w	d1,d1
@@ -2096,44 +2068,56 @@ lbC0015A2	lea	(lbW0015BA,pc),a0
 	move.w	(a0,d0.w),d0
 	rts
 
-lbW0015BA	dw	lbL0015C6-lbW0015BA
-	dw	lbL0015D0-lbW0015BA
-	dw	lbL0015DA-lbW0015BA
-	dw	lbL0015E4-lbW0015BA
-	dw	lbL0015EE-lbW0015BA
-	dw	lbL0015F8-lbW0015BA
-lbL0015C6	dl	$1AA01AB
-	dl	$1AC0257
+lbW0015BA	dw	lbW0015C6-lbW0015BA
+	dw	lbW0015D0-lbW0015BA
+	dw	lbW0015DA-lbW0015BA
+	dw	lbW0015E4-lbW0015BA
+	dw	lbW0015EE-lbW0015BA
+	dw	lbW0015F8-lbW0015BA
+lbW0015C6	dw	$1AA
+	dw	$1AB
+	dw	$1AC
+	dw	$257
 	dw	$215
-lbL0015D0	dl	$4E01A8
-	dl	$1A90256
+lbW0015D0	dw	$4E
+	dw	$1A8
+	dw	$1A9
+	dw	$256
 	dw	$214
-lbL0015DA	dl	$34B034C
-	dl	0
+lbW0015DA	dw	$34B
+	dw	$34C
 	dw	0
-lbL0015E4	dl	$3820383
-	dl	0
 	dw	0
-lbL0015EE	dl	$3520353
-	dl	0
 	dw	0
-lbL0015F8	dl	$3550356
-	dl	0
+lbW0015E4	dw	$382
+	dw	$383
+	dw	0
+	dw	0
+	dw	0
+lbW0015EE	dw	$352
+	dw	$353
+	dw	0
+	dw	0
+	dw	0
+lbW0015F8	dw	$355
+	dw	$356
+	dw	0
+	dw	0
 	dw	0
 
-lbC001602	move.w	#$380,d0
+select_searchcase	move.w	#$380,d0
 	tst.w	d3
 	bne.b	lbC00160E
 	move.w	#$381,d0
 lbC00160E	rts
 
-lbC001610	move.w	#$37E,d0
+select_searchalign	move.w	#$37E,d0
 	tst.w	d3
 	bne.b	lbC00161C
 	move.w	#$37F,d0
 lbC00161C	rts
 
-lbC00161E	move.w	#$3B9,d0
+select_searchfrom	move.w	#$3B9,d0
 	tst.w	d3
 	beq.b	lbC001634
 	move.w	#$3B7,d0
@@ -2142,14 +2126,14 @@ lbC00161E	move.w	#$3B9,d0
 	move.w	#$3B8,d0
 lbC001634	rts
 
-lbC001636	lea	($2A,a5),a0
+select_searchlabel	lea	($2A,a5),a0
 	movea.l	($3C,a0),a0
 	movea.l	($22,a0),a0
 	movea.l	(a0),a0
 	moveq	#0,d2
 	move.b	($CA,a5),d2
 	add.w	d2,d2
-	lea	(lbL001584,pc),a1
+	lea	(lbW001584,pc),a1
 	moveq	#0,d1
 	move.w	(a1,d2.w),d1
 	lea	(a6,d1.l),a1
@@ -2176,7 +2160,7 @@ lbC001674	movem.l	d0/d1/a0-a3,-(sp)
 	clr.l	-(sp)
 	move.l	#$8008000F,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 lbC0016A0	clr.b	(lbB02B415-datasegment,a6)
 	clr.b	(lbB02B416-datasegment,a6)
@@ -2221,14 +2205,14 @@ lbC001714	movea.l	a5,a1
 	movea.l	(sp)+,a6
 	rts
 
-lbC001724	moveq	#0,d0
-	bra.b	lbC00172E
+openwindow_macros1	moveq	#0,d0
+	bra.b	openwindow_macros
 
-lbC001728	moveq	#1,d0
-	bra.b	lbC00172E
+openwindow_macros2	moveq	#1,d0
+	bra.b	openwindow_macros
 
-lbC00172C	moveq	#2,d0
-lbC00172E	movem.l	d2-d6/a2-a5,-(sp)
+openwindow_macros3	moveq	#2,d0
+openwindow_macros	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	d0,d6
 	lea	(window3ptr-datasegment,a6),a0
 	lsl.w	#2,d0
@@ -2259,11 +2243,11 @@ lbC00176E	movea.l	d0,a5
 	lea	($4C,a0),a0
 lbC001788	bsr.w	lbC001C9E
 	beq.w	lbC0019D2
-	lea	(lbL0019DC,pc),a0
+	lea	(unknown_hires,pc),a0
 	tst.b	(laceflag-datasegment,a6)
-	bne.b	_creategadgets1
-	lea	(lbL001A2E,pc),a0
-_creategadgets1	bsr.w	creategadgets
+	bne.b	.go
+	lea	(unknown_lores,pc),a0
+.go	bsr.w	creategadgets
 	beq.w	lbC0019AC
 	clr.l	-(sp)
 	move.l	(screenptr-datasegment,a6),-(sp)
@@ -2398,18 +2382,18 @@ _setgadget2	bsr.w	setgadget
 	tst.b	(lbB02EB4B-datasegment,a6)
 	bne.b	lbC001950
 	movea.l	(4,a2),a0
-	lea	(lbL000984,pc),a1
-	bsr.w	setgadget2
-lbC001950	cmp.w	(lbB02CF8A-datasegment,a6),d6
+	lea	(ga_disabled_0,pc),a1
+	bsr.w	SetGadgetAttrs
+lbC001950	cmp.w	(macros_num-datasegment,a6),d6
 	bne.b	lbC001962
 	cmp.w	(lbB02CF8C-datasegment,a6),d2
 	bne.b	lbC001962
-	lea	(lbL000978,pc),a1
+	lea	(ga_disabled_1,pc),a1
 	bra.b	lbC001966
 
-lbC001962	lea	(lbL000984,pc),a1
+lbC001962	lea	(ga_disabled_0,pc),a1
 lbC001966	movea.l	(8,a2),a0
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 lbC00196E	move.w	d6,($C8,a5)
 	lea	(lbC001D02,pc),a0
 	tst.w	d6
@@ -2449,72 +2433,64 @@ lbC0019D2	ori.b	#4,ccr
 lbC0019D6	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
-lbL0019DC	dl	$A002B
-	dl	$F80074
-	dl	$13890000
-	dw	$24
-	dl	lbC001A80
-	dw	0
-	dw	4
-	dl	lbL000964
+unknown_hires	dw	10
+	dw	$2B
+	dw	$F8
+	dw	$74
+	dw	$1389
+	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)
+	dl	select_macros_list
+	dl	LISTVIEW_KIND
+	dl	gtlv_tags
 	dw	$92
 	dw	$A6
 	dw	$5F
 	dw	12
 	dw	$9D1
-	dw	0
-	dw	$10
-	dl	lbC001AD6
-	dw	0
-	dw	1
-	dl	lbL000978
+	dl	PLACETEXT_IN
+	dl	select_macros_execute
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
 	dw	$1B
 	dw	$A6
 	dw	$5F
 	dw	12
 	dw	$9D0
-	dw	0
-	dw	$10
-	dl	lbC001B78
-	dw	0
-	dw	1
-	dl	lbL000978
-	dw	0
-	dw	0
-lbL001A2E	dl	$A000E
-	dl	$F80044
+	dl	PLACETEXT_IN
+	dl	select_macros_create
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
 	dl	0
+unknown_lores	dw	10
+	dw	14
+	dw	$F8
+	dw	$44
 	dw	0
-	dl	lbC001A80
-	dw	0
-	dw	4
-	dl	lbL000964
+	dl	0
+	dl	select_macros_list
+	dl	LISTVIEW_KIND
+	dl	gtlv_tags
 	dw	$92
 	dw	$55
 	dw	$5F
 	dw	12
 	dw	$9D1
-	dw	0
-	dw	$10
-	dl	lbC001AD6
-	dw	0
-	dw	1
-	dl	lbL000978
+	dl	PLACETEXT_IN
+	dl	select_macros_execute
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
 	dw	$1B
 	dw	$55
 	dw	$5F
 	dw	12
 	dw	$9D0
-	dw	0
-	dw	$10
-	dl	lbC001B78
-	dw	0
-	dw	1
-	dl	lbL000978
-	dw	0
-	dw	0
+	dl	PLACETEXT_IN
+	dl	select_macros_create
+	dl	BUTTON_KIND
+	dl	ga_disabled_1
+	dl	0
 
-lbC001A80	movem.l	d2/a2,-(sp)
+select_macros_list	movem.l	d2/a2,-(sp)
 	lea	(lbB02CFF8-datasegment,a6),a0
 	move.w	($C8,a5),d2
 	move.w	d2,d0
@@ -2527,25 +2503,26 @@ lbC001A80	movem.l	d2/a2,-(sp)
 	tst.b	(lbB02EB4B-datasegment,a6)
 	bne.b	lbC001AAE
 	movea.l	(4,a2),a0
-	lea	(lbL000984,pc),a1
-	bsr.w	setgadget2
-lbC001AAE	cmp.w	(lbB02CF8A-datasegment,a6),d2
+	lea	(ga_disabled_0,pc),a1
+	bsr.w	SetGadgetAttrs
+lbC001AAE	cmp.w	(macros_num-datasegment,a6),d2
 	bne.b	lbC001AC0
 	cmp.w	(lbB02CF8C-datasegment,a6),d3
 	bne.b	lbC001AC0
-	lea	(lbL000978,pc),a1
+	lea	(ga_disabled_1,pc),a1
 	bra.b	lbC001AC4
 
-lbC001AC0	lea	(lbL000984,pc),a1
+lbC001AC0	lea	(ga_disabled_0,pc),a1
 lbC001AC4	movea.l	(8,a2),a0
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 lbC001ACC	move.w	#$169,d0
 	movem.l	(sp)+,d2/a2
 	rts
 
-lbC001AD6	lea	(lbW001B00,pc),a1
+select_macros_execute
+	lea	(lbW001B00,pc),a1
 	move.w	($C8,a5),d0
-	move.w	d0,(lbB02CF8A-datasegment,a6)
+	move.w	d0,(macros_num-datasegment,a6)
 	add.w	d0,d0
 	adda.w	(a1,d0.w),a1
 	lea	(lbB02CFF8-datasegment,a6),a0
@@ -2556,18 +2533,27 @@ lbC001AD6	lea	(lbW001B00,pc),a1
 	move.l	a3,(lbB02CF86-datasegment,a6)
 	rts
 
-lbW001B00	dw	lbL001B06-lbW001B00
+lbW001B00	dw	lbW001B06-lbW001B00
 	dw	lbW001B2C-lbW001B00
-	dw	lbL001B52-lbW001B00
-lbL001B06	dl	$2E0030
-	dl	$320157
-	dl	$159015B
-	dl	$15D015F
-	dl	$1610163
-	dl	$1650167
-	dl	$1CA01CB
-	dl	$1CC01CD
-	dl	$1CE01CF
+	dw	lbW001B52-lbW001B00
+lbW001B06	dw	$2E
+	dw	$30
+	dw	$32
+	dw	$157
+	dw	$159
+	dw	$15B
+	dw	$15D
+	dw	$15F
+	dw	$161
+	dw	$163
+	dw	$165
+	dw	$167
+	dw	$1CA
+	dw	$1CB
+	dw	$1CC
+	dw	$1CD
+	dw	$1CE
+	dw	$1CF
 	dw	$1D0
 lbW001B2C	dw	$1D1
 	dw	$1D2
@@ -2588,18 +2574,28 @@ lbW001B2C	dw	$1D1
 	dw	$1E1
 	dw	$1E2
 	dw	$1E3
-lbL001B52	dl	$324033A
-	dl	$33B033C
-	dl	$33D033E
-	dl	$33F0340
-	dl	$3410342
-	dl	$3430344
-	dl	$3450346
-	dl	$3470348
-	dl	$349034A
+lbW001B52	dw	$324
+	dw	$33A
+	dw	$33B
+	dw	$33C
+	dw	$33D
+	dw	$33E
+	dw	$33F
+	dw	$340
+	dw	$341
+	dw	$342
+	dw	$343
+	dw	$344
+	dw	$345
+	dw	$346
+	dw	$347
+	dw	$348
+	dw	$349
+	dw	$34A
 	dw	$327
 
-lbC001B78	lea	(lbW001B9A,pc),a1
+select_macros_create
+	lea	(lbW001B9A,pc),a1
 	move.w	($C8,a5),d0
 	add.w	d0,d0
 	adda.w	(a1,d0.w),a1
@@ -2610,38 +2606,65 @@ lbC001B78	lea	(lbW001B9A,pc),a1
 	move.l	a3,(lbB02CF86-datasegment,a6)
 	rts
 
-lbW001B9A	dw	lbL001BA0-lbW001B9A
-	dw	lbL001BC6-lbW001B9A
-	dw	lbL001BEC-lbW001B9A
-lbL001BA0	dl	$2F0031
-	dl	$330158
-	dl	$15A015C
-	dl	$15E0160
-	dl	$1620164
-	dl	$1660168
-	dl	$1E401E5
-	dl	$1E601E7
-	dl	$1E801E9
+lbW001B9A	dw	lbW001BA0-lbW001B9A
+	dw	lbW001BC6-lbW001B9A
+	dw	lbW001BEC-lbW001B9A
+lbW001BA0	dw	$2F
+	dw	$31
+	dw	$33
+	dw	$158
+	dw	$15A
+	dw	$15C
+	dw	$15E
+	dw	$160
+	dw	$162
+	dw	$164
+	dw	$166
+	dw	$168
+	dw	$1E4
+	dw	$1E5
+	dw	$1E6
+	dw	$1E7
+	dw	$1E8
+	dw	$1E9
 	dw	$1EA
-lbL001BC6	dl	$1EB01EC
-	dl	$1ED01EE
-	dl	$1EF01F0
-	dl	$1F101F2
-	dl	$1F301F4
-	dl	$1F501F6
-	dl	$1F701F8
-	dl	$1F901FA
-	dl	$1FB01FC
+lbW001BC6	dw	$1EB
+	dw	$1EC
+	dw	$1ED
+	dw	$1EE
+	dw	$1EF
+	dw	$1F0
+	dw	$1F1
+	dw	$1F2
+	dw	$1F3
+	dw	$1F4
+	dw	$1F5
+	dw	$1F6
+	dw	$1F7
+	dw	$1F8
+	dw	$1F9
+	dw	$1FA
+	dw	$1FB
+	dw	$1FC
 	dw	$1FD
-lbL001BEC	dl	$3230328
-	dl	$329032A
-	dl	$32B032C
-	dl	$32D032E
-	dl	$32F0330
-	dl	$3310332
-	dl	$3330334
-	dl	$3350336
-	dl	$3370338
+lbW001BEC	dw	$323
+	dw	$328
+	dw	$329
+	dw	$32A
+	dw	$32B
+	dw	$32C
+	dw	$32D
+	dw	$32E
+	dw	$32F
+	dw	$330
+	dw	$331
+	dw	$332
+	dw	$333
+	dw	$334
+	dw	$335
+	dw	$336
+	dw	$337
+	dw	$338
 	dw	$339
 
 lbC001C12	movem.l	d2/d3/a0-a5,-(sp)
@@ -2767,7 +2790,7 @@ lbC001D68	movea.l	a5,a1
 	movea.l	(sp)+,a6
 	rts
 
-lbC001D78	movem.l	d2-d6/a2-a5,-(sp)
+openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	(window6ptr-datasegment,a6),d0
 	beq.b	lbC001D8C
 	movea.l	d0,a0
@@ -2783,7 +2806,7 @@ lbC001D8C	move.l	#$10000,d1
 	tst.l	d0
 	beq.w	lbC001EB6
 	movea.l	d0,a5
-	lea	(lbL001F7C,pc),a0
+	lea	(gadgets_options1,pc),a0
 	bsr.w	creategadgets
 	beq.w	lbC001EA6
 	clr.l	-(sp)
@@ -2889,7 +2912,7 @@ lbC001EE4	move.w	(a2)+,d1
 	move.l	d0,-(sp)
 	move.l	#$80080004,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 lbC001F0C	addq.w	#4,a4
 	bra.b	lbC001EE4
@@ -2906,7 +2929,7 @@ lbC001F22	movea.l	(a4),a0
 	move.l	d0,-(sp)
 	move.l	#$8008000F,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	bra.b	lbC001F0C
 
@@ -2944,340 +2967,282 @@ lbW001F3C	dw	0
 	dw	0
 	dw	0
 	dw	$FFFF
-lbL001F7C	dl	$640013
-	dl	$1A000B
-	dl	$BB90000
-	dl	$300000
+gadgets_options1	dw	$64
+	dw	$13
+	dw	$1A
+	dw	11
+	dw	$BB9
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
 	dl	0
-	dw	13
-	dl	lbL0022A2
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$B5
 	dw	$20
 	dw	$1A
 	dw	11
 	dw	$BEA
-	dw	0
-	dw	1
-	dl	lbC0022D2
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_offsets
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$B5
 	dw	$2E
 	dw	$1A
 	dw	11
 	dw	$BEB
-	dw	0
-	dw	1
-	dl	lbC0022E0
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_labels
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$B5
 	dw	$3C
 	dw	$1A
 	dw	11
 	dw	$BEC
-	dw	0
-	dw	1
-	dl	lbC0022EE
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_hlabels
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$B5
 	dw	$4A
 	dw	$1A
 	dw	11
 	dw	10
-	dw	0
-	dw	1
-	dl	lbC0022FC
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_symbols
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$B5
 	dw	$58
 	dw	$1A
 	dw	11
 	dw	$BEE
-	dw	0
-	dw	1
-	dl	lbC00230A
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_eolcomments
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$B5
 	dw	$66
 	dw	$1A
 	dw	11
 	dw	$BEF
-	dw	0
-	dw	1
-	dl	lbC002318
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_flcomments
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$B5
 	dw	$74
 	dw	$1A
 	dw	11
 	dw	$BF0
-	dw	0
-	dw	1
-	dl	lbC002326
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_chipload
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$B5
 	dw	$82
 	dw	$1A
 	dw	11
 	dw	$BF1
-	dw	0
-	dw	1
-	dl	lbC002334
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_sections
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$B5
 	dw	$90
 	dw	$1A
 	dw	11
 	dw	$BF2
-	dw	0
-	dw	1
-	dl	lbC002342
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_end
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$118
 	dw	$13
 	dw	$1A
 	dw	11
 	dw	$BB9
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$172
 	dw	$20
 	dw	$1A
 	dw	11
 	dw	$BF3
-	dw	0
-	dw	1
-	dl	lbC002350
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_dcb
+	dl	2
+	dl	tagdone
 	dw	$172
 	dw	$2E
 	dw	$1A
 	dw	11
 	dw	$BF4
-	dw	0
-	dw	1
-	dl	lbC00235E
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_seplabels
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$172
 	dw	$3C
 	dw	$1A
 	dw	11
 	dw	$BF5
-	dw	0
-	dw	1
-	dl	lbC00236C
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_colons
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$172
 	dw	$4A
 	dw	$1A
 	dw	11
 	dw	$BF6
-	dw	0
-	dw	1
-	dl	lbC00237A
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_zeros
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$172
 	dw	$58
 	dw	$1A
 	dw	11
 	dw	$BF7
-	dw	0
-	dw	1
-	dl	lbC002388
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_constants
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$172
 	dw	$66
 	dw	$1A
 	dw	11
 	dw	$BF8
-	dw	0
-	dw	1
-	dl	lbC002396
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_dcomments
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$172
 	dw	$74
 	dw	$1A
 	dw	11
 	dw	$BF9
-	dw	0
-	dw	1
-	dl	lbC0023A4
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_newsyntax
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$172
 	dw	$82
 	dw	$1A
 	dw	11
 	dw	$BFA
-	dw	0
-	dw	1
-	dl	lbC0023B2
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_strict
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$1CF
 	dw	$13
 	dw	$1A
 	dw	11
 	dw	$BBA
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$220
 	dw	$20
 	dw	$1A
 	dw	11
 	dw	$C4E
-	dw	0
-	dw	1
-	dl	lbC0023C0
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_refrecog
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$220
 	dw	$2E
 	dw	$1A
 	dw	11
 	dw	$C4F
-	dw	0
-	dw	1
-	dl	lbC0023CE
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_autolabels
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$220
 	dw	$3C
 	dw	$1A
 	dw	11
 	dw	$C50
-	dw	0
-	dw	1
-	dl	lbC0023DC
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_equ
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$220
 	dw	$4A
 	dw	$1A
 	dw	11
 	dw	$C51
-	dw	0
-	dw	1
-	dl	lbC0023EA
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_ecomments
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$1D0
 	dw	$65
 	dw	$1A
 	dw	11
 	dw	$BBE
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$220
 	dw	$74
 	dw	$1A
 	dw	11
 	dw	$D48
-	dw	0
-	dw	1
-	dl	lbC0023F8
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_absword
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$220
 	dw	$82
 	dw	$1A
 	dw	11
 	dw	$D49
-	dw	0
-	dw	1
-	dl	lbC002408
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options1_abslong
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$220
 	dw	$90
 	dw	$1A
 	dw	11
 	dw	$D4A
-	dw	0
-	dw	1
-	dl	lbC002418
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options1_optimize
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$12F
 	dw	$94
 	dw	$7E
 	dw	12
 	dw	$D16
-	dw	0
-	dw	$21
-	dl	lbC002428
-	dw	0
-	dw	7
-	dl	lbL00228A
-	dw	0
-	dw	0
-lbL002272	dl	$80080004
+	dl	(PLACETEXT_LEFT|NG_HIGHLABEL)
+	dl	select_options1_assembler
+	dl	CYCLE_KIND
+	dl	gtcy_assembler_tags
+	dl	0
+gtcb_checked_1	dl	GTCB_Checked
 	dl	1
 	dl	0
-lbL00227E	dl	$80080004
+gtcb_checked_0	dl	GTCB_Checked
 	dl	0
 	dl	0
-lbL00228A	dl	$8008000E
-	dl	lbL0022A6
-	dl	$8008000F
+gtcy_assembler_tags	dl	GTCY_Labels
+	dl	assembler_labels
+	dl	GTCY_Active
 	dl	2
-	dl	$80080033
+	dl	GTBB_Recessed
 	dl	0
-lbL0022A2	dl	0
-lbL0022A6	dl	Assem.MSG
+tagdone	dl	0
+assembler_labels	dl	Assem.MSG
 	dl	CAPE68k.MSG
 	dl	Macro68.MSG
 	dl	0
@@ -3285,151 +3250,173 @@ Assem.MSG	db	'Assem',0
 CAPE68k.MSG	db	'C.A.P.E. 68k',0
 Macro68.MSG	db	'Macro68',0,0
 
-lbC0022D2	move.w	#$170,d0
+select_options1_offsets
+	move.w	#$170,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0022DE
 	addq.w	#1,d0
 lbC0022DE	rts
 
-lbC0022E0	move.w	#$17C,d0
+select_options1_labels
+	move.w	#$17C,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0022EC
 	addq.w	#1,d0
 lbC0022EC	rts
 
-lbC0022EE	move.w	#$188,d0
+select_options1_hlabels
+	move.w	#$188,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0022FA
 	addq.w	#1,d0
 lbC0022FA	rts
 
-lbC0022FC	move.w	#$17E,d0
+select_options1_symbols
+	move.w	#$17E,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002308
 	addq.w	#1,d0
 lbC002308	rts
 
-lbC00230A	move.w	#$180,d0
+select_options1_eolcomments
+	move.w	#$180,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002316
 	addq.w	#1,d0
 lbC002316	rts
 
-lbC002318	move.w	#$182,d0
+select_options1_flcomments
+	move.w	#$182,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002324
 	addq.w	#1,d0
 lbC002324	rts
 
-lbC002326	move.w	#$18A,d0
+select_options1_chipload
+	move.w	#$18A,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002332
 	addq.w	#1,d0
 lbC002332	rts
 
-lbC002334	move.w	#$18C,d0
+select_options1_sections
+	move.w	#$18C,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002340
 	addq.w	#1,d0
 lbC002340	rts
 
-lbC002342	move.w	#$18E,d0
+select_options1_end	move.w	#$18E,d0
 	tst.b	(13,a2)
 	bmi.b	lbC00234E
 	addq.w	#1,d0
 lbC00234E	rts
 
-lbC002350	move.w	#$1B0,d0
+select_options1_dcb	move.w	#$1B0,d0
 	tst.b	(13,a2)
 	bmi.b	lbC00235C
 	addq.w	#1,d0
 lbC00235C	rts
 
-lbC00235E	move.w	#$2A5,d0
+select_options1_seplabels
+	move.w	#$2A5,d0
 	tst.b	(13,a2)
 	bmi.b	lbC00236A
 	addq.w	#1,d0
 lbC00236A	rts
 
-lbC00236C	move.w	#$2A7,d0
+select_options1_colons
+	move.w	#$2A7,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002378
 	addq.w	#1,d0
 lbC002378	rts
 
-lbC00237A	move.w	#$29B,d0
+select_options1_zeros
+	move.w	#$29B,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002386
 	subq.w	#1,d0
 lbC002386	rts
 
-lbC002388	move.w	#$2C8,d0
+select_options1_constants
+	move.w	#$2C8,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002394
 	addq.w	#1,d0
 lbC002394	rts
 
-lbC002396	move.w	#$35B,d0
+select_options1_dcomments
+	move.w	#$35B,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0023A2
 	addq.w	#1,d0
 lbC0023A2	rts
 
-lbC0023A4	move.w	#$35E,d0
+select_options1_newsyntax
+	move.w	#$35E,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0023B0
 	subq.w	#1,d0
 lbC0023B0	rts
 
-lbC0023B2	move.w	#$360,d0
+select_options1_strict
+	move.w	#$360,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0023BE
 	subq.w	#1,d0
 lbC0023BE	rts
 
-lbC0023C0	move.w	#$218,d0
+select_options1_refrecog
+	move.w	#$218,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0023CC
 	addq.w	#1,d0
 lbC0023CC	rts
 
-lbC0023CE	move.w	#$2BA,d0
+select_options1_autolabels
+	move.w	#$2BA,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0023DA
 	addq.w	#1,d0
 lbC0023DA	rts
 
-lbC0023DC	move.w	#$37B,d0
+select_options1_equ	move.w	#$37B,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0023E8
 	addq.w	#1,d0
 lbC0023E8	rts
 
-lbC0023EA	move.w	#$3B4,d0
+select_options1_ecomments
+	move.w	#$3B4,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0023F6
 	addq.w	#1,d0
 lbC0023F6	rts
 
-lbC0023F8	move.w	#$362,d0
+select_options1_absword
+	move.w	#$362,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002406
 	move.w	#$3AE,d0
 lbC002406	rts
 
-lbC002408	move.w	#$363,d0
+select_options1_abslong
+	move.w	#$363,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002416
 	move.w	#$3AF,d0
 lbC002416	rts
 
-lbC002418	move.w	#$364,d0
+select_options1_optimize
+	move.w	#$364,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002426
 	move.w	#$3B0,d0
 lbC002426	rts
 
-lbC002428	move.w	d3,d0
+select_options1_assembler
+	move.w	d3,d0
 	add.w	d0,d0
 	move.w	(lbW002432,pc,d0.w),d0
 	rts
@@ -3454,7 +3441,7 @@ lbC002438	move.w	(4,a3),(lbB02CFE6-datasegment,a6)
 	movea.l	(sp)+,a6
 	rts
 
-lbC00246C	movem.l	d2-d6/a2-a5,-(sp)
+openwindow_options2	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	(window7ptr-datasegment,a6),d0
 	beq.b	lbC002480
 	movea.l	d0,a0
@@ -3470,7 +3457,7 @@ lbC002480	move.l	#$10000,d1
 	tst.l	d0
 	beq.w	lbC0025A8
 	movea.l	d0,a5
-	lea	(lbL00262E,pc),a0
+	lea	(gadgets_options2,pc),a0
 	bsr.w	creategadgets
 	beq.w	lbC002598
 	clr.l	-(sp)
@@ -3574,7 +3561,7 @@ lbC0025D6	move.w	(a2)+,d1
 	move.l	d0,-(sp)
 	move.l	#$80080004,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 lbC0025F8	addq.w	#4,a4
 	bra.b	lbC0025D6
@@ -3605,341 +3592,318 @@ lbW0025FE	dw	0
 	dw	0
 	dw	0
 	dw	$FFFF
-lbL00262E	dl	$460013
-	dl	$1A000B
-	dl	$BBB0000
-	dl	$300000
+gadgets_options2	dw	$46
+	dw	$13
+	dw	$1A
+	dw	11
+	dw	$BBB
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
 	dl	0
-	dw	13
-	dl	lbL0022A2
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$8E
 	dw	$20
 	dw	$1A
 	dw	11
 	dw	$C80
-	dw	0
-	dw	1
-	dl	lbC002854
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_beep
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$8E
 	dw	$2E
 	dw	$1A
 	dw	11
 	dw	$C81
-	dw	0
-	dw	1
-	dl	lbC002862
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_feedback
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$8E
 	dw	$3C
 	dw	$1A
 	dw	11
 	dw	$C82
-	dw	0
-	dw	1
-	dl	lbC002870
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options2_delays
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$8E
 	dw	$4A
 	dw	$1A
 	dw	11
 	dw	$C83
-	dw	0
-	dw	1
-	dl	lbC00287E
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_verbose
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$8E
 	dw	$58
 	dw	$1A
 	dw	11
 	dw	$C84
-	dw	0
-	dw	1
-	dl	lbC00288C
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_refresh
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$41
 	dw	$74
 	dw	$1A
 	dw	11
 	dw	$BBD
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$8E
 	dw	$82
 	dw	$1A
 	dw	11
 	dw	$CE4
-	dw	0
-	dw	1
-	dl	lbC00289A
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_pushpop
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$8E
 	dw	$90
 	dw	$1A
 	dw	11
 	dw	$CE5
-	dw	0
-	dw	1
-	dl	lbC0028A8
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_pushmpopm
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$8E
 	dw	$9E
 	dw	$1A
 	dw	11
 	dw	$CE6
-	dw	0
-	dw	1
-	dl	lbC0028B6
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options2_blobhs
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$EF
 	dw	$13
 	dw	$1A
 	dw	11
 	dw	$BBC
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$139
 	dw	$20
 	dw	$1A
 	dw	11
 	dw	$CB2
-	dw	0
-	dw	1
-	dl	lbC0028C4
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_code
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$139
 	dw	$2E
 	dw	$1A
 	dw	11
 	dw	$CB3
-	dw	0
-	dw	1
-	dl	lbC0028D4
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_missing
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$139
 	dw	$3C
 	dw	$1A
 	dw	11
 	dw	$CB4
-	dw	0
-	dw	1
-	dl	lbC0028E4
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_badalign
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$139
 	dw	$4A
 	dw	$1A
 	dw	11
 	dw	$CB5
-	dw	0
-	dw	1
-	dl	lbC0028F4
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_coderef
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$139
 	dw	$58
 	dw	$1A
 	dw	11
 	dw	$CB6
-	dw	0
-	dw	1
-	dl	lbC002904
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_dataref
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$139
 	dw	$66
 	dw	$1A
 	dw	11
 	dw	$CB7
-	dw	0
-	dw	1
-	dl	lbC002914
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_startplus
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$139
 	dw	$74
 	dw	$1A
 	dw	11
 	dw	$CB8
-	dw	0
-	dw	1
-	dl	lbC002924
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_afline
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$139
 	dw	$82
 	dw	$1A
 	dw	11
 	dw	$CB9
-	dw	0
-	dw	1
-	dl	lbC002934
-	dw	0
-	dw	2
-	dl	lbL0022A2
+	dl	PLACETEXT_LEFT
+	dl	select_options2_libcalls
+	dl	CHECKBOX_KIND
+	dl	tagdone
 	dw	$139
 	dw	$90
 	dw	$1A
 	dw	11
 	dw	$CBA
-	dw	0
-	dw	1
-	dl	lbC002944
-	dw	0
-	dw	2
-	dl	lbL002272
+	dl	PLACETEXT_LEFT
+	dl	select_options2_illegal
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
 	dw	$139
 	dw	$9E
 	dw	$1A
 	dw	11
 	dw	$CBB
-	dw	0
-	dw	1
-	dl	lbC002954
-	dw	0
-	dw	2
-	dl	lbL002272
-	dw	0
-	dw	0
+	dl	PLACETEXT_LEFT
+	dl	select_options2_symequ
+	dl	CHECKBOX_KIND
+	dl	gtcb_checked_1
+	dl	0
 
-lbC002854	move.w	#$172,d0
+select_options2_beep
+	move.w	#$172,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002860
 	addq.w	#1,d0
 lbC002860	rts
 
-lbC002862	move.w	#$26,d0
+select_options2_feedback
+	move.w	#$26,d0
 	tst.b	(13,a2)
 	bmi.b	lbC00286E
 	addq.w	#1,d0
 lbC00286E	rts
 
-lbC002870	move.w	#$2A,d0
+select_options2_delays
+	move.w	#$2A,d0
 	tst.b	(13,a2)
 	bmi.b	lbC00287C
 	addq.w	#1,d0
 lbC00287C	rts
 
-lbC00287E	move.w	#$2B3,d0
+select_options2_verbose
+	move.w	#$2B3,d0
 	tst.b	(13,a2)
 	bmi.b	lbC00288A
 	addq.w	#2,d0
 lbC00288A	rts
 
-lbC00288C	move.w	#$675,d0
+select_options2_refresh
+	move.w	#$675,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002898
 	addq.w	#1,d0
 lbC002898	rts
 
-lbC00289A	move.w	#$389,d0
+select_options2_pushpop
+	move.w	#$389,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0028A6
 	addq.w	#1,d0
 lbC0028A6	rts
 
-lbC0028A8	move.w	#$38B,d0
+select_options2_pushmpopm
+	move.w	#$38B,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0028B4
 	addq.w	#1,d0
 lbC0028B4	rts
 
-lbC0028B6	move.w	#$38D,d0
+select_options2_blobhs
+	move.w	#$38D,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0028C2
 	addq.w	#1,d0
 lbC0028C2	rts
 
-lbC0028C4	move.w	#$309,d0
+select_options2_code
+	move.w	#$309,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0028D2
 	move.w	#$3A5,d0
 lbC0028D2	rts
 
-lbC0028D4	move.w	#$30A,d0
+select_options2_missing
+	move.w	#$30A,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0028E2
 	move.w	#$3A6,d0
 lbC0028E2	rts
 
-lbC0028E4	move.w	#$30B,d0
+select_options2_badalign
+	move.w	#$30B,d0
 	tst.b	(13,a2)
 	bmi.b	lbC0028F2
 	move.w	#$3A7,d0
 lbC0028F2	rts
 
-lbC0028F4	move.w	#$30C,d0
+select_options2_coderef
+	move.w	#$30C,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002902
 	move.w	#$3A8,d0
 lbC002902	rts
 
-lbC002904	move.w	#$30D,d0
+select_options2_dataref
+	move.w	#$30D,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002912
 	move.w	#$3A9,d0
 lbC002912	rts
 
-lbC002914	move.w	#$30E,d0
+select_options2_startplus
+	move.w	#$30E,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002922
 	move.w	#$3AA,d0
 lbC002922	rts
 
-lbC002924	move.w	#$30F,d0
+select_options2_afline
+	move.w	#$30F,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002932
 	move.w	#$3AB,d0
 lbC002932	rts
 
-lbC002934	move.w	#$310,d0
+select_options2_libcalls
+	move.w	#$310,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002942
 	move.w	#$3AC,d0
 lbC002942	rts
 
-lbC002944	move.w	#$311,d0
+select_options2_illegal
+	move.w	#$311,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002952
 	move.w	#$3AD,d0
 lbC002952	rts
 
-lbC002954	move.w	#$379,d0
+select_options2_symequ
+	move.w	#$379,d0
 	tst.b	(13,a2)
 	bmi.b	lbC002962
 	move.w	#$3B1,d0
@@ -3975,24 +3939,24 @@ creategadgets	movem.l	d2/a2-a4,-(sp)
 	moveq	#0,d2
 lbC0029BA	lea	(4,a5),a1
 	movea.l	a1,a2
-	move.w	(a3)+,(a2)+
-	move.w	(a3)+,(a2)+
-	move.w	(a3)+,(a2)+
-	move.w	(a3)+,(a2)+
+	move.w	(a3)+,(a2)+	;LeftEdge
+	move.w	(a3)+,(a2)+	;TopEdge
+	move.w	(a3)+,(a2)+	;Width
+	move.w	(a3)+,(a2)+	;Height
 	moveq	#0,d0
-	move.w	(a3)+,d0
+	move.w	(a3)+,d0	;text number
 	beq.b	lbC0029D2
 	jsr	(gettextbynum-datasegment,a6)
-lbC0029D2	move.l	d0,(a2)+
-	lea	(lbL01E428).l,a0
-	move.l	a0,(a2)+
-	move.w	d2,(a2)+
-	move.l	(a3)+,(a2)+
-	move.l	(lbB02CEE4-datasegment,a6),(a2)+
-	move.l	(a3)+,(a2)
-	move.l	(a3)+,d0
-	movea.l	(-4,a4),a0
-	movea.l	(a3)+,a2
+lbC0029D2	move.l	d0,(a2)+	;GadgetText
+	lea	(topas_TextAttr).l,a0
+	move.l	a0,(a2)+	;TextAttr
+	move.w	d2,(a2)+	;GadgetID
+	move.l	(a3)+,(a2)+	;Flags
+	move.l	(visualinfo-datasegment,a6),(a2)+	;VisualInfo
+	move.l	(a3)+,(a2)	;UserData
+	move.l	(a3)+,d0	;gadget kind
+	movea.l	(-4,a4),a0	;previous
+	movea.l	(a3)+,a2	;tags
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-datasegment,a6),a6
 	jsr	(_LVOCreateGadgetA,a6)
@@ -4113,7 +4077,7 @@ lbC002B08	move.l	d0,-(sp)
 	movem.l	(sp)+,a2-a6
 	rts
 
-setgadget2	movem.l	a2/a3/a6,-(sp)
+SetGadgetAttrs	movem.l	a2/a3/a6,-(sp)
 	exg	a3,a1
 	suba.l	a2,a2
 	movea.l	(gadtoolsbase-datasegment,a6),a6
@@ -4688,7 +4652,7 @@ lbC00323A	jsr	(savecommonregs-datasegment,a6)
 	beq.b	lbC0032A6
 	clr.b	(lbL02EB80-datasegment,a6)
 	moveq	#0,d0
-	lea	(lbL013A52).l,a0
+	lea	(lbW013A52).l,a0
 	lea	(lbW012978).l,a1
 lbC003256	moveq	#0,d0
 	move.b	(a0)+,d1
@@ -4712,7 +4676,7 @@ lbC003274	move.b	-(a5),-(a3)
 lbC00327C	move.b	(a0)+,d1
 	beq.b	lbC00329E
 	addq.b	#1,d0
-	btst	#5,(BLPAQRSTUWFD.MSG-datasegment,a6)
+	btst	#5,(B.MSG-datasegment,a6)
 	beq.b	lbC00329A
 	cmpi.b	#$41,d1
 	bcs.b	lbC00329A
@@ -4738,7 +4702,7 @@ lbC0032B4	jsr	(savecommonregs-datasegment,a6)
 	bne.b	lbC0032FA
 	st	(lbL02EB80-datasegment,a6)
 	moveq	#0,d0
-	lea	(lbL013A52).l,a0
+	lea	(lbW013A52).l,a0
 	lea	(lbW012978).l,a1
 lbC0032D0	moveq	#0,d0
 	move.b	(a0)+,d1
@@ -4917,7 +4881,7 @@ lbC003538	st	(lbB02B46C-datasegment,a6)
 	bra.b	lbC00354A
 
 lbC003542	clr.b	(lbB02B46C-datasegment,a6)
-	lea	(CCCSPr.MSG,pc),a0
+	lea	(CCCS.MSG,pc),a0
 lbC00354A	lea	(CCCSNEEQVCVSP.MSG-datasegment,a6),a1
 	bsr.b	lbC003560
 	lea	(CCCSNEEQVCVSP.MSG0-datasegment,a6),a1
@@ -4936,7 +4900,7 @@ lbC003562	moveq	#$20,d1
 	rts
 
 HSLO.MSG	db	'HSLO'
-CCCSPr.MSG	db	'CCCS'
+CCCS.MSG	db	'CCCS'
 
 lbC00357A	st	(lbB02B460-datasegment,a6)
 	moveq	#8,d1
@@ -5065,7 +5029,7 @@ lbC0036B8	move.w	(a0)+,d0
 	jsr	(gettextbynum-datasegment,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC0036B8
-	lea	(lbL003B2C,pc),a0
+	lea	(gadgets_zap2,pc),a0
 	bsr.w	creategadgets
 	beq.w	lbC0039EC
 	clr.l	-(sp)
@@ -5122,8 +5086,8 @@ lbC0036B8	move.w	(a0)+,d0
 	move.l	d0,($A6,a5)
 	bne.b	lbC0037A4
 	movea.l	(4,a2),a0
-	lea	(lbL000978,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_1,pc),a1
+	bsr.w	SetGadgetAttrs
 	bra.b	lbC0037D8
 
 lbC0037A4	btst	#7,d4
@@ -5134,11 +5098,11 @@ lbC0037A4	btst	#7,d4
 	clr.l	-(sp)
 	move.l	#$8008000F,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	movea.l	(12,a2),a0
-	lea	(lbL000978,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_1,pc),a1
+	bsr.w	SetGadgetAttrs
 	bsr.w	lbC003C4A
 	bra.b	lbC003820
 
@@ -5164,7 +5128,7 @@ lbC003800	move.b	d2,($AD,a5)
 	move.l	d2,-(sp)
 	move.l	#$8008000F,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 lbC00381C	bsr.w	lbC003CD0
 lbC003820	moveq	#0,d4
@@ -5464,113 +5428,101 @@ lbW003ABE	dw	$AFCA
 	dw	$AFFE
 	dw	$AFFF
 	dw	$B000
-lbL003B2C	dl	$240025
-	dl	$280008
-	dl	$DAD0000
-	dl	$300000
+gadgets_zap2	dw	$24
+	dw	$25
+	dw	$28
+	dw	8
+	dw	$DAD
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
 	dl	0
-	dw	13
-	dl	lbL0022A2
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$24
 	dw	$31
 	dw	$64
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC003C1A
-	dw	0
-	dw	7
-	dl	lbL003BEA
+	dl	0
+	dl	select_zap2_mode
+	dl	CYCLE_KIND
+	dl	tags_zap2_mode
 	dw	$DB
 	dw	$25
 	dw	$50
 	dw	8
 	dw	$DB0
-	dw	0
-	dw	$30
-	dw	0
-	dw	0
-	dw	0
-	dw	13
-	dl	lbL0022A2
+	dl	(PLACETEXT_IN|NG_HIGHLABEL)
+	dl	0
+	dl	TEXT_KIND
+	dl	tagdone
 	dw	$DB
 	dw	$31
 	dw	$64
 	dw	12
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC003CC6
-	dw	0
-	dw	7
-	dl	lbL003C06
+	dl	0
+	dl	select_zap2_type
+	dl	CYCLE_KIND
+	dl	tags_zap2_type
 	dw	$19
 	dw	$11
 	dw	$130
 	dw	14
 	dw	0
-	dw	0
-	dw	0
-	dl	lbC003D2C
-	dw	0
-	dw	12
-	dl	lbL001464
+	dl	0
+	dl	select_zap2_string
+	dl	STRING_KIND
+	dl	gtst_tags
 	dw	$11
 	dw	$46
 	dw	$48
 	dw	12
 	dw	4
-	dw	0
-	dw	$10
-	dl	lbC003D2E
-	dw	0
-	dw	1
-	dl	lbL0022A2
+	dl	PLACETEXT_IN
+	dl	select_zap2_use
+	dl	BUTTON_KIND
+	dl	tagdone
 	dw	$105
 	dw	$46
 	dw	$48
 	dw	12
 	dw	3
-	dw	0
-	dw	$10
-	dl	lbC003D34
-	dw	0
-	dw	1
-	dl	lbL0022A2
-	dw	0
-	dw	0
+	dl	PLACETEXT_IN
+	dl	select_zap2_cancel
+	dl	BUTTON_KIND
+	dl	tagdone
+	dl	0
 lbW003BE6	dw	$DAE
 	dw	$DAF
-lbL003BEA	dl	$8008000E
+tags_zap2_mode	dl	GTCY_Labels
 	dl	lbL02D04E
-	dl	$8008000F
+	dl	GTCY_Active
 	dl	1
 	dl	0
 lbW003BFE	dw	$DB1
 	dw	$DB2
 	dw	$DB3
 	dw	$DB4
-lbL003C06	dl	$8008000E
+tags_zap2_type	dl	GTCY_Labels
 	dl	lbL02D05A
-	dl	$8008000F
+	dl	GTCY_Active
 	dl	3
 	dl	0
 
-lbC003C1A	cmp.b	($AC,a5),d2
+select_zap2_mode	cmp.b	($AC,a5),d2
 	beq.w	lbC003CC4
 	lea	($2A,a5),a2
 	movea.l	(12,a2),a0
 	move.b	d2,($AC,a5)
 	beq.b	lbC003C42
-	lea	(lbL000984,pc),a1
-	bsr.w	setgadget2
+	lea	(ga_disabled_0,pc),a1
+	bsr.w	SetGadgetAttrs
 	moveq	#0,d2
 	move.b	($AD,a5),d2
 	bra.w	lbC003CD0
 
-lbC003C42	lea	(lbL000978,pc),a1
-	bsr.w	setgadget2
+lbC003C42	lea	(ga_disabled_1,pc),a1
+	bsr.w	SetGadgetAttrs
 lbC003C4A	movem.l	d3-d7/a2-a5,-(sp)
 	movem.l	(lbL02D070-datasegment,a6),a2/a3
 	st	(lbL02EBF8-datasegment,a6)
@@ -5606,11 +5558,11 @@ lbC003CA6	clr.b	(a1)
 	move.l	a2,-(sp)
 	move.l	#$8008002D,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 lbC003CC4	rts
 
-lbC003CC6	cmp.b	($AD,a5),d2
+select_zap2_type	cmp.b	($AD,a5),d2
 	beq.b	lbC003D2A
 	move.b	d2,($AD,a5)
 lbC003CD0	lea	(lbB02D6BC-datasegment,a6),a2
@@ -5643,17 +5595,17 @@ lbC003D0E	lea	($2A,a5),a0
 	move.l	a2,-(sp)
 	move.l	#$8008002D,-(sp)
 	movea.l	sp,a1
-	bsr.w	setgadget2
+	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 lbC003D2A	rts
 
-lbC003D2C	rts
+select_zap2_string	rts
 
-lbC003D2E	moveq	#1,d5
+select_zap2_use	moveq	#1,d5
 	moveq	#1,d4
 	rts
 
-lbC003D34	moveq	#0,d5
+select_zap2_cancel	moveq	#0,d5
 	moveq	#1,d4
 	rts
 
@@ -11205,35 +11157,43 @@ autorequest	movem.l	d2/d3/a2/a3/a6,-(sp)
 	movea.l	(4).w,a6
 	jsr	(_LVOOpenLibrary,a6)
 	tst.l	d0
-	beq.b	lbC00AFCA
+	beq.b	.noint
 	movea.l	d0,a6
-	suba.l	a0,a0
-	lea	(lbL00AFE8,pc),a1
-	suba.l	a2,a2
-	lea	(lbL00AFD0,pc),a3
-	moveq	#0,d0
-	moveq	#0,d1
-	move.l	#$142,d2
-	moveq	#$33,d3
+	suba.l	a0,a0	;window
+	lea	(.bodytext,pc),a1
+	suba.l	a2,a2	;postext
+	lea	(.negtext,pc),a3
+	moveq	#0,d0	;posflags
+	moveq	#0,d1	;negflags
+	move.l	#$142,d2	;width
+	moveq	#$33,d3	;height
 	jsr	(_LVOAutoRequest,a6)
 	movea.l	a6,a1
 	movea.l	(4).w,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC00AFCA	movem.l	(sp)+,d2/d3/a2/a3/a6
+.noint	movem.l	(sp)+,d2/d3/a2/a3/a6
 	rts
 
-lbL00AFD0	dl	$10200
-	dl	$60003
+.negtext	db	0
+	db	1
+	db	2
+	db	0
+	dw	6
+	dw	3
 	dl	0
-	dl	OK.MSG
+	dl	.negtext_text
 	dl	0
-OK.MSG	db	'OK',0,0
-lbL00AFE8	dl	$10000
-	dl	$50003
+.negtext_text	db	'OK',0,0
+.bodytext	db	0
+	db	1
+	db	0
+	db	0
+	dw	5
+	dw	3
 	dl	0
-	dl	ReSourcerequi.MSG
+	dl	.bodytext_text
 	dl	0
-ReSourcerequi.MSG	db	'ReSource requires OS V2.04 or later.',0,0
+.bodytext_text	db	'ReSource requires OS V2.04 or later.',0,0
 
 openlib	movem.l	d2-d7/a2-a6,-(sp)
 	movea.l	a6,a5
@@ -11524,7 +11484,7 @@ lbC00B3A6	move.w	#$1F43,d0
 	jmp	(lbC02A436-datasegment,a6)
 
 lbC00B3B8	addq.l	#2,a0
-lbC00B3BA	jsr	(lbC029F24-datasegment,a6)
+lbC00B3BA	jsr	(_SetPointerAll-datasegment,a6)
 	move.w	#$1F44,d0
 	jsr	(gettextbynum-datasegment,a6)
 	move.l	d0,(lbB02D124-datasegment,a6)
@@ -11907,7 +11867,7 @@ lbC00B878	jsr	(lbC02727C-datasegment,a6)
 	clr.b	(lbB02EB40-datasegment,a6)
 	clr.b	(lbB02D39B-datasegment,a6)
 	clr.b	(lbB02EAD5-datasegment,a6)
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	(lbL02B47C-datasegment,a6),d2
 	jsr	(_Examine-datasegment,a6)
 	move.l	d0,-(sp)
@@ -13066,7 +13026,7 @@ lbC00C648	move.l	d0,d6
 	move.l	d5,d0
 	cmpi.b	#$AE,d6
 	bne.b	lbC00C6E0
-	move.l	(lbL02CE44-datasegment,a6),d0
+	move.l	(kickstart_adr-datasegment,a6),d0
 	clr.l	(lbL02D11C-datasegment,a6)
 	bra.b	lbC00C6EC
 
@@ -13114,7 +13074,7 @@ lbC00C6EC	move.l	d5,(lbB02B4A8-datasegment,a6)
 	bls.b	lbC00C7C6
 	cmpi.l	#$FFFFFF,d2
 	bhi.b	lbC00C7C6
-	cmp.l	(lbL02CE44-datasegment,a6),d3
+	cmp.l	(kickstart_adr-datasegment,a6),d3
 	bls.b	lbC00C7C6
 	cmpi.l	#$1000000,d3
 	bhi.b	lbC00C7C6
@@ -13304,7 +13264,7 @@ lbC00C9C0	tst.b	(lbB02EB37-datasegment,a6)
 	move.l	(lbB02D0E0-datasegment,a6),d1
 lbC00C9D8	rts
 
-lbC00C9DA	jsr	(lbC029F24-datasegment,a6)
+lbC00C9DA	jsr	(_SetPointerAll-datasegment,a6)
 	move.w	#$1F46,d0
 	jsr	(gettextbynum-datasegment,a6)
 	move.l	d0,(lbB02D124-datasegment,a6)
@@ -13340,7 +13300,7 @@ lbC00C9DA	jsr	(lbC029F24-datasegment,a6)
 	move.b	#$4B,(a0)+
 	clr.b	(a0)
 	st	(lbB02EB47-datasegment,a6)
-	move.l	(lbL02CE44-datasegment,a6),d0
+	move.l	(kickstart_adr-datasegment,a6),d0
 	move.l	d0,(datasegment-datasegment,a6)
 	move.l	d0,(lbL02A898-datasegment,a6)
 	clr.l	(lbL02D0C8-datasegment,a6)
@@ -13445,758 +13405,2758 @@ lbL00CAF4	dl	$8040C0
 	dl	$2FAF6FEF
 	dl	$1F9F5FDF
 	dl	$3FBF7FFF
-lbL00CBF4	dl	$2000200
-	dl	$2030206
-	dl	$20C020F
-	dl	$215021B
-	dl	$2210224
-	dl	$22A0230
-	dl	$239023F
-	dl	$248024E
-	dl	$2540257
-	dl	$25D0263
-	dl	$26C0272
-	dl	$27B0284
-	dl	$28D0293
-	dl	$29C02A5
-	dl	$2B102B7
-	dl	$2C002C6
-	dl	$2CC02CF
-	dl	$2D502DB
-	dl	$2E402EA
-	dl	$2F302FC
-	dl	$305030B
-	dl	$314031D
-	dl	$3290332
-	dl	$33E0347
-	dl	$3500356
-	dl	$35F0368
-	dl	$374037D
-	dl	$3890395
-	dl	$3A103A7
-	dl	$3B003B9
-	dl	$3C503CB
-	dl	$3D403DA
-	dl	$3E003E3
-	dl	$3E903EF
-	dl	$3F803FE
-	dl	$4070410
-	dl	$419041F
-	dl	$4280431
-	dl	$43D0446
-	dl	$452045B
-	dl	$464046A
-	dl	$473047C
-	dl	$4880491
-	dl	$49D04A9
-	dl	$4B504BE
-	dl	$4CA04D6
-	dl	$4E504EE
-	dl	$4FA0503
-	dl	$50C0512
-	dl	$51B0524
-	dl	$5300539
-	dl	$5450551
-	dl	$55D0566
-	dl	$572057E
-	dl	$58D0599
-	dl	$5A805B4
-	dl	$5C005C6
-	dl	$5CF05D8
-	dl	$5E405ED
-	dl	$5F90605
-	dl	$6110617
-	dl	$6200629
-	dl	$635063B
-	dl	$644064A
-	dl	$6500653
-	dl	$659065F
-	dl	$668066E
-	dl	$6770680
-	dl	$689068F
-	dl	$69806A1
-	dl	$6AD06B6
-	dl	$6C206CB
-	dl	$6D406DA
-	dl	$6E306EC
-	dl	$6F80701
-	dl	$70D0719
-	dl	$725072E
-	dl	$73A0746
-	dl	$755075E
-	dl	$76A0773
-	dl	$77C0782
-	dl	$78B0794
-	dl	$7A007A9
-	dl	$7B507C1
-	dl	$7CD07D6
-	dl	$7E207EE
-	dl	$7FD0809
-	dl	$8180824
-	dl	$8300839
-	dl	$8450851
-	dl	$860086C
-	dl	$87B088A
-	dl	$89908A2
-	dl	$8AE08BA
-	dl	$8C908D2
-	dl	$8DE08E7
-	dl	$8F008F6
-	dl	$8FF0908
-	dl	$914091D
-	dl	$9290935
-	dl	$941094A
-	dl	$9560962
-	dl	$971097D
-	dl	$98C0998
-	dl	$9A409AD
-	dl	$9B909C5
-	dl	$9D409E0
-	dl	$9EF09FE
-	dl	$A0D0A19
-	dl	$A280A37
-	dl	$A490A55
-	dl	$A640A70
-	dl	$A7C0A82
-	dl	$A8B0A94
-	dl	$AA00AA9
-	dl	$AB50AC1
-	dl	$ACD0AD6
-	dl	$AE20AEE
-	dl	$AFD0B09
-	dl	$B180B24
-	dl	$B300B36
-	dl	$B3F0B48
-	dl	$B540B5D
-	dl	$B690B75
-	dl	$B810B87
-	dl	$B900B99
-	dl	$BA50BAB
-	dl	$BB40BBA
-	dl	$80370080
-	dl	$36008036
-	dl	$2F803700
-	dl	$80350080
-	dl	$352F8037
-	dl	$80352F
-	dl	$80360080
-	dl	$352D8037
-	dl	$803400
-	dl	$80342F80
-	dl	$37008034
-	dl	$2F803600
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80342F
-	dl	$80350080
-	dl	$342F8035
-	dl	$2F803700
-	dl	$80342D80
-	dl	$36008034
-	dl	$2D803700
-	dl	$80330080
-	dl	$332F8037
-	dl	$80332F
-	dl	$80360080
-	dl	$332F8036
-	dl	$2F803700
-	dl	$80332F80
-	dl	$35008033
-	dl	$2F80352F
-	dl	$80370080
-	dl	$332F8035
-	dl	$2F803600
-	dl	$80332F80
-	dl	$352D8037
-	dl	$80332F
-	dl	$80340080
-	dl	$332F8034
-	dl	$2F803700
-	dl	$80332F80
-	dl	$342F8036
-	dl	$80332F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80332D
-	dl	$80350080
-	dl	$332D8035
-	dl	$2F803700
-	dl	$80332D80
-	dl	$36008033
-	dl	$2D803700
-	dl	$80320080
-	dl	$322F8037
-	dl	$80322F
-	dl	$80360080
-	dl	$322F8036
-	dl	$2F803700
-	dl	$80322F80
-	dl	$35008032
-	dl	$2F80352F
-	dl	$80370080
-	dl	$322F8035
-	dl	$2F803600
-	dl	$80322F80
-	dl	$352D8037
-	dl	$80322F
-	dl	$80340080
-	dl	$322F8034
-	dl	$2F803700
-	dl	$80322F80
-	dl	$342F8036
-	dl	$80322F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80322F
-	dl	$80342F80
-	dl	$35008032
-	dl	$2F80342F
-	dl	$80352F80
-	dl	$37008032
-	dl	$2F80342D
-	dl	$80360080
-	dl	$322F8034
-	dl	$2D803700
-	dl	$80322F80
-	dl	$33008032
-	dl	$2F80332F
-	dl	$80370080
-	dl	$322F8033
-	dl	$2F803600
-	dl	$80322F80
-	dl	$332F8036
-	dl	$2F803700
-	dl	$80322F80
-	dl	$332F8035
-	dl	$80322F
-	dl	$80332F80
-	dl	$352F8037
-	dl	$80322F
-	dl	$80332F80
-	dl	$352F8036
-	dl	$80322F
-	dl	$80332F80
-	dl	$352D8037
-	dl	$80322D
-	dl	$80340080
-	dl	$322D8034
-	dl	$2F803700
-	dl	$80322D80
-	dl	$342F8036
-	dl	$80322D
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80322D
-	dl	$80350080
-	dl	$322D8035
-	dl	$2F803700
-	dl	$80322D80
-	dl	$36008032
-	dl	$2D803700
-	dl	$80310080
-	dl	$312F8037
-	dl	$80312F
-	dl	$80360080
-	dl	$312F8036
-	dl	$2F803700
-	dl	$80312F80
-	dl	$35008031
-	dl	$2F80352F
-	dl	$80370080
-	dl	$312F8035
-	dl	$2F803600
-	dl	$80312F80
-	dl	$352D8037
-	dl	$80312F
-	dl	$80340080
-	dl	$312F8034
-	dl	$2F803700
-	dl	$80312F80
-	dl	$342F8036
-	dl	$80312F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80312F
-	dl	$80342F80
-	dl	$35008031
-	dl	$2F80342F
-	dl	$80352F80
-	dl	$37008031
-	dl	$2F80342D
-	dl	$80360080
-	dl	$312F8034
-	dl	$2D803700
-	dl	$80312F80
-	dl	$33008031
-	dl	$2F80332F
-	dl	$80370080
-	dl	$312F8033
-	dl	$2F803600
-	dl	$80312F80
-	dl	$332F8036
-	dl	$2F803700
-	dl	$80312F80
-	dl	$332F8035
-	dl	$80312F
-	dl	$80332F80
-	dl	$352F8037
-	dl	$80312F
-	dl	$80332F80
-	dl	$352F8036
-	dl	$80312F
-	dl	$80332F80
-	dl	$352D8037
-	dl	$80312F
-	dl	$80332F80
-	dl	$34008031
-	dl	$2F80332F
-	dl	$80342F80
-	dl	$37008031
-	dl	$2F80332F
-	dl	$80342F80
-	dl	$36008031
-	dl	$2F80332F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80312F
-	dl	$80332D80
-	dl	$35008031
-	dl	$2F80332D
-	dl	$80352F80
-	dl	$37008031
-	dl	$2F80332D
-	dl	$80360080
-	dl	$312F8033
-	dl	$2D803700
-	dl	$80312F80
-	dl	$32008031
-	dl	$2F80322F
-	dl	$80370080
-	dl	$312F8032
-	dl	$2F803600
-	dl	$80312F80
-	dl	$322F8036
-	dl	$2F803700
-	dl	$80312F80
-	dl	$322F8035
-	dl	$80312F
-	dl	$80322F80
-	dl	$352F8037
-	dl	$80312F
-	dl	$80322F80
-	dl	$352F8036
-	dl	$80312F
-	dl	$80322F80
-	dl	$352D8037
-	dl	$80312F
-	dl	$80322F80
-	dl	$34008031
-	dl	$2F80322F
-	dl	$80342F80
-	dl	$37008031
-	dl	$2F80322F
-	dl	$80342F80
-	dl	$36008031
-	dl	$2F80322F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80312F
-	dl	$80322F80
-	dl	$342F8035
-	dl	$80312F
-	dl	$80322F80
-	dl	$342F8035
-	dl	$2F803700
-	dl	$80312F80
-	dl	$322F8034
-	dl	$2D803600
-	dl	$80312F80
-	dl	$322F8034
-	dl	$2D803700
-	dl	$80312D80
-	dl	$33008031
-	dl	$2D80332F
-	dl	$80370080
-	dl	$312D8033
-	dl	$2F803600
-	dl	$80312D80
-	dl	$332F8036
-	dl	$2F803700
-	dl	$80312D80
-	dl	$332F8035
-	dl	$80312D
-	dl	$80332F80
-	dl	$352F8037
-	dl	$80312D
-	dl	$80332F80
-	dl	$352F8036
-	dl	$80312D
-	dl	$80332F80
-	dl	$352D8037
-	dl	$80312D
-	dl	$80340080
-	dl	$312D8034
-	dl	$2F803700
-	dl	$80312D80
-	dl	$342F8036
-	dl	$80312D
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80312D
-	dl	$80350080
-	dl	$312D8035
-	dl	$2F803700
-	dl	$80312D80
-	dl	$36008031
-	dl	$2D803700
-	dl	$80300080
-	dl	$302F8037
-	dl	$80302F
-	dl	$80360080
-	dl	$302F8036
-	dl	$2F803700
-	dl	$80302F80
-	dl	$35008030
-	dl	$2F80352F
-	dl	$80370080
-	dl	$302F8035
-	dl	$2F803600
-	dl	$80302F80
-	dl	$352D8037
-	dl	$80302F
-	dl	$80340080
-	dl	$302F8034
-	dl	$2F803700
-	dl	$80302F80
-	dl	$342F8036
-	dl	$80302F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80302F
-	dl	$80342F80
-	dl	$35008030
-	dl	$2F80342F
-	dl	$80352F80
-	dl	$37008030
-	dl	$2F80342D
-	dl	$80360080
-	dl	$302F8034
-	dl	$2D803700
-	dl	$80302F80
-	dl	$33008030
-	dl	$2F80332F
-	dl	$80370080
-	dl	$302F8033
-	dl	$2F803600
-	dl	$80302F80
-	dl	$332F8036
-	dl	$2F803700
-	dl	$80302F80
-	dl	$332F8035
-	dl	$80302F
-	dl	$80332F80
-	dl	$352F8037
-	dl	$80302F
-	dl	$80332F80
-	dl	$352F8036
-	dl	$80302F
-	dl	$80332F80
-	dl	$352D8037
-	dl	$80302F
-	dl	$80332F80
-	dl	$34008030
-	dl	$2F80332F
-	dl	$80342F80
-	dl	$37008030
-	dl	$2F80332F
-	dl	$80342F80
-	dl	$36008030
-	dl	$2F80332F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80302F
-	dl	$80332D80
-	dl	$35008030
-	dl	$2F80332D
-	dl	$80352F80
-	dl	$37008030
-	dl	$2F80332D
-	dl	$80360080
-	dl	$302F8033
-	dl	$2D803700
-	dl	$80302F80
-	dl	$32008030
-	dl	$2F80322F
-	dl	$80370080
-	dl	$302F8032
-	dl	$2F803600
-	dl	$80302F80
-	dl	$322F8036
-	dl	$2F803700
-	dl	$80302F80
-	dl	$322F8035
-	dl	$80302F
-	dl	$80322F80
-	dl	$352F8037
-	dl	$80302F
-	dl	$80322F80
-	dl	$352F8036
-	dl	$80302F
-	dl	$80322F80
-	dl	$352D8037
-	dl	$80302F
-	dl	$80322F80
-	dl	$34008030
-	dl	$2F80322F
-	dl	$80342F80
-	dl	$37008030
-	dl	$2F80322F
-	dl	$80342F80
-	dl	$36008030
-	dl	$2F80322F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80302F
-	dl	$80322F80
-	dl	$342F8035
-	dl	$80302F
-	dl	$80322F80
-	dl	$342F8035
-	dl	$2F803700
-	dl	$80302F80
-	dl	$322F8034
-	dl	$2D803600
-	dl	$80302F80
-	dl	$322F8034
-	dl	$2D803700
-	dl	$80302F80
-	dl	$322F8033
-	dl	$80302F
-	dl	$80322F80
-	dl	$332F8037
-	dl	$80302F
-	dl	$80322F80
-	dl	$332F8036
-	dl	$80302F
-	dl	$80322F80
-	dl	$332F8036
-	dl	$2F803700
-	dl	$80302F80
-	dl	$322F8033
-	dl	$2F803500
-	dl	$80302F80
-	dl	$322F8033
-	dl	$2F80352F
-	dl	$80370080
-	dl	$302F8032
-	dl	$2F80332F
-	dl	$80352F80
-	dl	$36008030
-	dl	$2F80322F
-	dl	$80332F80
-	dl	$352D8037
-	dl	$80302F
-	dl	$80322D80
-	dl	$34008030
-	dl	$2F80322D
-	dl	$80342F80
-	dl	$37008030
-	dl	$2F80322D
-	dl	$80342F80
-	dl	$36008030
-	dl	$2F80322D
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80302F
-	dl	$80322D80
-	dl	$35008030
-	dl	$2F80322D
-	dl	$80352F80
-	dl	$37008030
-	dl	$2F80322D
-	dl	$80360080
-	dl	$302F8032
-	dl	$2D803700
-	dl	$80302F80
-	dl	$31008030
-	dl	$2F80312F
-	dl	$80370080
-	dl	$302F8031
-	dl	$2F803600
-	dl	$80302F80
-	dl	$312F8036
-	dl	$2F803700
-	dl	$80302F80
-	dl	$312F8035
-	dl	$80302F
-	dl	$80312F80
-	dl	$352F8037
-	dl	$80302F
-	dl	$80312F80
-	dl	$352F8036
-	dl	$80302F
-	dl	$80312F80
-	dl	$352D8037
-	dl	$80302F
-	dl	$80312F80
-	dl	$34008030
-	dl	$2F80312F
-	dl	$80342F80
-	dl	$37008030
-	dl	$2F80312F
-	dl	$80342F80
-	dl	$36008030
-	dl	$2F80312F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80302F
-	dl	$80312F80
-	dl	$342F8035
-	dl	$80302F
-	dl	$80312F80
-	dl	$342F8035
-	dl	$2F803700
-	dl	$80302F80
-	dl	$312F8034
-	dl	$2D803600
-	dl	$80302F80
-	dl	$312F8034
-	dl	$2D803700
-	dl	$80302F80
-	dl	$312F8033
-	dl	$80302F
-	dl	$80312F80
-	dl	$332F8037
-	dl	$80302F
-	dl	$80312F80
-	dl	$332F8036
-	dl	$80302F
-	dl	$80312F80
-	dl	$332F8036
-	dl	$2F803700
-	dl	$80302F80
-	dl	$312F8033
-	dl	$2F803500
-	dl	$80302F80
-	dl	$312F8033
-	dl	$2F80352F
-	dl	$80370080
-	dl	$302F8031
-	dl	$2F80332F
-	dl	$80352F80
-	dl	$36008030
-	dl	$2F80312F
-	dl	$80332F80
-	dl	$352D8037
-	dl	$80302F
-	dl	$80312F80
-	dl	$332F8034
-	dl	$80302F
-	dl	$80312F80
-	dl	$332F8034
-	dl	$2F803700
-	dl	$80302F80
-	dl	$312F8033
-	dl	$2F80342F
-	dl	$80360080
-	dl	$302F8031
-	dl	$2F80332F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80302F
-	dl	$80312F80
-	dl	$332D8035
-	dl	$80302F
-	dl	$80312F80
-	dl	$332D8035
-	dl	$2F803700
-	dl	$80302F80
-	dl	$312F8033
-	dl	$2D803600
-	dl	$80302F80
-	dl	$312F8033
-	dl	$2D803700
-	dl	$80302D80
-	dl	$32008030
-	dl	$2D80322F
-	dl	$80370080
-	dl	$302D8032
-	dl	$2F803600
-	dl	$80302D80
-	dl	$322F8036
-	dl	$2F803700
-	dl	$80302D80
-	dl	$322F8035
-	dl	$80302D
-	dl	$80322F80
-	dl	$352F8037
-	dl	$80302D
-	dl	$80322F80
-	dl	$352F8036
-	dl	$80302D
-	dl	$80322F80
-	dl	$352D8037
-	dl	$80302D
-	dl	$80322F80
-	dl	$34008030
-	dl	$2D80322F
-	dl	$80342F80
-	dl	$37008030
-	dl	$2D80322F
-	dl	$80342F80
-	dl	$36008030
-	dl	$2D80322F
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80302D
-	dl	$80322F80
-	dl	$342F8035
-	dl	$80302D
-	dl	$80322F80
-	dl	$342F8035
-	dl	$2F803700
-	dl	$80302D80
-	dl	$322F8034
-	dl	$2D803600
-	dl	$80302D80
-	dl	$322F8034
-	dl	$2D803700
-	dl	$80302D80
-	dl	$33008030
-	dl	$2D80332F
-	dl	$80370080
-	dl	$302D8033
-	dl	$2F803600
-	dl	$80302D80
-	dl	$332F8036
-	dl	$2F803700
-	dl	$80302D80
-	dl	$332F8035
-	dl	$80302D
-	dl	$80332F80
-	dl	$352F8037
-	dl	$80302D
-	dl	$80332F80
-	dl	$352F8036
-	dl	$80302D
-	dl	$80332F80
-	dl	$352D8037
-	dl	$80302D
-	dl	$80340080
-	dl	$302D8034
-	dl	$2F803700
-	dl	$80302D80
-	dl	$342F8036
-	dl	$80302D
-	dl	$80342F80
-	dl	$362F8037
-	dl	$80302D
-	dl	$80350080
-	dl	$302D8035
-	dl	$2F803700
-	dl	$80302D80
-	dl	$36008030
-	dl	$2D803700
+lbW00CBF4	dw	lbB00CDF4-lbW00CBF4
+	dw	lbB00CDF4-lbW00CBF4
+	dw	lbB00CDF7-lbW00CBF4
+	dw	lbB00CDFA-lbW00CBF4
+	dw	lbB00CE00-lbW00CBF4
+	dw	lbB00CE03-lbW00CBF4
+	dw	lbB00CE09-lbW00CBF4
+	dw	lbB00CE0F-lbW00CBF4
+	dw	lbB00CE15-lbW00CBF4
+	dw	lbB00CE18-lbW00CBF4
+	dw	lbB00CE1E-lbW00CBF4
+	dw	lbB00CE24-lbW00CBF4
+	dw	lbB00CE2D-lbW00CBF4
+	dw	lbB00CE33-lbW00CBF4
+	dw	lbB00CE3C-lbW00CBF4
+	dw	lbB00CE42-lbW00CBF4
+	dw	lbB00CE48-lbW00CBF4
+	dw	lbB00CE4B-lbW00CBF4
+	dw	lbB00CE51-lbW00CBF4
+	dw	lbB00CE57-lbW00CBF4
+	dw	lbB00CE60-lbW00CBF4
+	dw	lbB00CE66-lbW00CBF4
+	dw	lbB00CE6F-lbW00CBF4
+	dw	lbB00CE78-lbW00CBF4
+	dw	lbB00CE81-lbW00CBF4
+	dw	lbB00CE87-lbW00CBF4
+	dw	lbB00CE90-lbW00CBF4
+	dw	lbB00CE99-lbW00CBF4
+	dw	lbB00CEA5-lbW00CBF4
+	dw	lbB00CEAB-lbW00CBF4
+	dw	lbB00CEB4-lbW00CBF4
+	dw	lbB00CEBA-lbW00CBF4
+	dw	lbB00CEC0-lbW00CBF4
+	dw	lbB00CEC3-lbW00CBF4
+	dw	lbB00CEC9-lbW00CBF4
+	dw	lbB00CECF-lbW00CBF4
+	dw	lbB00CED8-lbW00CBF4
+	dw	lbB00CEDE-lbW00CBF4
+	dw	lbB00CEE7-lbW00CBF4
+	dw	lbB00CEF0-lbW00CBF4
+	dw	lbB00CEF9-lbW00CBF4
+	dw	lbB00CEFF-lbW00CBF4
+	dw	lbB00CF08-lbW00CBF4
+	dw	lbB00CF11-lbW00CBF4
+	dw	lbB00CF1D-lbW00CBF4
+	dw	lbB00CF26-lbW00CBF4
+	dw	lbB00CF32-lbW00CBF4
+	dw	lbB00CF3B-lbW00CBF4
+	dw	lbB00CF44-lbW00CBF4
+	dw	lbB00CF4A-lbW00CBF4
+	dw	lbB00CF53-lbW00CBF4
+	dw	lbB00CF5C-lbW00CBF4
+	dw	lbB00CF68-lbW00CBF4
+	dw	lbB00CF71-lbW00CBF4
+	dw	lbB00CF7D-lbW00CBF4
+	dw	lbB00CF89-lbW00CBF4
+	dw	lbB00CF95-lbW00CBF4
+	dw	lbB00CF9B-lbW00CBF4
+	dw	lbB00CFA4-lbW00CBF4
+	dw	lbB00CFAD-lbW00CBF4
+	dw	lbB00CFB9-lbW00CBF4
+	dw	lbB00CFBF-lbW00CBF4
+	dw	lbB00CFC8-lbW00CBF4
+	dw	lbB00CFCE-lbW00CBF4
+	dw	lbB00CFD4-lbW00CBF4
+	dw	lbB00CFD7-lbW00CBF4
+	dw	lbB00CFDD-lbW00CBF4
+	dw	lbB00CFE3-lbW00CBF4
+	dw	lbB00CFEC-lbW00CBF4
+	dw	lbB00CFF2-lbW00CBF4
+	dw	lbB00CFFB-lbW00CBF4
+	dw	lbB00D004-lbW00CBF4
+	dw	lbB00D00D-lbW00CBF4
+	dw	lbB00D013-lbW00CBF4
+	dw	lbB00D01C-lbW00CBF4
+	dw	lbB00D025-lbW00CBF4
+	dw	lbB00D031-lbW00CBF4
+	dw	lbB00D03A-lbW00CBF4
+	dw	lbB00D046-lbW00CBF4
+	dw	lbB00D04F-lbW00CBF4
+	dw	lbB00D058-lbW00CBF4
+	dw	lbB00D05E-lbW00CBF4
+	dw	lbB00D067-lbW00CBF4
+	dw	lbB00D070-lbW00CBF4
+	dw	lbB00D07C-lbW00CBF4
+	dw	lbB00D085-lbW00CBF4
+	dw	lbB00D091-lbW00CBF4
+	dw	lbB00D09D-lbW00CBF4
+	dw	lbB00D0A9-lbW00CBF4
+	dw	lbB00D0B2-lbW00CBF4
+	dw	lbB00D0BE-lbW00CBF4
+	dw	lbB00D0CA-lbW00CBF4
+	dw	lbB00D0D9-lbW00CBF4
+	dw	lbB00D0E2-lbW00CBF4
+	dw	lbB00D0EE-lbW00CBF4
+	dw	lbB00D0F7-lbW00CBF4
+	dw	lbB00D100-lbW00CBF4
+	dw	lbB00D106-lbW00CBF4
+	dw	lbB00D10F-lbW00CBF4
+	dw	lbB00D118-lbW00CBF4
+	dw	lbB00D124-lbW00CBF4
+	dw	lbB00D12D-lbW00CBF4
+	dw	lbB00D139-lbW00CBF4
+	dw	lbB00D145-lbW00CBF4
+	dw	lbB00D151-lbW00CBF4
+	dw	lbB00D15A-lbW00CBF4
+	dw	lbB00D166-lbW00CBF4
+	dw	lbB00D172-lbW00CBF4
+	dw	lbB00D181-lbW00CBF4
+	dw	lbB00D18D-lbW00CBF4
+	dw	lbB00D19C-lbW00CBF4
+	dw	lbB00D1A8-lbW00CBF4
+	dw	lbB00D1B4-lbW00CBF4
+	dw	lbB00D1BA-lbW00CBF4
+	dw	lbB00D1C3-lbW00CBF4
+	dw	lbB00D1CC-lbW00CBF4
+	dw	lbB00D1D8-lbW00CBF4
+	dw	lbB00D1E1-lbW00CBF4
+	dw	lbB00D1ED-lbW00CBF4
+	dw	lbB00D1F9-lbW00CBF4
+	dw	lbB00D205-lbW00CBF4
+	dw	lbB00D20B-lbW00CBF4
+	dw	lbB00D214-lbW00CBF4
+	dw	lbB00D21D-lbW00CBF4
+	dw	lbB00D229-lbW00CBF4
+	dw	lbB00D22F-lbW00CBF4
+	dw	lbB00D238-lbW00CBF4
+	dw	lbB00D23E-lbW00CBF4
+	dw	lbB00D244-lbW00CBF4
+	dw	lbB00D247-lbW00CBF4
+	dw	lbB00D24D-lbW00CBF4
+	dw	lbB00D253-lbW00CBF4
+	dw	lbB00D25C-lbW00CBF4
+	dw	lbB00D262-lbW00CBF4
+	dw	lbB00D26B-lbW00CBF4
+	dw	lbB00D274-lbW00CBF4
+	dw	lbB00D27D-lbW00CBF4
+	dw	lbB00D283-lbW00CBF4
+	dw	lbB00D28C-lbW00CBF4
+	dw	lbB00D295-lbW00CBF4
+	dw	lbB00D2A1-lbW00CBF4
+	dw	lbB00D2AA-lbW00CBF4
+	dw	lbB00D2B6-lbW00CBF4
+	dw	lbB00D2BF-lbW00CBF4
+	dw	lbB00D2C8-lbW00CBF4
+	dw	lbB00D2CE-lbW00CBF4
+	dw	lbB00D2D7-lbW00CBF4
+	dw	lbB00D2E0-lbW00CBF4
+	dw	lbB00D2EC-lbW00CBF4
+	dw	lbB00D2F5-lbW00CBF4
+	dw	lbB00D301-lbW00CBF4
+	dw	lbB00D30D-lbW00CBF4
+	dw	lbB00D319-lbW00CBF4
+	dw	lbB00D322-lbW00CBF4
+	dw	lbB00D32E-lbW00CBF4
+	dw	lbB00D33A-lbW00CBF4
+	dw	lbB00D349-lbW00CBF4
+	dw	lbB00D352-lbW00CBF4
+	dw	lbB00D35E-lbW00CBF4
+	dw	lbB00D367-lbW00CBF4
+	dw	lbB00D370-lbW00CBF4
+	dw	lbB00D376-lbW00CBF4
+	dw	lbB00D37F-lbW00CBF4
+	dw	lbB00D388-lbW00CBF4
+	dw	lbB00D394-lbW00CBF4
+	dw	lbB00D39D-lbW00CBF4
+	dw	lbB00D3A9-lbW00CBF4
+	dw	lbB00D3B5-lbW00CBF4
+	dw	lbB00D3C1-lbW00CBF4
+	dw	lbB00D3CA-lbW00CBF4
+	dw	lbB00D3D6-lbW00CBF4
+	dw	lbB00D3E2-lbW00CBF4
+	dw	lbB00D3F1-lbW00CBF4
+	dw	lbB00D3FD-lbW00CBF4
+	dw	lbB00D40C-lbW00CBF4
+	dw	lbB00D418-lbW00CBF4
+	dw	lbB00D424-lbW00CBF4
+	dw	lbB00D42D-lbW00CBF4
+	dw	lbB00D439-lbW00CBF4
+	dw	lbB00D445-lbW00CBF4
+	dw	lbB00D454-lbW00CBF4
+	dw	lbB00D460-lbW00CBF4
+	dw	lbB00D46F-lbW00CBF4
+	dw	lbB00D47E-lbW00CBF4
+	dw	lbB00D48D-lbW00CBF4
+	dw	lbB00D496-lbW00CBF4
+	dw	lbB00D4A2-lbW00CBF4
+	dw	lbB00D4AE-lbW00CBF4
+	dw	lbB00D4BD-lbW00CBF4
+	dw	lbB00D4C6-lbW00CBF4
+	dw	lbB00D4D2-lbW00CBF4
+	dw	lbB00D4DB-lbW00CBF4
+	dw	lbB00D4E4-lbW00CBF4
+	dw	lbB00D4EA-lbW00CBF4
+	dw	lbB00D4F3-lbW00CBF4
+	dw	lbB00D4FC-lbW00CBF4
+	dw	lbB00D508-lbW00CBF4
+	dw	lbB00D511-lbW00CBF4
+	dw	lbB00D51D-lbW00CBF4
+	dw	lbB00D529-lbW00CBF4
+	dw	lbB00D535-lbW00CBF4
+	dw	lbB00D53E-lbW00CBF4
+	dw	lbB00D54A-lbW00CBF4
+	dw	lbB00D556-lbW00CBF4
+	dw	lbB00D565-lbW00CBF4
+	dw	lbB00D571-lbW00CBF4
+	dw	lbB00D580-lbW00CBF4
+	dw	lbB00D58C-lbW00CBF4
+	dw	lbB00D598-lbW00CBF4
+	dw	lbB00D5A1-lbW00CBF4
+	dw	lbB00D5AD-lbW00CBF4
+	dw	lbB00D5B9-lbW00CBF4
+	dw	lbB00D5C8-lbW00CBF4
+	dw	lbB00D5D4-lbW00CBF4
+	dw	lbB00D5E3-lbW00CBF4
+	dw	lbB00D5F2-lbW00CBF4
+	dw	lbB00D601-lbW00CBF4
+	dw	lbB00D60D-lbW00CBF4
+	dw	lbB00D61C-lbW00CBF4
+	dw	lbB00D62B-lbW00CBF4
+	dw	lbB00D63D-lbW00CBF4
+	dw	lbB00D649-lbW00CBF4
+	dw	lbB00D658-lbW00CBF4
+	dw	lbB00D664-lbW00CBF4
+	dw	lbB00D670-lbW00CBF4
+	dw	lbB00D676-lbW00CBF4
+	dw	lbB00D67F-lbW00CBF4
+	dw	lbB00D688-lbW00CBF4
+	dw	lbB00D694-lbW00CBF4
+	dw	lbB00D69D-lbW00CBF4
+	dw	lbB00D6A9-lbW00CBF4
+	dw	lbB00D6B5-lbW00CBF4
+	dw	lbB00D6C1-lbW00CBF4
+	dw	lbB00D6CA-lbW00CBF4
+	dw	lbB00D6D6-lbW00CBF4
+	dw	lbB00D6E2-lbW00CBF4
+	dw	lbB00D6F1-lbW00CBF4
+	dw	lbB00D6FD-lbW00CBF4
+	dw	lbB00D70C-lbW00CBF4
+	dw	lbB00D718-lbW00CBF4
+	dw	lbB00D724-lbW00CBF4
+	dw	lbB00D72A-lbW00CBF4
+	dw	lbB00D733-lbW00CBF4
+	dw	lbB00D73C-lbW00CBF4
+	dw	lbB00D748-lbW00CBF4
+	dw	lbB00D751-lbW00CBF4
+	dw	lbB00D75D-lbW00CBF4
+	dw	lbB00D769-lbW00CBF4
+	dw	lbB00D775-lbW00CBF4
+	dw	lbB00D77B-lbW00CBF4
+	dw	lbB00D784-lbW00CBF4
+	dw	lbB00D78D-lbW00CBF4
+	dw	lbB00D799-lbW00CBF4
+	dw	lbB00D79F-lbW00CBF4
+	dw	lbB00D7A8-lbW00CBF4
+	dw	lbB00D7AE-lbW00CBF4
+lbB00CDF4	db	$80
+	db	$37
+	db	0
+lbB00CDF7	db	$80
+	db	$36
+	db	0
+lbB00CDFA	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE00	db	$80
+	db	$35
+	db	0
+lbB00CE03	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE09	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CE0F	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00CE15	db	$80
+	db	$34
+	db	0
+lbB00CE18	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE1E	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CE24	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE2D	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00CE33	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE3C	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00CE42	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00CE48	db	$80
+	db	$33
+	db	0
+lbB00CE4B	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE51	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CE57	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE60	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00CE66	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE6F	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CE78	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00CE81	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00CE87	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CE90	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CE99	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CEA5	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$35
+	db	0
+lbB00CEAB	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CEB4	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00CEBA	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00CEC0	db	$80
+	db	$32
+	db	0
+lbB00CEC3	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CEC9	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CECF	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CED8	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00CEDE	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CEE7	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CEF0	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00CEF9	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00CEFF	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CF08	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CF11	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CF1D	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00CF26	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CF32	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00CF3B	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00CF44	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	0
+lbB00CF4A	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CF53	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CF5C	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CF68	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00CF71	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CF7D	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CF89	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00CF95	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$34
+	db	0
+lbB00CF9B	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CFA4	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CFAD	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CFB9	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$35
+	db	0
+lbB00CFBF	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CFC8	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00CFCE	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00CFD4	db	$80
+	db	$31
+	db	0
+lbB00CFD7	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CFDD	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00CFE3	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CFEC	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00CFF2	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00CFFB	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D004	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D00D	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D013	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D01C	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D025	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D031	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D03A	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D046	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D04F	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D058	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	0
+lbB00D05E	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D067	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D070	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D07C	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D085	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D091	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D09D	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D0A9	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D0B2	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D0BE	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D0CA	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D0D9	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$35
+	db	0
+lbB00D0E2	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D0EE	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D0F7	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D100	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	0
+lbB00D106	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D10F	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D118	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D124	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D12D	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D139	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D145	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D151	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D15A	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D166	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D172	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D181	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D18D	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D19C	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D1A8	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D1B4	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$33
+	db	0
+lbB00D1BA	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D1C3	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D1CC	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D1D8	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D1E1	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D1ED	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D1F9	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D205	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$34
+	db	0
+lbB00D20B	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D214	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D21D	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D229	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$35
+	db	0
+lbB00D22F	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D238	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D23E	db	$80
+	db	$31
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D244	db	$80
+	db	$30
+	db	0
+lbB00D247	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D24D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D253	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D25C	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D262	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D26B	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D274	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D27D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D283	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D28C	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D295	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D2A1	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D2AA	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D2B6	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D2BF	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D2C8	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	0
+lbB00D2CE	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D2D7	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D2E0	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D2EC	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D2F5	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D301	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D30D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D319	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D322	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D32E	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D33A	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D349	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$35
+	db	0
+lbB00D352	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D35E	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D367	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D370	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	0
+lbB00D376	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D37F	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D388	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D394	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D39D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D3A9	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D3B5	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D3C1	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D3CA	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D3D6	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D3E2	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D3F1	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D3FD	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D40C	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D418	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D424	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	0
+lbB00D42D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D439	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D445	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D454	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D460	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D46F	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D47E	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D48D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$34
+	db	0
+lbB00D496	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D4A2	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D4AE	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D4BD	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$35
+	db	0
+lbB00D4C6	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D4D2	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D4DB	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$32
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D4E4	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	0
+lbB00D4EA	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D4F3	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D4FC	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D508	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D511	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D51D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D529	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D535	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D53E	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D54A	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D556	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D565	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D571	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D580	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D58C	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D598	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	0
+lbB00D5A1	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D5AD	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D5B9	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D5C8	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D5D4	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D5E3	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D5F2	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D601	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D60D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D61C	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D62B	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D63D	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$35
+	db	0
+lbB00D649	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D658	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D664	db	$80
+	db	$30
+	db	$2F
+	db	$80
+	db	$31
+	db	$2F
+	db	$80
+	db	$33
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D670	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	0
+lbB00D676	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D67F	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D688	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D694	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D69D	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D6A9	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D6B5	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D6C1	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	0
+lbB00D6CA	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D6D6	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D6E2	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D6F1	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D6FD	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D70C	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D718	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$32
+	db	$2F
+	db	$80
+	db	$34
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D724	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$33
+	db	0
+lbB00D72A	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D733	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D73C	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D748	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	0
+lbB00D751	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D75D	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D769	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$33
+	db	$2F
+	db	$80
+	db	$35
+	db	$2D
+	db	$80
+	db	$37
+	db	0
+lbB00D775	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$34
+	db	0
+lbB00D77B	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D784	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	0
+lbB00D78D	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$34
+	db	$2F
+	db	$80
+	db	$36
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D799	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$35
+	db	0
+lbB00D79F	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$35
+	db	$2F
+	db	$80
+	db	$37
+	db	0
+lbB00D7A8	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$36
+	db	0
+lbB00D7AE	db	$80
+	db	$30
+	db	$2D
+	db	$80
+	db	$37
+	db	0
 lbL00D7B4	dl	$FFFF0000
 	dl	$3C0000
 lbL00D7BC	dl	$FFFF0000
@@ -15550,10 +17510,10 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC015CAC-
 	dw	$3B2
 	dl	0
-	dl	lbC01A386-
+	dl	lbL01A386-
 	dw	$195
 	dl	0
-	dl	lbC01A3A6-
+	dl	lbL01A3A6-
 	dw	$196
 	dl	0
 	dl	lbC015F4C-
@@ -20327,7 +22287,8 @@ lbL0129E6	dl	$20008
 	db	'9',0,0
 lbL0129F6	dl	$20008
 	db	0
-	db	'ORI',0
+	db	'OR'
+I.MSG7	db	'I',0
 	db	$17
 	db	$14
 	db	9
@@ -20335,7 +22296,8 @@ lbL0129F6	dl	$20008
 	db	0
 lbL012A04	dl	$20008
 	db	0
-	db	'ORI',0
+	db	'OR'
+I.MSG8	db	'I',0
 	db	$17
 	db	$14
 	db	9
@@ -20421,42 +22383,48 @@ lbL012AA8	dl	$20008
 	db	':'
 lbL012AB6	dl	$20008
 	db	0
-	db	'ANDI',0
+	db	'AND'
+I.MSG3	db	'I',0
 	db	$18
 	db	3
 	db	9
 	db	11
 lbL012AC4	dl	$20008
 	db	0
-	db	'ANDI',0
+	db	'AND'
+I.MSG4	db	'I',0
 	db	$18
 	db	3
 	db	9
 	db	':'
 lbL012AD2	dl	$20008
 	db	0
-	db	'SUBI',0
+	db	'SUB'
+I.MSG2	db	'I',0
 	db	$18
 	db	3
 	db	9
 	db	11
 lbL012AE0	dl	$20008
 	db	0
-	db	'SUBI',0
+	db	'SUB'
+I.MSG1	db	'I',0
 	db	$18
 	db	3
 	db	9
 	db	':'
 lbL012AEE	dl	$20008
 	db	0
-	db	'ADDI',0
+	db	'ADD'
+I.MSG	db	'I',0
 	db	$18
 	db	3
 	db	9
 	db	11
 lbL012AFC	dl	$20008
 	db	0
-	db	'ADDI',0
+	db	'ADD'
+I.MSG0	db	'I',0
 	db	$18
 	db	3
 	db	9
@@ -20546,28 +22514,32 @@ lbL012BAA	dl	$20008
 SR.MSG1	db	'SR'
 lbL012BBC	dl	$20008
 	db	0
-	db	'EORI',0
+	db	'EOR'
+I.MSG9	db	'I',0
 	db	$18
 	db	3
 	db	9
 	db	11
 lbL012BCA	dl	$20008
 	db	0
-	db	'EORI',0
+	db	'EOR'
+I.MSG10	db	'I',0
 	db	$18
 	db	3
 	db	9
 	db	':'
 lbL012BD8	dl	$20008
 	db	0
-	db	'CMPI',0
+	db	'CMP'
+I.MSG5	db	'I',0
 	db	$18
 	db	3
 	db	9
 	db	8
 lbL012BE6	dl	$20008
 	db	0
-	db	'CMPI',0
+	db	'CMP'
+I.MSG6	db	'I',0
 	db	$18
 	db	3
 	db	9
@@ -20594,7 +22566,8 @@ lbL012C14	dl	$20008
 	db	'=>'
 lbL012C24	dl	$20008
 	db	2
-	db	'MOVEA.L',0
+	db	'MOVE'
+AL.MSG	db	'A.L',0
 	db	$1B
 	db	0
 	db	'/'
@@ -20611,7 +22584,8 @@ lbW012C36	dw	2
 	db	0
 lbL012C44	dl	$20008
 	db	2
-	db	'MOVEA.L',0
+	db	'MOVE'
+AL.MSG0	db	'A.L',0
 	db	$1B
 	db	0
 	db	'?'
@@ -20644,7 +22618,8 @@ lbL012C82	dl	$20008
 	db	'?>'
 lbL012C92	dl	$20008
 	db	1
-	db	'MOVEA.W',0
+	db	'MOVE'
+AW.MSG	db	'A.W',0
 	db	$1B
 	db	0
 	db	$10
@@ -20652,7 +22627,8 @@ lbL012C92	dl	$20008
 	db	0
 lbL012CA4	dl	$20008
 	db	1
-	db	'MOVEA.W',0
+	db	'MOVE'
+AW.MSG0	db	'A.W',0
 	db	$1B
 	db	0
 	db	';'
@@ -20982,7 +22958,8 @@ lbL012F68	dl	$20008
 	db	0
 lbL012F76	dl	$20008
 	db	1
-	db	'LINK.W',0
+	db	'LINK'
+W.MSG1	db	'.W',0
 	db	$1A
 	db	0
 	db	$14
@@ -21173,25 +23150,29 @@ lbL0130E2	dl	$20008
 	db	0
 lbL0130F2	dl	$20008
 	db	1
-	db	'DIVU.W',0
+	db	'DIVU'
+W.MSG6	db	'.W',0
 	db	$1A
 	db	0
 	db	'1',$A
 lbL013102	dl	$20008
 	db	1
-	db	'DIVU.W',0
+	db	'DIVU'
+W.MSG7	db	'.W',0
 	db	$1A
 	db	0
 	db	'=',$A
 lbL013112	dl	$20008
 	db	1
-	db	'DIVS.W',0
+	db	'DIVS'
+W.MSG8	db	'.W',0
 	db	$1A
 	db	0
 	db	'1',$A
 lbL013122	dl	$20008
 	db	1
-	db	'DIVS.W',0
+	db	'DIVS'
+W.MSG9	db	'.W',0
 	db	$1A
 	db	0
 	db	'=',$A
@@ -21229,14 +23210,16 @@ lbL013168	dl	$20008
 	db	'F',0
 lbL013174	dl	$20008
 	db	1
-	db	'SUBA',0
+	db	'SUB'
+A.MSG1	db	'A',0
 	db	$18
 	db	10
 	db	$10
 	db	$11
 lbL013182	dl	$20008
 	db	1
-	db	'SUBA',0
+	db	'SUB'
+A.MSG2	db	'A',0
 	db	$18
 	db	10
 	db	';'
@@ -21261,14 +23244,16 @@ lbL0131AC	dl	$20008
 	db	'G',0,0
 lbL0131BA	dl	$20008
 	db	0
-	db	'CMPA',0
+	db	'CMP'
+A.MSG3	db	'A',0
 	db	$18
 	db	10
 	db	$10
 	db	$11
 lbL0131C8	dl	$20008
 	db	0
-	db	'CMPA',0
+	db	'CMP'
+A.MSG4	db	'A',0
 	db	$18
 	db	10
 	db	';'
@@ -21310,25 +23295,29 @@ lbL01320E	dl	$20008
 	db	':',0
 lbL01321C	dl	$20008
 	db	1
-	db	'MULU.W',0
+	db	'MULU'
+W.MSG2	db	'.W',0
 	db	$1A
 	db	0
 	db	'1',$A
 lbL01322C	dl	$20008
 	db	1
-	db	'MULU.W',0
+	db	'MULU'
+W.MSG3	db	'.W',0
 	db	$1A
 	db	0
 	db	'=',$A
 lbL01323C	dl	$20008
 	db	1
-	db	'MULS.W',0
+	db	'MULS'
+W.MSG4	db	'.W',0
 	db	$1A
 	db	0
 	db	'1',$A
 lbL01324C	dl	$20008
 	db	1
-	db	'MULS.W',0
+	db	'MULS'
+W.MSG5	db	'.W',0
 	db	$1A
 	db	0
 	db	'=',$A
@@ -21365,14 +23354,16 @@ lbL013294	dl	$20008
 	db	'F',0,0
 lbL0132A2	dl	$20008
 	db	0
-	db	'ADDA',0
+	db	'ADD'
+A.MSG	db	'A',0
 	db	$18
 	db	10
 	db	$10
 	db	$11
 lbL0132B0	dl	$20008
 	db	0
-	db	'ADDA',0
+	db	'ADD'
+A.MSG0	db	'A',0
 	db	$18
 	db	10
 	db	';'
@@ -22129,40 +24120,70 @@ lbL013A44	dl	$20008
 	db	$1F
 	db	0
 	db	0
-lbL013A52	dl	$2B54100
-	dl	$2D54100
-	dl	$9324100
-	dl	$9404100
-	dl	$17E4900
-	dl	$18C4900
-	dl	$1704900
-	dl	$1624900
-	dl	$1464900
-	dl	$1544900
-	dl	$8044100
-	dl	$8124100
-	dl	$6072E57
-	dl	$84A41
-	dl	$85841
-	dl	$26849
-	dl	$27649
-	dl	$8549
-	dl	$9349
-	dl	$24C49
-	dl	$25A49
-	dl	$8AD2E
-	dl	$570008BD
-	dl	$2E570008
-	dl	$CD2E5700
-	dl	$8DD2E57
-	dl	$7832E
-	dl	$57000793
-	dl	$2E570007
-	dl	$A32E5700
-	dl	$7B32E57
-	dl	$32341
-	dl	$33541
-	dl	0
+lbW013A52	dw	AL.MSG-lbW012978
+	db	'A',0
+	dw	AL.MSG0-lbW012978
+	db	'A',0
+	dw	A.MSG-lbW012978
+	db	'A',0
+	dw	A.MSG0-lbW012978
+	db	'A',0
+	dw	I.MSG-lbW012978
+	db	'I',0
+	dw	I.MSG0-lbW012978
+	db	'I',0
+	dw	I.MSG1-lbW012978
+	db	'I',0
+	dw	I.MSG2-lbW012978
+	db	'I',0
+	dw	I.MSG3-lbW012978
+	db	'I',0
+	dw	I.MSG4-lbW012978
+	db	'I',0
+	dw	A.MSG1-lbW012978
+	db	'A',0
+	dw	A.MSG2-lbW012978
+	db	'A',0
+	dw	W.MSG1-lbW012978
+	db	'.W',0
+	dw	A.MSG3-lbW012978
+	db	'A',0
+	dw	A.MSG4-lbW012978
+	db	'A',0
+	dw	I.MSG5-lbW012978
+	db	'I',0
+	dw	I.MSG6-lbW012978
+	db	'I',0
+	dw	I.MSG7-lbW012978
+	db	'I',0
+	dw	I.MSG8-lbW012978
+	db	'I',0
+	dw	I.MSG9-lbW012978
+	db	'I',0
+	dw	I.MSG10-lbW012978
+	db	'I',0
+	dw	W.MSG2-lbW012978
+	db	'.W',0
+	dw	W.MSG3-lbW012978
+	db	'.W',0
+	dw	W.MSG4-lbW012978
+	db	'.W',0
+	dw	W.MSG5-lbW012978
+	db	'.W',0
+	dw	W.MSG6-lbW012978
+	db	'.W',0
+	dw	W.MSG7-lbW012978
+	db	'.W',0
+	dw	W.MSG8-lbW012978
+	db	'.W',0
+	dw	W.MSG9-lbW012978
+	db	'.W',0
+	dw	AW.MSG-lbW012978
+	db	'A',0
+	dw	AW.MSG0-lbW012978
+	db	'A',0
+	dw	0
+	db	0
 
 lbC013ADA	jsr	(lbC02A488-datasegment,a6)
 	move.l	a4,-(sp)
@@ -22543,8 +24564,8 @@ lbC013F70	pea	(clear_ccr-datasegment,a6)
 	tst.b	(a0)
 	beq.w	lbC014364
 	move.l	a0,(lbB02D0E8-datasegment,a6)
-	jsr	(lbC029F24-datasegment,a6)
-	move.l	(lbL02CE44-datasegment,a6),d0
+	jsr	(_SetPointerAll-datasegment,a6)
+	move.l	(kickstart_adr-datasegment,a6),d0
 	cmp.l	(datasegment-datasegment,a6),d0
 	bne.b	lbC013FA8
 	cmpi.l	#$1000000,(lbL02A8A0-datasegment,a6)
@@ -22561,7 +24582,7 @@ lbC013FB2	move.l	(lbB02D0E8-datasegment,a6),d1
 	tst.b	(lbB02EB42-datasegment,a6)
 	bne.w	lbC01414E
 	move.l	a0,-(sp)
-	movea.l	(lbL02CE44-datasegment,a6),a0
+	movea.l	(kickstart_adr-datasegment,a6),a0
 	cmpa.l	(datasegment-datasegment,a6),a0
 	movea.l	(sp)+,a0
 	bne.b	lbC013FF0
@@ -22590,7 +24611,7 @@ lbC014012	move.l	(lbL02B4AC-datasegment,a6),(a4)+
 	clr.b	(a4)+
 	move.b	(lbB02EB40-datasegment,a6),(a4)+
 	clr.b	(a4)+
-	move.l	(lbL02CE44-datasegment,a6),d0
+	move.l	(kickstart_adr-datasegment,a6),d0
 	cmp.l	(datasegment-datasegment,a6),d0
 	bne.b	lbC014056
 	cmpi.l	#$1000000,(lbL02A8A0-datasegment,a6)
@@ -22791,7 +24812,7 @@ lbC01429A	tst.b	(lbB02EB42-datasegment,a6)
 	movem.l	(sp)+,d1-d3/a0/a1
 lbC0142B6	rts
 
-lbC0142B8	jsr	(lbC029F24-datasegment,a6)
+lbC0142B8	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	a4,-(sp)
 	move.w	#$271D,d0
 	jsr	(gettextbynum-datasegment,a6)
@@ -22801,7 +24822,7 @@ lbC0142B8	jsr	(lbC029F24-datasegment,a6)
 	st	(lbW02EB76-datasegment,a6)
 	bra.b	lbC0142EE
 
-lbC0142D4	jsr	(lbC029F24-datasegment,a6)
+lbC0142D4	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	a4,-(sp)
 	move.w	#$271E,d0
 	jsr	(gettextbynum-datasegment,a6)
@@ -22948,7 +24969,7 @@ lbC0145A4	move.l	a0,(lbB02D0E8-datasegment,a6)
 	bsr.w	lbC0142B8
 lbC0145D4	jmp	(lbC02A422-datasegment,a6)
 
-lbL0145D8	dl	0
+data1	dl	0
 	dl	0
 	dl	$4000000
 	dl	0
@@ -22960,7 +24981,7 @@ thistask2	dl	0
 	dl	0
 	dl	$500
 	dl	0
-	dl	lbL02EADC
+	dl	data1_copied
 	dl	$380000
 	dl	0
 	dl	0
@@ -23120,7 +25141,7 @@ lbC0147B2	move.b	(a0)+,(a1)+
 	clr.b	(a0)
 	jsr	(lbC020566).l
 	jsr	(lbC02A430-datasegment,a6)
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	#lbB02D6BC,d1
 	jsr	(_LoadSeg-datasegment,a6)
 	move.l	d0,(a5)
@@ -23706,7 +25727,7 @@ lbC014DEC	jsr	(lbC02A488-datasegment,a6)
 	jsr	(lbC0273FC).l
 	move.w	#$2762,d0
 	jsr	(gettextbynum-datasegment,a6)
-	move.l	#lbL02DCC8,d1
+	move.l	#lbB02DCC8,d1
 	jsr	(lbC026C74-datasegment,a6)
 	bne.b	lbC014E1C
 lbC014E0A	jmp	(_dummy-datasegment,a6)
@@ -24251,11 +26272,11 @@ lbL0153A0	dl	_misc_FUNCTION
 	dl	lbB031E00
 ReSourcehelpl.MSG	db	'ReSourcehelp.library',0,0
 
-lbC0153E2	lea	(lbL02DEC8).l,a0
+lbC0153E2	lea	(lbB02DEC8).l,a0
 	moveq	#0,d2
 	bra.b	lbC0153F4
 
-lbC0153EC	lea	(lbL02DF48).l,a0
+lbC0153EC	lea	(lbB02DF48).l,a0
 	moveq	#1,d2
 lbC0153F4	jsr	(lbC02AEB2-datasegment,a6)
 	move.l	d2,d1
@@ -24269,11 +26290,11 @@ lbC0153F4	jsr	(lbC02AEB2-datasegment,a6)
 	jsr	(clear_ccr-datasegment,a6)
 	jmp	(lbC02A3C6-datasegment,a6)
 
-lbC01541A	lea	(lbL02DEC8).l,a0
+lbC01541A	lea	(lbB02DEC8).l,a0
 	moveq	#0,d2
 	bra.b	lbC01542C
 
-lbC015424	lea	(lbL02DF48).l,a0
+lbC015424	lea	(lbB02DF48).l,a0
 	moveq	#1,d2
 lbC01542C	jsr	(lbC02AEB2-datasegment,a6)
 	move.l	d2,d1
@@ -24287,11 +26308,11 @@ lbC01542C	jsr	(lbC02AEB2-datasegment,a6)
 	jsr	(clear_ccr-datasegment,a6)
 	jmp	(lbC02A3C6-datasegment,a6)
 
-lbC015452	move.l	#lbL02DF48,d1
+lbC015452	move.l	#lbB02DF48,d1
 	move.w	#$2744,d0
 	bra.b	lbC015468
 
-lbC01545E	move.l	#lbL02DEC8,d1
+lbC01545E	move.l	#lbB02DEC8,d1
 	move.w	#$2743,d0
 lbC015468	jsr	(gettextbynum-datasegment,a6)
 	jmp	(lbC026C74-datasegment,a6)
@@ -24554,7 +26575,7 @@ lbC015728	movem.l	d2-d7/a4/a5,-(sp)
 lbC01573C	move.l	a2,(lbL02D324-datasegment,a6)
 	jsr	(lbC028476-datasegment,a6)
 	jsr	(lbC01FA52).l
-	lea	(lbL02D8C8-datasegment,a6),a4
+	lea	(lbB02D8C8-datasegment,a6),a4
 	lea	(lbB015932,pc),a5
 	moveq	#0,d6
 	move.l	a4,d7
@@ -24647,7 +26668,7 @@ lbC01582A	movem.l	d2-d7/a4/a5,-(sp)
 	jsr	(lbC001674).l
 lbC01583E	move.l	a2,(lbL02D324-datasegment,a6)
 	jsr	(lbC028476-datasegment,a6)
-	lea	(lbL02D8C8-datasegment,a6),a4
+	lea	(lbB02D8C8-datasegment,a6),a4
 	lea	(lbB015932,pc),a5
 	moveq	#0,d6
 	move.l	a4,d7
@@ -25797,7 +27818,7 @@ lbC0164FC	andi.l	#$FFF7FDFF,(a3)
 	jsr	(lbC027E7C-datasegment,a6)
 	movea.l	(sp)+,a4
 	jsr	(clear_ccr-datasegment,a6)
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 lbC01651C	addq.l	#4,a3
 	move.l	#$200,d1
 	movea.l	(lbL02B4A0-datasegment,a6),a0
@@ -25869,7 +27890,7 @@ lbC0165CE	movem.l	d2-d7/a4/a5,-(sp)
 	jsr	(lbC02A436-datasegment,a6)
 	bra.w	lbC0167C6
 
-lbC0165FA	jsr	(lbC029F24-datasegment,a6)
+lbC0165FA	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	#lbL03572C,(lbL02D35C-datasegment,a6)
 	move.l	#lbL03552C,(lbL02D360-datasegment,a6)
 	jsr	(lbC029B18-datasegment,a6)
@@ -27311,7 +29332,7 @@ lbC0174AE	jsr	(savecommonregs-datasegment,a6)
 	move.l	a0,d1
 	jsr	(lbC020566).l
 	beq.b	lbC017484
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	#lbL02E5C8,d1
 	jsr	(lbC02A286-datasegment,a6)
 	move.l	d0,(lbB02D0E0-datasegment,a6)
@@ -30422,7 +32443,7 @@ lbC01A18A	jsr	(lbC02A46A-datasegment,a6)
 	clr.b	(a0)
 	bsr.w	lbC020566
 lbC01A1B0	beq.b	lbC01A174
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	a0,d1
 	jsr	(lbC02A286-datasegment,a6)
 	jsr	(lbC029A9E-datasegment,a6)
@@ -30498,7 +32519,7 @@ lbC01A268	move.b	(sp)+,(lbB02EB46-datasegment,a6)
 lbC01A272	moveq	#0,d0
 	rts
 
-lbC01A276	jsr	(lbC029F24-datasegment,a6)
+lbC01A276	jsr	(_SetPointerAll-datasegment,a6)
 	jsr	(lbC02A488-datasegment,a6)
 	move.l	(lbL02D2D4-datasegment,a6),d3
 	bne.b	lbC01A28C
@@ -30579,24 +32600,23 @@ lbC01A37A	lea	(lbB02CFB4-datasegment,a6),a0
 	jsr	(lbC02A668-datasegment,a6)
 	jmp	(lbC02A422-datasegment,a6)
 
-lbC01A386	st	(lbB02B404-datasegment,a6)
-	clr.b	(lbB02B405-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
-	move.w	#$195,(a0)+
-	move.w	#1,(a0)+
-	move.w	#$196,(a0)+
-	move.w	#0,(a0)+
-	clr.w	(a0)
-	bra.b	lbC01A3C4
+lbL01A386	dl	$50EE0B74
+	dl	$422E0B75
+	dl	$41EE2724
+	dl	$30FC0195
+	dl	$30FC0001
+	dl	$30FC0196
+	dl	$30FC0000
+	dl	$4250601E
+lbL01A3A6	dl	$422E0B74
+	dl	$50EE0B75
+	dl	$41EE2724
+	dl	$30FC0195
+	dl	$30FC0000
+	dl	$30FC0196
+	dl	$30FC0001
+	dw	$4250
 
-lbC01A3A6	clr.b	(lbB02B404-datasegment,a6)
-	st	(lbB02B405-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
-	move.w	#$195,(a0)+
-	move.w	#0,(a0)+
-	move.w	#$196,(a0)+
-	move.w	#1,(a0)+
-	clr.w	(a0)
 lbC01A3C4	lea	(lbB02CFB4-datasegment,a6),a0
 	jsr	(lbC02A668-datasegment,a6)
 	jmp	(lbC02A422-datasegment,a6)
@@ -32263,7 +34283,7 @@ lbC01BAC0	clr.b	(lbB02EB49-datasegment,a6)
 	bne.b	lbC01BADE
 	rts
 
-lbC01BADE	jsr	(lbC029F24-datasegment,a6)
+lbC01BADE	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	a0,(lbB02D0E8-datasegment,a6)
 	move.l	a0,d1
 	jsr	(lbC02A286-datasegment,a6)
@@ -32358,7 +34378,7 @@ lbC01BBDA	jsr	(savecommonregs-datasegment,a6)
 	bne.b	lbC01BBF4
 	rts
 
-lbC01BBF4	jsr	(lbC029F24-datasegment,a6)
+lbC01BBF4	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	a0,(lbB02D0E8-datasegment,a6)
 	move.l	a0,d1
 	jsr	(lbC02A286-datasegment,a6)
@@ -32718,7 +34738,7 @@ ON.MSG	db	'ON',0
 OFF.MSG	db	'OFF',0,0
 
 lbC01C0FA	lea	(lbB02D24F-datasegment,a6),a5
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 	jsr	(lbC0273FC-datasegment,a6)
 	lea	(lbB031E00-datasegment,a6),a4
 	move.l	a5,-(sp)
@@ -32757,7 +34777,7 @@ lbC01C168	jsr	(lbC02742E-datasegment,a6)
 	jmp	(lbC02AF6C-datasegment,a6)
 
 lbC01C170	lea	(lbB02D3A4-datasegment,a6),a5
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 	jsr	(lbC0273FC-datasegment,a6)
 	lea	(lbB031E00-datasegment,a6),a4
 	move.l	a5,-(sp)
@@ -33131,7 +35151,7 @@ lbC01C69E	jsr	(savecommonregs-datasegment,a6)
 
 lbC01C6B8	jsr	(savecommonregs-datasegment,a6)
 lbC01C6BC	move.l	#lbB02C2D4,d1
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 	jsr	(lbC02A272-datasegment,a6)
 	move.l	d0,(lbB02D0E0-datasegment,a6)
 	move.l	d0,d1
@@ -34088,7 +36108,7 @@ lbC01D0C6	jsr	(savecommonregs-datasegment,a6)
 	rts
 
 lbC01D0E0	jsr	(savecommonregs-datasegment,a6)
-lbC01D0E4	jsr	(lbC029F24-datasegment,a6)
+lbC01D0E4	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	#lbL02C3D4,d1
 	jsr	(_Lock-datasegment,a6)
 	move.l	d0,(lbL02D0E4-datasegment,a6)
@@ -34439,7 +36459,7 @@ lbC01D56C	jmp	(lbC02A436-datasegment,a6)
 
 lbC01D570	rts
 
-lbC01D572	lea	(datasegment).l,a5
+Start	lea	(datasegment).l,a5
 	lea	(lbL02B4A0-datasegment,a5),a1
 	moveq	#0,d1
 	move.w	#$3A86,d2
@@ -34453,7 +36473,7 @@ lbC01D582	move.l	d1,(a1)+
 	move.l	a4,(thistask2).l
 	move.l	(LN_NAME,a6),d1
 	andi.l	#$FFF80000,d1
-	move.l	d1,(lbL02CE44-datasegment,a5)
+	move.l	d1,(kickstart_adr-datasegment,a5)
 	movea.l	a0,a3
 	move.l	d0,d3
 	moveq	#0,d0
@@ -35298,7 +37318,7 @@ lbC01DFAE	movea.l	a2,a0
 lbC01DFD2	clr.l	-(sp)
 	pea	(lbW01E430,pc)
 	move.l	#$8000003A,-(sp)
-	pea	(lbL01E428,pc)
+	pea	(topas_TextAttr,pc)
 	move.l	#$8000002B,-(sp)
 	pea	(lbW02A7BC-datasegment,a6)
 	move.l	#$80000028,-(sp)
@@ -35374,38 +37394,38 @@ lbC01E092	movea.l	d0,a2
 	movea.l	(gadtoolsbase-datasegment,a6),a6
 	jsr	(_LVOGetVisualInfoA,a6)
 	movea.l	(sp)+,a6
-	move.l	d0,(lbB02CEE4-datasegment,a6)
+	move.l	d0,(visualinfo-datasegment,a6)
 	bne.b	lbC01E0EC
 	jsr	(lbC02A72E-datasegment,a6)
 	bra.w	lbC0202C0
 
-lbC01E0EC	lea	(lbL00040C).l,a0
+lbC01E0EC	lea	(gglist_screen).l,a0
 	moveq	#7,d0
-	jsr	(lbC000380).l
+	jsr	(SetGadgetPosition).l
 	clr.l	-(sp)
 	move.l	a2,-(sp)
-	move.l	#$80000070,-(sp)
+	move.l	#WA_CustomScreen,-(sp)
 	move.l	a0,-(sp)
-	move.l	#$8000006C,-(sp)
+	move.l	#WA_Gadgets,-(sp)
 	moveq	#1,d0
 	move.l	d0,-(sp)
-	move.l	#$80000089,-(sp)
+	move.l	#WA_Activate,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008C,-(sp)
+	move.l	#WA_SimpleRefresh,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000085,-(sp)
+	move.l	#WA_Backdrop,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000088,-(sp)
+	move.l	#WA_Borderless,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000093,-(sp)
+	move.l	#WA_NewLookMenus,-(sp)
 	move.l	#$54C,-(sp)
-	move.l	#$8000006A,-(sp)
+	move.l	#WA_IDCMP,-(sp)
 	move.l	d6,d0
 	subq.l	#1,d0
 	move.l	d0,-(sp)
-	move.l	#$80000067,-(sp)
+	move.l	#WA_Height,-(sp)
 	move.l	#1,-(sp)
-	move.l	#$80000065,-(sp)
+	move.l	#WA_Top,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
@@ -35618,8 +37638,9 @@ lbC01E40E	addq.b	#1,($26D1,a1)
 	rts
 
 rsvblankserve.MSG	db	'rs.vblank.server',0,0
-lbL01E428	dl	topazfont.MSG
-	dl	$80001
+topas_TextAttr	dl	topazfont.MSG
+	dw	8	;YSize
+	dw	1	;Style Flags
 lbW01E430	dw	$FFFF
 doslibrary.MSG	db	'dos.library',0
 graphicslibra.MSG	db	'graphics.library',0
@@ -36078,7 +38099,7 @@ lbL01ECCA	dl	lbC02003C-datasegment
 	dl	lbC01FFD6-datasegment
 
 lbC01ED0A	pea	(clear_ccr-datasegment,a6)
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 lbC01ED12	lea	(lbB031E00-datasegment,a6),a4
 	move.w	#$FFFF,(lbB02D39A-datasegment,a6)
 	bset	#5,(1,a3)
@@ -36368,7 +38389,7 @@ lbC01F022	clr.l	(a0)+
 	rts
 
 lbC01F054	st	(lbB02EB7D-datasegment,a6)
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 	move.l	a0,d1
 	move.l	d1,(lbB02D0E8-datasegment,a6)
 	move.l	d1,d4
@@ -36474,7 +38495,7 @@ lbC01F192	tst.b	(lbB02B451-datasegment,a6)
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
 lbC01F19E	bsr.w	lbC020C10
-	move.b	(lbB02AD33-datasegment,a6),(a4)+
+	move.b	(EF.MSG-datasegment,a6),(a4)+
 	move.b	(QR.MSG-datasegment,a6),(a4)+
 	move.b	(UW.MSG-datasegment,a6),(a4)+
 	move.b	#9,(a4)+
@@ -36507,8 +38528,8 @@ lbC01F204	tst.b	(lbB02B451-datasegment,a6)
 	addq.w	#1,d6
 lbC01F210	bsr.w	lbC020C02
 	move.b	(XEFM.MSG-datasegment,a6),(a4)+
-	move.b	(lbB02AD2B-datasegment,a6),(a4)+
-	move.b	(lbB02AD33-datasegment,a6),(a4)+
+	move.b	(RS.MSG-datasegment,a6),(a4)+
+	move.b	(EF.MSG-datasegment,a6),(a4)+
 	move.b	(FM.MSG-datasegment,a6),(a4)+
 	move.b	#$20,(a4)+
 	move.b	#$20,(a4)+
@@ -37596,7 +39617,7 @@ lbC020380	move.l	d0,-(sp)
 	movea.l	d2,a0
 	jsr	(_LVOCloseWindow,a6)
 	movea.l	(thistask1-datasegment,a5),a0
-	move.l	(lbL02D1FC-datasegment,a5),($B8,a0)
+	move.l	(lbL02D1FC-datasegment,a5),(pr_WindowPtr,a0)
 lbC0203BA	move.l	(screenptr-datasegment,a5),d0
 	beq.b	lbC0203C6
 	movea.l	d0,a0
@@ -37673,7 +39694,7 @@ lbC020476	movea.l	a6,a1
 lbC02047E	move.l	(gadtoolsbase-datasegment,a5),d0
 	beq.b	lbC02049A
 	movea.l	d0,a6
-	move.l	(lbB02CEE4-datasegment,a5),d0
+	move.l	(visualinfo-datasegment,a5),d0
 	beq.b	lbC020492
 	movea.l	d0,a0
 	jsr	(_LVOFreeVisualInfo,a6)
@@ -38105,7 +40126,7 @@ lbC02095E	bsr.w	lbC020C3C
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
 lbC020992	jsr	(lbC02A0D2-datasegment,a6)
-	move.b	(lbB02AD33-datasegment,a6),(a4)+
+	move.b	(EF.MSG-datasegment,a6),(a4)+
 	move.b	(QR.MSG-datasegment,a6),(a4)+
 	move.b	(UW.MSG-datasegment,a6),(a4)+
 	addq.w	#3,d6
@@ -38831,7 +40852,7 @@ lbC0211C8	movem.l	d0/a0,-(sp)
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
 lbC0211F2	jsr	(lbC02A0D2-datasegment,a6)
-	move.b	(lbB02AD33-datasegment,a6),(a4)+
+	move.b	(EF.MSG-datasegment,a6),(a4)+
 	move.b	(QR.MSG-datasegment,a6),(a4)+
 	move.b	(UW.MSG-datasegment,a6),(a4)+
 	addq.w	#3,d6
@@ -39010,14 +41031,14 @@ lbC0213B4	cmpa.l	a1,a0
 	cmp.l	(lbL02B49C-datasegment,a6),d2
 	bls.w	lbC02135E
 	subq.l	#1,d2
-lbC021404	move.b	(lbB02ABF7-datasegment,a6),(a4)+
-	move.b	(lbB02ABFD-datasegment,a6),(a4)+
+lbC021404	move.b	(dl.MSG-datasegment,a6),(a4)+
+	move.b	(cx.MSG-datasegment,a6),(a4)+
 	move.b	(bd.MSG-datasegment,a6),(a4)+
 	move.b	#$2E,(a4)+
 	move.b	(xpsc.MSG-datasegment,a6),d0
 	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
 	beq.b	lbC021424
-	move.b	(lbB02ABFB-datasegment,a6),d0
+	move.b	(ps.MSG-datasegment,a6),d0
 lbC021424	move.b	d0,(a4)+
 	addq.w	#5,d6
 	jsr	(lbC02A018-datasegment,a6)
@@ -39033,7 +41054,7 @@ lbC021448	move.b	#$30,(lbB02EAD2-datasegment,a6)
 	move.b	(xpsc.MSG-datasegment,a6),d0
 	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
 	beq.b	lbC02145E
-	move.b	(lbB02ABFB-datasegment,a6),d0
+	move.b	(ps.MSG-datasegment,a6),d0
 lbC02145E	jsr	(lbC029FE8-datasegment,a6)
 	moveq	#0,d1
 	move.w	(lbW02CEE8-datasegment,a6),d1
@@ -39147,7 +41168,7 @@ lbC021570	btst	#0,($1E,a3)
 lbC0215B2	move.b	(xpsc.MSG-datasegment,a6),d0
 	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
 	beq.b	lbC0215C2
-	move.b	(lbB02ABFB-datasegment,a6),d0
+	move.b	(ps.MSG-datasegment,a6),d0
 lbC0215C2	bsr.w	lbC022086
 	moveq	#0,d3
 	lea	($30,a3),a1
@@ -39336,11 +41357,11 @@ lbC021736	addq.w	#8,a2
 	cmp.l	(lbL02B49C-datasegment,a6),d2
 	bls.b	lbC021736
 	subq.l	#1,d2
-lbC0217B2	move.b	(lbB02ABF7-datasegment,a6),(a4)+
-	move.b	(lbB02ABFD-datasegment,a6),(a4)+
+lbC0217B2	move.b	(dl.MSG-datasegment,a6),(a4)+
+	move.b	(cx.MSG-datasegment,a6),(a4)+
 	move.b	(bd.MSG-datasegment,a6),(a4)+
 	move.b	#$2E,(a4)+
-	move.b	(lbB02ABF7-datasegment,a6),(a4)+
+	move.b	(dl.MSG-datasegment,a6),(a4)+
 	addq.w	#5,d6
 	jsr	(lbC02A018-datasegment,a6)
 	move.l	d2,d0
@@ -39350,7 +41371,7 @@ lbC0217B2	move.b	(lbB02ABF7-datasegment,a6),(a4)+
 	bra.w	lbC022336
 
 lbC0217DE	move.b	#$30,(lbB02EAD2-datasegment,a6)
-	move.b	(lbB02ABF7-datasegment,a6),d0
+	move.b	(dl.MSG-datasegment,a6),d0
 	jsr	(lbC029FE8-datasegment,a6)
 	moveq	#0,d1
 	move.w	(lbW02CEE8-datasegment,a6),d1
@@ -39441,7 +41462,7 @@ lbC0218BA	btst	#0,(14,a3)
 	beq.b	lbC0218FC
 	addq.l	#1,(lbL02D258-datasegment,a6)
 	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC0218FC	move.b	(lbB02ABF7-datasegment,a6),d0
+lbC0218FC	move.b	(dl.MSG-datasegment,a6),d0
 	bsr.w	lbC022086
 	moveq	#0,d3
 	lea	($20,a3),a1
@@ -39613,8 +41634,8 @@ lbC021AAE	cmpa.l	a1,a0
 	cmp.l	(lbL02B49C-datasegment,a6),d2
 	bls.b	lbC021A5E
 	subq.l	#1,d2
-lbC021AD0	move.b	(lbB02ABF7-datasegment,a6),(a4)+
-	move.b	(lbB02ABFD-datasegment,a6),(a4)+
+lbC021AD0	move.b	(dl.MSG-datasegment,a6),(a4)+
+	move.b	(cx.MSG-datasegment,a6),(a4)+
 	move.b	(bd.MSG-datasegment,a6),(a4)+
 	move.b	#$2E,(a4)+
 	move.b	(lw.MSG-datasegment,a6),d0
@@ -39848,11 +41869,11 @@ lbC021D4E	addq.l	#2,a2
 	cmp.l	(lbL02B49C-datasegment,a6),d2
 	bls.b	lbC021D4E
 	subq.l	#1,d2
-lbC021D92	move.b	(lbB02ABF7-datasegment,a6),(a4)+
-	move.b	(lbB02ABFD-datasegment,a6),(a4)+
+lbC021D92	move.b	(dl.MSG-datasegment,a6),(a4)+
+	move.b	(cx.MSG-datasegment,a6),(a4)+
 	move.b	(bd.MSG-datasegment,a6),(a4)+
 	move.b	#$2E,(a4)+
-	move.b	(lbB02ABF9-datasegment,a6),(a4)+
+	move.b	(wx.MSG-datasegment,a6),(a4)+
 	addq.w	#5,d6
 	jsr	(lbC02A018-datasegment,a6)
 	move.l	d2,d0
@@ -39860,7 +41881,7 @@ lbC021D92	move.b	(lbB02ABF7-datasegment,a6),(a4)+
 	bsr.w	lbC0221FE
 	dl	lbC0224C0
 
-lbC021DB8	move.b	(lbB02ABF9-datasegment,a6),d0
+lbC021DB8	move.b	(wx.MSG-datasegment,a6),d0
 	jsr	(lbC029FE8-datasegment,a6)
 	moveq	#0,d1
 	move.w	(lbW02CEE8-datasegment,a6),d1
@@ -39918,7 +41939,7 @@ lbC021E48	btst	#0,(6,a3)
 	beq.b	lbC021E6A
 	addq.l	#1,(lbL02D258-datasegment,a6)
 	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC021E6A	move.b	(lbB02ABF9-datasegment,a6),d0
+lbC021E6A	move.b	(wx.MSG-datasegment,a6),d0
 	bsr.w	lbC022086
 	moveq	#0,d3
 	lea	(8,a3),a1
@@ -40015,8 +42036,8 @@ lbC021F44	addq.l	#1,a2
 	cmp.l	(lbL02B49C-datasegment,a6),d2
 	bls.b	lbC021F44
 	subq.l	#1,d2
-lbC021F74	move.b	(lbB02ABF7-datasegment,a6),(a4)+
-	move.b	(lbB02ABFD-datasegment,a6),(a4)+
+lbC021F74	move.b	(dl.MSG-datasegment,a6),(a4)+
+	move.b	(cx.MSG-datasegment,a6),(a4)+
 	move.b	(bd.MSG-datasegment,a6),(a4)+
 	move.b	#$2E,(a4)+
 	move.b	(bd.MSG-datasegment,a6),(a4)+
@@ -40114,7 +42135,7 @@ lbC02207A	lsl.l	#2,d3
 
 lbC022086	st	(lbW02EACE-datasegment,a6)
 	addq.l	#1,(lbL02D27C-datasegment,a6)
-	move.b	(lbB02ABF7-datasegment,a6),(a4)+
+	move.b	(dl.MSG-datasegment,a6),(a4)+
 	move.b	(x.MSG-datasegment,a6),(a4)+
 	btst	#3,(2,a3)
 	bne.b	lbC0220A4
@@ -40445,7 +42466,7 @@ lbC022422	move.l	-(a5),d2
 	move.l	($6C,a0,d3.l),-(a2)
 	moveq	#0,d4
 lbC022430	move.l	(a0),d0
-	lea	(lx.MSG,pc),a0
+	lea	(lx8.MSG,pc),a0
 	bra.w	lbC02255E
 
 lbC02243A	tst.l	(a0)
@@ -40521,20 +42542,20 @@ lbC02250A	cmp.l	(lbL02CDF0-datasegment,a6),d0
 
 lbC022518	tst.b	(lbB02B452-datasegment,a6)
 	beq.b	lbC02255A
-	lea	(lx.MSG,pc),a0
+	lea	(lx8.MSG,pc),a0
 	bra.b	lbC02255E
 
 lbC022524	tst.b	(lbB02B452-datasegment,a6)
 	beq.b	lbC02255A
-	lea	(lx.MSG2,pc),a0
+	lea	(lx4.MSG,pc),a0
 	bra.b	lbC02255E
 
 lbC022530	tst.b	(lbB02B452-datasegment,a6)
 	beq.b	lbC02255A
-	lea	(lx.MSG3,pc),a0
+	lea	(lx2.MSG,pc),a0
 	bra.b	lbC02255E
 
-lbC02253C	lea	(lx.MSG0,pc),a0
+lbC02253C	lea	(lx6.MSG,pc),a0
 	bra.b	lbC02255E
 
 lbC022542	cmpi.l	#9,d0
@@ -40559,10 +42580,10 @@ lbC02256E	move.b	(a2)+,(a4)+
 	rts
 
 lx.MSG1	db	'$%-lx',0
-lx.MSG	db	'$%08lx',0
-lx.MSG0	db	'%06lx',0
-lx.MSG2	db	'$%04lx',0
-lx.MSG3	db	'$%02lx',0
+lx8.MSG	db	'$%08lx',0
+lx6.MSG	db	'%06lx',0
+lx4.MSG	db	'$%04lx',0
+lx2.MSG	db	'$%02lx',0
 ld.MSG	db	'%ld',0,0
 
 lbC0225A0	move.l	d2,-(sp)
@@ -41009,7 +43030,7 @@ lbC022CAE	move.b	(a0),d0
 	andi.b	#$F0,d0
 	cmpi.b	#$40,d0
 	bne.b	lbC022CEE
-	move.b	d0,(1,a0,d0.w)
+	move.b	(1,a0),d0
 	cmpi.b	#$40,d0
 	bls.w	lbC022DE0
 	cmpi.b	#$7E,d0
@@ -42676,7 +44697,7 @@ lbC0240D8	moveq	#0,d0
 	andi.l	#$600,d0
 	lsr.w	#8,d0
 	beq.b	lbC024108
-	lea	(ascii.MSG5-datasegment,a6),a0
+	lea	(Scale.MSG-datasegment,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -42888,7 +44909,7 @@ lbC024348	lsl.w	#2,d0
 	andi.l	#$600,d0
 	lsr.w	#8,d0
 	beq.b	lbC02436E
-	lea	(ascii.MSG5-datasegment,a6),a0
+	lea	(Scale.MSG-datasegment,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -43131,7 +45152,7 @@ lbC0245B6	move.b	#$28,(a4)+
 	andi.l	#$600,d0
 	lsr.w	#8,d0
 	beq.b	lbC02460C
-	lea	(ascii.MSG5-datasegment,a6),a0
+	lea	(Scale.MSG-datasegment,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -43218,9 +45239,9 @@ lbC0246D4	bsr.w	lbC026252
 lbC0246D8	move.b	#$2C,(a4)+
 lbC0246DC	tst.b	d4
 	bpl.b	lbC0246E4
-	move.b	(lbB02AAF7-datasegment,a6),(a4)+
+	move.b	(ZP.MSG-datasegment,a6),(a4)+
 lbC0246E4	move.b	(PC.MSG1-datasegment,a6),(a4)+
-	move.b	(lbB02AAF9-datasegment,a6),(a4)+
+	move.b	(CA.MSG-datasegment,a6),(a4)+
 	move.b	#$2C,(a4)+
 	bra.w	lbC0242F8
 
@@ -43836,9 +45857,9 @@ lbC024D70	tst.b	d2
 	moveq	#0,d1
 	move.b	d2,d1
 	add.w	d1,d1
-	lea	(lbL00CBF4).l,a0
+	lea	(lbW00CBF4).l,a0
 	adda.w	(a0,d1.w),a0
-	move.b	(lbB02AAFB-datasegment,a6),d0
+	move.b	(DUSP.MSG-datasegment,a6),d0
 lbC024D88	move.b	(a0)+,(a4)+
 	bgt.b	lbC024D88
 	beq.b	lbC024D9E
@@ -43857,7 +45878,7 @@ lbC024D9E	subq.l	#1,a4
 	lsr.w	#8,d1
 	beq.b	lbC024DCA
 	move.b	#$2F,(a4)+
-lbC024DAC	lea	(lbL00CBF4).l,a0
+lbC024DAC	lea	(lbW00CBF4).l,a0
 	add.w	d1,d1
 	adda.w	(a0,d1.w),a0
 	move.b	(ADUSPUSPMMUMM.MSG-datasegment,a6),d0
@@ -43928,9 +45949,9 @@ lbC024E5E	tst.b	d2
 	moveq	#0,d1
 	move.b	d2,d1
 	add.w	d1,d1
-	lea	(lbL00CBF4).l,a0
+	lea	(lbW00CBF4).l,a0
 	adda.w	(a0,d1.w),a0
-	move.b	(lbB02AAFB-datasegment,a6),d0
+	move.b	(DUSP.MSG-datasegment,a6),d0
 lbC024E76	move.b	(a0)+,(a4)+
 	bgt.b	lbC024E76
 	beq.b	lbC024E8C
@@ -43949,7 +45970,7 @@ lbC024E8C	subq.l	#1,a4
 	lsr.w	#8,d1
 	beq.b	lbC024EB8
 	move.b	#$2F,(a4)+
-lbC024E9A	lea	(lbL00CBF4).l,a0
+lbC024E9A	lea	(lbW00CBF4).l,a0
 	add.w	d1,d1
 	adda.w	(a0,d1.w),a0
 	move.b	(ADUSPUSPMMUMM.MSG-datasegment,a6),d0
@@ -44882,7 +46903,7 @@ lbC02585E	btst	#10,d5
 lbC025866	beq.b	lbC025870
 	subq.w	#1,d0
 	beq.b	lbC025870
-	move.b	(lbB02AD35-datasegment,a6),(a4)+
+	move.b	(M.MSG-datasegment,a6),(a4)+
 lbC025870	lea	(L.MSG0-datasegment,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
@@ -44987,43 +47008,34 @@ lbC0259C0	cmpi.b	#$2F,(-1,a4)
 lbC0259CA	rts
 
 lbC0259CC	jsr	(lbC02A018-datasegment,a6)
-	move.b	#$23,(a4)+
+	move.b	#'#',(a4)+
 	move.l	d5,d0
 	andi.l	#$7F,d0
 	bsr.w	lbC0224EC
-	move.b	#$2C,(a4)+
+	move.b	#',',(a4)+
 	move.l	d5,d0
 	andi.w	#$380,d0
 	lsr.w	#7,d0
-	addi.b	#$30,d0
+	addi.b	#'0',d0
 	lea	(FP.MSG-datasegment,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d0,(a4)+
 	move.w	d5,d1
 	andi.w	#$3F,d1
-	lea	(ascii.MSG4,pc),a0
+	lea	(lbB025A1E,pc),a0
 	moveq	#0,d0
 	move.b	(a0,d1.w),d0
 	beq.b	lbC025A1C
 	adda.w	d0,a0
 	move.b	#9,(a4)+
-	move.b	#$3B,(a4)+
+	move.b	#';',(a4)+
 lbC025A16	move.b	(a0)+,(a4)+
 	bne.b	lbC025A16
 	subq.w	#1,a4
 lbC025A1C	rts
 
-ascii.MSG4	db	'@',0,0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	'CLNV_',0,0
+lbB025A1E	db	pi.MSG-lbB025A1E
 	db	0
 	db	0
 	db	0
@@ -45034,11 +47046,11 @@ ascii.MSG4	db	'@',0,0
 	db	0
 	db	0
 	db	0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	0
+	db	Log102.MSG-lbB025A1E
+	db	e.MSG-lbB025A1E
+	db	Log2e.MSG-lbB025A1E
+	db	Log10e.MSG-lbB025A1E
+	db	0dot0.MSG-lbB025A1E
 	db	0
 	db	0
 	db	0
@@ -45054,36 +47066,61 @@ ascii.MSG4	db	'@',0,0
 	db	0
 	db	0
 	db	0
-	db	'cipty'
-	db	$7F
-	db	$87
-	db	$8B
-	db	$90
-	db	$95
-	db	$9A
-	db	$A0
-	db	'¦¬³ºpi',0
-	db	'Log10(2)',0
-	db	'e',0
-	db	'Log2(e)',0
-	db	'Log10(e)',0
-	db	'0.0',0
-	db	'ln(2)',0
-	db	'ln(10)',0
-	db	'1.0',0
-	db	'10.0',0
-	db	'100.0',0
-	db	'10000.0',0
-	db	'1E8',0
-	db	'1E16',0
-	db	'1E32',0
-	db	'1E64',0
-	db	'1E128',0
-	db	'1E256',0
-	db	'1E512',0
-	db	'1E1024',0
-	db	'1E2048',0
-	db	'1E4096',0,0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	0
+	db	ln2.MSG-lbB025A1E
+	db	ln10.MSG-lbB025A1E
+	db	1dot0.MSG-lbB025A1E
+	db	10dot0.MSG-lbB025A1E
+	db	100dot0.MSG-lbB025A1E
+	db	10000dot.0.MSG-lbB025A1E
+	db	E8.MSG-lbB025A1E
+	db	E16.MSG-lbB025A1E
+	db	E32.MSG-lbB025A1E
+	db	E64.MSG-lbB025A1E
+	db	E128.MSG-lbB025A1E
+	db	E256.MSG-lbB025A1E
+	db	E512.MSG-lbB025A1E
+	db	E1024.MSG-lbB025A1E
+	db	E2048.MSG-lbB025A1E
+	db	E4096.MSG-lbB025A1E
+pi.MSG	db	'pi',0
+Log102.MSG	db	'Log10(2)',0
+e.MSG	db	'e',0
+Log2e.MSG	db	'Log2(e)',0
+Log10e.MSG	db	'Log10(e)',0
+0dot0.MSG	db	'0.0',0
+ln2.MSG	db	'ln(2)',0
+ln10.MSG	db	'ln(10)',0
+1dot0.MSG	db	'1.0',0
+10dot0.MSG	db	'10.0',0
+100dot0.MSG	db	'100.0',0
+10000dot.0.MSG	db	'10000.0',0
+E8.MSG	db	'1E8',0
+E16.MSG	db	'1E16',0
+E32.MSG	db	'1E32',0
+E64.MSG	db	'1E64',0
+E128.MSG	db	'1E128',0
+E256.MSG	db	'1E256',0
+E512.MSG	db	'1E512',0
+E1024.MSG	db	'1E1024',0
+E2048.MSG	db	'1E2048',0
+E4096.MSG	db	'1E4096',0,0
 
 lbC025AE0	jsr	(lbC02A018-datasegment,a6)
 	btst	#13,d5
@@ -45307,7 +47344,7 @@ lbC025D36	move.l	d5,d3
 lbC025D46	cmpi.w	#2,d3
 	bne.b	lbC025D6C
 	move.b	#$2E,(a4)+
-	move.b	(lbB02AD2F-datasegment,a6),(a4)+
+	move.b	(WFD.MSG-datasegment,a6),(a4)+
 	move.b	#$57,(lbB02EAD2-datasegment,a6)
 	jsr	(lbC02A018-datasegment,a6)
 	move.b	#$23,(a4)+
@@ -45333,10 +47370,10 @@ lbC025D8E	move.b	#$3F,(a4)
 	bset	#0,(lbB02D3A5-datasegment,a6)
 	rts
 
-lbC025DA0	move.b	(lbB02AD2F-datasegment,a6),(a4)+
+lbC025DA0	move.b	(WFD.MSG-datasegment,a6),(a4)+
 	btst	#9,d5
 	beq.b	lbC025DB0
-	move.b	(lbB02AD2B-datasegment,a6),(-1,a4)
+	move.b	(RS.MSG-datasegment,a6),(-1,a4)
 lbC025DB0	jsr	(lbC02A018-datasegment,a6)
 	moveq	#$1F,d0
 	and.l	d5,d0
@@ -45344,10 +47381,10 @@ lbC025DB0	jsr	(lbC02A018-datasegment,a6)
 	bne.b	lbC025DE8
 	bra.b	lbC025DD4
 
-lbC025DC0	move.b	(lbB02AD2F-datasegment,a6),(a4)+
+lbC025DC0	move.b	(WFD.MSG-datasegment,a6),(a4)+
 	btst	#9,d5
 	beq.b	lbC025DD0
-	move.b	(lbB02AD2B-datasegment,a6),(-1,a4)
+	move.b	(RS.MSG-datasegment,a6),(-1,a4)
 lbC025DD0	jsr	(lbC02A018-datasegment,a6)
 lbC025DD4	moveq	#7,d0
 	and.l	d5,d0
@@ -45374,7 +47411,7 @@ lbC025E04	lea	(SD.MSG,pc),a0
 	move.b	(a0,d0.w),(a4)+
 	beq.b	lbC025E18
 lbC025E0E	move.b	(FC.MSG-datasegment,a6),(a4)+
-	move.b	(lbB02AB0F-datasegment,a6),(a4)+
+	move.b	(CFP.MSG-datasegment,a6),(a4)+
 	bra.b	lbC025E32
 
 lbC025E18	move.b	#$3F,(-1,a4)
@@ -45415,7 +47452,7 @@ lbC025E6C	lea	(SD.MSG,pc),a0
 	move.b	(a0,d0.w),(a4)+
 	beq.b	lbC025E80
 lbC025E76	move.b	(FC.MSG-datasegment,a6),(a4)+
-	move.b	(lbB02AB0F-datasegment,a6),(a4)+
+	move.b	(CFP.MSG-datasegment,a6),(a4)+
 	bra.b	lbC025E9A
 
 lbC025E80	move.b	#$3F,(-1,a4)
@@ -45464,7 +47501,7 @@ lbC025EEC	moveq	#$1F,d0
 	move.b	(a0,d0.w),(a4)+
 	beq.b	lbC025F1A
 lbC025F06	move.b	(FC.MSG-datasegment,a6),(a4)+
-	move.b	(lbB02AB0F-datasegment,a6),(a4)+
+	move.b	(CFP.MSG-datasegment,a6),(a4)+
 	bra.b	lbC025F34
 
 lbC025F10	move.b	#$23,(a4)+
@@ -45542,7 +47579,7 @@ lbC025FD2	lea	(SD.MSG,pc),a0
 	move.b	(a0,d0.w),(a4)+
 	beq.b	lbC025FE6
 lbC025FDC	move.b	(FC.MSG-datasegment,a6),(a4)+
-	move.b	(lbB02AB0F-datasegment,a6),(a4)+
+	move.b	(CFP.MSG-datasegment,a6),(a4)+
 	bra.b	lbC026000
 
 lbC025FE6	move.b	#$3F,(-1,a4)
@@ -45873,7 +47910,7 @@ lbC026338	move.l	d5,d0
 	rol.l	#7,d0
 	move.b	d0,(lbW02EB38-datasegment,a6)
 	addq.w	#2,d6
-	lea	(B.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-datasegment,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -45894,7 +47931,7 @@ lbC02636A	moveq	#0,d0
 	neg.b	d0
 	move.b	d0,(lbW02EB38-datasegment,a6)
 	addq.w	#2,d6
-	lea	(WL.MSG0-datasegment,a6),a0
+	lea	(dotWL.MSG0-datasegment,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -45916,7 +47953,7 @@ lbC0263A6	move.l	d5,d0
 	lsr.w	#6,d0
 	move.b	d0,(lbW02EB38-datasegment,a6)
 	addq.w	#2,d6
-	lea	(B.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-datasegment,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -45934,7 +47971,7 @@ lbC0263D6	move.l	d5,d0
 	lsr.w	#6,d0
 	move.b	d0,(lbW02EB38-datasegment,a6)
 	addq.w	#2,d6
-	lea	(B.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-datasegment,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -45964,7 +48001,7 @@ lbC02642A	move.l	d5,d0
 	andi.l	#$10000000,d0
 	rol.l	#4,d0
 	move.b	d0,(lbW02EB38-datasegment,a6)
-	lea	(WL.MSG0-datasegment,a6),a0
+	lea	(dotWL.MSG0-datasegment,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -46003,7 +48040,7 @@ lbC026490	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
-	lea	(lbL02AC5A-datasegment,a6),a0
+	lea	(ascii.MSG5-datasegment,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.b	lbC0264AC
@@ -46011,7 +48048,7 @@ lbC026490	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0264AC	move.b	(lbB02AD2D-datasegment,a6),(a4)+
+lbC0264AC	move.b	(TU.MSG-datasegment,a6),(a4)+
 	subq.w	#1,d6
 	rts
 
@@ -46045,19 +48082,19 @@ lbC0264EE	move.b	#$3F,(a4)
 lbC0264FA	rts
 
 lbC0264FC	move.b	(W.MSG0-datasegment,a6),(a4)+
-	move.b	(lbB02AD1D-datasegment,a6),(a4)+
+	move.b	(WNOP.MSG-datasegment,a6),(a4)+
 	jsr	(lbC02A018-datasegment,a6)
 	move.b	#$23,(a4)+
 	bra.w	lbC0222FE
 
 lbC026510	move.b	(L.MSG0-datasegment,a6),(a4)+
-	move.b	(lbB02AD1B-datasegment,a6),(a4)+
+	move.b	(L.MSG1-datasegment,a6),(a4)+
 	jsr	(lbC02A018-datasegment,a6)
 	move.b	#$23,(a4)+
 	bra.w	lbC022292
 
 lbC026524	bfextu	d5{4:4},d0
-	move.w	(lbW02AC7A,pc,d0.w*2),(a4)+
+	move.w	(RASRHILS.MSG,pc,d0.w*2),(a4)+
 	move.b	#$2E,(a4)+
 	movea.l	a2,a0
 	move.b	(-1,a2),d1
@@ -46097,7 +48134,7 @@ lbC026594	btst	#0,d0
 	bset	#0,(lbB02D3A5-datasegment,a6)
 	bra.w	lbC0224EC
 
-lbC0265B0	move.b	(lbB02AD2F-datasegment,a6),(a4)+
+lbC0265B0	move.b	(WFD.MSG-datasegment,a6),(a4)+
 	jsr	(lbC02A018-datasegment,a6)
 	btst	#0,(1,a2)
 	beq.w	lbC0261F2
@@ -46123,7 +48160,7 @@ lbC0265FC	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
-	lea	(lbW02AC7A-datasegment,a6),a0
+	lea	(RASRHILS.MSG-datasegment,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46133,7 +48170,7 @@ lbC0265FC	move.l	d5,d0
 	beq.b	lbC0265B0
 	cmpi.b	#$FF,d1
 	beq.b	lbC0265D6
-	move.b	(BLPAQRSTUWFD.MSG-datasegment,a6),(a4)+
+	move.b	(B.MSG-datasegment,a6),(a4)+
 	jsr	(lbC02A018-datasegment,a6)
 	ext.w	d1
 	ext.l	d1
@@ -46152,7 +48189,7 @@ lbC026652	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
-	lea	(lbW02AC7A-datasegment,a6),a0
+	lea	(RASRHILS.MSG-datasegment,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46233,7 +48270,7 @@ lbC02673C	addq.w	#2,d6
 	move.b	#$2E,(a4)+
 	btst	#$16,d5
 	bne.b	lbC026754
-	move.b	(lbB02AD2F-datasegment,a6),(a4)+
+	move.b	(WFD.MSG-datasegment,a6),(a4)+
 	jsr	(lbC02A018-datasegment,a6)
 	bra.w	lbC0261F2
 
@@ -46279,7 +48316,7 @@ lbC0267B0	move.l	d5,d0
 	lsr.w	#6,d0
 	move.b	d0,(lbW02EB38-datasegment,a6)
 	add.w	d0,d0
-	lea	(B.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-datasegment,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.w	lbC02635C
@@ -46295,7 +48332,7 @@ lbC0267D6	move.l	d5,d0
 	addq.b	#1,d0
 	move.b	d0,(lbW02EB38-datasegment,a6)
 	add.w	d0,d0
-	lea	(B.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-datasegment,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.w	lbC02635C
@@ -46341,7 +48378,7 @@ lbC02684E	move.l	d5,d0
 	move.b	(QR.MSG-datasegment,a6),(a4)+
 	rts
 
-lbC026864	move.b	(lbB02AD2F-datasegment,a6),(a4)+
+lbC026864	move.b	(WFD.MSG-datasegment,a6),(a4)+
 	rts
 
 lbC02686A	move.b	#$2E,(a4)+
@@ -46374,11 +48411,11 @@ lbC02689C	move.b	(QR.MSG-datasegment,a6),(a4)+
 	moveq	#2,d1
 	tst.b	d0
 	beq.b	lbC0268F0
-	move.b	(lbB02AD2F-datasegment,a6),(-1,a4)
+	move.b	(WFD.MSG-datasegment,a6),(-1,a4)
 	moveq	#1,d1
 	cmpi.b	#7,d0
 	beq.b	lbC0268F0
-	move.b	(BLPAQRSTUWFD.MSG-datasegment,a6),(-1,a4)
+	move.b	(B.MSG-datasegment,a6),(-1,a4)
 	moveq	#0,d1
 	dl	$13C0070
 
@@ -46387,15 +48424,15 @@ lbC02689C	move.b	(QR.MSG-datasegment,a6),(a4)+
 	bset	#0,(lbB02D3A5-datasegment,a6)
 	rts
 
-lbC0268EA	move.b	(lbB02AD2F-datasegment,a6),(a4)+
+lbC0268EA	move.b	(WFD.MSG-datasegment,a6),(a4)+
 	moveq	#1,d1
 lbC0268F0	move.b	d1,(lbW02EB38-datasegment,a6)
 	rts
 
-lbC0268F6	move.b	(lbB02AD2B-datasegment,a6),(a4)+
+lbC0268F6	move.b	(RS.MSG-datasegment,a6),(a4)+
 	btst	#1,(3,a2)
 	bne.b	lbC026908
-	move.b	(lbB02AD2F-datasegment,a6),(-1,a4)
+	move.b	(WFD.MSG-datasegment,a6),(-1,a4)
 lbC026908	rts
 
 lbC02690A	move.b	#$3F,(a4)
@@ -46411,7 +48448,7 @@ lbC02691C	move.l	d5,d0
 	lsr.w	#6,d0
 	cmp.b	#3,d0
 	beq.b	lbC02690A
-lbC02692E	move.b	(lbB02AD2B-datasegment,a6),d0
+lbC02692E	move.b	(RS.MSG-datasegment,a6),d0
 	btst	#$18,d5
 	beq.b	lbC02693C
 	move.b	(LPA.MSG-datasegment,a6),d0
@@ -46479,7 +48516,7 @@ lbC0269D2	move.l	d5,d0
 	lsr.w	#6,d0
 	cmp.b	#3,d0
 	beq.w	lbC02690A
-lbC0269E6	move.b	(lbB02AD2B-datasegment,a6),d0
+lbC0269E6	move.b	(RS.MSG-datasegment,a6),d0
 	btst	#$18,d5
 	beq.b	lbC0269F4
 	move.b	(LPA.MSG-datasegment,a6),d0
@@ -46561,7 +48598,7 @@ lbC026AAC	bsr.b	lbC026A8A
 	cmpi.w	#4,d0
 	beq.b	lbC026AD0
 	move.b	#$2E,(a4)+
-	move.b	(lbB02AD2F-datasegment,a6),(a4)+
+	move.b	(WFD.MSG-datasegment,a6),(a4)+
 	cmpi.w	#2,d0
 	beq.b	lbC026AD0
 	move.b	(LPA.MSG-datasegment,a6),(-1,a4)
@@ -46835,7 +48872,7 @@ lbC026DBC	movea.l	(lbL02D1D8-datasegment,a6),a0
 lbC026DC8	movem.l	d2/d3/a2/a3,-(sp)
 	movem.l	a2/a3,(lbL02D070-datasegment,a6)
 	bsr.w	lbC029E04
-	bsr.w	lbC029F24
+	bsr.w	_SetPointerAll
 	lea	(lbL027136,pc),a2
 	movea.l	d1,a1
 	move.l	d1,-(sp)
@@ -46885,7 +48922,7 @@ _gettextbynum0	bsr.w	gettextbynum
 	tst.l	d0
 	bne.b	lbC026E8A
 	bsr.w	lbC029E98
-	bsr.w	clearpointerall
+	bsr.w	_ClearPointerAll
 	bsr.w	error_38
 	move.l	(sp)+,d1
 	moveq	#0,d0
@@ -46966,7 +49003,7 @@ lbC026F32	lea	(lbL02706A,pc),a0
 	jsr	(_LVOCloseWindow,a6)
 	movea.l	(sp)+,a6
 	bsr.w	lbC029E98
-	bsr.w	clearpointerall
+	bsr.w	_ClearPointerAll
 	st	(lbB02EB45-datasegment,a6)
 	tst.w	d3
 	bpl.b	lbC026F6E
@@ -48646,7 +50683,7 @@ lbC02818E	moveq	#0,d0
 lbC02819A	move.l	a2,(lbL02D094-datasegment,a6)
 	bsr.w	lbC0273FC
 	bsr.w	lbC02AEDE
-	bsr.w	lbC029F24
+	bsr.w	_SetPointerAll
 	bra.b	lbC0281C8
 
 lbC0281AC	move.l	a4,-(sp)
@@ -48655,7 +50692,7 @@ lbC0281AC	move.l	a4,-(sp)
 	movea.l	d0,a4
 	jsr	(lbC027E7C-datasegment,a6)
 	movea.l	(sp)+,a4
-	bsr.w	lbC029F24
+	bsr.w	_SetPointerAll
 	jsr	(lbC01FA52).l
 lbC0281C8	tst.b	(lbB02EB78-datasegment,a6)
 	beq.b	lbC0281FE
@@ -48694,7 +50731,7 @@ lbC02821C	movea.l	(lbL02D0F0-datasegment,a6),a2
 
 _savecommonregs2	bsr.w	savecommonregs
 	bsr.w	lbC0273FC
-	lea	(lbL02D8C8-datasegment,a6),a0
+	lea	(lbB02D8C8-datasegment,a6),a0
 	move.l	a0,d1
 	move.w	#$2762,d0
 	jsr	(gettextbynum-datasegment,a6)
@@ -48712,7 +50749,7 @@ lbC028254	tst.l	(window2ptr-datasegment,a6)
 	bra.w	_dummy
 
 __DisplayBeep	bsr.w	_DisplayBeep
-lbC028268	lea	(lbL02D9C8-datasegment,a6),a0
+lbC028268	lea	(lbB02D9C8-datasegment,a6),a0
 	move.l	a0,d1
 	move.w	#$2762,d0
 	jsr	(gettextbynum-datasegment,a6)
@@ -48849,7 +50886,7 @@ lbC0283FC	move.l	a2,-(sp)
 	clr.b	(a4)
 	clr.b	-(a4)
 	move.l	a4,d2
-	lea	(lbL02D8C8-datasegment,a6),a0
+	lea	(lbB02D8C8-datasegment,a6),a0
 	tst.b	(lbB02EB44-datasegment,a6)
 	bne.b	lbC028422
 	lea	(lbL02DAC8-datasegment,a6),a0
@@ -48884,18 +50921,18 @@ lbC028458	bsr.w	lbC02A4A6
 	rts
 
 lbC02846C	movem.l	a2/a4,-(sp)
-	lea	(lbL02DCC8-datasegment,a6),a0
+	lea	(lbB02DCC8-datasegment,a6),a0
 	bra.b	lbC028492
 
 lbC028476	movem.l	a2/a4,-(sp)
-	lea	(lbL02D8C8-datasegment,a6),a0
+	lea	(lbB02D8C8-datasegment,a6),a0
 	bra.b	lbC028492
 
 lbC028480	movem.l	a2/a4,-(sp)
-	lea	(lbL02D8C8-datasegment,a6),a0
+	lea	(lbB02D8C8-datasegment,a6),a0
 	tst.b	(lbB02EB44-datasegment,a6)
 	bne.b	lbC028492
-	lea	(lbL02D9C8-datasegment,a6),a0
+	lea	(lbB02D9C8-datasegment,a6),a0
 lbC028492	lea	(_RawDoFmt_args-datasegment,a6),a1
 	move.l	a0,(a1)
 	move.w	#$2755,d0
@@ -48907,7 +50944,7 @@ lbC028492	lea	(_RawDoFmt_args-datasegment,a6),a1
 	movea.l	a2,a4
 	jsr	(lbC027E7C-datasegment,a6)
 	adda.w	#$3C,sp
-	bsr.w	lbC029F24
+	bsr.w	_SetPointerAll
 	movem.l	(sp)+,a2/a4
 	rts
 
@@ -48915,7 +50952,7 @@ lbC0284C0	moveq	#4,d6
 	bra.b	lbC0284C6
 
 lbC0284C4	moveq	#-4,d6
-lbC0284C6	bsr.w	lbC029F24
+lbC0284C6	bsr.w	_SetPointerAll
 	bsr.w	lbC0273FC
 	move.l	d7,d0
 	andi.l	#$F8,d0
@@ -48950,7 +50987,7 @@ lbC028520	movem.l	(sp)+,a2/a3
 	andi.b	#$FB,ccr
 	rts
 
-lbC02852E	bsr.w	lbC029F24
+lbC02852E	bsr.w	_SetPointerAll
 	movem.l	a2/a3,-(sp)
 	movea.l	(datasegment-datasegment,a6),a2
 	movea.l	(lbL02A894-datasegment,a6),a3
@@ -49077,10 +51114,10 @@ lbC0286B8	addq.l	#8,a3
 	addq.l	#4,a2
 	bra.w	lbC028556
 
-lbC0286C2	jsr	(lbC029F24-datasegment,a6)
-	lea	(lbL0145D8).l,a5
+lbC0286C2	jsr	(_SetPointerAll-datasegment,a6)
+	lea	(data1).l,a5
 	moveq	#$59,d0
-	lea	(lbL02EADC-datasegment,a6),a1
+	lea	(data1_copied-datasegment,a6),a1
 lbC0286D2	move.b	(a5)+,(a1)+
 	dbra	d0,lbC0286D2
 	move.w	#$1F47,d0
@@ -49307,7 +51344,7 @@ lbC028982	movem.l	a2-a5,-(sp)
 	bsr.w	DropIMsgAll
 	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
 lbC0289A0	jsr	(__ClearMenuStrip-datasegment,a6)
-	bsr.w	clearpointerall
+	bsr.w	_ClearPointerAll
 	tst.b	(lbB02EB7A-datasegment,a6)
 	bne.b	lbC0289C0
 	movem.l	a2/a3,-(sp)
@@ -49830,10 +51867,10 @@ lbC028FA0	cmpi.b	#$EF,d0
 	andi.b	#$FB,ccr
 	rts
 
-lbC028FCC	lea	(lbL02D8C8-datasegment,a6),a0
+lbC028FCC	lea	(lbB02D8C8-datasegment,a6),a0
 	tst.b	(lbB02EB44-datasegment,a6)
 	bne.b	lbC028FDA
-	lea	(lbL02D9C8-datasegment,a6),a0
+	lea	(lbB02D9C8-datasegment,a6),a0
 lbC028FDA	lea	(lbB02C1D4-datasegment,a6),a1
 	moveq	#-1,d0
 lbC028FE0	move.b	(a0)+,(a1)+
@@ -50471,7 +52508,7 @@ lbC02967E	clr.b	(lbB02EB46-datasegment,a6)
 	clr.b	(1,a4)
 	move.l	a4,d2
 	lea	(lbB031E00-datasegment,a6),a1
-lbC0296A8	lea	(lbL02D8C8-datasegment,a6),a0
+lbC0296A8	lea	(lbB02D8C8-datasegment,a6),a0
 	tst.b	(lbB02EB44-datasegment,a6)
 	bne.b	lbC0296C0
 	lea	(lbL02DAC8-datasegment,a6),a0
@@ -50725,7 +52762,7 @@ lbC029946	move.l	a0,-(sp)
 	bsr.w	lbC027DEC
 lbC029964	tst.b	(lbB02B418-datasegment,a6)
 	bne.w	lbC029A00
-	bsr.w	lbC029F24
+	bsr.w	_SetPointerAll
 	jsr	(lbC02A866-datasegment,a6)
 	addq.b	#1,(lbB02EB4A-datasegment,a6)
 	bsr.w	lbC027DEC
@@ -51183,46 +53220,46 @@ lbC029F0E	move.l	(window7ptr-datasegment,a5),d0
 lbC029F1E	movem.l	(sp)+,d0/d1/a0/a1/a5/a6
 	rts
 
-lbC029F24	movem.l	d0-d3/a0/a1/a5/a6,-(sp)
+_SetPointerAll	movem.l	d0-d3/a0/a1/a5/a6,-(sp)
 	movea.l	a6,a5
 	moveq	#-6,d2
 	moveq	#0,d3
 	movea.l	(intbase-datasegment,a5),a6
 	move.l	(window1ptr-datasegment,a5),d0
-	bsr.w	lbC029F7C
+	bsr.w	_SetPointer
 	move.l	(symwindowptr-datasegment,a5),d0
 	beq.b	lbC029F42
-	bsr.b	lbC029F7C
+	bsr.b	_SetPointer
 lbC029F42	move.l	(window2ptr-datasegment,a5),d0
 	beq.b	lbC029F4A
-	bsr.b	lbC029F7C
+	bsr.b	_SetPointer
 lbC029F4A	move.l	(window3ptr-datasegment,a5),d0
 	beq.b	lbC029F52
-	bsr.b	lbC029F7C
+	bsr.b	_SetPointer
 lbC029F52	move.l	(window4ptr-datasegment,a5),d0
 	beq.b	lbC029F5A
-	bsr.b	lbC029F7C
+	bsr.b	_SetPointer
 lbC029F5A	move.l	(window5ptr-datasegment,a5),d0
 	beq.b	lbC029F62
-	bsr.b	lbC029F7C
+	bsr.b	_SetPointer
 lbC029F62	move.l	(window6ptr-datasegment,a5),d0
 	beq.b	lbC029F6A
-	bsr.b	lbC029F7C
+	bsr.b	_SetPointer
 lbC029F6A	move.l	(window7ptr-datasegment,a5),d0
 	beq.b	lbC029F72
-	bsr.b	lbC029F7C
+	bsr.b	_SetPointer
 lbC029F72	movem.l	(sp)+,d0-d3/a0/a1/a5/a6
 	andi.b	#$FB,ccr
 	rts
 
-lbC029F7C	movea.l	d0,a0
-	lea	(lbL039EC4).l,a1
-	moveq	#$10,d0
-	moveq	#$10,d1
+_SetPointer	movea.l	d0,a0	;window
+	lea	(lbL039EC4).l,a1	;pointer
+	moveq	#$10,d0	;height
+	moveq	#$10,d1	;width
 	jsr	(_LVOSetPointer,a6)
 	rts
 
-clearpointerall	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
+_ClearPointerAll	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
 	movea.l	a6,a5
 	movea.l	(intbase-datasegment,a5),a6
 	move.l	(window1ptr-datasegment,a5),d0
@@ -51256,18 +53293,18 @@ _ClearPointer	movea.l	d0,a0
 	jsr	(_LVOClearPointer,a6)
 	rts
 
-lbC029FE8	move.b	(lbB02ABF7-datasegment,a6),(a4)+
+lbC029FE8	move.b	(dl.MSG-datasegment,a6),(a4)+
 	cmp.b	(sc.MSG-datasegment,a6),d0
 	beq.b	lbC02A00A
-	cmp.b	(lbB02ABF7-datasegment,a6),d0
+	cmp.b	(dl.MSG-datasegment,a6),d0
 	beq.b	lbC02A00A
 	cmp.b	(xpsc.MSG-datasegment,a6),d0
 	beq.b	lbC02A00A
-	cmp.b	(lbB02ABFB-datasegment,a6),d0
+	cmp.b	(ps.MSG-datasegment,a6),d0
 	beq.b	lbC02A00A
 	tst.b	(lbB02B46D-datasegment,a6)
 	beq.b	lbC02A014
-lbC02A00A	move.b	(lbB02ABFD-datasegment,a6),(a4)+
+lbC02A00A	move.b	(cx.MSG-datasegment,a6),(a4)+
 	move.b	#$2E,(a4)+
 	addq.w	#2,d6
 lbC02A014	move.b	d0,(a4)+
@@ -51730,12 +53767,12 @@ lbC02A502	movem.l	d0-d2/a0-a3,-(sp)
 	move.b	d2,(lbB02EB4B-datasegment,a6)
 	bsr.b	lbC02A52A
 	lea	(window3ptr-datasegment,a6),a0
-	move.w	(lbB02CF8A-datasegment,a6),d0
+	move.w	(macros_num-datasegment,a6),d0
 	lsl.w	#2,d0
 	move.l	(a0,d0.w),d0
 	bsr.b	lbC02A562
 	moveq	#-1,d0
-	move.l	d0,(lbB02CF8A-datasegment,a6)
+	move.l	d0,(macros_num-datasegment,a6)
 	movem.l	(sp)+,d0-d2/a0-a3
 	rts
 
@@ -51753,7 +53790,7 @@ lbC02A53A	beq.b	lbC02A560
 	move.l	d2,-(sp)
 	move.l	#$8003000E,-(sp)
 	movea.l	sp,a1
-	jsr	(setgadget2).l
+	jsr	(SetGadgetAttrs).l
 	lea	(12,sp),sp
 lbC02A560	rts
 
@@ -51766,7 +53803,7 @@ lbC02A562	beq.b	lbC02A588
 	move.l	d2,-(sp)
 	move.l	#$8003000E,-(sp)
 	movea.l	sp,a1
-	jsr	(setgadget2).l
+	jsr	(SetGadgetAttrs).l
 	lea	(12,sp),sp
 lbC02A588	rts
 
@@ -51785,7 +53822,9 @@ lbC02A58A	movem.l	d0-d2/a0-a2/a6,-(sp)
 	beq.b	lbC02A5DA
 	cmpi.w	#$314,d2
 	beq.b	lbC02A5CC
-	cmpi.w	#$366,d2
+	dw	$C42
+
+lbC02A5BA	bchg	d1,-(a6)
 	bne.b	lbC02A5FA
 	move.w	#$4EB,d0
 	tst.b	d1
@@ -52141,19 +54180,19 @@ A0A1A2A3A4A5A.MSG2	db	'(A0,(A1,(A2,(A3,(A4,(A5,(A6,(SP,'
 A0A1A2A3A4A5A.MSG3	db	',A0,,A1,,A2,,A3,,A4,,A5,,A6,,SP,'
 D0WD0LD1WD1LD.MSG	db	'D0.WD0.LD1.WD1.LD2.WD2.LD3.WD3.LD4.WD4.LD5.WD5.LD6.WD6.LD7.WD7.LA0.WA0.LA1.WA1.LA2.WA2.LA3.WA3.LA4.WA4.LA5.WA5.LA6.WA6.LSP.W'
 	db	'SP.L'
-ascii.MSG5	db	'*1*2*4*8'
-lbB02AAF7	db	$5A
+Scale.MSG	db	'*1*2*4*8'
+ZP.MSG	db	'Z'
 PC.MSG1	db	'P'
-lbB02AAF9	db	$43
+CA.MSG	db	'C'
 ADUSPUSPMMUMM.MSG	db	'A'
-lbB02AAFB	db	$44
+DUSP.MSG	db	'D'
 USP.MSG0	db	',USP'
 USP.MSG1	db	'USP,'
 MMU.MSG	db	',MMU'
 MMUS.MSG	db	'MMUS'
 R.MSG	db	'R,'
 FC.MSG	db	'F'
-lbB02AB0F	db	$43
+CFP.MSG	db	'C'
 FP.MSG	db	'FP'
 FPIAR.MSG	db	'FPIAR',0
 FPSR.MSG	db	'FPSR',0
@@ -52245,13 +54284,13 @@ SD.MSG	db	'SD',0,0
 	db	0
 endbdlw.MSG	db	'end'
 bd.MSG	db	'b'
-lbB02ABF7	db	$64
+dl.MSG	db	'd'
 lw.MSG	db	'l'
-lbB02ABF9	db	$77
+wx.MSG	db	'w'
 xpsc.MSG	db	'x'
-lbB02ABFB	db	$70
+ps.MSG	db	'p'
 sc.MSG	db	's'
-lbB02ABFD	db	$63
+cx.MSG	db	'c'
 x.MSG	db	'x',0
 LSXPWDBLSXPWD.MSG0	db	'LSXPWDB?'
 LSXPWDBP.MSG0	db	'LSXPWDBP'
@@ -52263,13 +54302,11 @@ T.MSG	db	'T',0
 	db	'F',0
 	db	'HILS'
 CCCSNEEQVCVSP.MSG	db	'CCCSNEEQVCVSPLMIGELTGTLE'
-lbL02AC5A	dl	$5241
-	dl	$48494C53
+ascii.MSG5	db	0
+	db	0
+	db	'RAHILS'
 CCCSNEEQVCVSP.MSG0	db	'CCCSNEEQVCVSPLMIGELTGTLE'
-lbW02AC7A	dw	$5241
-	dw	$5352
-	dw	$4849
-	dw	$4C53
+RASRHILS.MSG	db	'RASRHILS'
 CCCSNEEQVCVSP.MSG1	db	'CCCSNEEQVCVSPLMIGELTGTLE'
 F.MSG	db	'F',0,0
 	db	0
@@ -52305,28 +54342,28 @@ F.MSG	db	'F',0,0
 	db	'SNE',0
 	db	'ST',0,0
 L.MSG0	db	'.'
-lbB02AD1B	db	$4C
+L.MSG1	db	'L'
 W.MSG0	db	'.'
-lbB02AD1D	db	$57
+WNOP.MSG	db	'W'
 NOP.MSG	db	'NOP'
 TRAP.MSG	db	'TRAP'
-BLPAQRSTUWFD.MSG	db	'B'
+B.MSG	db	'B'
 LPA.MSG0	db	'?'
 LPA.MSG	db	'LPA'
 QR.MSG	db	'Q'
-lbB02AD2B	db	$52
+RS.MSG	db	'R'
 ST.MSG	db	'S'
-lbB02AD2D	db	$54
+TU.MSG	db	'T'
 UW.MSG	db	'U'
-lbB02AD2F	db	$57
+WFD.MSG	db	'W'
 FD.MSG	db	'FD'
 XEFM.MSG	db	'X'
-lbB02AD33	db	$45
+EF.MSG	db	'E'
 FM.MSG	db	'F'
-lbB02AD35	db	$4D
+M.MSG	db	'M'
 lbW02AD36	dw	0
-B.MSG	db	'.B'
-WL.MSG0	db	'.W.L',0,0
+dotB.MSG	db	'.B'
+dotWL.MSG0	db	'.W.L',0,0
 LSXPWDB.MSG	db	'LSXPWDB?'
 LSXPWDBP.MSG	db	'LSXPWDBP'
 
@@ -52477,7 +54514,7 @@ lbC02AEB4	tst.b	(a0)+
 	subq.l	#1,d0
 	rts
 
-lbC02AEC0	bsr.w	lbC029F24
+lbC02AEC0	bsr.w	_SetPointerAll
 	jsr	(lbC029B18-datasegment,a6)
 	bsr.w	lbC0273FC
 	movea.l	(lbL02A8A0-datasegment,a6),a2
@@ -52509,7 +54546,7 @@ lbC02AF0E	jsr	(lbC02A3E6-datasegment,a6)
 	sub.l	a2,d0
 	cmpi.l	#$400,d0
 	bcs.b	lbC02AF22
-	jsr	(lbC029F24-datasegment,a6)
+	jsr	(_SetPointerAll-datasegment,a6)
 lbC02AF22	move.l	a2,-(sp)
 lbC02AF24	bclr	#7,(a3)
 	move.l	a2,(sp)
@@ -53092,7 +55129,7 @@ saved_sp	dx.l	1
 wbmsg	dx.l	1
 execbase	dx.l	1
 thistask1	dx.l	1
-lbL02CE44	dx.l	1
+kickstart_adr	dx.l	1
 dosbase	dx.l	1
 intbase	dx.l	1
 lbL02CE50	dx.l	1
@@ -53113,7 +55150,7 @@ lbL02CE88	dx.l	$14
 screenptr	dx.l	1
 lbL02CEDC	dx.l	1
 lbL02CEE0	dx.l	1
-lbB02CEE4	dx.b	4
+visualinfo	dx.b	4
 lbW02CEE8	dx.w	1
 lbB02CEEA	dx.b	$26
 lbB02CF10	dx.b	$28
@@ -53135,7 +55172,7 @@ window5ptr	dx.b	4
 window6ptr	dx.b	4
 window7ptr	dx.b	4
 lbB02CF86	dx.b	4
-lbB02CF8A	dx.b	2
+macros_num	dx.b	2
 lbB02CF8C	dx.b	2
 _RawDoFmt_args	dx.b	$10
 lbL02CF9E	dx.l	5
@@ -53164,10 +55201,10 @@ symactivenum_incs	dx.b	2
 lbB02CFF6	dx.b	2
 lbB02CFF8	dx.b	6
 lbB02CFFE	dx.b	$1C
-lbB02D01A	dx.b	12
-lbB02D026	dx.b	12
-lbB02D032	dx.b	$10
-lbB02D042	dx.b	12
+searchcaselabels	dx.b	12
+searchalignlabels	dx.b	12
+searchfromlabels	dx.b	$10
+searchdummylabels	dx.b	12
 lbL02D04E	dx.l	3
 lbL02D05A	dx.l	5
 lbB02D06E	dx.b	2
@@ -53380,15 +55417,15 @@ lbB02D6BC	dx.b	$E0
 lbL02D79C	dx.l	3
 lbL02D7A8	dx.l	8
 lbL02D7C8	dx.l	$40
-lbL02D8C8	dx.l	$40
-lbL02D9C8	dx.l	$40
+lbB02D8C8	dx.b	$100
+lbB02D9C8	dx.b	$100
 lbL02DAC8	dx.l	$40
 lbL02DBC8	dx.l	$40
-lbL02DCC8	dx.l	$40
+lbB02DCC8	dx.b	$100
 lbB02DDC8	dx.b	1
 lbB02DDC9	dx.b	$FF
-lbL02DEC8	dx.l	$20
-lbL02DF48	dx.l	$20
+lbB02DEC8	dx.b	$80
+lbB02DF48	dx.b	$80
 lbL02DFC8	dx.l	$40
 lbL02E0C8	dx.l	$40
 lbL02E1C8	dx.l	$40
@@ -53413,7 +55450,7 @@ lbB02EAD5	dx.b	1
 lbW02EAD6	dx.w	1
 lbL02EAD8	dx.b	1
 lbB02EAD9	dx.b	3
-lbL02EADC	dx.l	3
+data1_copied	dx.l	3
 	dx.w	1
 	dx.b	1
 lbB02EAEB	dx.b	5
@@ -53629,7 +55666,7 @@ lbB039E88	dx.b	$1A
 lbB039EA2	dx.b	$22
 DxAreaEnd
 
-	SECTION	ReSource7rs039EC4,DATA,CHIP
+	SECTION	ReSource10rs039EC4,DATA,CHIP
 lbL039EC4	dl	0
 	dl	$40007C0
 	dl	$7C0
@@ -53648,7 +55685,7 @@ lbL039EC4	dl	0
 	dl	$7C01FF8
 	dl	$7E0
 	dl	0
-lbL039F0C	dl	0
+GadgetImageData	dl	0
 	dl	0
 	dl	$10000
 	dl	0
@@ -53720,7 +55757,7 @@ lbL039F0C	dl	0
 	dl	0
 
 
-	SECTION	ReSource7rs03A024,CODE
+	SECTION	ReSource10rs03A024,CODE
 lbC03A024	movem.l	a2-a4,-(sp)
 	lea	(lbL03A400,pc),a0
 	lea	(lbL03576C).l,a1
