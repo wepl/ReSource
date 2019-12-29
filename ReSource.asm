@@ -1,6 +1,16 @@
 
-	IFD _BARFLY_
+	IFD BARFLY
+	;BOPT	O+		;enable optimizing
+	;BOPT	OG+		;enable optimizing
+	BOPT	ODd-		;disable mul optimizing
+	BOPT	ODe-		;disable mul optimizing
+	BOPT	wo-		;no optimize warnings
+	BOPT	sa+		;write symbol hunks
 	ENDC
+
+VERSION MACRO
+	db	"6.6.1"
+	ENDM
 
 * here starts the normal ReSource output
 
@@ -266,16 +276,26 @@ pr_ConsoleTask	equ	$A4
 WFLG_DRAGBAR	equ	$2
 ****************************************************************************
 	exeobj
-	errfile	'ram:assem.output'
-	objfile	'ReSource.11'
-;_[]
 	SECTION	ReSource11rs000000,CODE
 ProgStart
 ; datasegment = $2a890 (sometimes a5, sometimes a6)
 lbC000000	jmp	(Start).l
 
-	db	'$VER: ReSource 6.06 (07.02.95)',$D,$A,0
-	db	0
+	IFD BARFLY
+	IFND	.passchk
+	DOSCMD	"WDate  >T:date"
+.passchk
+	ENDC
+	ENDC
+
+	db	"$VER: ReSource "
+	VERSION
+	db	" "
+	IFD BARFLY
+		INCBIN	"T:date"
+	ENDC
+	db	$D,$A,0
+	EVEN
 
 lbC000028	movem.l	d0-d6/a0-a3/a5,-(sp)
 	move.l	d0,d6
@@ -24929,14 +24949,25 @@ copy_a0_a1	move.b	(a0)+,(a1)+
 	subq.w	#1,a1
 	rts
 
-ReSourceV606.MSG	db	'ReSource V6.06',$A,0
-Tuesday07Feb9.MSG	db	'Tuesday 07-Feb-95',0
-ThePuzzleFact.MSG	db	'     The Puzzle Factory, Inc.         Helios Software',$A
+ReSourceV606.MSG	db	"ReSource V"
+	VERSION
+	db	$A,0
+Tuesday07Feb9.MSG
+	IFD BARFLY
+		INCBIN	"T:date"
+	ELSE
+		db	'Tuesday 07-Feb-95'
+	ENDC
+		db	0
+ThePuzzleFact.MSG
+	db	'     The Puzzle Factory, Inc.         Helios Software',$A
 	db	'     P.O. Box 986                     163 Huthwaite Road',$A
 	db	'     Veneta, OR 97487                 Sutton-in-Ashfield',$A
 	db	'     USA                              Nottinghamshire NG17 2HB',$A
 	db	'                                      UK',$A,$A
-	db	'     +(503) 935-3709                  +(623) 554828',$A,$A,$A,0
+	db	'     +(503) 935-3709                  +(623) 554828',$A,$A
+	db	"This version of ReSource is derrived from original 6.06 and modified by Wepl",10,0
+	EVEN
 
 lbC01455E	tst.l	(lbB02B4A8-datasegment,a6)
 	beq.w	_nosymdata
