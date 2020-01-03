@@ -1,11 +1,14 @@
 
 	IFD BARFLY
-	;BOPT	O+		;enable optimizing
+	BOPT	O+		;enable optimizing
 	;BOPT	OG+		;enable optimizing
-	BOPT	ODd-		;disable mul optimizing
-	BOPT	ODe-		;disable mul optimizing
+	BOPT	OD08-		;disable 'move.b #-1,ea' -> 'st' optimizing
+				;e.g. $2a422
+	BOPT	ODd-		;disable mulu optimizing
+	BOPT	ODe-		;disable muls optimizing
 	BOPT	wo-		;no optimize warnings
 	BOPT	sa+		;write symbol hunks
+	BOPT	v+		;verbose
 	ENDC
 
 VERSION MACRO
@@ -14,7 +17,6 @@ VERSION MACRO
 
 * here starts the normal ReSource output
 
-	MC68020
 ThisTask	equ	$114
 _LVOSplitName	equ	-$19E
 _LVOActivateGadget	equ	-$1CE
@@ -44383,9 +44385,11 @@ lbC023C0E	bra.w	lbC022490
 
 lbC023C12	rts
 
+	MC68020
 extract_ea_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
 lbC023C1C	jmp	([lbL00E11C,pc,d0.w*4])
+	MC68000
 
 extract_ea_68000	move.l	d5,d0
 	andi.l	#$380000,d0
@@ -45592,9 +45596,11 @@ lbC0248DE	move.b	#$23,(a4)+
 
 lbC0248FA	bra.w	lbC022292
 
+	MC68020
 extract_dn_68020	bfextu	d5{4:3},d0
 	move.w	(D0D1D2D3D4D5D.MSG.l,pc,d0.w*2),(a4)+
 	rts
+	MC68000
 
 extract_dn_68000	move.l	d5,d0
 	andi.l	#$E000000,d0
@@ -45627,9 +45633,11 @@ lbC024944	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
+	MC68020
 extract_ea4_68020	bfextu	d5{7:3},d0
 	bfextu	d5{4:3},d3
 	jmp	([lbL00E38C,pc,d0.w*4])
+	MC68000
 
 extract_ea4_68000	move.l	d5,d0
 	andi.l	#$1C00000,d0
@@ -45653,9 +45661,11 @@ lbC024998	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
+	MC68020
 extract_ea3_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
 	jmp	([lbL00E3CC,pc,d0.w*4])
+	MC68000
 
 extract_ea3_68000	move.l	d5,d0
 	andi.l	#$380000,d0
@@ -45810,9 +45820,11 @@ _set_dn_f000	bsr.w	set_dn_f000
 	move.w	(a2),d4
 	bra.b	lbC024B0C
 
+	MC68020
 extract_ea2_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
 	jmp	([lbL00E44C,pc,d0.w*4])
+	MC68000
 
 extract_ea2_68000	move.l	d5,d0
 	andi.l	#$380000,d0
@@ -45869,9 +45881,11 @@ lbC024C06	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
+	MC68020
 extract_ea5_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
 	jmp	([lbL00E4CC,pc,d0.w*4])
+	MC68000
 
 extract_ea5_68000	move.l	d5,d0
 	andi.l	#$380000,d0
@@ -45895,9 +45909,11 @@ lbC024C5A	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
+	MC68020
 extract_an_68020	bfextu	d5{4:3},d0
 	move.w	(A0A1A2A3A4A5A.MSG.l,pc,d0.w*2),(a4)+
 	rts
+	MC68000
 
 extract_an_68000	move.l	d5,d0
 	andi.l	#$E000000,d0
@@ -47771,12 +47787,14 @@ lbC026068	addq.l	#1,(lbL02D290-datasegment,a6)
 	st	(lbL02EB36-datasegment,a6)
 	bra.w	lbC0222FE
 
+	MC68020
 extract_shift_68020	move.b	#'#',(a4)+
 	bfextu	d5{4:3},d0
 	beq.b	lbC026088
 lbC02607E	bsr.w	lbC0234AE
 	beq.w	put_line_end
 	rts
+	MC68000
 
 lbC026088	moveq	#8,d0
 	bra.b	lbC02607E
@@ -48076,12 +48094,14 @@ lbC02636A	moveq	#0,d0
 	move.b	(a0)+,(a4)+
 lbC02638A	rts
 
+	MC68020
 extract_size_68020	bfextu	d5{8:2},d0
 	move.b	d0,(opcode_size-datasegment.l,a6)
 	addq.w	#2,d6
 	move.w	(dotB.MSG-datasegment.l,a6,d0.w*2),(a4)+
 	beq.b	set2qbefore
 	rts
+	MC68000
 
 extract_size_68000	move.l	d5,d0
 	andi.l	#$C00000,d0
@@ -48229,6 +48249,7 @@ lbC026510	move.b	(L.MSG0-datasegment,a6),(a4)+
 	move.b	#$23,(a4)+
 	bra.w	lbC022292
 
+	MC68020
 extract_cc_68020	bfextu	d5{4:4},d0
 	move.w	(RASRHILS.MSG.l,pc,d0.w*2),(a4)+
 	move.b	#'.',(a4)+
@@ -48248,6 +48269,7 @@ extract_cc_68020	bfextu	d5{4:4},d0
 	bcs.b	extract_cc_boundsfailed
 	bsr.w	put_adr_d0
 	rts
+	MC68000
 
 extract_cc_boundsfailed
 	bset	#3,(lbB02D3A5-datasegment,a6)
@@ -48541,7 +48563,9 @@ lbC02689C	move.b	(QR.MSG-datasegment,a6),(a4)+
 	andi.l	#$1C00,d0
 	lsr.w	#8,d0
 	lsr.w	#2,d0
+	MC68020		;BASM bug
 	btst	d0,#14
+	MC68000
 	bne.b	lbC0268F0
 	move.b	(LPA.MSG-datasegment,a6),(-1,a4)
 	moveq	#2,d1
@@ -48553,7 +48577,9 @@ lbC02689C	move.b	(QR.MSG-datasegment,a6),(a4)+
 	beq.b	lbC0268F0
 	move.b	(B.MSG-datasegment,a6),(-1,a4)
 	moveq	#0,d1
+	MC68020		;BASM bug
 	btst	d0,#$70
+	MC68000
 	bne.b	lbC0268F0
 	move.b	#$3F,(-1,a4)
 	bset	#0,(lbB02D3A5-datasegment,a6)
