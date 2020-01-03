@@ -11481,7 +11481,7 @@ lbC00B242	move.l	d0,d1
 	jsr	(_UnLock_ifd1-ds,a6)
 lbC00B24C	bsr.b	lbC00B29E
 	movea.l	(lbB02D0E8-ds,a6),a0
-	bsr.w	.special
+	bsr.w	parseargs_special
 	beq.b	lbC00B278
 	jsr	(lbC027E00-ds,a6)
 	clr.b	(lbB02EB69-ds,a6)
@@ -11859,9 +11859,9 @@ skip_comma_space	move.b	(a0)+,d0
 parseargs	move.l	sp,(parseargs_savedsp-ds,a6)
 	lea	(work_data_spec_str-ds,a6),a0
 	cmpi.b	#'*',(a0)
-	beq.b	.special
+	beq.b	parseargs_special
 	cmpi.b	#'-',(a0)
-	beq.b	.special
+	beq.b	parseargs_special
 	tst.b	(a0)
 	beq.b	.noarg
 	move.l	a0,d1
@@ -11879,7 +11879,7 @@ parseargs	move.l	sp,(parseargs_savedsp-ds,a6)
 	move.l	(sp)+,d0
 	beq.b	.noarg
 	tst.l	(examine_DirEntryType-ds,a6)
-	bmi.b	.special	;jump if file
+	bmi.b	parseargs_special	;jump if file
 .searchend	tst.b	(a0)+
 	bne.b	.searchend
 	subq.l	#2,a0
@@ -11899,10 +11899,10 @@ parseargs	move.l	sp,(parseargs_savedsp-ds,a6)
 
 .reqfailed	jsr	(freework-ds,a6)
 	tst.l	d0
-	bne.b	.special
+	bne.b	parseargs_special
 	jmp	(_nomemory-ds,a6)
 
-.special	cmpi.b	#'*',(a0)
+parseargs_special	cmpi.b	#'*',(a0)
 	beq.b	.special2
 	cmpi.b	#'-',(a0)
 	bne.w	.filespec
