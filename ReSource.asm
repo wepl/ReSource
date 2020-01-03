@@ -33,9 +33,11 @@ _LVOCurrentTime	equ	-$54
 _LVOFreeRemember	equ	-$198
 LN_NAME	equ	$A
 LIB_SIZE	equ	$22
+fr_File	equ	$4
 SA_Height	equ	$80000024
 GACT_STRINGLEFT	equ	$0
 MX_KIND	equ	$5
+SHARED_LOCK	equ	$FFFFFFFE
 WA_DragBar	equ	$80000082
 _LVOOpenDevice	equ	-$1BC
 WA_Height	equ	$80000067
@@ -171,6 +173,7 @@ _LVOFreeVisualInfo	equ	-$84
 WFLG_SMART_REFRESH	equ	$0
 GMR_NEXTACTIVE	equ	$10
 ASLSM_FilterFunc	equ	$8008007A
+wd_RPort	equ	$32
 _LVOSetAPen	equ	-$156
 _LVOFreeVec	equ	-$2B2
 _LVOExNext	equ	-$6C
@@ -182,6 +185,7 @@ WA_Left	equ	$80000064
 _LVOResetMenuStrip	equ	-$2BE
 nw_DetailPen	equ	$8
 ASL_ScreenModeRequest	equ	$2
+fr_Drawer	equ	$8
 LAYOUTA_Orientation	equ	$80038003
 _LVOWrite	equ	-$30
 SA_Type	equ	$8000002D
@@ -264,6 +268,7 @@ GA_RelSpecial	equ	$80030027
 GTYP_STRGADGET	equ	$4
 ASLSM_InitialDisplayID	equ	$80080064
 gg_LeftEdge	equ	$4
+ASL_TB	equ	$80080000
 _LVOIoErr	equ	-$84
 LIB_EXTFUNC	equ	$FFFFFFE8
 gg_TopEdge	equ	$6
@@ -350,11 +355,11 @@ lbC000000	jmp	(Start).l
 
 lbC000028	movem.l	d0-d6/a0-a3/a5,-(sp)
 	move.l	d0,d6
-	lea	(lbB02CF10-datasegment,a6),a2
+	lea	(lbB02CF10-ds,a6),a2
 	moveq	#0,d0
 	moveq	#12,d1
 	add.l	d6,d1
-	movea.l	(window1ptr-datasegment,a6),a3
+	movea.l	(window1ptr-ds,a6),a3
 	movea.l	($32,a3),a3
 	moveq	#0,d2
 	moveq	#12,d3
@@ -373,13 +378,13 @@ lbC000028	movem.l	d0-d6/a0-a3/a5,-(sp)
 lbC000060	addq.l	#7,d6
 	andi.w	#$FFF8,d6
 	sub.l	d6,d5
-lbC000068	tst.b	(sysrenderflag-datasegment,a6)
+lbC000068	tst.b	(sysrenderflag-ds,a6)
 	bne.b	lbC00009C
-	movea.l	(gfxbase-datasegment,a6),a1
+	movea.l	(gfxbase-ds,a6),a1
 	cmpi.w	#$27,($14,a1)
 	bcs.b	lbC0000B4
 	movem.l	d0/d1/a6,-(sp)
-	movea.l	(screenptr-datasegment,a6),a0
+	movea.l	(screenptr-ds,a6),a0
 	lea	($54,a0),a0
 	movea.l	(4,a0),a0
 	moveq	#12,d1
@@ -388,11 +393,11 @@ lbC000068	tst.b	(sysrenderflag-datasegment,a6)
 	btst	#3,d0
 	movem.l	(sp)+,d0/d1/a6
 	bne.b	lbC0000B4
-lbC00009C	movea.l	(lbB02CF38-datasegment,a6),a0
+lbC00009C	movea.l	(lbB02CF38-ds,a6),a0
 	movea.l	a3,a1
 	move.w	#$CA,d6
 	move.l	a6,-(sp)
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOClipBlit,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC0000DA
@@ -400,14 +405,14 @@ lbC00009C	movea.l	(lbB02CF38-datasegment,a6),a0
 lbC0000B4	movea.l	(a3),a0
 	lea	($48,a0),a0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOObtainSemaphore,a6)
 	movea.l	(sp)+,a6
 	bsr.b	lbC0000E0
 	movea.l	(a3),a0
 	lea	($48,a0),a0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOReleaseSemaphore,a6)
 	movea.l	(sp)+,a6
 lbC0000DA	movem.l	(sp)+,d0-d6/a0-a3/a5
@@ -501,7 +506,7 @@ lbC00019A	move.w	d6,(14,a5)
 	move.l	a2,-(sp)
 	move.l	(4,a3),-(sp)
 	movea.l	sp,a5
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOOwnBlitter,a6)
 	jsr	(_LVOWaitBlit,a6)
 	bsr.b	lbC000212
@@ -656,7 +661,7 @@ lbC00037A	movem.l	(sp)+,d3-d6
 SetGadgetPosition	movem.l	d2/d3/a0/a1,-(sp)
 	move.w	d0,d3
 	moveq	#0,d1
-	move.w	(displaywidth_rounddown-datasegment,a6),d1
+	move.w	(displaywidth_rounddown-ds,a6),d1
 	move.w	(gg_Width,a0),d2
 	move.w	d2,d0
 	mulu.w	d3,d0
@@ -670,7 +675,7 @@ SetGadgetPosition	movem.l	d2/d3/a0/a1,-(sp)
 lbC0003A0	bsr.b	lbC0003C2
 	move.w	d1,(gg_LeftEdge,a0)
 	add.w	d2,d1
-	move.w	(lbB02CEEA-datasegment,a6),d0
+	move.w	(lbB02CEEA-ds,a6),d0
 	sub.w	(gg_Height,a0),d0
 	subq.w	#2,d0
 	move.w	d0,(gg_TopEdge,a0)
@@ -683,7 +688,7 @@ lbC0003C2	movem.l	d0/d1/a0/a1,-(sp)
 	move.w	(8,a0),d1
 	movea.l	($1A,a0),a1
 	move.w	($14,a1),d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
 	movea.l	d0,a0
 lbC0003DC	tst.b	(a0)+
@@ -836,7 +841,7 @@ GadgetRender	dl	0	;Left Top
 	dl	0	;NextImage
 
 openwindow_symbols	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(symwindowptr-datasegment,a6),d0
+	move.l	(symwindowptr-ds,a6),d0
 	beq.b	lbC000602
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -845,7 +850,7 @@ openwindow_symbols	movem.l	d2-d6/a2-a5,-(sp)
 lbC000602	move.l	#MEMF_CLEAR,d1
 	move.l	#$CA,d0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -854,19 +859,19 @@ lbC000602	move.l	#MEMF_CLEAR,d1
 	jsr	(open_resourcesyms).l
 	beq.w	syms_nosyms
 	lea	(gadgets_sym_hires,pc),a0
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_creategadgets
 	lea	(gadgets_sym_lores,pc),a0
 _creategadgets	bsr.w	creategadgets
 	beq.w	syms_nosyms
 	clr.l	-(sp)
-	move.l	(screenptr-datasegment,a6),-(sp)
+	move.l	(screenptr-ds,a6),-(sp)
 	move.l	#WA_CustomScreen,-(sp)
 	move.w	#$FA0,d0
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC00065A
 	addq.w	#1,d0
-lbC00065A	jsr	(gettextbynum-datasegment,a6)
+lbC00065A	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
 	move.l	#WA_Title,-(sp)
 	moveq	#1,d0
@@ -884,7 +889,7 @@ lbC00065A	jsr	(gettextbynum-datasegment,a6)
 	move.l	#WA_IDCMP,-(sp)
 	moveq	#0,d0
 	move.w	#185,d0
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC0006A8
 	move.w	#93,d0
 lbC0006A8	move.l	d0,-(sp)
@@ -892,20 +897,20 @@ lbC0006A8	move.l	d0,-(sp)
 	pea	($273).w
 	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFD0-datasegment,a6),d0
+	move.w	(lbB02CFD0-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#WA_Top,-(sp)
-	move.w	(lbB02CFCE-datasegment,a6),d0
+	move.w	(lbB02CFCE-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(symwindowptr-datasegment,a6)
+	move.l	d0,(symwindowptr-ds,a6)
 	beq.w	syms_nowin
 	movea.l	d0,a3
 	move.l	#$400778,d0
@@ -913,29 +918,29 @@ lbC0006A8	move.l	d0,-(sp)
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_RefreshWindow,a6)
 	movea.l	(sp)+,a6
 	movea.l	a3,a0
-	movea.l	(menustrip-datasegment,a6),a1
+	movea.l	(menustrip-ds,a6),a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
-	movea.l	(resourcesymsbase-datasegment,a6),a2	;syms
+	movea.l	(resourcesymsbase-ds,a6),a2	;syms
 	movea.l	($2A,a5),a0
 	lea	(LIB_SIZE+12,a2),a1	;start_dirs linked list
-	move.w	(symactivenum_dirs-datasegment,a6),d2
+	move.w	(symactivenum_dirs-ds,a6),d2
 	move.w	d2,d0
 	ext.l	d0
 	moveq	#15,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_setgadget
 	moveq	#5,d1
 _setgadget	bsr.w	setgadget
 	movea.l	($2E,a5),a0
 	suba.l	a1,a1
-	move.w	(symactivenum_dirs-datasegment,a6),d0
+	move.w	(symactivenum_dirs-ds,a6),d0
 	bmi.b	lbC000770
 	movea.l	($12E,a2),a1	;start_incs
 	move.w	d2,d0
@@ -949,21 +954,21 @@ lbC000762	move.l	a1,($C0,a5)
 	lea	($3C,a2),a1
 	mulu.w	#14,d2
 	adda.l	d2,a1
-lbC000770	move.w	(symactivenum_incs-datasegment,a6),d0
+lbC000770	move.w	(symactivenum_incs-ds,a6),d0
 	ext.l	d0
 	moveq	#15,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_setgadget0
 	moveq	#5,d1
 _setgadget0	bsr.w	setgadget
 	move.w	#$169,($C8,a5)
-	move.w	(symactivenum_incs-datasegment,a6),d2
+	move.w	(symactivenum_incs-ds,a6),d2
 	bmi.b	lbC0007FA
 	movea.l	($C0,a5),a1
 	movea.l	($132,a2),a0	;start_indi
 	cmpa.l	#$FFFFFFFF,a1	;UserSymbols?
 	bne.b	lbC0007A4
-	lea	(lbW029B28-datasegment,a6),a0
+	lea	(lbW029B28-ds,a6),a0
 lbC0007A4	move.w	d2,d0
 	lsl.w	#2,d0
 	adda.w	(2,a1,d0.w),a0
@@ -971,7 +976,7 @@ lbC0007A4	move.w	d2,d0
 	bsr.w	lbC002A5E
 	movea.l	d0,a1
 	beq.b	lbC0007FA
-	move.w	(lbB02CFF6-datasegment,a6),d2
+	move.w	(lbB02CFF6-ds,a6),d2
 	bmi.b	lbC0007FC
 	movem.l	a0/a1,-(sp)
 	movea.l	($C4,a5),a0
@@ -993,10 +998,10 @@ lbC0007E8	movea.l	($3A,a5),a0
 
 lbC0007FA	suba.l	a1,a1
 lbC0007FC	movea.l	($32,a5),a0
-	move.w	(lbB02CFF6-datasegment,a6),d0
+	move.w	(lbB02CFF6-ds,a6),d0
 	ext.l	d0
 	moveq	#15,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_setgadget1
 	moveq	#5,d1
 _setgadget1	bsr.w	setgadget
@@ -1006,20 +1011,20 @@ _setgadget1	bsr.w	setgadget
 lbC000820	andi.b	#$FB,ccr
 	bra.b	lbC000852
 
-syms_nowin	jsr	(easyrequest_38-datasegment,a6)
+syms_nowin	jsr	(easyrequest_38-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 syms_nosyms	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC00084E
 
-syms_nomem	jsr	(easyrequest_3a-datasegment,a6)
+syms_nomem	jsr	(easyrequest_3a-ds,a6)
 lbC00084E	ori.b	#4,ccr
 lbC000852	movem.l	(sp)+,d2-d6/a2-a5
 	rts
@@ -1128,10 +1133,10 @@ ga_disabled_0	dl	GA_Disabled
 	dl	0
 	dl	0
 
-gadcode_sym_dir	cmp.w	(symactivenum_dirs-datasegment,a6),d3
+gadcode_sym_dir	cmp.w	(symactivenum_dirs-ds,a6),d3
 	beq.b	lbC000A12
-	move.w	d3,(symactivenum_dirs-datasegment,a6)
-	movea.l	(resourcesymsbase-datasegment,a6),a2
+	move.w	d3,(symactivenum_dirs-ds,a6)
+	movea.l	(resourcesymsbase-ds,a6),a2
 	movea.l	($2E,a5),a0
 	movea.l	($12E,a2),a1
 	move.w	d3,d1
@@ -1146,18 +1151,18 @@ lbC0009B8	move.l	a1,($C0,a5)
 	mulu.w	#14,d3
 	adda.l	d3,a1
 	moveq	#-1,d0
-	move.w	d0,(symactivenum_incs-datasegment,a6)
+	move.w	d0,(symactivenum_incs-ds,a6)
 	moveq	#15,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_setgadget4
 	moveq	#5,d1
 _setgadget4	bsr.w	setgadget
 	movea.l	($32,a5),a0
 	suba.l	a1,a1
 	moveq	#-1,d0
-	move.w	d0,(lbB02CFF6-datasegment,a6)
+	move.w	d0,(lbB02CFF6-ds,a6)
 	moveq	#15,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_setgadget5
 	moveq	#5,d1
 _setgadget5	bsr.w	setgadget
@@ -1171,15 +1176,15 @@ _setgadget5	bsr.w	setgadget
 lbC000A12	move.w	#$169,d0
 	rts
 
-gadcode_sym_inc	cmp.w	(symactivenum_incs-datasegment,a6),d3
+gadcode_sym_inc	cmp.w	(symactivenum_incs-ds,a6),d3
 	beq.b	lbC000A80
-	move.w	d3,(symactivenum_incs-datasegment,a6)
+	move.w	d3,(symactivenum_incs-ds,a6)
 	movea.l	($C0,a5),a1
-	movea.l	(resourcesymsbase-datasegment,a6),a0
+	movea.l	(resourcesymsbase-ds,a6),a0
 	movea.l	($132,a0),a0
 	cmpa.l	#$FFFFFFFF,a1
 	bne.b	lbC000A3A
-	lea	(lbW029B28-datasegment,a6),a0
+	lea	(lbW029B28-ds,a6),a0
 lbC000A3A	lsl.w	#2,d3
 	adda.w	(2,a1,d3.w),a0
 	move.l	a0,($C4,a5)
@@ -1187,9 +1192,9 @@ lbC000A3A	lsl.w	#2,d3
 	movea.l	d0,a1
 	movea.l	($32,a5),a0
 	moveq	#-1,d0
-	move.w	d0,(lbB02CFF6-datasegment,a6)
+	move.w	d0,(lbB02CFF6-ds,a6)
 	moveq	#15,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_setgadget6
 	moveq	#5,d1
 _setgadget6	bsr.w	setgadget
@@ -1203,9 +1208,9 @@ _setgadget6	bsr.w	setgadget
 lbC000A80	move.w	#$169,d0
 	rts
 
-gadcode_sym_ind	cmp.w	(lbB02CFF6-datasegment,a6),d3
+gadcode_sym_ind	cmp.w	(lbB02CFF6-ds,a6),d3
 	beq.b	lbC000ACC
-	move.w	d3,(lbB02CFF6-datasegment,a6)
+	move.w	d3,(lbB02CFF6-ds,a6)
 	lea	(ga_disabled_1,pc),a1
 	movea.l	($C4,a5),a0
 	lsl.w	#2,d3
@@ -1229,7 +1234,7 @@ lbC000ACC	move.w	($C8,a5),d0
 	bcs.b	lbC000AEC
 	cmpi.w	#$2EA,d0
 	bhi.b	lbC000AEC
-	lea	(lbB02D180-datasegment,a6),a0
+	lea	(lbB02D180-ds,a6),a0
 	subi.w	#$2DC,d0
 	lsl.w	#2,d0
 	tst.l	(a0,d0.w)
@@ -1254,13 +1259,13 @@ lbC000B14	rts
 gadcode_sym_load	move.w	($C8,a5),d0
 	rts
 
-lbC000B1C	move.w	(4,a3),(lbB02CFCE-datasegment,a6)
-	move.w	(6,a3),(lbB02CFD0-datasegment,a6)
+lbC000B1C	move.w	(4,a3),(lbB02CFCE-ds,a6)
+	move.w	(6,a3),(lbB02CFD0-ds,a6)
 	bsr.w	lbC002B98
-	clr.l	(symwindowptr-datasegment,a6)
+	clr.l	(symwindowptr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	lea	(a5),a0
@@ -1268,12 +1273,12 @@ lbC000B1C	move.w	(4,a3),(lbB02CFCE-datasegment,a6)
 	beq.b	lbC000B54
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOFreeRemember,a6)
 	movea.l	(sp)+,a6
 lbC000B54	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	rts
@@ -1281,20 +1286,20 @@ lbC000B54	movea.l	a5,a1
 lbC000B64	movem.l	d2-d7/a2-a5,-(sp)
 	suba.w	#$CA,sp
 	movea.l	sp,a5
-	movea.l	(window1ptr-datasegment,a6),a0
+	movea.l	(window1ptr-ds,a6),a0
 	move.l	($52,a0),d7
 	move.l	($18,a0),d6
 	ori.l	#$10000,($18,a0)
 	moveq	#4,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOModifyIDCMP,a6)
 	movea.l	(sp)+,a6
 	clr.l	(a5)
 	moveq	#-1,d5
 	move.w	d5,($C8,a5)
 	lea	($B2,a5),a2
-	lea	(lbB02D480-datasegment,a6),a3
+	lea	(lbB02D480-ds,a6),a3
 	move.l	a2,(8,a2)
 	addq.l	#4,a2
 	clr.l	(a2)
@@ -1307,7 +1312,7 @@ lbC000BAC	tst.b	(a3)+
 	moveq	#14,d0
 	lea	(a5),a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOAllocRemember,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -1328,10 +1333,10 @@ lbC000BEC	lea	(lbW000DAE,pc),a0
 	bsr.w	creategadgets
 	beq.w	lbC000D6A
 	clr.l	-(sp)
-	move.l	(screenptr-datasegment,a6),-(sp)
+	move.l	(screenptr-ds,a6),-(sp)
 	move.l	#$80000070,-(sp)
 	move.w	#$1770,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
 	move.l	#$8000006E,-(sp)
 	moveq	#1,d0
@@ -1350,16 +1355,16 @@ lbC000BEC	lea	(lbW000DAE,pc),a0
 	pea	($10C).w
 	move.l	#$80000066,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFD4-datasegment,a6),d0
+	move.w	(lbB02CFD4-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000065,-(sp)
-	move.w	(lbB02CFD2-datasegment,a6),d0
+	move.w	(lbB02CFD2-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000064,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($5C,sp),sp
@@ -1371,7 +1376,7 @@ lbC000BEC	lea	(lbW000DAE,pc),a0
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_RefreshWindow,a6)
 	movea.l	(sp)+,a6
 	movea.l	($2A,a5),a0
@@ -1384,12 +1389,12 @@ lbC000CB4	tst.w	d4
 	bne.w	lbC000D42
 	movea.l	($56,a3),a0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOWaitPort,a6)
 	movea.l	(sp)+,a6
 lbC000CCA	movea.l	($56,a3),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_GetIMsg,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -1401,21 +1406,21 @@ lbC000CCA	movea.l	($56,a3),a0
 	movea.l	($1C,a1),a2
 	movea.l	($2C,a1),a4
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_ReplyIMsg,a6)
 	movea.l	(sp)+,a6
 	cmpi.l	#4,d3
 	bne.b	lbC000D2C
 	movea.l	a3,a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_BeginRefresh,a6)
 	movea.l	(sp)+,a6
 	jsr	(lbC028CFC).l
 	movea.l	a3,a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_EndRefresh,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC000CCA
@@ -1428,33 +1433,33 @@ lbC000D2C	cmpi.l	#$40,d3
 	jsr	(a0)
 	bra.w	lbC000CCA
 
-lbC000D42	move.w	(4,a3),(lbB02CFD2-datasegment,a6)
-	move.w	(6,a3),(lbB02CFD4-datasegment,a6)
+lbC000D42	move.w	(4,a3),(lbB02CFD2-ds,a6)
+	move.w	(6,a3),(lbB02CFD4-ds,a6)
 	bsr.w	lbC002B98
 	bra.b	lbC000D58
 
-lbC000D54	jsr	(easyrequest_38-datasegment,a6)
+lbC000D54	jsr	(easyrequest_38-ds,a6)
 lbC000D58	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC000D6E
 
-lbC000D6A	jsr	(easyrequest_3a-datasegment,a6)
+lbC000D6A	jsr	(easyrequest_3a-ds,a6)
 lbC000D6E	lea	(a5),a0
 	tst.l	(a0)
 	beq.b	lbC000D82
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOFreeRemember,a6)
 	movea.l	(sp)+,a6
-lbC000D82	movea.l	(window1ptr-datasegment,a6),a0
+lbC000D82	movea.l	(window1ptr-ds,a6),a0
 	move.l	d6,($18,a0)
 	move.l	d7,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOModifyIDCMP,a6)
 	movea.l	(sp)+,a6
 	tst.w	d5
@@ -1517,7 +1522,7 @@ lbC000E2A	moveq	#0,d5
 	rts
 
 openwindow_search	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(window2ptr-datasegment,a6),d0
+	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC000E44
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -1526,58 +1531,58 @@ openwindow_search	movem.l	d2-d6/a2-a5,-(sp)
 lbC000E44	move.l	#$10000,d1
 	move.l	#$CC,d0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
 	beq.w	lbC000FF2
 	movea.l	d0,a5
 	lea	(lbW001478,pc),a0
-	lea	(lbB02CFFE-datasegment,a6),a1
+	lea	(lbB02CFFE-ds,a6),a1
 	moveq	#5,d2
 lbC000E6E	move.w	(a0)+,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC000E6E
 	lea	(lbW001484,pc),a0
-	lea	(searchcaselabels-datasegment,a6),a1
+	lea	(searchcaselabels-ds,a6),a1
 	moveq	#1,d2
 lbC000E84	move.w	(a0)+,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC000E84
 	lea	(lbW001488,pc),a0
-	lea	(searchalignlabels-datasegment,a6),a1
+	lea	(searchalignlabels-ds,a6),a1
 	moveq	#1,d2
 lbC000E9A	move.w	(a0)+,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC000E9A
 	lea	(lbW00148C,pc),a0
-	lea	(searchfromlabels-datasegment,a6),a1
+	lea	(searchfromlabels-ds,a6),a1
 	moveq	#2,d2
 lbC000EB0	move.w	(a0)+,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC000EB0
 	lea	(lbW001492,pc),a0
-	lea	(searchdummylabels-datasegment,a6),a1
+	lea	(searchdummylabels-ds,a6),a1
 	move.l	a0,(a1)+
 	move.l	a0,(a1)
 	lea	(gadgets_search_hires,pc),a0
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	.go
 	lea	(gadgets_search_lores,pc),a0
 .go	bsr.w	creategadgets
 	beq.w	lbC000FE2
 	clr.l	-(sp)
-	move.l	(screenptr-datasegment,a6),-(sp)
+	move.l	(screenptr-ds,a6),-(sp)
 	move.l	#$80000070,-(sp)
 	move.w	#$1194,d0
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC000EF6
 	addq.w	#1,d0
-lbC000EF6	jsr	(gettextbynum-datasegment,a6)
+lbC000EF6	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
 	move.l	#$8000006E,-(sp)
 	moveq	#1,d0
@@ -1595,7 +1600,7 @@ lbC000EF6	jsr	(gettextbynum-datasegment,a6)
 	move.l	#$8000006A,-(sp)
 	moveq	#0,d0
 	move.w	#$97,d0
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC000F44
 	move.w	#$6B,d0
 lbC000F44	move.l	d0,-(sp)
@@ -1603,20 +1608,20 @@ lbC000F44	move.l	d0,-(sp)
 	pea	($194).w
 	move.l	#$80000066,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFE4-datasegment,a6),d0
+	move.w	(lbB02CFE4-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000065,-(sp)
-	move.w	(lbB02CFE2-datasegment,a6),d0
+	move.w	(lbB02CFE2-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000064,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(window2ptr-datasegment,a6)
+	move.l	d0,(window2ptr-ds,a6)
 	beq.w	lbC000FCE
 	movea.l	d0,a3
 	move.l	#$40760,d0
@@ -1624,13 +1629,13 @@ lbC000F44	move.l	d0,-(sp)
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_RefreshWindow,a6)
 	movea.l	(sp)+,a6
 	movea.l	a3,a0
-	movea.l	(menustrip-datasegment,a6),a1
+	movea.l	(menustrip-ds,a6),a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
 	bsr.b	lbC001018
@@ -1640,26 +1645,26 @@ lbC000F44	move.l	d0,-(sp)
 lbC000FC8	andi.b	#$FB,ccr
 	bra.b	lbC000FFA
 
-lbC000FCE	jsr	(easyrequest_38-datasegment,a6)
+lbC000FCE	jsr	(easyrequest_38-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 lbC000FE2	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC000FF6
 
-lbC000FF2	jsr	(easyrequest_3a-datasegment,a6)
+lbC000FF2	jsr	(easyrequest_3a-ds,a6)
 lbC000FF6	ori.b	#4,ccr
 lbC000FFA	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
 lbC001000	movem.l	d1-d3/a2-a5,-(sp)
-	move.l	(window2ptr-datasegment,a6),d0
+	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC001012
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
@@ -1669,7 +1674,7 @@ lbC001012	movem.l	(sp)+,d1-d3/a2-a5
 
 lbC001018	lea	($2A,a5),a2
 	moveq	#0,d0
-	move.b	(lbB02D06E-datasegment,a6),d0
+	move.b	(lbB02D06E-ds,a6),d0
 	move.b	d0,($CA,a5)
 	movea.l	(4,a2),a0
 	clr.l	-(sp)
@@ -1679,7 +1684,7 @@ lbC001018	lea	($2A,a5),a2
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d0
-	tst.b	(case_sensitive_flag-datasegment,a6)
+	tst.b	(case_sensitive_flag-ds,a6)
 	beq.b	lbC001048
 	moveq	#1,d0
 lbC001048	movea.l	(12,a2),a0
@@ -1690,7 +1695,7 @@ lbC001048	movea.l	(12,a2),a0
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d0
-	tst.b	(lbB02B413-datasegment,a6)
+	tst.b	(lbB02B413-ds,a6)
 	beq.b	lbC00106A
 	moveq	#1,d0
 lbC00106A	movea.l	($10,a2),a0
@@ -1701,10 +1706,10 @@ lbC00106A	movea.l	($10,a2),a0
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#1,d0
-	tst.b	(lbB02B415-datasegment,a6)
+	tst.b	(lbB02B415-ds,a6)
 	bne.b	lbC001094
 	moveq	#2,d0
-	tst.b	(lbB02B416-datasegment,a6)
+	tst.b	(lbB02B416-ds,a6)
 	bne.b	lbC001094
 	moveq	#0,d0
 lbC001094	movea.l	($14,a2),a0
@@ -1715,7 +1720,7 @@ lbC001094	movea.l	($14,a2),a0
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d3
-	move.b	(lbB02D06E-datasegment,a6),d3
+	move.b	(lbB02D06E-ds,a6),d3
 	bsr.w	select_searchtype
 	rts
 
@@ -2059,11 +2064,11 @@ lbW001492	dw	$2000
 select_searchtype	move.l	a2,-(sp)
 	move.b	d3,($CA,a5)
 	add.w	d3,d3
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	beq.b	lbC0014CA
 	lea	(lbW00153C,pc),a0
 	move.w	(a0,d3.w),d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	lea	($2A,a5),a0
 	movea.l	($38,a0),a0
 	clr.l	-(sp)
@@ -2076,8 +2081,8 @@ lbC0014CA	lea	(lbW001584,pc),a1
 	moveq	#0,d0
 	move.w	(a1,d3.w),d0
 	lea	(a6,d0.l),a1
-	lea	(displayid-datasegment,a6),a0
-	jsr	(lbC027004-datasegment,a6)
+	lea	(displayid-ds,a6),a0
+	jsr	(lbC027004-ds,a6)
 	movea.l	a0,a1
 	lea	($2A,a5),a0
 	movea.l	($3C,a0),a0
@@ -2132,12 +2137,12 @@ lbL001574	dl	$2428ACB0
 	dl	$B48C9094
 lbL00157C	dl	$2428ACB0
 	dl	$B48C9094
-lbW001584	dw	lbL02D8C8-datasegment
-	dw	lbB02D9C8-datasegment
-	dw	lbL02D8C8-datasegment
-	dw	lbL02DCC8-datasegment
-	dw	lbB02DEC8-datasegment
-	dw	lbB02DF48-datasegment
+lbW001584	dw	lbL02D8C8-ds
+	dw	lbB02D9C8-ds
+	dw	lbL02D8C8-ds
+	dw	lbL02DCC8-ds
+	dw	lbB02DEC8-ds
+	dw	lbB02DF48-ds
 
 select_searchforward
 	moveq	#0,d0
@@ -2234,7 +2239,7 @@ select_searchlabel	lea	($2A,a5),a0
 	moveq	#0,d1
 	move.w	(a1,d2.w),d1
 	lea	(a6,d1.l),a1
-	jsr	(lbC026F92-datasegment,a6)
+	jsr	(lbC026F92-ds,a6)
 	lea	(lbW001668,pc),a0
 	move.w	(a0,d2.w),d0
 	rts
@@ -2247,7 +2252,7 @@ lbW001668	dw	$4D
 	dw	$354
 
 lbC001674	movem.l	d0/d1/a0-a3,-(sp)
-	move.l	(window2ptr-datasegment,a6),d0
+	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC0016A0
 	movea.l	d0,a3
 	movea.l	($78,a3),a0
@@ -2259,45 +2264,45 @@ lbC001674	movem.l	d0/d1/a0-a3,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-lbC0016A0	clr.b	(lbB02B415-datasegment,a6)
-	clr.b	(lbB02B416-datasegment,a6)
+lbC0016A0	clr.b	(lbB02B415-ds,a6)
+	clr.b	(lbB02B416-ds,a6)
 	movem.l	(sp)+,d0/d1/a0-a3
 	rts
 
 lbC0016AE	movem.l	a2/a6,-(sp)
-	move.l	(window2ptr-datasegment,a6),d0
+	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC0016D0
 	movea.l	d0,a1
 	movea.l	($78,a1),a0
 	lea	($2A,a0),a0
 	movea.l	($3C,a0),a0
 	suba.l	a2,a2
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOActivateGadget,a6)
 lbC0016D0	movem.l	(sp)+,a2/a6
 	rts
 
-lbC0016D6	move.w	(4,a3),(lbB02CFE2-datasegment,a6)
-	move.w	(6,a3),(lbB02CFE4-datasegment,a6)
+lbC0016D6	move.w	(4,a3),(lbB02CFE2-ds,a6)
+	move.w	(6,a3),(lbB02CFE4-ds,a6)
 	bsr.w	lbC002B98
-	clr.l	(window2ptr-datasegment,a6)
+	clr.l	(window2ptr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
-	move.b	($CA,a5),(lbB02D06E-datasegment,a6)
+	move.b	($CA,a5),(lbB02D06E-ds,a6)
 	lea	(a5),a0
 	tst.l	(a0)
 	beq.b	lbC001714
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOFreeRemember,a6)
 	movea.l	(sp)+,a6
 lbC001714	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	rts
@@ -2311,7 +2316,7 @@ openwindow_macros2	moveq	#1,d0
 openwindow_macros3	moveq	#2,d0
 openwindow_macros	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	d0,d6
-	lea	(window3ptr-datasegment,a6),a0
+	lea	(window3ptr-ds,a6),a0
 	lsl.w	#2,d0
 	move.l	(a0,d0.w),d0
 	beq.b	lbC00174A
@@ -2322,12 +2327,12 @@ openwindow_macros	movem.l	d2-d6/a2-a5,-(sp)
 lbC00174A	move.l	#$10000,d1
 	move.l	#$CA,d0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
 	bne.b	lbC00176E
-	jsr	(easyrequest_3a-datasegment,a6)
+	jsr	(easyrequest_3a-ds,a6)
 	bra.w	lbC0019D2
 
 lbC00176E	movea.l	d0,a5
@@ -2341,25 +2346,25 @@ lbC00176E	movea.l	d0,a5
 lbC001788	bsr.w	lbC001C9E
 	beq.w	lbC0019D2
 	lea	(unknown_hires,pc),a0
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	.go
 	lea	(unknown_lores,pc),a0
 .go	bsr.w	creategadgets
 	beq.w	lbC0019AC
 	clr.l	-(sp)
-	move.l	(screenptr-datasegment,a6),-(sp)
+	move.l	(screenptr-ds,a6),-(sp)
 	move.l	#$80000070,-(sp)
 	move.w	#$1388,d0
-	jsr	(gettextbynum-datasegment,a6)
-	tst.b	(laceflag-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC0017DC
-	lea	(Macros1.MSG-datasegment,a6),a0
+	lea	(Macros1.MSG-ds,a6),a0
 	tst.w	d6
 	beq.b	lbC0017D6
-	lea	(Macros2.MSG-datasegment,a6),a0
+	lea	(Macros2.MSG-ds,a6),a0
 	cmpi.w	#1,d6
 	beq.b	lbC0017D6
-	lea	(Macros3.MSG-datasegment,a6),a0
+	lea	(Macros3.MSG-ds,a6),a0
 lbC0017D6	tst.b	(a0)
 	beq.b	lbC0017DC
 	move.l	a0,d0
@@ -2380,7 +2385,7 @@ lbC0017DC	move.l	d0,-(sp)
 	move.l	#$8000006A,-(sp)
 	moveq	#0,d0
 	move.w	#$B9,d0
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC001826
 	move.w	#$66,d0
 lbC001826	move.l	d0,-(sp)
@@ -2388,17 +2393,17 @@ lbC001826	move.l	d0,-(sp)
 	pea	($10C).w
 	move.l	#$80000066,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFD8-datasegment,a6),d0
+	move.w	(lbB02CFD8-ds,a6),d0
 	moveq	#0,d1
-	move.w	(lbB02CFD6-datasegment,a6),d1
+	move.w	(lbB02CFD6-ds,a6),d1
 	tst.w	d6
 	beq.b	lbC00185E
-	move.w	(lbB02CFDC-datasegment,a6),d0
-	move.w	(lbB02CFDA-datasegment,a6),d1
+	move.w	(lbB02CFDC-ds,a6),d0
+	move.w	(lbB02CFDA-ds,a6),d1
 	cmpi.w	#1,d6
 	beq.b	lbC00185E
-	move.w	(lbB02CFE0-datasegment,a6),d0
-	move.w	(lbB02CFDE-datasegment,a6),d1
+	move.w	(lbB02CFE0-ds,a6),d0
+	move.w	(lbB02CFDE-ds,a6),d1
 lbC00185E	move.l	d0,-(sp)
 	move.l	#$80000065,-(sp)
 	move.l	d1,-(sp)
@@ -2406,11 +2411,11 @@ lbC00185E	move.l	d0,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	lea	(window3ptr-datasegment,a6),a0
+	lea	(window3ptr-ds,a6),a0
 	move.l	d6,d1
 	lsl.w	#2,d1
 	move.l	d0,(a0,d1.w)
@@ -2421,29 +2426,29 @@ lbC00185E	move.l	d0,-(sp)
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_RefreshWindow,a6)
 	movea.l	(sp)+,a6
 	movea.l	a3,a0
-	movea.l	(menustrip-datasegment,a6),a1
+	movea.l	(menustrip-ds,a6),a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	beq.b	lbC001912
-	lea	(Macros1.MSG-datasegment,a6),a0
+	lea	(Macros1.MSG-ds,a6),a0
 	tst.w	d6
 	beq.b	lbC0018DC
-	lea	(Macros2.MSG-datasegment,a6),a0
+	lea	(Macros2.MSG-ds,a6),a0
 	cmpi.w	#1,d6
 	beq.b	lbC0018DC
-	lea	(Macros3.MSG-datasegment,a6),a0
+	lea	(Macros3.MSG-ds,a6),a0
 lbC0018DC	tst.b	(a0)
 	beq.b	lbC001912
 	movea.l	($32,a3),a2
 	move.l	a6,-(sp)
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	move.l	a0,-(sp)
 	moveq	#3,d0
 	movea.l	a2,a1
@@ -2451,17 +2456,17 @@ lbC0018DC	tst.b	(a0)
 	moveq	#$2E,d0
 	moveq	#$17,d1
 	movea.l	a2,a1
-	jsr	(lbC02A7A0-datasegment,a6)
+	jsr	(lbC02A7A0-ds,a6)
 	moveq	#$18,d0
 	movea.l	(sp)+,a0
 	movea.l	a2,a1
-	jsr	(lbC02A854-datasegment,a6)
+	jsr	(lbC02A854-ds,a6)
 	moveq	#1,d0
 	movea.l	a2,a1
-	jsr	(easyrequest_3a-datasegment,a6)
+	jsr	(easyrequest_3a-ds,a6)
 	movea.l	(sp)+,a6
 lbC001912	lea	($2A,a5),a2
-	lea	(lbB02CFF8-datasegment,a6),a0
+	lea	(lbB02CFF8-ds,a6),a0
 	move.w	d6,d0
 	add.w	d0,d0
 	move.w	(a0,d0.w),d2
@@ -2470,20 +2475,20 @@ lbC001912	lea	($2A,a5),a2
 	move.w	d2,d0
 	ext.l	d0
 	moveq	#13,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_setgadget2
 	moveq	#7,d1
 _setgadget2	bsr.w	setgadget
 	tst.w	d2
 	bmi.b	lbC00196E
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC001950
 	movea.l	(4,a2),a0
 	lea	(ga_disabled_0,pc),a1
 	bsr.w	SetGadgetAttrs
-lbC001950	cmp.w	(macros_num-datasegment,a6),d6
+lbC001950	cmp.w	(macros_num-ds,a6),d6
 	bne.b	lbC001962
-	cmp.w	(lbB02CF8C-datasegment,a6),d2
+	cmp.w	(lbB02CF8C-ds,a6),d2
 	bne.b	lbC001962
 	lea	(ga_disabled_1,pc),a1
 	bra.b	lbC001966
@@ -2504,26 +2509,26 @@ lbC001988	move.l	a0,($A6,a5)
 lbC001990	andi.b	#$FB,ccr
 	bra.b	lbC0019D6
 
-lbC001996	jsr	(easyrequest_38-datasegment,a6)
+lbC001996	jsr	(easyrequest_38-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC0019B0
 
-lbC0019AC	jsr	(easyrequest_3a-datasegment,a6)
+lbC0019AC	jsr	(easyrequest_3a-ds,a6)
 lbC0019B0	lea	(a5),a0
 	tst.l	(a0)
 	beq.b	lbC0019C4
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOFreeRemember,a6)
 	movea.l	(sp)+,a6
 lbC0019C4	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 lbC0019D2	ori.b	#4,ccr
@@ -2588,7 +2593,7 @@ unknown_lores	dw	10
 	dl	0
 
 select_macros_list	movem.l	d2/a2,-(sp)
-	lea	(lbB02CFF8-datasegment,a6),a0
+	lea	(lbB02CFF8-ds,a6),a0
 	move.w	($C8,a5),d2
 	move.w	d2,d0
 	add.w	d0,d0
@@ -2597,14 +2602,14 @@ select_macros_list	movem.l	d2/a2,-(sp)
 	beq.b	lbC001ACC
 	move.w	d3,(a0)
 	lea	($2A,a5),a2
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC001AAE
 	movea.l	(4,a2),a0
 	lea	(ga_disabled_0,pc),a1
 	bsr.w	SetGadgetAttrs
-lbC001AAE	cmp.w	(macros_num-datasegment,a6),d2
+lbC001AAE	cmp.w	(macros_num-ds,a6),d2
 	bne.b	lbC001AC0
-	cmp.w	(lbB02CF8C-datasegment,a6),d3
+	cmp.w	(lbB02CF8C-ds,a6),d3
 	bne.b	lbC001AC0
 	lea	(ga_disabled_1,pc),a1
 	bra.b	lbC001AC4
@@ -2619,15 +2624,15 @@ lbC001ACC	move.w	#$169,d0
 select_macros_execute
 	lea	(lbW001B00,pc),a1
 	move.w	($C8,a5),d0
-	move.w	d0,(macros_num-datasegment,a6)
+	move.w	d0,(macros_num-ds,a6)
 	add.w	d0,d0
 	adda.w	(a1,d0.w),a1
-	lea	(lbB02CFF8-datasegment,a6),a0
+	lea	(lbB02CFF8-ds,a6),a0
 	move.w	(a0,d0.w),d0
-	move.w	d0,(lbB02CF8C-datasegment,a6)
+	move.w	d0,(lbB02CF8C-ds,a6)
 	add.w	d0,d0
 	move.w	(a1,d0.w),d0
-	move.l	a3,(lbB02CF86-datasegment,a6)
+	move.l	a3,(lbB02CF86-ds,a6)
 	rts
 
 lbW001B00	dw	lbW001B06-lbW001B00
@@ -2696,11 +2701,11 @@ select_macros_create
 	move.w	($C8,a5),d0
 	add.w	d0,d0
 	adda.w	(a1,d0.w),a1
-	lea	(lbB02CFF8-datasegment,a6),a0
+	lea	(lbB02CFF8-ds,a6),a0
 	move.w	(a0,d0.w),d0
 	add.w	d0,d0
 	move.w	(a1,d0.w),d0
-	move.l	a3,(lbB02CF86-datasegment,a6)
+	move.l	a3,(lbB02CF86-ds,a6)
 	rts
 
 lbW001B9A	dw	lbW001BA0-lbW001B9A
@@ -2765,7 +2770,7 @@ lbW001BEC	dw	$323
 	dw	$339
 
 lbC001C12	movem.l	d2/d3/a0-a5,-(sp)
-	move.l	(lbB02CF86-datasegment,a6),d0
+	move.l	(lbB02CF86-ds,a6),d0
 	beq.b	lbC001C98
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
@@ -2773,7 +2778,7 @@ lbC001C12	movem.l	d2/d3/a0-a5,-(sp)
 	beq.b	lbC001C4E
 	moveq	#-1,d0
 	moveq	#13,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC001C32
 	moveq	#7,d1
 lbC001C32	movea.l	($2A,a5),a0
@@ -2782,15 +2787,15 @@ lbC001C32	movea.l	($2A,a5),a0
 	lea	(a5),a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOFreeRemember,a6)
 	movea.l	(sp)+,a6
 	clr.l	(a5)
 lbC001C4E	lea	(lbL00E768).l,a0
-	cmpa.l	(window3ptr-datasegment,a6),a3
+	cmpa.l	(window3ptr-ds,a6),a3
 	beq.b	lbC001C68
 	lea	($4C,a0),a0
-	cmpa.l	(window4ptr-datasegment,a6),a3
+	cmpa.l	(window4ptr-ds,a6),a3
 	beq.b	lbC001C68
 	lea	($4C,a0),a0
 lbC001C68	bsr.b	lbC001C9E
@@ -2798,13 +2803,13 @@ lbC001C68	bsr.b	lbC001C9E
 	bsr.w	lbC001D36
 	bra.b	lbC001C98
 
-lbC001C72	lea	(lbB02CFF8-datasegment,a6),a0
+lbC001C72	lea	(lbB02CFF8-ds,a6),a0
 	move.w	($C8,a5),d0
 	add.w	d0,d0
 	move.w	(a0,d0.w),d0
 	ext.l	d0
 	moveq	#13,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC001C8C
 	moveq	#7,d1
 lbC001C8C	movea.l	($2A,a5),a0
@@ -2825,7 +2830,7 @@ lbC001CB4	move.l	#$10001,d1
 	moveq	#14,d0
 	lea	(a5),a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOAllocRemember,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -2844,32 +2849,32 @@ lbC001CB4	move.l	#$10001,d1
 	andi.b	#$FB,ccr
 	bra.b	lbC001CFC
 
-lbC001CF4	jsr	(easyrequest_3a-datasegment,a6)
+lbC001CF4	jsr	(easyrequest_3a-ds,a6)
 	ori.b	#4,ccr
 lbC001CFC	movem.l	(sp)+,d2/a2/a3
 	rts
 
-lbC001D02	move.w	(4,a3),(lbB02CFD6-datasegment,a6)
-	move.w	(6,a3),(lbB02CFD8-datasegment,a6)
-	clr.l	(window3ptr-datasegment,a6)
+lbC001D02	move.w	(4,a3),(lbB02CFD6-ds,a6)
+	move.w	(6,a3),(lbB02CFD8-ds,a6)
+	clr.l	(window3ptr-ds,a6)
 	bra.b	lbC001D36
 
-lbC001D14	move.w	(4,a3),(lbB02CFDA-datasegment,a6)
-	move.w	(6,a3),(lbB02CFDC-datasegment,a6)
-	clr.l	(window4ptr-datasegment,a6)
+lbC001D14	move.w	(4,a3),(lbB02CFDA-ds,a6)
+	move.w	(6,a3),(lbB02CFDC-ds,a6)
+	clr.l	(window4ptr-ds,a6)
 	bra.b	lbC001D36
 
-lbC001D26	move.w	(4,a3),(lbB02CFDE-datasegment,a6)
-	move.w	(6,a3),(lbB02CFE0-datasegment,a6)
-	clr.l	(window5ptr-datasegment,a6)
-lbC001D36	lea	(lbB02CF86-datasegment,a6),a0
+lbC001D26	move.w	(4,a3),(lbB02CFDE-ds,a6)
+	move.w	(6,a3),(lbB02CFE0-ds,a6)
+	clr.l	(window5ptr-ds,a6)
+lbC001D36	lea	(lbB02CF86-ds,a6),a0
 	cmpa.l	(a0),a3
 	bne.b	lbC001D40
 	clr.l	(a0)
 lbC001D40	bsr.w	lbC002B98
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	lea	(a5),a0
@@ -2877,18 +2882,18 @@ lbC001D40	bsr.w	lbC002B98
 	beq.b	lbC001D68
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOFreeRemember,a6)
 	movea.l	(sp)+,a6
 lbC001D68	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	rts
 
 openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(window6ptr-datasegment,a6),d0
+	move.l	(window6ptr-ds,a6),d0
 	beq.b	lbC001D8C
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -2897,7 +2902,7 @@ openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 lbC001D8C	move.l	#$10000,d1
 	move.l	#$CA,d0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -2907,10 +2912,10 @@ lbC001D8C	move.l	#$10000,d1
 	bsr.w	creategadgets
 	beq.w	lbC001EA6
 	clr.l	-(sp)
-	move.l	(screenptr-datasegment,a6),-(sp)
+	move.l	(screenptr-ds,a6),-(sp)
 	move.l	#$80000070,-(sp)
 	move.w	#$BB8,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
 	move.l	#$8000006E,-(sp)
 	moveq	#1,d0
@@ -2931,20 +2936,20 @@ lbC001D8C	move.l	#$10000,d1
 	pea	($247).w
 	move.l	#$80000066,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFE8-datasegment,a6),d0
+	move.w	(lbB02CFE8-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000065,-(sp)
-	move.w	(lbB02CFE6-datasegment,a6),d0
+	move.w	(lbB02CFE6-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000064,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(window6ptr-datasegment,a6)
+	move.l	d0,(window6ptr-ds,a6)
 	beq.w	lbC001E92
 	movea.l	d0,a3
 	move.l	#$740,d0
@@ -2952,13 +2957,13 @@ lbC001D8C	move.l	#$10000,d1
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_RefreshWindow,a6)
 	movea.l	(sp)+,a6
 	movea.l	a3,a0
-	movea.l	(menustrip-datasegment,a6),a1
+	movea.l	(menustrip-ds,a6),a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
 	bsr.b	lbC001EDC
@@ -2968,26 +2973,26 @@ lbC001D8C	move.l	#$10000,d1
 lbC001E8C	andi.b	#$FB,ccr
 	bra.b	lbC001EBE
 
-lbC001E92	jsr	(easyrequest_38-datasegment,a6)
+lbC001E92	jsr	(easyrequest_38-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 lbC001EA6	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC001EBA
 
-lbC001EB6	jsr	(easyrequest_3a-datasegment,a6)
+lbC001EB6	jsr	(easyrequest_3a-ds,a6)
 lbC001EBA	ori.b	#4,ccr
 lbC001EBE	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
 lbC001EC4	movem.l	a2-a5,-(sp)
-	move.l	(window6ptr-datasegment,a6),d0
+	move.l	(window6ptr-ds,a6),d0
 	beq.b	lbC001ED6
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
@@ -3015,10 +3020,10 @@ lbC001F0C	addq.w	#4,a4
 	bra.b	lbC001EE4
 
 lbC001F10	moveq	#0,d0
-	tst.b	(lbB02B46D-datasegment,a6)
+	tst.b	(lbB02B46D-ds,a6)
 	bne.b	lbC001F22
 	moveq	#1,d0
-	tst.b	(lbB02B46E-datasegment,a6)
+	tst.b	(lbB02B46E-ds,a6)
 	bne.b	lbC001F22
 	moveq	#2,d0
 lbC001F22	movea.l	(a4),a0
@@ -3522,24 +3527,24 @@ lbW002432	dw	$294
 	dw	$295
 	dw	$2B8
 
-lbC002438	move.w	(4,a3),(lbB02CFE6-datasegment,a6)
-	move.w	(6,a3),(lbB02CFE8-datasegment,a6)
+lbC002438	move.w	(4,a3),(lbB02CFE6-ds,a6)
+	move.w	(6,a3),(lbB02CFE8-ds,a6)
 	bsr.w	lbC002B98
-	clr.l	(window6ptr-datasegment,a6)
+	clr.l	(window6ptr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	rts
 
 openwindow_options2	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(window7ptr-datasegment,a6),d0
+	move.l	(window7ptr-ds,a6),d0
 	beq.b	lbC002480
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -3548,7 +3553,7 @@ openwindow_options2	movem.l	d2-d6/a2-a5,-(sp)
 lbC002480	move.l	#$10000,d1
 	move.l	#$CA,d0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -3558,10 +3563,10 @@ lbC002480	move.l	#$10000,d1
 	bsr.w	creategadgets
 	beq.w	lbC002598
 	clr.l	-(sp)
-	move.l	(screenptr-datasegment,a6),-(sp)
+	move.l	(screenptr-ds,a6),-(sp)
 	move.l	#$80000070,-(sp)
 	move.w	#$BB8,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
 	move.l	#$8000006E,-(sp)
 	moveq	#1,d0
@@ -3582,20 +3587,20 @@ lbC002480	move.l	#$10000,d1
 	pea	($164).w
 	move.l	#$80000066,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFEC-datasegment,a6),d0
+	move.w	(lbB02CFEC-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000065,-(sp)
-	move.w	(lbB02CFEA-datasegment,a6),d0
+	move.w	(lbB02CFEA-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000064,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(window7ptr-datasegment,a6)
+	move.l	d0,(window7ptr-ds,a6)
 	beq.b	lbC002584
 	movea.l	d0,a3
 	move.l	#$740,d0
@@ -3603,13 +3608,13 @@ lbC002480	move.l	#$10000,d1
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_RefreshWindow,a6)
 	movea.l	(sp)+,a6
 	movea.l	a3,a0
-	movea.l	(menustrip-datasegment,a6),a1
+	movea.l	(menustrip-ds,a6),a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
 	bsr.b	lbC0025CE
@@ -3619,26 +3624,26 @@ lbC002480	move.l	#$10000,d1
 lbC00257E	andi.b	#$FB,ccr
 	bra.b	lbC0025B0
 
-lbC002584	jsr	(easyrequest_38-datasegment,a6)
+lbC002584	jsr	(easyrequest_38-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 lbC002598	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC0025AC
 
-lbC0025A8	jsr	(easyrequest_3a-datasegment,a6)
+lbC0025A8	jsr	(easyrequest_3a-ds,a6)
 lbC0025AC	ori.b	#4,ccr
 lbC0025B0	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
 lbC0025B6	movem.l	a2-a5,-(sp)
-	move.l	(window7ptr-datasegment,a6),d0
+	move.l	(window7ptr-ds,a6),d0
 	beq.b	lbC0025C8
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
@@ -4006,18 +4011,18 @@ select_options2_symequ
 	move.w	#$3B1,d0
 lbC002962	rts
 
-lbC002964	move.w	(4,a3),(lbB02CFEA-datasegment,a6)
-	move.w	(6,a3),(lbB02CFEC-datasegment,a6)
+lbC002964	move.w	(4,a3),(lbB02CFEA-ds,a6)
+	move.w	(6,a3),(lbB02CFEC-ds,a6)
 	bsr.w	lbC002B98
-	clr.l	(window7ptr-datasegment,a6)
+	clr.l	(window7ptr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	movea.l	a5,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
 	rts
@@ -4028,7 +4033,7 @@ creategadgets	movem.l	d2/a2-a4,-(sp)
 	lea	($22,a5),a0
 	clr.l	(a0)
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOCreateContext,a6)
 	movea.l	(sp)+,a6
 	move.l	d0,(a4)+
@@ -4043,19 +4048,19 @@ lbC0029BA	lea	(4,a5),a1
 	moveq	#0,d0
 	move.w	(a3)+,d0	;text number
 	beq.b	lbC0029D2
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 lbC0029D2	move.l	d0,(a2)+	;GadgetText
 	lea	(topas_TextAttr).l,a0
 	move.l	a0,(a2)+	;TextAttr
 	move.w	d2,(a2)+	;GadgetID
 	move.l	(a3)+,(a2)+	;Flags
-	move.l	(visualinfo-datasegment,a6),(a2)+	;VisualInfo
+	move.l	(visualinfo-ds,a6),(a2)+	;VisualInfo
 	move.l	(a3)+,(a2)	;UserData
 	move.l	(a3)+,d0	;gadget kind
 	movea.l	(-4,a4),a0	;previous
 	movea.l	(a3)+,a2	;tags
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOCreateGadgetA,a6)
 	movea.l	(sp)+,a6
 	move.l	d0,(a4)+
@@ -4066,10 +4071,10 @@ lbC0029D2	move.l	d0,(a2)+	;GadgetText
 	andi.b	#$FB,ccr
 	bra.b	lbC002A22
 
-lbC002A0A	jsr	(easyrequest_3c-datasegment,a6)
+lbC002A0A	jsr	(easyrequest_3c-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	ori.b	#4,ccr
@@ -4077,20 +4082,20 @@ lbC002A22	movem.l	(sp)+,d2/a2-a4
 	rts
 
 lbC002A28	movem.l	a2/a6,-(sp)	;a3 = window
-	move.l	(userport-datasegment,a6),(wd_UserPort,a3)
+	move.l	(userport-ds,a6),(wd_UserPort,a3)
 	movea.l	a3,a0
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOModifyIDCMP,a6)
 	movea.l	a3,a0
 	movea.l	($22,a5),a1
 	suba.l	a2,a2
 	moveq	#-1,d0
 	moveq	#-1,d1
-	jsr	(findmenu_setd0-datasegment,a6)
+	jsr	(findmenu_setd0-ds,a6)
 	movea.l	($22,a5),a0
 	movea.l	a3,a1
 	moveq	#-1,d0
-	jsr	(findmenu_set-datasegment,a6)
+	jsr	(findmenu_set-ds,a6)
 	movem.l	(sp)+,a2/a6
 	rts
 
@@ -4101,16 +4106,16 @@ lbC002A5E	movem.l	d2/a0-a4,-(sp)
 	movea.l	($32,a5),a0
 	suba.l	a1,a1
 	moveq	#-1,d0
-	move.w	d0,(lbB02CFF6-datasegment,a6)
+	move.w	d0,(lbB02CFF6-ds,a6)
 	moveq	#15,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC002A7E
 	moveq	#5,d1
 lbC002A7E	bsr.b	setgadget
 	lea	(a5),a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOFreeRemember,a6)
 	movea.l	(sp)+,a6
 	clr.l	(a5)
@@ -4129,7 +4134,7 @@ lbC002AA2	moveq	#0,d2
 	moveq	#14,d0
 	lea	(a5),a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOAllocRemember,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -4149,7 +4154,7 @@ lbC002AA2	moveq	#0,d2
 lbC002AE4	move.l	a4,d0
 	bra.b	lbC002AEE
 
-lbC002AE8	jsr	(easyrequest_3a-datasegment,a6)
+lbC002AE8	jsr	(easyrequest_3a-ds,a6)
 	moveq	#0,d0
 lbC002AEE	movem.l	(sp)+,d2/a0-a4
 	rts
@@ -4168,7 +4173,7 @@ lbC002B08	move.l	d0,-(sp)
 	movea.l	a3,a1
 	suba.l	a2,a2
 	movea.l	sp,a3
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_SetGadgetAttrsA,a6)
 	lea	($1C,sp),sp
 	movem.l	(sp)+,a2-a6
@@ -4177,7 +4182,7 @@ lbC002B08	move.l	d0,-(sp)
 SetGadgetAttrs	movem.l	a2/a3/a6,-(sp)
 	exg	a3,a1
 	suba.l	a2,a2
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_SetGadgetAttrsA,a6)
 	movem.l	(sp)+,a2/a3/a6
 	rts
@@ -4188,7 +4193,7 @@ lbC002B46	movem.l	d2/d3/a6,-(sp)
 	bsr.b	lbC002B6C
 	move.l	($AA,a5),d2
 	move.l	($AE,a5),d3
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVODoubleClick,a6)
 	tst.l	d0
 	movem.l	(sp)+,d2/d3/a6
@@ -4197,20 +4202,20 @@ lbC002B46	movem.l	d2/d3/a6,-(sp)
 lbC002B6C	movem.l	d0/d1/a0/a1/a6,-(sp)
 	lea	($AA,a5),a0
 	lea	($AE,a5),a1
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOCurrentTime,a6)
 	movem.l	(sp)+,d0/d1/a0/a1/a6
 	rts
 
 windowtofront	movem.l	d0/d1/a0/a1/a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOWindowToFront,a6)
 	movem.l	(sp)+,d0/d1/a0/a1/a6
 	rts
 
 lbC002B98	movem.l	d2/a5/a6,-(sp)
 	movea.l	a6,a5
-	movea.l	(execbase-datasegment,a5),a6
+	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOForbid,a6)
 	movea.l	($56,a3),a0
 	move.l	($14,a0),d2
@@ -4231,304 +4236,304 @@ lbC002BAE	movea.l	d2,a1
 lbC002BD0	clr.l	($56,a3)
 	movea.l	a3,a0
 	moveq	#0,d0
-	movea.l	(intbase-datasegment,a5),a6
+	movea.l	(intbase-ds,a5),a6
 	jsr	(_LVOModifyIDCMP,a6)
 	movea.l	a3,a0
 	jsr	(_LVOClearMenuStrip,a6)
-	movea.l	(execbase-datasegment,a5),a6
+	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOPermit,a6)
 	movea.l	a3,a0
-	movea.l	(intbase-datasegment,a5),a6
+	movea.l	(intbase-ds,a5),a6
 	jsr	(_LVOCloseWindow,a6)
 	movem.l	(sp)+,d2/a5/a6
 	rts
 
 lbC002BFE	movem.l	d2/a2/a3/a6,-(sp)
-	lea	(lbB031E00-datasegment,a6),a3
+	lea	(lbB031E00-ds,a6),a3
 	movea.l	a3,a0
 	move.w	#$36C,(a0)+
-	move.b	(lbB02B3E2-datasegment,a6),(a0)+
+	move.b	(lbB02B3E2-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$370,(a0)+
-	move.b	(lbB02B3E3-datasegment,a6),(a0)+
+	move.b	(lbB02B3E3-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$368,(a0)+
-	move.b	(lbB02B3E4-datasegment,a6),(a0)+
+	move.b	(lbB02B3E4-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C,(a0)+
-	move.b	(lbB02B3E5-datasegment,a6),(a0)+
+	move.b	(lbB02B3E5-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1B,(a0)+
-	move.b	(lbB02B3E6-datasegment,a6),(a0)+
+	move.b	(lbB02B3E6-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1A,(a0)+
-	move.b	(lbB02B3E7-datasegment,a6),(a0)+
+	move.b	(lbB02B3E7-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$5E,(a0)+
-	move.b	(lbB02B3E8-datasegment,a6),(a0)+
+	move.b	(lbB02B3E8-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$5D,(a0)+
-	move.b	(lbB02B3E9-datasegment,a6),(a0)+
+	move.b	(lbB02B3E9-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$23,(a0)+
-	move.b	(lbB02B3EA-datasegment,a6),(a0)+
+	move.b	(lbB02B3EA-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$151,(a0)+
-	move.b	(lbB02B3EB-datasegment,a6),(a0)+
+	move.b	(lbB02B3EB-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$152,(a0)+
-	move.b	(lbB02B3EC-datasegment,a6),(a0)+
+	move.b	(lbB02B3EC-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$153,(a0)+
-	move.b	(lbB02B3ED-datasegment,a6),(a0)+
+	move.b	(lbB02B3ED-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$154,(a0)+
-	move.b	(lbB02B3EE-datasegment,a6),(a0)+
+	move.b	(lbB02B3EE-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2B9,(a0)+
-	move.b	(lbB02B3EF-datasegment,a6),(a0)+
+	move.b	(lbB02B3EF-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2CB,(a0)+
-	move.b	(lbB02B3F0-datasegment,a6),(a0)+
+	move.b	(lbB02B3F0-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2CD,(a0)+
-	move.b	(lbB02B3F1-datasegment,a6),(a0)+
+	move.b	(lbB02B3F1-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$34E,(a0)+
-	move.b	(lbB02B3F2-datasegment,a6),(a0)+
+	move.b	(lbB02B3F2-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$34F,(a0)+
-	move.b	(lbB02B3F3-datasegment,a6),(a0)+
+	move.b	(lbB02B3F3-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$16A,(a0)+
-	move.b	(lbB02B3F4-datasegment,a6),(a0)+
+	move.b	(lbB02B3F4-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$16B,(a0)+
-	move.b	(lbB02B3F5-datasegment,a6),(a0)+
+	move.b	(lbB02B3F5-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$16C,(a0)+
-	move.b	(lbB02B3F6-datasegment,a6),(a0)+
+	move.b	(lbB02B3F6-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$175,(a0)+
-	move.b	(lbB02B3F7-datasegment,a6),(a0)+
+	move.b	(lbB02B3F7-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$176,(a0)+
-	move.b	(lbB02B3F8-datasegment,a6),(a0)+
+	move.b	(lbB02B3F8-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2B1,(a0)+
-	move.b	(lbB02B3F9-datasegment,a6),(a0)+
+	move.b	(lbB02B3F9-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2B2,(a0)+
-	move.b	(lbB02B3FA-datasegment,a6),(a0)+
+	move.b	(lbB02B3FA-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2CF,(a0)+
-	move.b	(lbB02B3FB-datasegment,a6),(a0)+
+	move.b	(lbB02B3FB-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2A4,(a0)+
-	move.b	(lbB02B3FC-datasegment,a6),(a0)+
+	move.b	(lbB02B3FC-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2A3,(a0)+
-	move.b	(lbB02B3FD-datasegment,a6),(a0)+
+	move.b	(lbB02B3FD-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C5,(a0)+
-	move.b	(lbB02B3FE-datasegment,a6),(a0)+
+	move.b	(lbB02B3FE-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C6,(a0)+
-	move.b	(lbC02B3FF-datasegment,a6),(a0)+
+	move.b	(lbC02B3FF-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1A6,(a0)+
-	move.b	(lbB02B400-datasegment,a6),(a0)+
+	move.b	(lbB02B400-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1A7,(a0)+
-	move.b	(lbB02B401-datasegment,a6),(a0)+
+	move.b	(lbB02B401-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$246,(a0)+
-	move.b	(lbB02B402-datasegment,a6),(a0)+
+	move.b	(lbB02B402-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$3B2,(a0)+
-	move.b	(lbB02B403-datasegment,a6),(a0)+
+	move.b	(lbB02B403-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$195,(a0)+
-	move.b	(lbB02B404-datasegment,a6),(a0)+
+	move.b	(lbB02B404-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$196,(a0)+
-	move.b	(lbB02B405-datasegment,a6),(a0)+
+	move.b	(lbB02B405-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$50,(a0)+
-	move.b	(lbB02B406-datasegment,a6),(a0)+
+	move.b	(lbB02B406-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$51,(a0)+
-	move.b	(lbB02B407-datasegment,a6),(a0)+
+	move.b	(lbB02B407-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$312,(a0)+
-	move.b	(lbB02B408-datasegment,a6),(a0)+
+	move.b	(lbB02B408-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$313,(a0)+
-	move.b	(lbB02B409-datasegment,a6),(a0)+
+	move.b	(lbB02B409-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$270,(a0)+
-	move.b	(lbB02B40A-datasegment,a6),(a0)+
+	move.b	(lbB02B40A-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$268,(a0)+
-	move.b	(lbB02B40B-datasegment,a6),(a0)+
+	move.b	(lbB02B40B-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$3A,(a0)+
-	move.b	(lbB02B40C-datasegment,a6),(a0)+
+	move.b	(lbB02B40C-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$39,(a0)+
-	move.b	(lbB02B40D-datasegment,a6),(a0)+
+	move.b	(lbB02B40D-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$38,(a0)+
-	move.b	(lbB02B40E-datasegment,a6),(a0)+
+	move.b	(lbB02B40E-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$37,(a0)+
-	move.b	(lbB02B40F-datasegment,a6),(a0)+
+	move.b	(lbB02B40F-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36,(a0)+
-	move.b	(lbB02B410-datasegment,a6),(a0)+
+	move.b	(lbB02B410-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$35A,(a0)+
-	move.b	(lbB02B417-datasegment,a6),(a0)+
+	move.b	(lbB02B417-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$200,(a0)+
-	move.b	(lbB02B418-datasegment,a6),(a0)+
+	move.b	(lbB02B418-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$19B,(a0)+
-	move.b	(lbB02B419-datasegment,a6),(a0)+
+	move.b	(lbB02B419-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$19C,(a0)+
-	move.b	(lbB02B41A-datasegment,a6),(a0)+
+	move.b	(lbB02B41A-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1A4,(a0)+
-	move.b	(lbB02B41B-datasegment,a6),(a0)+
+	move.b	(lbB02B41B-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$19D,(a0)+
-	move.b	(lbB02B41C-datasegment,a6),(a0)+
+	move.b	(lbB02B41C-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$220,(a0)+
-	move.b	(lbB02B41D-datasegment,a6),(a0)+
+	move.b	(lbB02B41D-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$221,(a0)+
-	move.b	(lbB02B41E-datasegment,a6),(a0)+
+	move.b	(lbB02B41E-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$222,(a0)+
-	move.b	(lbB02B41F-datasegment,a6),(a0)+
+	move.b	(lbB02B41F-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$223,(a0)+
-	move.b	(lbB02B420-datasegment,a6),(a0)+
+	move.b	(lbB02B420-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$224,(a0)+
-	move.b	(lbB02B421-datasegment,a6),(a0)+
+	move.b	(lbB02B421-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$22C,(a0)+
-	move.b	(lbB02B422-datasegment,a6),(a0)+
+	move.b	(lbB02B422-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1FE,(a0)+
-	move.b	(lbB02B424-datasegment,a6),(a0)+
+	move.b	(lbB02B424-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$25D,(a0)+
-	move.b	(lbB02B426-datasegment,a6),(a0)+
+	move.b	(lbB02B426-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$25E,(a0)+
-	move.b	(lbB02B427-datasegment,a6),(a0)+
+	move.b	(lbB02B427-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$25F,(a0)+
-	move.b	(lbB02B428-datasegment,a6),(a0)+
+	move.b	(lbB02B428-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$29C,(a0)+
-	move.b	(lbB02B429-datasegment,a6),(a0)+
+	move.b	(lbB02B429-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$29D,(a0)+
-	move.b	(lbB02B42A-datasegment,a6),(a0)+
+	move.b	(lbB02B42A-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$29E,(a0)+
-	move.b	(lbB02B42B-datasegment,a6),(a0)+
+	move.b	(lbB02B42B-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2AF,(a0)+
-	move.b	(flag_DT_enabled-datasegment,a6),(a0)+
+	move.b	(flag_DT_enabled-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$2B0,(a0)+
-	move.b	(lbB02B42D-datasegment,a6),(a0)+
+	move.b	(lbB02B42D-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$34D,(a0)+
-	move.b	(lbB02B42E-datasegment,a6),(a0)+
+	move.b	(lbB02B42E-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$350,(a0)+
-	move.b	(lbB02B42F-datasegment,a6),(a0)+
+	move.b	(lbB02B42F-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1BD,(a0)+
-	move.b	(lbB02B430-datasegment,a6),(a0)+
+	move.b	(lbB02B430-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1BE,(a0)+
-	move.b	(lbB02B431-datasegment,a6),(a0)+
+	move.b	(lbB02B431-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1BF,(a0)+
-	move.b	(lbB02B432-datasegment,a6),(a0)+
+	move.b	(lbB02B432-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C0,(a0)+
-	move.b	(lbB02B433-datasegment,a6),(a0)+
+	move.b	(lbB02B433-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C1,(a0)+
-	move.b	(lbB02B434-datasegment,a6),(a0)+
+	move.b	(lbB02B434-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C2,(a0)+
-	move.b	(lbB02B435-datasegment,a6),(a0)+
+	move.b	(lbB02B435-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C3,(a0)+
-	move.b	(lbC02B436-datasegment,a6),(a0)+
+	move.b	(lbC02B436-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C4,(a0)+
-	move.b	(lbB02B437-datasegment,a6),(a0)+
+	move.b	(lbB02B437-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36E,(a0)+
-	move.b	(lbB02B438-datasegment,a6),(a0)+
+	move.b	(lbB02B438-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$372,(a0)+
-	move.b	(lbB02B439-datasegment,a6),(a0)+
+	move.b	(lbB02B439-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36A,(a0)+
-	move.b	(lbB02B43A-datasegment,a6),(a0)+
+	move.b	(lbB02B43A-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36B,(a0)+
-	move.b	(lbB02B43B-datasegment,a6),(a0)+
+	move.b	(lbB02B43B-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36F,(a0)+
-	move.b	(lbB02B43C-datasegment,a6),(a0)+
+	move.b	(lbB02B43C-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$367,(a0)+
-	move.b	(lbB02B43D-datasegment,a6),(a0)+
+	move.b	(lbB02B43D-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36D,(a0)+
-	move.b	(lbB02B43E-datasegment,a6),(a0)+
+	move.b	(lbB02B43E-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$371,(a0)+
-	move.b	(lbB02B43F-datasegment,a6),(a0)+
+	move.b	(lbB02B43F-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$369,(a0)+
-	move.b	(lbB02B440-datasegment,a6),(a0)+
+	move.b	(lbB02B440-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$4B,(a0)+
-	move.b	(lbB02B441-datasegment,a6),(a0)+
+	move.b	(lbB02B441-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$4C,(a0)+
-	move.b	(lbB02B442-datasegment,a6),(a0)+
+	move.b	(lbB02B442-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$192,(a0)+
-	move.b	(lbB02B443-datasegment,a6),(a0)+
+	move.b	(lbB02B443-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$193,(a0)+
-	move.b	(lbB02B444-datasegment,a6),(a0)+
+	move.b	(lbB02B444-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$194,(a0)+
-	move.b	(lbB02B445-datasegment,a6),(a0)+
+	move.b	(lbB02B445-ds,a6),(a0)+
 	clr.b	(a0)+
 	clr.w	(a0)
-	movea.l	(window1ptr-datasegment,a6),a0
+	movea.l	(window1ptr-ds,a6),a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOClearMenuStrip,a6)
 	movea.l	(sp)+,a6
-lbC002FB2	movea.l	(menustrip-datasegment,a6),a2
+lbC002FB2	movea.l	(menustrip-ds,a6),a2
 	move.w	(a3)+,d2
 	beq.b	lbC003016
 	bra.b	lbC002FC2
@@ -4572,182 +4577,182 @@ lbC003010	move.w	(a3)+,d2
 	bra.b	lbC002FF2
 
 lbC003016	move.w	#$1A2,d0
-	jsr	(findmenu-datasegment,a6)
+	jsr	(findmenu-ds,a6)
 	beq.b	lbC00303E
 	movea.l	d0,a1
 	movea.l	($12,a1),a1
 	move.w	#$4E5,d0
-	cmpi.b	#$78,(XEFM.MSG-datasegment,a6)
+	cmpi.b	#$78,(XEFM.MSG-ds,a6)
 	beq.b	lbC003036
 	move.w	#$4E4,d0
-lbC003036	jsr	(gettextbynum-datasegment,a6)
+lbC003036	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
 lbC00303E	move.w	#$1A3,d0
-	jsr	(findmenu-datasegment,a6)
+	jsr	(findmenu-ds,a6)
 	beq.b	lbC003066
 	movea.l	d0,a1
 	movea.l	($12,a1),a1
 	move.w	#$4E7,d0
-	cmpi.b	#$78,(xpsc.MSG-datasegment,a6)
+	cmpi.b	#$78,(xpsc.MSG-ds,a6)
 	beq.b	lbC00305E
 	move.w	#$4E6,d0
-lbC00305E	jsr	(gettextbynum-datasegment,a6)
+lbC00305E	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
 lbC003066	move.w	#$314,d0
-	jsr	(findmenu-datasegment,a6)
+	jsr	(findmenu-ds,a6)
 	beq.b	lbC00308E
 	movea.l	d0,a1
 	movea.l	($12,a1),a1
 	move.w	#$4E9,d0
-	cmpi.b	#$61,(ADUSPUSPMMUMM.MSG-datasegment,a6)
+	cmpi.b	#$61,(ADUSPUSPMMUMM.MSG-ds,a6)
 	beq.b	lbC003086
 	move.w	#$4E8,d0
-lbC003086	jsr	(gettextbynum-datasegment,a6)
+lbC003086	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
 lbC00308E	move.w	#$366,d0
-	jsr	(findmenu-datasegment,a6)
+	jsr	(findmenu-ds,a6)
 	beq.b	lbC0030B6
 	movea.l	d0,a1
 	movea.l	($12,a1),a1
 	move.w	#$4EB,d0
-	cmpi.b	#$77,(WL.MSG-datasegment,a6)
+	cmpi.b	#$77,(WL.MSG-ds,a6)
 	beq.b	lbC0030AE
 	move.w	#$4EA,d0
-lbC0030AE	jsr	(gettextbynum-datasegment,a6)
+lbC0030AE	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
 lbC0030B6	move.w	#$277,d0
-	jsr	(findmenu-datasegment,a6)
+	jsr	(findmenu-ds,a6)
 	beq.b	lbC0030E4
 	movea.l	d0,a1
 	movea.l	(a1),a1
 	movea.l	(a1),a1
 	movea.l	($12,a1),a1
 	moveq	#0,d0
-	move.b	(lbB02EB6B-datasegment,a6),d0
+	move.b	(lbB02EB6B-ds,a6),d0
 	add.w	d0,d0
 	lea	(lbW0292FE).l,a0
 	move.w	(a0,d0.w),d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
-lbC0030E4	movea.l	(window1ptr-datasegment,a6),a0
-	movea.l	(menustrip-datasegment,a6),a1
-	movea.l	(intbase-datasegment,a6),a6
+lbC0030E4	movea.l	(window1ptr-ds,a6),a0
+	movea.l	(menustrip-ds,a6),a1
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOResetMenuStrip,a6)
 	movem.l	(sp)+,d2/a2/a3/a6
 	rts
 
-lbC0030FA	st	(lbB02B446-datasegment,a6)
+lbC0030FA	st	(lbB02B446-ds,a6)
 	bra.w	lbC003634
 
-lbC003102	clr.b	(lbB02B446-datasegment,a6)
+lbC003102	clr.b	(lbB02B446-ds,a6)
 	bra.w	lbC003634
 
-lbC00310A	st	(lbB02B447-datasegment,a6)
+lbC00310A	st	(lbB02B447-ds,a6)
 	bra.w	lbC003634
 
-lbC003112	clr.b	(lbB02B447-datasegment,a6)
+lbC003112	clr.b	(lbB02B447-ds,a6)
 	bra.w	lbC003634
 
-lbC00311A	st	(lbB02B448-datasegment,a6)
+lbC00311A	st	(lbB02B448-ds,a6)
 	bra.w	lbC003634
 
-lbC003122	clr.b	(lbB02B448-datasegment,a6)
+lbC003122	clr.b	(lbB02B448-ds,a6)
 	bra.w	lbC003634
 
-lbC00312A	st	(lbB02B449-datasegment,a6)
+lbC00312A	st	(lbB02B449-ds,a6)
 	bra.w	lbC003634
 
-lbC003132	clr.b	(lbB02B449-datasegment,a6)
+lbC003132	clr.b	(lbB02B449-ds,a6)
 	bra.w	lbC003634
 
-lbC00313A	st	(lbB02B44A-datasegment,a6)
+lbC00313A	st	(lbB02B44A-ds,a6)
 	bra.w	lbC003634
 
-lbC003142	clr.b	(lbB02B44A-datasegment,a6)
+lbC003142	clr.b	(lbB02B44A-ds,a6)
 	bra.w	lbC003634
 
-lbC00314A	st	(lbB02B44B-datasegment,a6)
+lbC00314A	st	(lbB02B44B-ds,a6)
 	bra.w	lbC003634
 
-lbC003152	clr.b	(lbB02B44B-datasegment,a6)
+lbC003152	clr.b	(lbB02B44B-ds,a6)
 	bra.w	lbC003634
 
-lbC00315A	st	(lbB02B44C-datasegment,a6)
+lbC00315A	st	(lbB02B44C-ds,a6)
 	bra.w	lbC003634
 
-lbC003162	clr.b	(lbB02B44C-datasegment,a6)
+lbC003162	clr.b	(lbB02B44C-ds,a6)
 	bra.w	lbC003634
 
-lbC00316A	st	(lbB02B44D-datasegment,a6)
+lbC00316A	st	(lbB02B44D-ds,a6)
 	bra.w	lbC003634
 
-lbC003172	clr.b	(lbB02B44D-datasegment,a6)
+lbC003172	clr.b	(lbB02B44D-ds,a6)
 	bra.w	lbC003634
 
-lbC00317A	st	(lbB02B44E-datasegment,a6)
+lbC00317A	st	(lbB02B44E-ds,a6)
 	bra.w	lbC003634
 
-lbC003182	clr.b	(lbB02B44E-datasegment,a6)
+lbC003182	clr.b	(lbB02B44E-ds,a6)
 	bra.w	lbC003634
 
-lbC00318A	jsr	(lbC02AF7E-datasegment,a6)
-	st	(lbB02B44F-datasegment,a6)
+lbC00318A	jsr	(lbC02AF7E-ds,a6)
+	st	(lbB02B44F-ds,a6)
 	bra.w	lbC003634
 
-lbC003196	jsr	(lbC02AF7E-datasegment,a6)
-	clr.b	(lbB02B44F-datasegment,a6)
+lbC003196	jsr	(lbC02AF7E-ds,a6)
+	clr.b	(lbB02B44F-ds,a6)
 	bra.w	lbC003634
 
-lbC0031A2	st	(lbB02B450-datasegment,a6)
+lbC0031A2	st	(lbB02B450-ds,a6)
 	bra.w	lbC003634
 
-lbC0031AA	clr.b	(lbB02B450-datasegment,a6)
+lbC0031AA	clr.b	(lbB02B450-ds,a6)
 	bra.w	lbC003634
 
-lbC0031B2	st	(lbB02B451-datasegment,a6)
+lbC0031B2	st	(lbB02B451-ds,a6)
 	bra.w	lbC003634
 
-lbC0031BA	clr.b	(lbB02B451-datasegment,a6)
+lbC0031BA	clr.b	(lbB02B451-ds,a6)
 	bra.w	lbC003634
 
-lbC0031C2	st	(lbB02B452-datasegment,a6)
+lbC0031C2	st	(lbB02B452-ds,a6)
 	bra.w	lbC003634
 
-lbC0031CA	clr.b	(lbB02B452-datasegment,a6)
+lbC0031CA	clr.b	(lbB02B452-ds,a6)
 	bra.w	lbC003634
 
-lbC0031D2	jsr	(lbC02AF7E-datasegment,a6)
-	st	(lbB02B453-datasegment,a6)
+lbC0031D2	jsr	(lbC02AF7E-ds,a6)
+	st	(lbB02B453-ds,a6)
 	bra.w	lbC003634
 
-lbC0031DE	jsr	(lbC02AF7E-datasegment,a6)
-	clr.b	(lbB02B453-datasegment,a6)
+lbC0031DE	jsr	(lbC02AF7E-ds,a6)
+	clr.b	(lbB02B453-ds,a6)
 	bra.w	lbC003634
 
-lbC0031EA	st	(lbB02B454-datasegment,a6)
+lbC0031EA	st	(lbB02B454-ds,a6)
 	bra.w	lbC003634
 
-lbC0031F2	clr.b	(lbB02B454-datasegment,a6)
+lbC0031F2	clr.b	(lbB02B454-ds,a6)
 	bra.w	lbC003634
 
-lbC0031FA	move.l	#lbL01A840,(lbL02D164-datasegment,a6)
-	move.l	#lbL03576C,(lbL02D168-datasegment,a6)
-	jsr	(lbC02AFC0-datasegment,a6)
-	jsr	(lbC02AF7E-datasegment,a6)
-	st	(lbB02B455-datasegment,a6)
+lbC0031FA	move.l	#lbL01A840,(lbL02D164-ds,a6)
+	move.l	#lbL03576C,(lbL02D168-ds,a6)
+	jsr	(lbC02AFC0-ds,a6)
+	jsr	(lbC02AF7E-ds,a6)
+	st	(lbB02B455-ds,a6)
 	bra.w	lbC003634
 
-lbC00321A	move.l	#lbL01AFD0,(lbL02D164-datasegment,a6)
-	move.l	#lbL03776C,(lbL02D168-datasegment,a6)
-	jsr	(lbC02AFC0-datasegment,a6)
-	jsr	(lbC02AF7E-datasegment,a6)
-	clr.b	(lbB02B455-datasegment,a6)
+lbC00321A	move.l	#lbL01AFD0,(lbL02D164-ds,a6)
+	move.l	#lbL03776C,(lbL02D168-ds,a6)
+	jsr	(lbC02AFC0-ds,a6)
+	jsr	(lbC02AF7E-ds,a6)
+	clr.b	(lbB02B455-ds,a6)
 	bra.w	lbC003634
 
-lbC00323A	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
-	tst.b	(lbL02EB80-datasegment,a6)
+lbC00323A	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	tst.b	(lbL02EB80-ds,a6)
 	beq.b	lbC0032A6
-	clr.b	(lbL02EB80-datasegment,a6)
+	clr.b	(lbL02EB80-ds,a6)
 	moveq	#0,d0
 	lea	(lbW013A52).l,a0
 	lea	(i_orib).l,a1
@@ -4773,7 +4778,7 @@ lbC003274	move.b	-(a5),-(a3)
 lbC00327C	move.b	(a0)+,d1
 	beq.b	lbC00329E
 	addq.b	#1,d0
-	btst	#5,(B.MSG-datasegment,a6)
+	btst	#5,(B.MSG-ds,a6)
 	beq.b	lbC00329A
 	cmpi.b	#$41,d1
 	bcs.b	lbC00329A
@@ -4791,13 +4796,13 @@ lbC00329E	tst.b	(a3)+
 lbC0032A6	andi.b	#$FB,ccr
 	rts
 
-lbC0032AC	st	(lbB02B456-datasegment,a6)
+lbC0032AC	st	(lbB02B456-ds,a6)
 	bra.w	lbC003634
 
-lbC0032B4	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
-	tst.b	(lbL02EB80-datasegment,a6)
+lbC0032B4	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	tst.b	(lbL02EB80-ds,a6)
 	bne.b	lbC0032FA
-	st	(lbL02EB80-datasegment,a6)
+	st	(lbL02EB80-ds,a6)
 	moveq	#0,d0
 	lea	(lbW013A52).l,a0
 	lea	(i_orib).l,a1
@@ -4825,119 +4830,119 @@ lbC0032F0	clr.b	(a2)+
 
 lbC0032FA	rts
 
-lbC0032FC	clr.b	(lbB02B456-datasegment,a6)
+lbC0032FC	clr.b	(lbB02B456-ds,a6)
 	bra.w	lbC003634
 
-lbC003304	jsr	(lbC02AFC0-datasegment,a6)
-	st	(lbB02B457-datasegment,a6)
+lbC003304	jsr	(lbC02AFC0-ds,a6)
+	st	(lbB02B457-ds,a6)
 	bra.w	lbC003634
 
-lbC003310	jsr	(lbC02AFC0-datasegment,a6)
-	clr.b	(lbB02B457-datasegment,a6)
+lbC003310	jsr	(lbC02AFC0-ds,a6)
+	clr.b	(lbB02B457-ds,a6)
 	bra.w	lbC003634
 
-lbC00331C	st	(lbB02B458-datasegment,a6)
+lbC00331C	st	(lbB02B458-ds,a6)
 	bra.w	lbC003634
 
-lbC003324	clr.b	(lbB02B458-datasegment,a6)
+lbC003324	clr.b	(lbB02B458-ds,a6)
 	bra.w	lbC003634
 
-lbC00332C	st	(lbB02B459-datasegment,a6)
+lbC00332C	st	(lbB02B459-ds,a6)
 	bra.w	lbC003634
 
-lbC003334	clr.b	(lbB02B459-datasegment,a6)
+lbC003334	clr.b	(lbB02B459-ds,a6)
 	bra.w	lbC003634
 
-lbC00333C	st	(lbB02B45A-datasegment,a6)
+lbC00333C	st	(lbB02B45A-ds,a6)
 	bra.w	lbC003634
 
-lbC003344	clr.b	(lbB02B45A-datasegment,a6)
+lbC003344	clr.b	(lbB02B45A-ds,a6)
 	bra.w	lbC003634
 
-lbC00334C	st	(lbB02B470-datasegment,a6)
+lbC00334C	st	(lbB02B470-ds,a6)
 	bra.w	lbC003634
 
-lbC003354	clr.b	(lbB02B470-datasegment,a6)
+lbC003354	clr.b	(lbB02B470-ds,a6)
 	bra.w	lbC003634
 
-lbC00335C	st	(lbB02B471-datasegment,a6)
+lbC00335C	st	(lbB02B471-ds,a6)
 	bra.w	lbC003634
 
-lbC003364	clr.b	(lbB02B471-datasegment,a6)
+lbC003364	clr.b	(lbB02B471-ds,a6)
 	bra.w	lbC003634
 
-lbC00336C	st	(lbB02B472-datasegment,a6)
+lbC00336C	st	(lbB02B472-ds,a6)
 	bra.w	lbC003634
 
-lbC003374	clr.b	(lbB02B472-datasegment,a6)
+lbC003374	clr.b	(lbB02B472-ds,a6)
 	bra.w	lbC003634
 
-lbC00337C	move.l	#$3F,(lbL02B49C-datasegment,a6)
+lbC00337C	move.l	#$3F,(lbL02B49C-ds,a6)
 	moveq	#$20,d0
-	and.b	(x.MSG-datasegment,a6),d0
+	and.b	(x.MSG-ds,a6),d0
 	ori.b	#$53,d0
-	move.b	d0,(x.MSG-datasegment,a6)
+	move.b	d0,(x.MSG-ds,a6)
 	pea	(lbC013F20).l
-	st	(lbB02B46D-datasegment,a6)
-	clr.b	(lbB02B46E-datasegment,a6)
-	clr.b	(lbB02B46F-datasegment,a6)
+	st	(lbB02B46D-ds,a6)
+	clr.b	(lbB02B46E-ds,a6)
+	clr.b	(lbB02B46F-ds,a6)
 	bra.w	lbC003634
 
-lbC0033A8	move.l	#$FFFFFFFF,(lbL02B49C-datasegment,a6)
+lbC0033A8	move.l	#$FFFFFFFF,(lbL02B49C-ds,a6)
 	moveq	#$20,d0
-	and.b	(x.MSG-datasegment,a6),d0
+	and.b	(x.MSG-ds,a6),d0
 	ori.b	#$53,d0
-	move.b	d0,(x.MSG-datasegment,a6)
+	move.b	d0,(x.MSG-ds,a6)
 	pea	(lbC013F20).l
-	clr.b	(lbB02B46D-datasegment,a6)
-	st	(lbB02B46E-datasegment,a6)
-	clr.b	(lbB02B46F-datasegment,a6)
+	clr.b	(lbB02B46D-ds,a6)
+	st	(lbB02B46E-ds,a6)
+	clr.b	(lbB02B46F-ds,a6)
 	bra.w	lbC003634
 
-lbC0033D4	move.l	#$FFFFFFFF,(lbL02B49C-datasegment,a6)
+lbC0033D4	move.l	#$FFFFFFFF,(lbL02B49C-ds,a6)
 	moveq	#$20,d0
-	and.b	(x.MSG-datasegment,a6),d0
+	and.b	(x.MSG-ds,a6),d0
 	ori.b	#$58,d0
-	move.b	d0,(x.MSG-datasegment,a6)
+	move.b	d0,(x.MSG-ds,a6)
 	pea	(lbC013F20).l
-	clr.b	(lbB02B46D-datasegment,a6)
-	clr.b	(lbB02B46E-datasegment,a6)
-	st	(lbB02B46F-datasegment,a6)
+	clr.b	(lbB02B46D-ds,a6)
+	clr.b	(lbB02B46E-ds,a6)
+	st	(lbB02B46F-ds,a6)
 	bra.w	lbC003634
 
-lbC003400	st	(lbB02B45B-datasegment,a6)
-	clr.b	(lbB02EB43-datasegment,a6)
+lbC003400	st	(lbB02B45B-ds,a6)
+	clr.b	(lbB02EB43-ds,a6)
 	bra.w	lbC003634
 
-lbC00340C	clr.b	(lbB02B45B-datasegment,a6)
-	st	(lbB02EB43-datasegment,a6)
+lbC00340C	clr.b	(lbB02B45B-ds,a6)
+	st	(lbB02EB43-ds,a6)
 	bra.w	lbC003634
 
-lbC003418	st	(lbB02B45C-datasegment,a6)
+lbC003418	st	(lbB02B45C-ds,a6)
 	bra.w	lbC003634
 
-lbC003420	clr.b	(lbB02B45C-datasegment,a6)
+lbC003420	clr.b	(lbB02B45C-ds,a6)
 	bra.w	lbC003634
 
-lbC003428	st	(lbB02B45D-datasegment,a6)
+lbC003428	st	(lbB02B45D-ds,a6)
 	bra.w	lbC003634
 
-lbC003430	clr.b	(lbB02B45D-datasegment,a6)
+lbC003430	clr.b	(lbB02B45D-ds,a6)
 	bra.w	lbC003634
 
-lbC003438	st	(lbB02B45E-datasegment,a6)
+lbC003438	st	(lbB02B45E-ds,a6)
 	bra.w	lbC003634
 
-lbC003440	clr.b	(lbB02B45E-datasegment,a6)
+lbC003440	clr.b	(lbB02B45E-ds,a6)
 	bra.w	lbC003634
 
-lbC003448	st	(lbB02B45F-datasegment,a6)
+lbC003448	st	(lbB02B45F-ds,a6)
 	bra.w	lbC003634
 
-lbC003450	clr.b	(lbB02B45F-datasegment,a6)
+lbC003450	clr.b	(lbB02B45F-ds,a6)
 	bra.w	lbC003634
 
-lbC003458	st	(lbB02B46A-datasegment,a6)
+lbC003458	st	(lbB02B46A-ds,a6)
 	move.l	#i_pop,(lbL01A934).l
 	move.l	#i_pop,(lbL01B0C4).l
 	move.l	#i_push,(lbL01A944).l
@@ -4946,7 +4951,7 @@ lbC003458	st	(lbB02B46A-datasegment,a6)
 	move.l	#i_pop2,(lbL01B0DC).l
 	bra.w	lbC003634
 
-lbC00349C	clr.b	(lbB02B46A-datasegment,a6)
+lbC00349C	clr.b	(lbB02B46A-ds,a6)
 	move.l	#i_moveal,(lbL01A934).l
 	move.l	#i_moveal2,(lbL01B0C4).l
 	move.l	#i_movel,d0
@@ -4957,14 +4962,14 @@ lbC00349C	clr.b	(lbB02B46A-datasegment,a6)
 	move.l	d0,(lbL01B0DC).l
 	bra.w	lbC003634
 
-lbC0034DC	st	(lbB02B46B-datasegment,a6)
+lbC0034DC	st	(lbB02B46B-ds,a6)
 	move.l	#i_pushm,(lbL01A9F4).l
 	move.l	#i_popm,(lbL01A9FC).l
 	move.l	#i_pushm,(lbL01B184).l
 	move.l	#i_popm,(lbL01B18C).l
 	bra.w	lbC003634
 
-lbC00350C	clr.b	(lbB02B46B-datasegment,a6)
+lbC00350C	clr.b	(lbB02B46B-ds,a6)
 	move.l	#i_movem,d0
 	move.l	d0,(lbL01A9F4).l
 	move.l	d0,(lbL01A9FC).l
@@ -4973,17 +4978,17 @@ lbC00350C	clr.b	(lbB02B46B-datasegment,a6)
 	move.l	d0,(lbL01B18C).l
 	bra.w	lbC003634
 
-lbC003538	st	(lbB02B46C-datasegment,a6)
+lbC003538	st	(lbB02B46C-ds,a6)
 	lea	(HSLO.MSG,pc),a0
 	bra.b	lbC00354A
 
-lbC003542	clr.b	(lbB02B46C-datasegment,a6)
+lbC003542	clr.b	(lbB02B46C-ds,a6)
 	lea	(CCCS.MSG,pc),a0
-lbC00354A	lea	(CCCSNEEQVCVSP.MSG-datasegment,a6),a1
+lbC00354A	lea	(CCCSNEEQVCVSP.MSG-ds,a6),a1
 	bsr.b	lbC003560
-	lea	(CCCSNEEQVCVSP.MSG0-datasegment,a6),a1
+	lea	(CCCSNEEQVCVSP.MSG0-ds,a6),a1
 	bsr.b	lbC003560
-	lea	(CCCSNEEQVCVSP.MSG1-datasegment,a6),a1
+	lea	(CCCSNEEQVCVSP.MSG1-ds,a6),a1
 	bsr.b	lbC003560
 	bra.w	lbC003634
 
@@ -4999,143 +5004,143 @@ lbC003562	moveq	#$20,d1
 HSLO.MSG	db	'HSLO'
 CCCS.MSG	db	'CCCS'
 
-lbC00357A	st	(lbB02B460-datasegment,a6)
+lbC00357A	st	(lbB02B460-ds,a6)
 	moveq	#8,d1
 	bra.w	lbC003618
 
-lbC003584	clr.b	(lbB02B460-datasegment,a6)
+lbC003584	clr.b	(lbB02B460-ds,a6)
 	moveq	#8,d1
 	bra.w	lbC00362A
 
-lbC00358E	st	(lbB02B461-datasegment,a6)
+lbC00358E	st	(lbB02B461-ds,a6)
 	moveq	#9,d1
 	bra.w	lbC003618
 
-lbC003598	clr.b	(lbB02B461-datasegment,a6)
+lbC003598	clr.b	(lbB02B461-ds,a6)
 	moveq	#9,d1
 	bra.w	lbC00362A
 
-lbC0035A2	st	(lbB02B462-datasegment,a6)
+lbC0035A2	st	(lbB02B462-ds,a6)
 	moveq	#10,d1
 	bra.b	lbC003618
 
-lbC0035AA	clr.b	(lbB02B462-datasegment,a6)
+lbC0035AA	clr.b	(lbB02B462-ds,a6)
 	moveq	#10,d1
 	bra.b	lbC00362A
 
-lbC0035B2	st	(lbB02B463-datasegment,a6)
+lbC0035B2	st	(lbB02B463-ds,a6)
 	moveq	#11,d1
 	bra.b	lbC003618
 
-lbC0035BA	clr.b	(lbB02B463-datasegment,a6)
+lbC0035BA	clr.b	(lbB02B463-ds,a6)
 	moveq	#11,d1
 	bra.b	lbC00362A
 
-lbC0035C2	st	(lbB02B464-datasegment,a6)
+lbC0035C2	st	(lbB02B464-ds,a6)
 	moveq	#12,d1
 	bra.b	lbC003618
 
-lbC0035CA	clr.b	(lbB02B464-datasegment,a6)
+lbC0035CA	clr.b	(lbB02B464-ds,a6)
 	moveq	#12,d1
 	bra.b	lbC00362A
 
-lbC0035D2	st	(lbB02B465-datasegment,a6)
+lbC0035D2	st	(lbB02B465-ds,a6)
 	moveq	#13,d1
 	bra.b	lbC003618
 
-lbC0035DA	clr.b	(lbB02B465-datasegment,a6)
+lbC0035DA	clr.b	(lbB02B465-ds,a6)
 	moveq	#13,d1
 	bra.b	lbC00362A
 
-lbC0035E2	st	(lbB02B466-datasegment,a6)
+lbC0035E2	st	(lbB02B466-ds,a6)
 	moveq	#14,d1
 	bra.b	lbC003618
 
-lbC0035EA	clr.b	(lbB02B466-datasegment,a6)
+lbC0035EA	clr.b	(lbB02B466-ds,a6)
 	moveq	#14,d1
 	bra.b	lbC00362A
 
-lbC0035F2	st	(lbB02B467-datasegment,a6)
+lbC0035F2	st	(lbB02B467-ds,a6)
 	moveq	#15,d1
 	bra.b	lbC003618
 
-lbC0035FA	clr.b	(lbB02B467-datasegment,a6)
+lbC0035FA	clr.b	(lbB02B467-ds,a6)
 	moveq	#15,d1
 	bra.b	lbC00362A
 
-lbC003602	st	(lbB02B468-datasegment,a6)
+lbC003602	st	(lbB02B468-ds,a6)
 	moveq	#0,d1
 	bra.b	lbC003618
 
-lbC00360A	clr.b	(lbB02B468-datasegment,a6)
+lbC00360A	clr.b	(lbB02B468-ds,a6)
 	moveq	#0,d1
 	bra.b	lbC00362A
 
-lbC003612	st	(lbB02B469-datasegment,a6)
+lbC003612	st	(lbB02B469-ds,a6)
 	moveq	#1,d1
-lbC003618	move.w	(lbB02D3A6-datasegment,a6),d0
+lbC003618	move.w	(lbB02D3A6-ds,a6),d0
 	bset	d1,d0
-	move.w	d0,(lbB02D3A6-datasegment,a6)
+	move.w	d0,(lbB02D3A6-ds,a6)
 	bra.b	lbC003634
 
-lbC003624	clr.b	(lbB02B469-datasegment,a6)
+lbC003624	clr.b	(lbB02B469-ds,a6)
 	moveq	#1,d1
-lbC00362A	move.w	(lbB02D3A6-datasegment,a6),d0
+lbC00362A	move.w	(lbB02D3A6-ds,a6),d0
 	bclr	d1,d0
-	move.w	d0,(lbB02D3A6-datasegment,a6)
-lbC003634	move.b	#$FF,(lbB02EB48-datasegment,a6)
+	move.w	d0,(lbB02D3A6-ds,a6)
+lbC003634	move.b	#$FF,(lbB02EB48-ds,a6)
 	rts
 
-lbC00363C	tst.b	(lbB02EB4B-datasegment,a6)
+lbC00363C	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	lbC003648
 	jmp	(lbC01B760).l
 
-lbC003648	tst.b	(lbB02EB41-datasegment,a6)
+lbC003648	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC003652
-	jmp	(lbC02A4A6-datasegment,a6)
+	jmp	(lbC02A4A6-ds,a6)
 
 lbC003652	movem.l	d2-d7/a2-a5,-(sp)
 	suba.w	#$DE,sp
 	movea.l	sp,a5
-	movea.l	(window1ptr-datasegment,a6),a0
+	movea.l	(window1ptr-ds,a6),a0
 	move.l	($52,a0),d7
 	move.l	($18,a0),d6
 	ori.l	#$10000,($18,a0)
 	moveq	#2,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOModifyIDCMP,a6)
 	movea.l	(sp)+,a6
-	movem.l	a2/a3,(lbL02D070-datasegment,a6)
+	movem.l	a2/a3,(lbL02D070-ds,a6)
 	move.l	(a3),d4
 	clr.l	($A6,a5)
 	move.b	#1,($AC,a5)
 	move.b	#3,($AD,a5)
 	moveq	#-1,d5
 	lea	(lbW003BE6,pc),a0
-	lea	(lbL02D04E-datasegment,a6),a1
+	lea	(lbL02D04E-ds,a6),a1
 	moveq	#1,d2
 lbC0036A2	move.w	(a0)+,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC0036A2
 	lea	(lbW003BFE,pc),a0
-	lea	(lbL02D05A-datasegment,a6),a1
+	lea	(lbL02D05A-ds,a6),a1
 	moveq	#3,d2
 lbC0036B8	move.w	(a0)+,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
 	dbra	d2,lbC0036B8
 	lea	(gadgets_zap2,pc),a0
 	bsr.w	creategadgets
 	beq.w	lbC0039EC
 	clr.l	-(sp)
-	move.l	(screenptr-datasegment,a6),-(sp)
+	move.l	(screenptr-ds,a6),-(sp)
 	move.l	#$80000070,-(sp)
 	move.l	($22,a5),-(sp)
 	move.l	#$8000006C,-(sp)
 	move.w	#$DAC,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
 	move.l	#$8000006E,-(sp)
 	moveq	#1,d0
@@ -5154,16 +5159,16 @@ lbC0036B8	move.w	(a0)+,d0
 	pea	($15F).w
 	move.l	#$80000066,-(sp)
 	moveq	#0,d0
-	move.w	(lbW02CFF0-datasegment,a6),d0
+	move.w	(lbW02CFF0-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000065,-(sp)
-	move.w	(lbW02CFEE-datasegment,a6),d0
+	move.w	(lbW02CFEE-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#$80000064,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
@@ -5173,13 +5178,13 @@ lbC0036B8	move.w	(a0)+,d0
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_RefreshWindow,a6)
 	movea.l	(sp)+,a6
 	lea	($2A,a5),a2
 	lea	(simpleasmlibr.MSG,pc),a1
 	move.l	#$10002,d0
-	jsr	(openlibjmp-datasegment,a6)
+	jsr	(_openlib-ds,a6)
 	move.l	d0,($A6,a5)
 	bne.b	lbC0037A4
 	movea.l	(4,a2),a0
@@ -5233,12 +5238,12 @@ lbC003822	tst.w	d4
 	bne.w	lbC0038C4
 	movea.l	($56,a3),a0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOWaitPort,a6)
 	movea.l	(sp)+,a6
 lbC003838	movea.l	($56,a3),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_GetIMsg,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -5249,14 +5254,14 @@ lbC003838	movea.l	($56,a3),a0
 	move.w	($18,a1),d2
 	movea.l	($1C,a1),a2
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_ReplyIMsg,a6)
 	movea.l	(sp)+,a6
 	cmpi.l	#4,d3
 	bne.b	lbC003888
 	movea.l	a3,a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_BeginRefresh,a6)
 	movea.l	a3,a0
 	moveq	#1,d0
@@ -5282,14 +5287,14 @@ lbC0038AA	lea	($2A,a5),a0
 	movea.l	a3,a1
 	suba.l	a2,a2
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOActivateGadget,a6)
 	movea.l	(sp)+,a6
 	rts
 
 lbC0038C4	tst.w	d5
 	ble.w	lbC0039BA
-	movea.l	(lbL02D070-datasegment,a6),a2
+	movea.l	(lbL02D070-ds,a6),a2
 	lea	($2A,a5),a0
 	movea.l	($10,a0),a0
 	movea.l	($22,a0),a0
@@ -5298,12 +5303,12 @@ lbC0038C4	tst.w	d5
 	beq.b	lbC003926
 	tst.b	($AD,a5)
 	beq.b	lbC00391E
-	jsr	(atoi-datasegment,a6)
+	jsr	(atoi-ds,a6)
 	bne.b	lbC003902
 	move.w	#$AFC8,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
-	jsr	(lbC02A74E-datasegment,a6)
+	jsr	(lbC02A74E-ds,a6)
 	bsr.b	lbC0038AA
 	bra.w	lbC003820
 
@@ -5333,10 +5338,10 @@ lbC003926	move.l	a0,d0
 	lea	(lbC003A3C,pc),a1
 	move.l	a1,(8,a0)
 	move.l	a2,d0
-	move.l	(lbL02D1DC-datasegment,a6),d1
+	move.l	(workdata_strt_plus1-ds,a6),d1
 	beq.b	lbC00394E
 	subq.l	#1,d1
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	add.l	d1,d0
 lbC00394E	move.l	d0,(12,a0)
 	move.l	($A6,a5),d0
@@ -5358,13 +5363,13 @@ lbC00397A	move.w	($AA,a5),d1
 	cmp.w	d1,d0
 	beq.b	lbC0039AC
 	movem.l	d0/a0,-(sp)
-	lea	(_RawDoFmt_args-datasegment,a6),a1
+	lea	(_RawDoFmt_args-ds,a6),a1
 	move.w	d1,(a1)
 	move.w	d0,(2,a1)
 	move.w	#$AFC9,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
-	jsr	(lbC02A6FC-datasegment,a6)
+	jsr	(lbC02A6FC-ds,a6)
 	movem.l	(sp)+,d0/a0
 	bne.b	lbC0039AC
 	bsr.w	lbC0038AA
@@ -5375,39 +5380,39 @@ lbC0039AC	movea.l	(4,a0),a0
 	subq.w	#1,d0
 lbC0039B4	move.w	(a0)+,(a2)+
 	dbra	d0,lbC0039B4
-lbC0039BA	move.w	(4,a3),(lbW02CFEE-datasegment,a6)
-	move.w	(6,a3),(lbW02CFF0-datasegment,a6)
+lbC0039BA	move.w	(4,a3),(lbW02CFEE-ds,a6)
+	move.w	(6,a3),(lbW02CFF0-ds,a6)
 	movea.l	a3,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOCloseWindow,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC0039DA
 
-lbC0039D6	jsr	(easyrequest_38-datasegment,a6)
+lbC0039D6	jsr	(easyrequest_38-ds,a6)
 lbC0039DA	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC0039F0
 
-lbC0039EC	jsr	(easyrequest_3a-datasegment,a6)
+lbC0039EC	jsr	(easyrequest_3a-ds,a6)
 lbC0039F0	move.l	($A6,a5),d0
 	beq.b	lbC003A04
 	movea.l	d0,a1
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOCloseLibrary,a6)
 	movea.l	(sp)+,a6
-lbC003A04	movea.l	(window1ptr-datasegment,a6),a0
+lbC003A04	movea.l	(window1ptr-ds,a6),a0
 	move.l	d6,($18,a0)
 	move.l	d7,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOModifyIDCMP,a6)
 	movea.l	(sp)+,a6
-	st	(lbB02EB48-datasegment,a6)
+	st	(lbB02EB48-ds,a6)
 	move.l	d5,d0
 	adda.w	#$DE,sp
 	movem.l	(sp)+,d2-d7/a2-a5
@@ -5416,7 +5421,7 @@ lbC003A04	movea.l	(window1ptr-datasegment,a6),a0
 simpleasmlibr.MSG	db	'simpleasm.library',0
 
 lbC003A3C	move.l	a6,-(sp)
-	lea	(datasegment).l,a6
+	lea	(ds).l,a6
 	move.l	a0,d0
 lbC003A46	tst.b	(a0)+
 	bne.b	lbC003A46
@@ -5424,9 +5429,9 @@ lbC003A46	tst.b	(a0)+
 	sub.l	a0,d0
 	subq.l	#1,d0
 	moveq	#0,d1
-	jsr	(lbC027906-datasegment,a6)
+	jsr	(lbC027906-ds,a6)
 	beq.b	lbC003A66
-	move.l	(lbL02D1DC-datasegment,a6),d1
+	move.l	(workdata_strt_plus1-ds,a6),d1
 	beq.b	lbC003A7E
 	subq.l	#1,d1
 	add.l	d1,d0
@@ -5439,13 +5444,13 @@ lbC003A66	cmpi.w	#2,d0
 	bne.b	lbC003A86
 	cmpi.b	#$54,(1,a0)
 	bne.b	lbC003A86
-	move.l	(lbL02D098-datasegment,a6),d0
-lbC003A7E	add.l	(datasegment-datasegment,a6),d0
+	move.l	(lbL02D098-ds,a6),d0
+lbC003A7E	add.l	(ds-ds,a6),d0
 	move.l	d0,(a1)
 	bra.b	lbC003A94
 
 lbC003A86	moveq	#1,d1
-	jsr	(lbC027906-datasegment,a6)
+	jsr	(lbC027906-ds,a6)
 	beq.b	lbC003A92
 	move.l	d0,(a1)
 	bra.b	lbC003A94
@@ -5462,9 +5467,9 @@ lbC003A98	tst.w	d0
 	subq.w	#1,d0
 	add.w	d0,d0
 	move.w	(a0,d0.w),d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
-	jsr	(lbC02A6FC-datasegment,a6)
+	jsr	(lbC02A6FC-ds,a6)
 	bra.b	lbC003ABC
 
 lbC003ABA	moveq	#0,d0
@@ -5621,17 +5626,17 @@ select_zap2_mode	cmp.b	($AC,a5),d2
 lbC003C42	lea	(ga_disabled_1,pc),a1
 	bsr.w	SetGadgetAttrs
 lbC003C4A	movem.l	d3-d7/a2-a5,-(sp)
-	movem.l	(lbL02D070-datasegment,a6),a2/a3
-	st	(lbL02EBF8-datasegment,a6)
-	jsr	(lbC02A87E-datasegment,a6)
+	movem.l	(lbL02D070-ds,a6),a2/a3
+	st	(lbL02EBF8-ds,a6)
+	jsr	(lbC02A87E-ds,a6)
 	clr.b	(a4)
-	clr.b	(lbL02EBF8-datasegment,a6)
+	clr.b	(lbL02EBF8-ds,a6)
 	movea.l	a2,a0
 	movem.l	(sp)+,d3-d7/a2-a5
-	suba.l	(lbL02D070-datasegment,a6),a0
+	suba.l	(lbL02D070-ds,a6),a0
 	move.w	a0,($AA,a5)
 	lea	(stringbuffer).l,a0
-	lea	(displayid-datasegment,a6),a2
+	lea	(displayid-ds,a6),a2
 	movea.l	a2,a1
 	moveq	#$7E,d1
 lbC003C7E	move.b	(a0)+,d0
@@ -5662,8 +5667,8 @@ lbC003CC4	rts
 select_zap2_type	cmp.b	($AD,a5),d2
 	beq.b	lbC003D2A
 	move.b	d2,($AD,a5)
-lbC003CD0	lea	(displayid-datasegment,a6),a2
-	movea.l	(lbL02D070-datasegment,a6),a0
+lbC003CD0	lea	(displayid-ds,a6),a2
+	movea.l	(lbL02D070-ds,a6),a0
 	tst.b	d2
 	bne.b	lbC003CEA
 	movea.l	a2,a1
@@ -11294,18 +11299,18 @@ autorequest	movem.l	d2/d3/a2/a3/a6,-(sp)
 
 openlib	movem.l	d2-d7/a2-a6,-(sp)
 	movea.l	a6,a5
-	movea.l	(thistask1-datasegment,a5),a0
+	movea.l	(thistask1-ds,a5),a0
 	move.l	($B8,a0),d5
 	moveq	#-1,d1
 	move.l	d1,($B8,a0)
 	movea.l	a1,a2
 	move.l	d0,d4
 	beq.b	lbC00B0A0
-	lea	(displayid-datasegment,a5),a4
+	lea	(displayid-ds,a5),a4
 	clr.b	(a4)
 	lea	(lbL00B0B0,pc),a3
 	move.l	#$FE,d3
-	movea.l	(dosbase-datasegment,a5),a6
+	movea.l	(dosbase-ds,a5),a6
 	jsr	(_LVOGetProgramDir,a6)
 	move.l	d0,d1
 	beq.b	lbC00B05E
@@ -11314,7 +11319,7 @@ openlib	movem.l	d2-d7/a2-a6,-(sp)
 lbC00B05E	lea	(libs.MSG,pc),a0
 lbC00B062	move.l	a4,d1
 	move.l	a0,d2
-	movea.l	(dosbase-datasegment,a5),a6
+	movea.l	(dosbase-ds,a5),a6
 	jsr	(_LVOAddPart,a6)
 	move.l	a4,d1
 	move.l	a2,d2
@@ -11323,7 +11328,7 @@ lbC00B062	move.l	a4,d1
 	move.l	d4,d0
 	clr.w	d0
 	swap	d0
-	movea.l	(execbase-datasegment,a5),a6
+	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOOpenLibrary,a6)
 	tst.l	d0
 	bne.b	lbC00B094
@@ -11338,7 +11343,7 @@ lbC00B094	movea.l	d0,a1
 	beq.b	lbC00B0A2
 	jsr	(_LVOCloseLibrary,a6)
 lbC00B0A0	moveq	#0,d0
-lbC00B0A2	movea.l	(thistask1-datasegment,a5),a0
+lbC00B0A2	movea.l	(thistask1-ds,a5),a0
 	move.l	d5,($B8,a0)
 	movem.l	(sp)+,d2-d7/a2-a6
 	rts
@@ -11356,7 +11361,7 @@ ReSourcelibs.MSG	db	'ReSource:libs',0,0
 
 getfilepath	movem.l	d2-d5/a2/a3/a5/a6,-(sp)
 	movea.l	a6,a5
-	movea.l	(thistask1-datasegment,a5),a2
+	movea.l	(thistask1-ds,a5),a2
 	move.l	(pr_WindowPtr,a2),d5
 	moveq	#-1,d1
 	move.l	d1,(pr_WindowPtr,a2)
@@ -11367,7 +11372,7 @@ getfilepath	movem.l	d2-d5/a2/a3/a5/a6,-(sp)
 	move.l	#MODE_OLDFILE,d4	;??? should be lock type
 	move.l	d4,d2
 	move.l	a2,d1
-	movea.l	(dosbase-datasegment,a5),a6
+	movea.l	(dosbase-ds,a5),a6
 	jsr	(_LVOLock,a6)
 	move.l	d0,d1
 	beq.b	.nolock1
@@ -11407,241 +11412,242 @@ getfilepath	movem.l	d2-d5/a2/a3/a5/a6,-(sp)
 
 .failed	moveq	#0,d0
 	clr.l	(a3)
-.end	movea.l	(thistask1-datasegment,a5),a0
+.end	movea.l	(thistask1-ds,a5),a0
 	move.l	d5,(pr_WindowPtr,a0)
 	movem.l	(sp)+,d2-d5/a2/a3/a5/a6
 	tst.l	d0
 	rts
 
-lbC00B18E	clr.b	(lbL02EB7C-datasegment,a6)
+lbC00B18E	clr.b	(lbL02EB7C-ds,a6)
 	bra.b	lbC00B1A4
 
-lbC00B194	clr.b	(lbL02EB7C-datasegment,a6)
-	move.w	#$FFFF,(lbL02EAD8-datasegment,a6)
+lbC00B194	clr.b	(lbL02EB7C-ds,a6)
+	move.w	#$FFFF,(loadbinaryfile-ds,a6)
 	bra.b	lbC00B1A8
 
-lbC00B1A0	st	(lbL02EB7C-datasegment,a6)
-lbC00B1A4	clr.w	(lbL02EAD8-datasegment,a6)
-lbC00B1A8	clr.b	(lbB02EBEF-datasegment,a6)
-lbC00B1AC	clr.b	(lbL02EB66-datasegment,a6)
+lbC00B1A0	st	(lbL02EB7C-ds,a6)
+lbC00B1A4	clr.w	(loadbinaryfile-ds,a6)
+lbC00B1A8	clr.b	(lbB02EBEF-ds,a6)
+lbC00B1AC	clr.b	(lbL02EB66-ds,a6)
 	move.w	#$1F41,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	clr.b	(aslfr_initialfile-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	clr.b	(aslfr_initialfile-ds,a6)
 	move.w	#$1F42,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A872-datasegment,a6)
+	jsr	(_requestfile-ds,a6)
 	beq.w	lbC00B264
-	jsr	(lbC02727C-datasegment,a6)
-	tst.b	(lbB02B417-datasegment,a6)
+	jsr	(lbC02727C-ds,a6)
+	tst.b	(lbB02B417-ds,a6)
 	bne.b	lbC00B1E6
-	tst.b	(lbB02B418-datasegment,a6)
+	tst.b	(lbB02B418-ds,a6)
 	beq.b	lbC00B1EC
-lbC00B1E6	tst.b	(lbB02EB41-datasegment,a6)
+lbC00B1E6	tst.b	(lbB02EB41-ds,a6)
 	bne.b	lbC00B1F8
-lbC00B1EC	lea	(lbB031E00-datasegment,a6),a0
+lbC00B1EC	lea	(lbB031E00-ds,a6),a0
 	clr.b	(a0)
-	jsr	(print_text_a0-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC00B21C
 
-lbC00B1F8	st	(lbB02EB83-datasegment,a6)
+lbC00B1F8	st	(lbB02EB83-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	move.l	d0,-(sp)
 	bsr.b	lbC00B21C
-	jsr	(lbC0273FC-datasegment,a6)
+	jsr	(lbC0273FC-ds,a6)
 	movea.l	(sp)+,a2
-	adda.l	(datasegment-datasegment,a6),a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	clr.b	(lbB02EB83-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	adda.l	(ds-ds,a6),a2
+	jsr	(lbC02A3CC-ds,a6)
+	clr.b	(lbB02EB83-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC00B21C	lea	(lbL02E8C8-datasegment,a6),a0
-	move.l	a0,(lbB02D0E8-datasegment,a6)
+lbC00B21C	lea	(work_data_spec_str-ds,a6),a0
+	move.l	a0,(lbB02D0E8-ds,a6)
 	cmpi.b	#$2A,(a0)
 	beq.b	lbC00B24C
 	cmpi.b	#$2D,(a0)
 	beq.b	lbC00B24C
 	move.l	a0,d1
-	jsr	(_Lock-datasegment,a6)
-	move.l	d0,(lbL02D0E4-datasegment,a6)
+	jsr	(_Lock-ds,a6)
+	move.l	d0,(parseargs_lock-ds,a6)
 	bne.b	lbC00B242
-	clr.b	(lbB02EB41-datasegment,a6)
+	clr.b	(lbB02EB41-ds,a6)
 	bra.b	lbC00B278
 
 lbC00B242	move.l	d0,d1
-	clr.l	(lbL02D0E4-datasegment,a6)
-	jsr	(lbC02A388-datasegment,a6)
+	clr.l	(parseargs_lock-ds,a6)
+	jsr	(_UnLock_ifd1-ds,a6)
 lbC00B24C	bsr.b	lbC00B29E
-	movea.l	(lbB02D0E8-datasegment,a6),a0
-	bsr.w	lbC00B7C0
+	movea.l	(lbB02D0E8-ds,a6),a0
+	bsr.w	.special
 	beq.b	lbC00B278
-	jsr	(lbC027E00-datasegment,a6)
-	clr.b	(lbB02EB69-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC027E00-ds,a6)
+	clr.b	(lbB02EB69-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC00B264	tst.b	(lbB02EB69-datasegment,a6)
-	beq.b	lbC00B296
-	move.b	(lbB02EB41-datasegment,a6),-(sp)
-	clr.b	(lbB02EB41-datasegment,a6)
+lbC00B264	tst.b	(lbB02EB69-ds,a6)
+	beq.b	_term1
+	move.b	(lbB02EB41-ds,a6),-(sp)
+	clr.b	(lbB02EB41-ds,a6)
 	bsr.b	lbC00B292
-	move.b	(sp)+,(lbB02EB41-datasegment,a6)
-lbC00B278	st	(lbB02EBEF-datasegment,a6)
+	move.b	(sp)+,(lbB02EB41-ds,a6)
+lbC00B278	st	(lbB02EBEF-ds,a6)
 	move.l	a4,-(sp)
-	movea.l	(lbB02D124-datasegment,a6),a4
-	jsr	(lbC027E7C-datasegment,a6)
+	movea.l	(error_text-ds,a6),a4
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#$50,d1
-	jsr	(dosdelay-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
 	bra.w	lbC00B1AC
 
-lbC00B292	jmp	(lbC02A86C-datasegment,a6)
+lbC00B292	jmp	(lbC02A86C-ds,a6)
 
-lbC00B296	jmp	(_dummy_st-datasegment,a6)
+_term1	jmp	(term1-ds,a6)
 
-lbC00B29A	clr.b	(lbL02EB7C-datasegment,a6)
-lbC00B29E	jsr	(saveregs_all-datasegment,a6)
-	jsr	(__ClearMenuStrip-datasegment,a6)
+clear_work_data	clr.b	(lbL02EB7C-ds,a6)
+lbC00B29E	jsr	(saveregs_all-ds,a6)
+	jsr	(__ClearMenuStrip-ds,a6)
 	moveq	#0,d6
-	move.b	d6,(lbB02EB40-datasegment,a6)
-	move.b	d6,(lbB02EB7D-datasegment,a6)
-	move.l	d6,(lbL02D2D4-datasegment,a6)
-	move.l	d6,(lbL02D2D8-datasegment,a6)
-	move.l	d6,(lbL02CDEC-datasegment,a6)
-	move.l	d6,(lbL02CDE8-datasegment,a6)
-	move.l	d6,(lbL02D1DC-datasegment,a6)
-	move.l	d6,(lbL02D318-datasegment,a6)
-	move.b	d6,(lbL02EB36-datasegment,a6)
-	move.b	d6,(lbB02EB59-datasegment,a6)
-	move.b	d6,(lbL02EB72-datasegment,a6)
-	move.b	d6,(lbB02EB85-datasegment,a6)
-	st	(lbB02EB69-datasegment,a6)
-	tst.b	(lbB02EB83-datasegment,a6)
+	move.b	d6,(lbB02EB40-ds,a6)
+	move.b	d6,(lbB02EB7D-ds,a6)
+	move.l	d6,(lbL02D2D4-ds,a6)
+	move.l	d6,(lbL02D2D8-ds,a6)
+	move.l	d6,(lbL02CDEC-ds,a6)
+	move.l	d6,(lbL02CDE8-ds,a6)
+	move.l	d6,(workdata_strt_plus1-ds,a6)
+	move.l	d6,(lbL02D318-ds,a6)
+	move.b	d6,(lbL02EB36-ds,a6)
+	move.b	d6,(lbB02EB59-ds,a6)
+	move.b	d6,(lbL02EB72-ds,a6)
+	move.b	d6,(lbB02EB85-ds,a6)
+	st	(lbB02EB69-ds,a6)
+	tst.b	(lbB02EB83-ds,a6)
 	bne.b	lbC00B306
-	clr.b	(lbB02EB82-datasegment,a6)
-	lea	(lbL02C4D4-datasegment,a6),a0
-	move.l	a0,(lbL02B4B0-datasegment,a6)
-	move.b	d6,(lbL02E1C8-datasegment,a6)
-	move.l	d6,(lbL02D0C8-datasegment,a6)
-	move.l	d6,(lbL02D0CC-datasegment,a6)
-	move.l	d6,(lbL02D0D0-datasegment,a6)
-	move.l	d6,(lbL02D1BC-datasegment,a6)
-	move.l	d6,(lbL02D1C4-datasegment,a6)
-lbC00B306	movea.l	(lbL02D158-datasegment,a6),a1
-	move.l	(lbL02B4B4-datasegment,a6),d0
-	jsr	(_FreeMem-datasegment,a6)
-	move.l	d6,(lbL02B4B4-datasegment,a6)
-	movea.l	(lbL02D14C-datasegment,a6),a1
-	move.l	(lbL02B4BC-datasegment,a6),d0
-	jsr	(_FreeMem-datasegment,a6)
-	move.l	d6,(lbL02B4BC-datasegment,a6)
-	move.l	d6,(lbL02B4C8-datasegment,a6)
-	move.w	#$7FFF,(lbL02B4CC-datasegment,a6)
-	jsr	(lbC026C14-datasegment,a6)
+	clr.b	(lbB02EB82-ds,a6)
+	lea	(lbL02C4D4-ds,a6),a0
+	move.l	a0,(lbL02B4B0-ds,a6)
+	move.b	d6,(lbL02E1C8-ds,a6)
+	move.l	d6,(lbL02D0C8-ds,a6)
+	move.l	d6,(lbL02D0CC-ds,a6)
+	move.l	d6,(lbL02D0D0-ds,a6)
+	move.l	d6,(lbL02D1BC-ds,a6)
+	move.l	d6,(lbL02D1C4-ds,a6)
+lbC00B306	movea.l	(lbL02D158-ds,a6),a1
+	move.l	(lbL02B4B4-ds,a6),d0
+	jsr	(_FreeMem-ds,a6)
+	move.l	d6,(lbL02B4B4-ds,a6)
+	movea.l	(lbL02D14C-ds,a6),a1
+	move.l	(lbL02B4BC-ds,a6),d0
+	jsr	(_FreeMem-ds,a6)
+	move.l	d6,(lbL02B4BC-ds,a6)
+	move.l	d6,(lbL02B4C8-ds,a6)
+	move.w	#$7FFF,(lbL02B4CC-ds,a6)
+	jsr	(freework-ds,a6)
 	move.l	#$30C,d2
 	move.l	d2,d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	move.l	d0,(lbL02D154-datasegment,a6)
-	move.l	d0,(lbL02D158-datasegment,a6)
-	move.l	d0,(lbL02D160-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
+	move.l	d0,(lbL02D154-ds,a6)
+	move.l	d0,(lbL02D158-ds,a6)
+	move.l	d0,(lbL02D160-ds,a6)
 	beq.w	lbC00B292
-	move.l	d2,(lbL02B4B4-datasegment,a6)
-	move.l	d2,(lbL02B4C0-datasegment,a6)
+	move.l	d2,(lbL02B4B4-ds,a6)
+	move.l	d2,(lbL02B4C0-ds,a6)
 	move.l	d2,d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	move.l	d0,(lbL02D14C-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
+	move.l	d0,(lbL02D14C-ds,a6)
 	beq.w	lbC00B292
-	move.l	d2,(lbL02B4BC-datasegment,a6)
+	move.l	d2,(lbL02B4BC-ds,a6)
 	movea.l	d0,a0
-	move.l	d6,(lbL02D148-datasegment,a6)
+	move.l	d6,(lbL02D148-ds,a6)
 	moveq	#-1,d1
-	movea.l	(lbL02A9A4-datasegment,a6),a0
+	movea.l	(lbL02A9A4-ds,a6),a0
 	move.l	d1,(a0)
-	movea.l	(lbL02A9A8-datasegment,a6),a0
+	movea.l	(lbL02A9A8-ds,a6),a0
 	move.l	d1,(a0)
 	move.l	#$C2,d0
 lbC00B384	move.l	d1,(a0)+
 	dbra	d0,lbC00B384
-	lea	(lbL02F600-datasegment,a6),a0
+	lea	(lbL02F600-ds,a6),a0
 	move.l	#$27F,d0
 lbC00B394	move.l	d6,(a0)+
 	move.l	d6,(a0)+
 	move.l	d6,(a0)+
 	move.l	d6,(a0)+
 	dbra	d0,lbC00B394
-	move.b	d6,(lbB02EB47-datasegment,a6)
+	move.b	d6,(lbB02EB47-ds,a6)
 	rts
 
 lbC00B3A6	move.w	#$1F43,d0
-	jsr	(gettextbynum-datasegment,a6)
-	jsr	(lbC026C6C-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	jsr	(lbC026C6C-ds,a6)
 	bne.b	lbC00B3BA
-	jmp	(lbC02A436-datasegment,a6)
+	jmp	(term2-ds,a6)
 
-lbC00B3B8	addq.l	#2,a0
-lbC00B3BA	jsr	(_SetPointerAll-datasegment,a6)
-	move.w	#$1F44,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	bsr.w	lbC00B726
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	a0,(lbL02CE08-datasegment,a6)
-	bsr.w	lbC00B710
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	a0,(lbL02CE0C-datasegment,a6)
-	jsr	(atoi-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	d0,(lbL02CE0C-datasegment,a6)
-	move.l	d0,d2
-	movea.l	(lbL02CE08-datasegment,a6),a0
-	jsr	(atoi-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	d0,(lbL02CE08-datasegment,a6)
-	sub.l	d0,d2
-	bls.w	lbC00B704
+memory	addq.l	#2,a0
+lbC00B3BA	jsr	(_SetPointerAll-ds,a6)
+	move.w	#$1F44,d0	;bad start/end address
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	bsr.w	skip_comma_space
+	jsr	(term2_if_cceq-ds,a6)	;if string was empty
+	move.l	a0,(memory_adr_strt-ds,a6)
+	bsr.w	skip_word
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	a0,(memory_adr_end-ds,a6)
+	jsr	(atoi-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	d0,(memory_adr_end-ds,a6)
+	move.l	d0,d2	;d2 = end
+	movea.l	(memory_adr_strt-ds,a6),a0
+	jsr	(atoi-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	d0,(memory_adr_strt-ds,a6)
+	sub.l	d0,d2	;d2 = length
+	bls.w	_term2
 	move.l	d2,d0
-	lsl.l	#2,d0
+	lsl.l	#2,d0	;*4
 	addq.l	#8,d0
-	addq.l	#8,d0
+	addq.l	#8,d0	;+16
 	move.l	d0,d5
-	addi.l	#$10,d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	bsr.b	lbC00B476
-	move.l	(lbL02CE0C-datasegment,a6),d0
-	move.l	(lbL02CE08-datasegment,a6),d1
-	move.l	d1,(datasegment-datasegment,a6)
-	move.l	d1,(workdata_strt_cmp2-datasegment,a6)
-	clr.l	(lbL02D0C8-datasegment,a6)
-	clr.l	(lbL02D0CC-datasegment,a6)
-	clr.l	(lbL02D0D0-datasegment,a6)
-	move.l	d1,(lbL02D11C-datasegment,a6)
-	move.l	d0,(lbL02A8A0-datasegment,a6)
-	move.l	d0,(workdata_end_cmp2-datasegment,a6)
-	subq.l	#1,(workdata_end_cmp2-datasegment,a6)
+	addi.l	#$10,d0	;+16
+	jsr	(_AllocMemClear-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	bsr.b	init_workdata_struct
+	move.l	(memory_adr_end-ds,a6),d0
+	move.l	(memory_adr_strt-ds,a6),d1
+	move.l	d1,(ds-ds,a6)
+	move.l	d1,(workdata_strt_cmp2-ds,a6)
+	clr.l	(lbL02D0C8-ds,a6)
+	clr.l	(lbL02D0CC-ds,a6)
+	clr.l	(lbL02D0D0-ds,a6)
+	move.l	d1,(workdata_strt-ds,a6)
+	move.l	d0,(workdata_end-ds,a6)
+	move.l	d0,(workdata_end_cmp2-ds,a6)
+	subq.l	#1,(workdata_end_cmp2-ds,a6)
 	sub.l	d1,d0
-	move.l	d0,(lbB02B4A8-datasegment,a6)
-	st	(lbB02EB47-datasegment,a6)
-	move.l	(datasegment-datasegment,a6),d0
+	move.l	d0,(workdata_length-ds,a6)
+	st	(lbB02EB47-ds,a6)
+	move.l	(ds-ds,a6),d0
 	addq.l	#1,d0
-	move.l	d0,(lbL02D1DC-datasegment,a6)
-	move.w	#$FFFF,(lbL02EAD8-datasegment,a6)
+	move.l	d0,(workdata_strt_plus1-ds,a6)
+	move.w	#$FFFF,(loadbinaryfile-ds,a6)
 	lea	(MEMORY.MSG,pc),a0
-	bra.w	lbC00B6B8
+	bra.w	copy_workdata_name
 
 MEMORY.MSG	db	'MEMORY',0,0
 
-lbC00B476	bsr.w	lbC00B29A
-	move.l	d0,(workdata_end-datasegment,a6)
-	move.l	d5,(lbL02B4AC-datasegment,a6)
+init_workdata_struct
+	bsr.w	clear_work_data
+	move.l	d0,(workdata_struct-ds,a6)
+	move.l	d5,(workdata_struct_sz-ds,a6)
 	movea.l	d0,a0
 	subq.l	#8,d5
 	subq.l	#8,d5
 	move.l	d5,d6
 	add.l	a0,d6
-	move.l	d6,(lbL02B4A0-datasegment,a6)
+	move.l	d6,(workdata_struct_end-ds,a6)
 	movea.l	d6,a1
 	move.l	#$FFFFFFFF,(a1)+
 	clr.l	(a1)+
@@ -11659,117 +11665,117 @@ lbC00B4AE	move.l	d0,(a0)+
 	bne.b	lbC00B4AE
 	rts
 
-lbC00B4BA	clr.b	(displayid-datasegment,a6)
+lbC00B4BA	clr.b	(displayid-ds,a6)
 lbC00B4BE	move.w	#$1F45,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(displayid-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(displayid-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC026C74-datasegment,a6)
+	jsr	(lbC026C74-ds,a6)
 	bne.b	lbC00B4E2
-	tst.b	(lbB02EB69-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	jsr	(lbC02A86C-datasegment,a6)
+	tst.b	(lbB02EB69-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	jsr	(lbC02A86C-ds,a6)
 	bra.b	lbC00B4BE
 
-lbC00B4E0	addq.l	#1,a0
-lbC00B4E2	jsr	(lbC0286C2-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	a0,(lbL02CE14-datasegment,a6)
-	bsr.w	lbC00B710
+trackdisk	addq.l	#1,a0
+lbC00B4E2	jsr	(lbC0286C2-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	a0,(lbL02CE14-ds,a6)
+	bsr.w	skip_word
 	beq.b	lbC00B502
-	move.l	a0,(lbL02CE1C-datasegment,a6)
-	bsr.w	lbC00B710
+	move.l	a0,(lbL02CE1C-ds,a6)
+	bsr.w	skip_word
 	beq.b	lbC00B502
-	move.l	a0,(lbL02CE10-datasegment,a6)
-lbC00B502	movea.l	(lbL02CE18-datasegment,a6),a0
-	jsr	(atoi-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	move.b	d0,(lbL02CE20-datasegment,a6)
-	movea.l	(lbL02CE14-datasegment,a6),a0
-	jsr	(atoi-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	move.b	d0,(lbB02EB53-datasegment,a6)
-	move.l	(lbL02CE1C-datasegment,a6),d0
+	move.l	a0,(lbL02CE10-ds,a6)
+lbC00B502	movea.l	(lbL02CE18-ds,a6),a0
+	jsr	(atoi-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	move.b	d0,(lbL02CE20-ds,a6)
+	movea.l	(lbL02CE14-ds,a6),a0
+	jsr	(atoi-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	move.b	d0,(lbB02EB53-ds,a6)
+	move.l	(lbL02CE1C-ds,a6),d0
 	beq.b	lbC00B552
 	movea.l	d0,a0
-	jsr	(atoi-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
+	jsr	(atoi-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	lsl.l	#8,d0
 	add.l	d0,d0
-	move.l	d0,(lbL02CE00-datasegment,a6)
-	move.l	(lbL02CE10-datasegment,a6),d0
+	move.l	d0,(lbL02CE00-ds,a6)
+	move.l	(lbL02CE10-ds,a6),d0
 	beq.b	lbC00B552
 	movea.l	d0,a0
-	jsr	(atoi-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
+	jsr	(atoi-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	lsl.l	#8,d0
 	add.l	d0,d0
-	move.l	d0,(lbL02CE04-datasegment,a6)
+	move.l	d0,(lbL02CE04-ds,a6)
 lbC00B552	moveq	#0,d0
-	move.b	(lbB02EB53-datasegment,a6),d0
-	sub.b	(lbL02CE20-datasegment,a6),d0
-	bcs.w	lbC00B704
+	move.b	(lbB02EB53-ds,a6),d0
+	sub.b	(lbL02CE20-ds,a6),d0
+	bcs.w	_term2
 	mulu.w	#$2C00,d0
 	move.l	d0,d4
-	move.l	(lbL02CE00-datasegment,a6),d0
+	move.l	(lbL02CE00-ds,a6),d0
 	add.l	d0,d4
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	d4,(lbL02EB22-datasegment,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	d4,(lbL02EB22-ds,a6)
 	moveq	#0,d0
-	add.b	(lbL02CE20-datasegment,a6),d0
+	add.b	(lbL02CE20-ds,a6),d0
 	mulu.w	#$2C00,d0
-	move.l	(lbL02CE04-datasegment,a6),d1
+	move.l	(lbL02CE04-ds,a6),d1
 	add.l	d1,d0
 	cmpi.l	#$DC000,d0
-	bhi.w	lbC00B704
-	move.l	d0,(lbL02EB2A-datasegment,a6)
+	bhi.w	_term2
+	move.l	d0,(lbL02EB2A-ds,a6)
 	moveq	#-1,d0
-	jsr	(lbC02AD92-datasegment,a6)
+	jsr	(lbC02AD92-ds,a6)
 	beq.w	lbC00B6D6
-	move.b	d0,(lbB02EAEB-datasegment,a6)
+	move.b	d0,(lbB02EAEB-ds,a6)
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	move.l	(lbL02EB22-datasegment,a6),d0
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	move.l	(lbL02EB22-ds,a6),d0
 	lsl.l	#2,d0
 	addi.l	#$10,d0
 	move.l	d0,d5
 	addi.l	#$10,d0
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00B6D6
-	bsr.w	lbC00B476
-	move.l	(lbL02EB22-datasegment,a6),d0
+	bsr.w	init_workdata_struct
+	move.l	(lbL02EB22-ds,a6),d0
 	move.l	d0,d5
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00B6D6
-	move.l	d0,(datasegment-datasegment,a6)
-	move.l	d0,(workdata_strt_cmp2-datasegment,a6)
-	clr.l	(lbL02D0C8-datasegment,a6)
-	clr.l	(lbL02D0CC-datasegment,a6)
-	clr.l	(lbL02D0D0-datasegment,a6)
-	move.l	d5,(lbB02B4A8-datasegment,a6)
-	move.l	d0,(lbL02D11C-datasegment,a6)
-	add.l	(lbB02B4A8-datasegment,a6),d0
-	move.l	d0,(lbL02A8A0-datasegment,a6)
+	move.l	d0,(ds-ds,a6)
+	move.l	d0,(workdata_strt_cmp2-ds,a6)
+	clr.l	(lbL02D0C8-ds,a6)
+	clr.l	(lbL02D0CC-ds,a6)
+	clr.l	(lbL02D0D0-ds,a6)
+	move.l	d5,(workdata_length-ds,a6)
+	move.l	d0,(workdata_strt-ds,a6)
+	add.l	(workdata_length-ds,a6),d0
+	move.l	d0,(workdata_end-ds,a6)
 	subq.l	#1,d0
-	move.l	d0,(workdata_end_cmp2-datasegment,a6)
+	move.l	d0,(workdata_end_cmp2-ds,a6)
 	move.w	#$1F47,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	lea	(trackdiskdevi.MSG-datasegment,a6),a0
-	lea	(lbL02EAFE-datasegment,a6),a1
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	lea	(trackdiskdevi.MSG-ds,a6),a0
+	lea	(lbL02EAFE-ds,a6),a1
 	moveq	#0,d0
-	move.b	(lbB02EB52-datasegment,a6),d0
+	move.b	(lbB02EB52-ds,a6),d0
 	moveq	#0,d1
-	jsr	(_OpenDevice-datasegment,a6)
+	jsr	(_OpenDevice-ds,a6)
 	tst.l	d0
 	bne.w	lbC00B6D6
-	movea.l	(datasegment-datasegment,a6),a5
-	move.l	(lbB02B4A8-datasegment,a6),d5
+	movea.l	(ds-ds,a6),a5
+	move.l	(workdata_length-ds,a6),d5
 	move.l	#$2C00,d0
 	move.l	#$10002,d1
-	jsr	(lbC02AD6C-datasegment,a6)
-	move.l	d0,(lbL02EB26-datasegment,a6)
+	jsr	(lbC02AD6C-ds,a6)
+	move.l	d0,(lbL02EB26-ds,a6)
 	beq.w	lbC00B6D6
 lbC00B64A	move.l	#$2C00,d0
 	tst.l	d5
@@ -11778,222 +11784,222 @@ lbC00B64A	move.l	#$2C00,d0
 	bcc.b	lbC00B65C
 	add.l	d5,d0
 	moveq	#0,d5
-lbC00B65C	move.l	d0,(lbL02EB22-datasegment,a6)
-	move.l	(lbL02EB1E-datasegment,a6),d1
-	add.l	d1,(lbL02EB2A-datasegment,a6)
-	move.w	#2,(lbW02EB1A-datasegment,a6)
-	lea	(lbL02EAFE-datasegment,a6),a1
-	jsr	(_DoIO-datasegment,a6)
+lbC00B65C	move.l	d0,(lbL02EB22-ds,a6)
+	move.l	(lbL02EB1E-ds,a6),d1
+	add.l	d1,(lbL02EB2A-ds,a6)
+	move.w	#2,(lbW02EB1A-ds,a6)
+	lea	(lbL02EAFE-ds,a6),a1
+	jsr	(_DoIO-ds,a6)
 	moveq	#0,d0
-	move.b	(lbB02EB1D-datasegment,a6),d0
+	move.b	(lbB02EB1D-ds,a6),d0
 	beq.b	lbC00B684
-	jsr	(lbC0288F0-datasegment,a6)
+	jsr	(lbC0288F0-ds,a6)
 	bra.b	lbC00B6D6
 
-lbC00B684	movea.l	(lbL02EB26-datasegment,a6),a0
-	move.l	(lbL02EB1E-datasegment,a6),d0
+lbC00B684	movea.l	(lbL02EB26-ds,a6),a0
+	move.l	(lbL02EB1E-ds,a6),d0
 	lsr.l	#2,d0
 	subq.l	#1,d0
 lbC00B690	move.l	(a0)+,(a5)+
 	dbra	d0,lbC00B690
 	bra.b	lbC00B64A
 
-lbC00B698	move.w	#9,(lbW02EB1A-datasegment,a6)
-	clr.l	(lbL02EB22-datasegment,a6)
-	jsr	(_DoIO-datasegment,a6)
-	move.w	#$FFFF,(lbL02EAD8-datasegment,a6)
-	jsr	(lbC028952-datasegment,a6)
+lbC00B698	move.w	#9,(lbW02EB1A-ds,a6)
+	clr.l	(lbL02EB22-ds,a6)
+	jsr	(_DoIO-ds,a6)
+	move.w	#$FFFF,(loadbinaryfile-ds,a6)
+	jsr	(lbC028952-ds,a6)
 	lea	(TRACKS.MSG,pc),a0
-	st	(lbL02EB72-datasegment,a6)
-lbC00B6B8	lea	(lbL02E8C8-datasegment,a6),a1
+	st	(lbL02EB72-ds,a6)
+copy_workdata_name	lea	(work_data_spec_str-ds,a6),a1
 lbC00B6BC	move.b	(a0)+,(a1)+
 	bne.b	lbC00B6BC
-	jsr	(lbC02727C-datasegment,a6)
-	movea.l	(datasegment-datasegment,a6),a2
-	movea.l	(workdata_end-datasegment,a6),a3
+	jsr	(lbC02727C-ds,a6)
+	movea.l	(ds-ds,a6),a2
+	movea.l	(workdata_struct-ds,a6),a3
 	move.l	(a3),d7
-	clr.b	(lbB02EB69-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	clr.b	(lbB02EB69-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC00B6D6	jsr	(lbC02892C-datasegment,a6)
-	tst.b	(lbB02EB69-datasegment,a6)
-	beq.b	lbC00B704
-	lea	(lbB031E00-datasegment,a6),a0
+lbC00B6D6	jsr	(lbC02892C-ds,a6)
+	tst.b	(lbB02EB69-ds,a6)
+	beq.b	_term2
+	lea	(lbB031E00-ds,a6),a0
 	clr.b	(a0)
-	jsr	(print_text_a0-datasegment,a6)
-	clr.b	(lbB02EB41-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
+	clr.b	(lbB02EB41-ds,a6)
 	move.l	a4,-(sp)
-	movea.l	(lbB02D124-datasegment,a6),a4
-	jsr	(lbC027E7C-datasegment,a6)
+	movea.l	(error_text-ds,a6),a4
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#$50,d1
-	jsr	(dosdelay-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
 	bra.w	lbC00B4BE
 
-lbC00B704	jmp	(lbC02A436-datasegment,a6)
+_term2	jmp	(term2-ds,a6)
 
 TRACKS.MSG	db	'TRACKS',0,0
 
-lbC00B710	move.b	(a0)+,d0
-	beq.w	lbC00B296
-	cmpi.b	#$2C,d0
-	beq.b	lbC00B722
-	cmpi.b	#$20,d0
-	bhi.b	lbC00B710
-lbC00B722	move.b	#$20,-(a0)
-lbC00B726	move.b	(a0)+,d0
-	beq.b	lbC00B738
-	cmpi.b	#$2C,d0
-	beq.b	lbC00B726
-	cmpi.b	#$20,d0
-	bls.b	lbC00B726
+skip_word	move.b	(a0)+,d0
+	beq.w	_term1
+	cmpi.b	#',',d0
+	beq.b	.setspace
+	cmpi.b	#' ',d0
+	bhi.b	skip_word
+.setspace	move.b	#' ',-(a0)
+skip_comma_space	move.b	(a0)+,d0
+	beq.b	.end
+	cmpi.b	#',',d0
+	beq.b	skip_comma_space
+	cmpi.b	#' ',d0
+	bls.b	skip_comma_space
 	subq.l	#1,a0
-lbC00B738	rts
+.end	rts
 
-lbC00B73A	move.l	sp,(lbL02D084-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+parseargs	move.l	sp,(parseargs_savedsp-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	cmpi.b	#'*',(a0)
-	beq.b	lbC00B7C0
+	beq.b	.special
 	cmpi.b	#'-',(a0)
-	beq.b	lbC00B7C0
+	beq.b	.special
 	tst.b	(a0)
-	beq.b	lbC00B79C
+	beq.b	.noarg
 	move.l	a0,d1
-	jsr	(_Lock-datasegment,a6)
-	move.l	d0,(lbL02D0E4-datasegment,a6)
-	beq.b	lbC00B79C
+	jsr	(_Lock-ds,a6)
+	move.l	d0,(parseargs_lock-ds,a6)
+	beq.b	.noarg
 	move.l	d0,d1
-	move.l	(lbL02B47C-datasegment,a6),d2
-	jsr	(_Examine-datasegment,a6)
+	move.l	(examine_buffer_ptr-ds,a6),d2
+	jsr	(_Examine-ds,a6)
 	move.l	d0,-(sp)
-	move.l	(lbL02D0E4-datasegment,a6),d1
-	clr.l	(lbL02D0E4-datasegment,a6)
-	jsr	(lbC02A388-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+	move.l	(parseargs_lock-ds,a6),d1
+	clr.l	(parseargs_lock-ds,a6)
+	jsr	(_UnLock_ifd1-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	move.l	(sp)+,d0
-	beq.b	lbC00B79C
-	tst.l	(lbL02CCE0-datasegment,a6)
-	bmi.b	lbC00B7C0
-lbC00B784	tst.b	(a0)+
-	bne.b	lbC00B784
+	beq.b	.noarg
+	tst.l	(examine_DirEntryType-ds,a6)
+	bmi.b	.special	;jump if file
+.searchend	tst.b	(a0)+
+	bne.b	.searchend
 	subq.l	#2,a0
-	cmpi.b	#$3A,(a0)
-	beq.b	lbC00B79C
-	cmpi.b	#$2F,(a0)+
-	beq.b	lbC00B79C
-	move.b	#$2F,(a0)+
+	cmpi.b	#':',(a0)
+	beq.b	.noarg
+	cmpi.b	#'/',(a0)+
+	beq.b	.noarg
+	move.b	#'/',(a0)+
 	clr.b	(a0)
-lbC00B79C	move.w	#$1F50,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+.noarg	move.w	#$1F50,d0
+	jsr	(gettextbynum-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A872-datasegment,a6)
-	bcc.b	lbC00B7B4
-	jmp	(_dummy_st-datasegment,a6)
+	jsr	(_requestfile-ds,a6)
+	bcc.b	.reqfailed
+	jmp	(term1-ds,a6)
 
-lbC00B7B4	jsr	(lbC026C14-datasegment,a6)
+.reqfailed	jsr	(freework-ds,a6)
 	tst.l	d0
-	bne.b	lbC00B7C0
-	jmp	(lbC02A860-datasegment,a6)
+	bne.b	.special
+	jmp	(_nomemory-ds,a6)
 
-lbC00B7C0	cmpi.b	#$2A,(a0)
-	beq.b	lbC00B7CE
-	cmpi.b	#$2D,(a0)
-	bne.w	lbC00B878
-lbC00B7CE	move.l	a0,d1
+.special	cmpi.b	#'*',(a0)
+	beq.b	.special2
+	cmpi.b	#'-',(a0)
+	bne.w	.filespec
+.special2	move.l	a0,d1
 	tst.b	(1,a0)
-	beq.w	lbC00C9DA
-	cmpi.b	#$41,(1,a0)
-	beq.b	lbC00B7E8
-	cmpi.b	#$61,(1,a0)
-	bne.b	lbC00B7EE
-lbC00B7E8	st	(lbL02EB7C-datasegment,a6)
-	bra.b	lbC00B804
+	beq.w	kickstart
+	cmpi.b	#'A',(1,a0)
+	beq.b	.a
+	cmpi.b	#'a',(1,a0)
+	bne.b	.not_a
+.a	st	(lbL02EB7C-ds,a6)
+	bra.b	.skipspace
 
-lbC00B7EE	cmpi.b	#$42,(1,a0)
-	beq.b	lbC00B7FE
-	cmpi.b	#$62,(1,a0)
-	bne.b	lbC00B818
-lbC00B7FE	move.w	#$FFFF,(lbL02EAD8-datasegment,a6)
-lbC00B804	move.l	a0,-(sp)
+.not_a	cmpi.b	#'B',(1,a0)
+	beq.b	.binary
+	cmpi.b	#'b',(1,a0)
+	bne.b	.not_b
+.binary	move.w	#$FFFF,(loadbinaryfile-ds,a6)
+.skipspace	move.l	a0,-(sp)
 	addq.l	#2,a0
-	bsr.w	lbC00B726
+	bsr.w	skip_comma_space
 	movea.l	(sp),a1
-lbC00B80E	move.b	(a0)+,(a1)+
-	bne.b	lbC00B80E
+.copy	move.b	(a0)+,(a1)+
+	bne.b	.copy
 	movea.l	(sp)+,a0
-	bra.w	lbC00B73A
+	bra.w	parseargs
 
-lbC00B818	cmpi.b	#$6D,(1,a0)
-	beq.b	lbC00B874
-	cmpi.b	#$4D,(1,a0)
-	beq.b	lbC00B874
-	cmpi.b	#$44,(1,a0)
-	beq.b	lbC00B838
-	cmpi.b	#$64,(1,a0)
-	bne.b	lbC00B878
-lbC00B838	cmpi.b	#$46,(2,a0)
-	beq.b	lbC00B848
-	cmpi.b	#$66,(2,a0)
-	bne.b	lbC00B878
-lbC00B848	cmpi.b	#$30,(3,a0)
-	bcs.b	lbC00B878
-	cmpi.b	#$33,(3,a0)
-	bhi.b	lbC00B878
-	cmpi.b	#$3A,(4,a0)
-	bne.b	lbC00B878
-	cmpi.b	#$20,(5,a0)
-	beq.b	lbC00B870
-	cmpi.b	#$2C,(5,a0)
-	bne.b	lbC00B878
-lbC00B870	bra.w	lbC00B4E0
+.not_b	cmpi.b	#'m',(1,a0)
+	beq.b	.m
+	cmpi.b	#'M',(1,a0)
+	beq.b	.m
+	cmpi.b	#'D',(1,a0)
+	beq.b	.d
+	cmpi.b	#'d',(1,a0)
+	bne.b	.filespec
+.d	cmpi.b	#'F',(2,a0)
+	beq.b	.f
+	cmpi.b	#'f',(2,a0)
+	bne.b	.filespec
+.f	cmpi.b	#'0',(3,a0)
+	bcs.b	.filespec
+	cmpi.b	#'3',(3,a0)
+	bhi.b	.filespec
+	cmpi.b	#':',(4,a0)
+	bne.b	.filespec
+	cmpi.b	#' ',(5,a0)
+	beq.b	.dfx
+	cmpi.b	#',',(5,a0)
+	bne.b	.filespec
+.dfx	bra.w	trackdisk
 
-lbC00B874	bra.w	lbC00B3B8
+.m	bra.w	memory
 
-lbC00B878	jsr	(lbC02727C-datasegment,a6)
+.filespec	jsr	(lbC02727C-ds,a6)
 	move.w	#$1F51,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(_Lock-datasegment,a6)
-	move.l	d0,(lbL02D0E4-datasegment,a6)
+	jsr	(_Lock-ds,a6)
+	move.l	d0,(parseargs_lock-ds,a6)
 	beq.w	lbC00C5B2
 	move.l	d0,d1
-	move.l	sp,(lbL02D084-datasegment,a6)
-	clr.b	(lbB02EB40-datasegment,a6)
-	clr.b	(lbB02D39B-datasegment,a6)
-	clr.b	(lbB02EAD5-datasegment,a6)
-	jsr	(_SetPointerAll-datasegment,a6)
-	move.l	(lbL02B47C-datasegment,a6),d2
-	jsr	(_Examine-datasegment,a6)
+	move.l	sp,(parseargs_savedsp-ds,a6)
+	clr.b	(lbB02EB40-ds,a6)
+	clr.b	(lbB02D39B-ds,a6)
+	clr.b	(lbB02EAD5-ds,a6)
+	jsr	(_SetPointerAll-ds,a6)
+	move.l	(examine_buffer_ptr-ds,a6),d2
+	jsr	(_Examine-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$1F52,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	move.l	(lbL02D0E4-datasegment,a6),d1
-	jsr	(lbC02A388-datasegment,a6)
-	clr.l	(lbL02D0E4-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	move.l	(parseargs_lock-ds,a6),d1
+	jsr	(_UnLock_ifd1-ds,a6)
+	clr.l	(parseargs_lock-ds,a6)
 	move.l	(sp)+,d0
 	beq.w	lbC00C5B2
-	lea	(lbL02E8C8-datasegment,a6),a0
+	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(lbC02A272-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	beq.w	lbC00C5B2
 	move.l	d0,d1
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	move.l	a0,d2
 	moveq	#$40,d3
 	move.w	#$1F53,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	jsr	(_Read-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	jsr	(_Read-ds,a6)
 	tst.l	d0
 	beq.w	lbC00C5B2
-	lea	(displayid-datasegment,a6),a5
+	lea	(displayid-ds,a6),a5
 	move.l	(a5),d0
-	tst.b	(lbL02EAD8-datasegment,a6)
+	tst.b	(loadbinaryfile-ds,a6)
 	bne.w	lbC00C4B2
 	cmpi.l	#$BEEFDEAD,d0
 	beq.w	lbC00C648
@@ -12007,44 +12013,44 @@ lbC00B878	jsr	(lbC02727C-datasegment,a6)
 	beq.w	lbC00C648
 	cmpi.l	#$CEEFDEAF,d0
 	beq.w	lbC00C648
-	tst.b	(lbL02EB7C-datasegment,a6)
+	tst.b	(lbL02EB7C-ds,a6)
 	bne.b	lbC00B964
 	cmpi.l	#$3F3,d0
 	bne.w	lbC00C4B2
-lbC00B964	jsr	(lbC0273CA-datasegment,a6)
+lbC00B964	jsr	(lbC0273CA-ds,a6)
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	move.l	(lbL02CD58-datasegment,a6),d0
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	move.l	(lbL02CD58-ds,a6),d0
 	move.l	d0,-(sp)
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5B6
-	move.l	(sp)+,(lbL02B4A4-datasegment,a6)
-	move.l	d0,(lbL02D0B8-datasegment,a6)
-	add.l	(lbL02B4A4-datasegment,a6),d0
-	move.l	d0,(lbL02D0BC-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+	move.l	(sp)+,(lbL02B4A4-ds,a6)
+	move.l	d0,(lbL02D0B8-ds,a6)
+	add.l	(lbL02B4A4-ds,a6),d0
+	move.l	d0,(lbL02D0BC-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(lbC02A272-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	beq.w	lbC00C5B2
 	move.l	d0,d1
-	move.l	(lbL02D0B8-datasegment,a6),d2
-	move.l	(lbL02B4A4-datasegment,a6),d3
+	move.l	(lbL02D0B8-ds,a6),d2
+	move.l	(lbL02B4A4-ds,a6),d3
 	move.w	#$1F53,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	jsr	(_Read-datasegment,a6)
-	jsr	(lbC0273CA-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	jsr	(_Read-ds,a6)
+	jsr	(lbC0273CA-ds,a6)
 	cmp.l	d0,d3
-	bne.w	lbC00B296
-	movea.l	(lbL02D0B8-datasegment,a6),a1
-	jsr	(lbC02A4BE-datasegment,a6)
+	bne.w	_term1
+	movea.l	(lbL02D0B8-ds,a6),a1
+	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC00B9F2
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	lbC00C5B6
 
-lbC00B9DC	clr.b	(lbL02EB66-datasegment,a6)
+lbC00B9DC	clr.b	(lbL02EB66-ds,a6)
 	addq.l	#6,a1
 	moveq	#1,d0
 	tst.l	(a1)+
@@ -12055,21 +12061,21 @@ lbC00B9EA	tst.l	(a1)+
 	addq.w	#1,d0
 	bra.b	lbC00BA46
 
-lbC00B9F2	tst.b	(lbL02EB7C-datasegment,a6)
+lbC00B9F2	tst.b	(lbL02EB7C-ds,a6)
 	bne.b	lbC00B9DC
 	move.l	(a1)+,d0
 	movem.l	d0/a4,-(sp)
 	move.w	#$1F54,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	move.w	#$1F55,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	movem.l	(sp)+,d0/a4
 	cmpi.l	#$3F3,d0
 	bne.w	lbC00C5B6
-	clr.b	(lbL02EB66-datasegment,a6)
+	clr.b	(lbL02EB66-ds,a6)
 lbC00BA2A	move.l	(a1)+,d0
 	beq.b	lbC00BA34
 	lsl.l	#2,d0
@@ -12083,29 +12089,29 @@ lbC00BA34	move.l	(a1)+,d6
 	addq.l	#1,d0
 	cmp.l	d0,d6
 	beq.b	lbC00BA46
-	st	(lbL02EB66-datasegment,a6)
+	st	(lbL02EB66-ds,a6)
 lbC00BA46	move.l	d0,-(sp)
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	(sp)+,d0
-	move.l	d0,(lbL02D090-datasegment,a6)
+	move.l	d0,(lbL02D090-ds,a6)
 	move.l	d0,d6
 	addq.l	#1,d0
 	lsl.l	#4,d0
 	move.l	d0,d5
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5B6
-	move.l	d0,(lbL02D144-datasegment,a6)
-	move.l	d5,(lbL02D0F8-datasegment,a6)
+	move.l	d0,(lbL02D144-ds,a6)
+	move.l	d5,(lbL02D0F8-ds,a6)
 	movea.l	d0,a4
 	movea.l	d0,a5
 	lea	($10,a5),a5
-	tst.b	(lbL02EB7C-datasegment,a6)
+	tst.b	(lbL02EB7C-ds,a6)
 	beq.b	lbC00BA84
 	lea	(-12,a1),a1
 lbC00BA84	move.l	(a1)+,d0
-	tst.b	(lbL02EB7C-datasegment,a6)
+	tst.b	(lbL02EB7C-ds,a6)
 	beq.b	lbC00BA94
 	addq.l	#3,d0
 	andi.b	#$FC,d0
@@ -12126,20 +12132,20 @@ lbC00BAAE	move.l	d0,(a5)
 	lea	($10,a5),a5
 	subq.l	#1,d6
 	bne.b	lbC00BA84
-	move.l	(lbL02D090-datasegment,a6),d6
+	move.l	(lbL02D090-ds,a6),d6
 	move.l	a4,-(sp)
 	move.w	#$1F56,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	movea.l	(lbL02D144-datasegment,a6),a0
+	movea.l	(lbL02D144-ds,a6),a0
 lbC00BAD8	lea	($10,a0),a0
 	subq.l	#1,d6
 	bne.b	lbC00BAD8
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	(a0),d0
 	andi.b	#$FC,d0
 	lsl.l	#2,d0
@@ -12147,10 +12153,10 @@ lbC00BAD8	lea	($10,a0),a0
 	addq.l	#8,d0
 	move.l	d0,d5
 	addi.l	#$10,d0
-	jsr	(_AllocMem-datasegment,a6)
+	jsr	(_AllocMem-ds,a6)
 	beq.w	lbC00C5B6
-	move.l	d0,(workdata_end-datasegment,a6)
-	move.l	d5,(lbL02B4AC-datasegment,a6)
+	move.l	d0,(workdata_struct-ds,a6)
+	move.l	d5,(workdata_struct_sz-ds,a6)
 	movea.l	d0,a3
 	lea	($10,a3,d5.l),a0
 	clr.l	-(a0)
@@ -12165,29 +12171,29 @@ lbC00BAD8	lea	($10,a0),a0
 	subq.l	#8,d5
 	lsr.l	#2,d5
 	move.l	d5,d0
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5B6
-	move.l	d0,(datasegment-datasegment,a6)
-	move.l	d0,(workdata_strt_cmp2-datasegment,a6)
-	clr.l	(lbL02D0C8-datasegment,a6)
-	clr.l	(lbL02D0CC-datasegment,a6)
-	clr.l	(lbL02D0D0-datasegment,a6)
-	move.l	d0,(lbL02D11C-datasegment,a6)
-	move.l	d5,(lbB02B4A8-datasegment,a6)
+	move.l	d0,(ds-ds,a6)
+	move.l	d0,(workdata_strt_cmp2-ds,a6)
+	clr.l	(lbL02D0C8-ds,a6)
+	clr.l	(lbL02D0CC-ds,a6)
+	clr.l	(lbL02D0D0-ds,a6)
+	move.l	d0,(workdata_strt-ds,a6)
+	move.l	d5,(workdata_length-ds,a6)
 	add.l	d0,d5
-	move.l	d5,(lbL02A8A0-datasegment,a6)
-	move.l	d5,(workdata_end_cmp2-datasegment,a6)
-	subq.l	#1,(workdata_end_cmp2-datasegment,a6)
+	move.l	d5,(workdata_end-ds,a6)
+	move.l	d5,(workdata_end_cmp2-ds,a6)
+	subq.l	#1,(workdata_end_cmp2-ds,a6)
 	movea.l	d0,a2
 	movem.l	d0/d1/a0/a1,-(sp)
 	movea.l	a3,a0
 	move.l	a4,-(sp)
 	move.w	#$1F57,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	move.l	(lbL02B4AC-datasegment,a6),d0
+	move.l	(workdata_struct_sz-ds,a6),d0
 	move.l	#$40000882,d1
 	sub.l	#$10,d0
 	lsr.l	#2,d0
@@ -12210,11 +12216,11 @@ lbC00BBAC	move.l	d1,(a0)+
 	subi.l	#$10000,d0
 	bpl.b	lbC00BBAC
 	movem.l	(sp)+,d0/d1/a0/a1
-	movea.l	(lbL02D0B8-datasegment,a6),a1
+	movea.l	(lbL02D0B8-ds,a6),a1
 	move.l	a2,d1
 	move.l	a3,d0
 	movea.l	a4,a5
-	move.l	(lbL02D090-datasegment,a6),d6
+	move.l	(lbL02D090-ds,a6),d6
 	move.l	d6,d2
 	addq.l	#1,d2
 lbC00BBD0	tst.l	d2
@@ -12226,13 +12232,13 @@ lbC00BBD0	tst.l	d2
 	bra.b	lbC00BBD0
 
 lbC00BBE2	movea.l	a4,a5
-	tst.b	(lbL02EB7C-datasegment,a6)
+	tst.b	(lbL02EB7C-ds,a6)
 	beq.w	lbC00BD20
 	addq.l	#2,a1
 	lea	($1A,a1),a5
 	move.l	(a1)+,d0
 	beq.b	lbC00BC10
-	move.l	a2,(lbL02CDE8-datasegment,a6)
+	move.l	a2,(lbL02CDE8-ds,a6)
 	move.l	#$90080386,(a3)+
 	move.b	(a5)+,(a2)+
 	bra.b	lbC00BC0C
@@ -12243,7 +12249,7 @@ lbC00BC0C	subq.l	#1,d0
 	bne.b	lbC00BC04
 lbC00BC10	move.l	(a1)+,d0
 	beq.b	lbC00BC2E
-	move.l	a2,(lbL02CDEC-datasegment,a6)
+	move.l	a2,(lbL02CDEC-ds,a6)
 	move.l	#$A0080326,(a3)+
 	move.b	(a5)+,(a2)+
 	bra.b	lbC00BC2A
@@ -12271,11 +12277,11 @@ lbC00BC52	tst.b	(-1,a5,d0.w)
 	dbne	d0,lbC00BC52
 	movea.l	(10,a5),a1
 	movea.l	a5,a0
-	jsr	(lbC027A80-datasegment,a6)
+	jsr	(lbC027A80-ds,a6)
 	bne.b	lbC00BC76
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	bra.w	lbC00C5B6
 
 lbC00BC76	lea	(14,a5),a5
@@ -12290,15 +12296,15 @@ lbC00BC7E	move.b	(a5)+,d0
 	move.b	(a5)+,d0
 	tst.l	d0
 	beq.w	lbC00C34A
-	st	(lbB02EB59-datasegment,a6)
-	move.l	(datasegment-datasegment,a6),d5
+	st	(lbB02EB59-ds,a6)
+	move.l	(ds-ds,a6),d5
 	movea.l	d5,a0
 	adda.l	d0,a0
 lbC00BC9E	add.l	d5,(a0)
 	move.l	a0,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a1
 	ori.l	#$C000000,(a1)+
 	bset	#3,(a1)
@@ -12316,8 +12322,8 @@ lbC00BCD8	adda.l	d0,a0
 	btst	#0,d0
 	beq.b	lbC00BC9E
 	move.w	#$1F55,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	addq.w	#4,sp
 	bra.w	lbC00C5B6
 
@@ -12335,36 +12341,36 @@ lbC00BD08	subq.l	#1,d6
 	move.l	(a1),d0
 	cmpi.l	#$3F5,d0
 	bne.w	lbC00C34A
-	st	(lbL02EB66-datasegment,a6)
+	st	(lbL02EB66-ds,a6)
 	bra.w	lbC00C34A
 
-lbC00BD20	jsr	(lbC02A4BE-datasegment,a6)
+lbC00BD20	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC00BD30
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	lbC00C5B6
 
-lbC00BD30	cmpa.l	(lbL02D0BC-datasegment,a6),a1
+lbC00BD30	cmpa.l	(lbL02D0BC-ds,a6),a1
 	bne.b	lbC00BD4E
 	move.l	(a3),d0
 	addq.l	#1,d0
 	beq.w	lbC00C34A
 	move.w	#$1F58,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	bra.w	lbC00C5B6
 
 lbC00BD4E	move.l	(a1)+,d0
 	andi.l	#$3FFFFFFF,d0
 lbC00BD56	cmpi.l	#$3F2,d0
 	bne.b	lbC00BD68
-	clr.b	(lbB02EB58-datasegment,a6)
-	cmp.l	(lbL02D0F4-datasegment,a6),d0
+	clr.b	(lbB02EB58-ds,a6)
+	cmp.l	(lbL02D0F4-ds,a6),d0
 	beq.b	lbC00BD20
-lbC00BD68	move.l	d0,(lbL02D0F4-datasegment,a6)
+lbC00BD68	move.l	d0,(lbL02D0F4-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$1F55,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	(sp)+,d0
 	subi.l	#$3E7,d0
 	bcs.w	lbC00C5B6
@@ -12375,9 +12381,9 @@ lbC00BD68	move.l	d0,(lbL02D0F4-datasegment,a6)
 
 lbC00BD92	move.l	a4,-(sp)
 	move.w	#$1F59,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	move.l	(a1)+,d0
 	move.l	d0,-(sp)
@@ -12387,29 +12393,29 @@ lbC00BD92	move.l	a4,-(sp)
 
 lbC00BDB0	move.l	a4,-(sp)
 	move.w	#$1F5A,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	move.l	(a1)+,d0
 	lsl.l	#2,d0
 	adda.l	d0,a1
 	bra.w	lbC00BD20
 
-lbC00BDCC	tst.b	(lbB02EB58-datasegment,a6)
+lbC00BDCC	tst.b	(lbB02EB58-ds,a6)
 	beq.b	lbC00BDDE
 	subq.l	#4,a1
 	move.l	#$3F2,d0
 	bra.w	lbC00BD56
 
-lbC00BDDE	st	(lbB02EB58-datasegment,a6)
+lbC00BDDE	st	(lbB02EB58-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$1F5B,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	move.l	a2,(lbL02CDE8-datasegment,a6)
+	move.l	a2,(lbL02CDE8-ds,a6)
 	andi.l	#$FFFFFF07,(a3)
 	ori.l	#$80384,(a3)
 	moveq	#$1C,d0
@@ -12432,11 +12438,11 @@ lbC00BE06	moveq	#3,d7
 	move.l	d0,d1
 	lsl.l	#2,d1
 	add.l	a2,d1
-	cmp.l	(lbL02A8A0-datasegment,a6),d1
+	cmp.l	(workdata_end-ds,a6),d1
 	bls.b	lbC00BE4C
 	move.w	#$1F6E,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	bra.w	lbC00C5B6
 
 lbC00BE4C	move.l	(a3),d1
@@ -12448,11 +12454,11 @@ lbC00BE4C	move.l	(a3),d1
 	bra.b	lbC00BE7A
 
 lbC00BE5A	move.l	(a1)+,(a2)+
-	cmpa.l	(lbL02D0BC-datasegment,a6),a1
+	cmpa.l	(lbL02D0BC-ds,a6),a1
 	bls.b	lbC00BE72
 	move.w	#$1F58,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	bra.w	lbC00C5B6
 
 lbC00BE72	move.l	d1,(a3)+
@@ -12467,37 +12473,37 @@ lbC00BE7A	dbra	d0,lbC00BE5A
 
 lbC00BE90	bra.w	lbC00BD20
 
-lbC00BE94	tst.b	(lbB02EB58-datasegment,a6)
+lbC00BE94	tst.b	(lbB02EB58-ds,a6)
 	beq.b	lbC00BEA6
 	subq.l	#4,a1
 	move.l	#$3F2,d0
 	bra.w	lbC00BD56
 
-lbC00BEA6	st	(lbB02EB58-datasegment,a6)
+lbC00BEA6	st	(lbB02EB58-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$1F5C,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	move.l	a2,(lbL02CDEC-datasegment,a6)
+	move.l	a2,(lbL02CDEC-ds,a6)
 	andi.l	#$FFFFFF07,(a3)
 	ori.l	#$80324,(a3)
 	moveq	#$1D,d0
 	bra.w	lbC00BE06
 
-lbC00BED2	tst.b	(lbB02EB58-datasegment,a6)
+lbC00BED2	tst.b	(lbB02EB58-ds,a6)
 	beq.b	lbC00BEE4
 	subq.l	#4,a1
 	move.l	#$3F2,d0
 	bra.w	lbC00BD56
 
-lbC00BEE4	st	(lbB02EB58-datasegment,a6)
+lbC00BEE4	st	(lbB02EB58-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$1F5D,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#3,d7
 	and.l	(a5),d7
@@ -12512,11 +12518,11 @@ lbC00BEE4	st	(lbB02EB58-datasegment,a6)
 	lsl.l	#2,d0
 	move.l	#$FFFFF7FF,d2
 	adda.l	d0,a2
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bls.b	lbC00BF44
 	move.w	#$1F6E,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	bra.w	lbC00C5B6
 
 lbC00BF3C	move.l	(a3),d1
@@ -12530,17 +12536,17 @@ lbC00BF44	dbra	d0,lbC00BF3C
 
 lbC00BF54	move.l	a4,-(sp)
 	move.w	#$1F5E,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	st	(lbB02EB59-datasegment,a6)
+	st	(lbB02EB59-ds,a6)
 	movem.l	a3/a4,-(sp)
 lbC00BF6E	move.l	(a1)+,d1
 	beq.b	lbC00BFB4
 	move.l	(a1)+,d2
 	lsl.l	#4,d2
-	movea.l	(lbL02D144-datasegment,a6),a4
+	movea.l	(lbL02D144-ds,a6),a4
 	move.l	(a4,d2.l),d2
 	moveq	#-4,d0
 	and.b	d0,d2
@@ -12564,15 +12570,15 @@ lbC00BFB4	movem.l	(sp)+,a3/a4
 	bra.w	lbC00BD20
 
 lbC00BFBC	move.w	#$1F55,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	bra.w	lbC00C5B6
 
 lbC00BFCC	move.l	a4,-(sp)
 	move.w	#$1F5F,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	movem.l	d2-d7/a2-a6,-(sp)
 	moveq	#0,d7
@@ -12587,13 +12593,13 @@ lbC00BFF4	subq.l	#1,a3
 	subq.l	#1,d1
 	tst.b	(a3)
 	beq.b	lbC00BFF4
-	clr.b	(lbW02EB3A-datasegment,a6)
+	clr.b	(lbW02EB3A-ds,a6)
 	addq.l	#1,d1
 	cmpi.b	#$39,(a0)
 	bhi.b	lbC00C026
 	cmpi.b	#$30,(a0)
 	bcs.b	lbC00C026
-	move.b	#$43,(lbW02EB3A-datasegment,a6)
+	move.b	#$43,(lbW02EB3A-ds,a6)
 	moveq	#2,d1
 lbC00C016	cmpi.b	#$24,(-1,a0,d1.w)
 	beq.b	lbC00C026
@@ -12605,14 +12611,14 @@ lbC00C026	moveq	#-4,d0
 	movea.l	d0,a4
 	move.l	(a1)+,d0
 	adda.l	d0,a4
-	suba.l	(datasegment-datasegment,a6),a4
+	suba.l	(ds-ds,a6),a4
 	move.l	a4,d0
 	movem.l	d0/d1/a0/a1,-(sp)
 	move.l	d1,d0
 	moveq	#0,d1
 	move.l	d0,-(sp)
 	move.l	a4,d0
-	jsr	(lbC02777C-datasegment,a6)
+	jsr	(lbC02777C-ds,a6)
 	movea.l	d0,a1
 	movem.l	(sp)+,d0
 	beq.b	lbC00C074
@@ -12623,7 +12629,7 @@ lbC00C026	moveq	#-4,d0
 	movem.l	d0/d1,-(sp)
 	moveq	#0,d1
 	move.l	a4,d0
-	jsr	(lbC027684-datasegment,a6)
+	jsr	(lbC027684-ds,a6)
 	movem.l	(sp)+,d0/d1
 	bra.b	lbC00C074
 
@@ -12631,7 +12637,7 @@ lbC00C06C	movem.l	(sp)+,d0/d1/a0/a1
 	bra.w	lbC00BFE4
 
 lbC00C074	movea.l	a4,a1
-	move.b	#$41,(lbW02EB3A-datasegment,a6)
+	move.b	#$41,(lbW02EB3A-ds,a6)
 	andi.w	#$FF,d0
 	cmpi.b	#5,d0
 	bcs.w	lbC00C13C
@@ -12679,7 +12685,7 @@ lbC00C11C	cmpi.b	#$2E,(-7,a0,d0.w)
 	bne.b	lbC00C13C
 	cmpi.b	#$47,(-4,a0,d0.w)
 	beq.b	lbC00C1A2
-lbC00C13C	move.b	#$43,(lbW02EB3A-datasegment,a6)
+lbC00C13C	move.b	#$43,(lbW02EB3A-ds,a6)
 	cmpi.b	#4,d0
 	bcs.b	lbC00C160
 	cmpi.b	#$53,(-3,a0,d0.w)
@@ -12700,37 +12706,37 @@ lbC00C160	cmpi.b	#6,d0
 	andi.l	#$DFDFDFDF,d1
 	cmpi.l	#$46554E43,d1
 	beq.b	lbC00C1A2
-lbC00C18A	clr.b	(lbW02EB3A-datasegment,a6)
+lbC00C18A	clr.b	(lbW02EB3A-ds,a6)
 	cmpi.b	#$6C,(a0)
 	bne.b	lbC00C1A2
 	cmpi.b	#$62,(1,a0)
 	bne.b	lbC00C1A2
-	move.b	(2,a0),(lbW02EB3A-datasegment,a6)
+	move.b	(2,a0),(lbW02EB3A-ds,a6)
 lbC00C1A2	move.l	d0,-(sp)
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	(sp)+,d0
-	cmpa.l	(lbB02B4A8-datasegment,a6),a1
+	cmpa.l	(workdata_length-ds,a6),a1
 	bcs.b	lbC00C1C0
 	movem.l	(sp)+,d0/d1/a0/a1
 	bra.w	lbC00BFE4
 
-lbC00C1C0	jsr	(lbC027A80-datasegment,a6)
+lbC00C1C0	jsr	(lbC027A80-ds,a6)
 	beq.w	lbC00C5B6
 	movem.l	(sp)+,d0/d1/a0/a1
 	lsl.l	#2,d0
 	move.l	#$2000000,d7
-	movea.l	(lbL02D144-datasegment,a6),a3
+	movea.l	(lbL02D144-ds,a6),a3
 	movea.l	(8,a3),a3
 	or.l	d7,(a3,d0.l)
 	bclr	#0,(a3,d0.l)
 	move.l	#$130,d7
 	btst	#2,(a3,d0.l)
 	bne.b	lbC00C250
-	tst.b	(lbW02EB3A-datasegment,a6)
+	tst.b	(lbW02EB3A-ds,a6)
 	beq.w	lbC00BFE4
-	move.b	(lbW02EB3A-datasegment,a6),d1
+	move.b	(lbW02EB3A-ds,a6),d1
 	cmpi.b	#$4C,d1
 	beq.b	lbC00C250
 	move.w	#$148,d7
@@ -12776,9 +12782,9 @@ lbC00C280	movem.l	(sp)+,d2-d7/a2-a6
 
 lbC00C288	move.l	a4,-(sp)
 	move.w	#$1F60,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	move.l	(a1)+,d0
 	lsl.l	#2,d0
@@ -12787,9 +12793,9 @@ lbC00C288	move.l	a4,-(sp)
 
 lbC00C2A4	move.l	a4,-(sp)
 	move.w	#$1F61,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	lea	($10,a5),a5
 	moveq	#-4,d0
@@ -12801,9 +12807,9 @@ lbC00C2A4	move.l	a4,-(sp)
 
 lbC00C2CE	move.l	a4,-(sp)
 	move.w	#$1F62,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 lbC00C2E0	move.l	(a1)+,d0
 	beq.b	lbC00C2EA
@@ -12820,48 +12826,48 @@ lbC00C2EA	addq.l	#4,a1
 	adda.l	d1,a1
 	bra.w	lbC00BD20
 
-lbC00C2FC	st	(lbL02EB66-datasegment,a6)
+lbC00C2FC	st	(lbL02EB66-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$1F63,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	bra.b	lbC00C33A
 
 lbC00C314	move.l	d0,-(sp)
 	move.w	#$1F55,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	(sp)+,d0
 	move.l	a4,-(sp)
 	move.w	#$1F64,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	dbra	d0,lbC00C5B6
 lbC00C33A	move.w	#$1F65,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	bra.w	lbC00C5B6
 
-lbC00C34A	tst.l	(lbL02CDEC-datasegment,a6)
+lbC00C34A	tst.l	(lbL02CDEC-ds,a6)
 	bne.b	lbC00C356
-	move.l	(lbL02CDE8-datasegment,a6),(lbL02CDEC-datasegment,a6)
-lbC00C356	tst.b	(lbB02EB4C-datasegment,a6)
+	move.l	(lbL02CDE8-ds,a6),(lbL02CDEC-ds,a6)
+lbC00C356	tst.b	(lbB02EB4C-ds,a6)
 	beq.b	lbC00C364
-	clr.b	(lbL02E8C8-datasegment,a6)
-	st	(lbB02EB4C-datasegment,a6)
+	clr.b	(work_data_spec_str-ds,a6)
+	st	(lbB02EB4C-ds,a6)
 lbC00C364	move.l	a4,-(sp)
 	move.w	#$1F66,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(lbC026C44-datasegment,a6)
-	move.l	(lbL02B4AC-datasegment,a6),d0
-	movea.l	(workdata_end-datasegment,a6),a0
+	jsr	(lbC026C44-ds,a6)
+	move.l	(workdata_struct_sz-ds,a6),d0
+	movea.l	(workdata_struct-ds,a6),a0
 	lea	($10,a0,d0.l),a0
 	clr.l	-(a0)
 	clr.l	-(a0)
@@ -12871,14 +12877,14 @@ lbC00C364	move.l	a4,-(sp)
 	clr.l	-(a0)
 	clr.l	-(a0)
 	move.l	#$FFFFFFFF,-(a0)
-	move.l	a0,(lbL02B4A0-datasegment,a6)
-	movea.l	(datasegment-datasegment,a6),a2
-	movea.l	(workdata_end-datasegment,a6),a3
-	tst.b	(lbL02EB66-datasegment,a6)
+	move.l	a0,(workdata_struct_end-ds,a6)
+	movea.l	(ds-ds,a6),a2
+	movea.l	(workdata_struct-ds,a6),a3
+	tst.b	(lbL02EB66-ds,a6)
 	beq.b	lbC00C3B4
-	jsr	(lbC02A746-datasegment,a6)
-	st	(lbB02EB45-datasegment,a6)
-lbC00C3B4	tst.b	(lbL02EAD8-datasegment,a6)
+	jsr	(lbC02A746-ds,a6)
+	st	(lbB02EB45-ds,a6)
+lbC00C3B4	tst.b	(loadbinaryfile-ds,a6)
 	bne.w	lbC00C47E
 	cmpi.b	#$60,(a2)
 	bne.b	lbC00C41A
@@ -12896,8 +12902,8 @@ lbC00C3B4	tst.b	(lbL02EAD8-datasegment,a6)
 	ori.l	#$130,($20,a3)
 	andi.l	#$FFFFFF07,($30,a3)
 	ori.l	#$180,($30,a3)
-lbC00C41A	jsr	(lbC02A85A-datasegment,a6)
-	jsr	(lbC02A854-datasegment,a6)
+lbC00C41A	jsr	(lbC02A85A-ds,a6)
+	jsr	(lbC02A854-ds,a6)
 	movea.l	(2,a2),a0
 	move.w	(a2),d0
 	cmpi.w	#$4EF9,d0
@@ -12921,80 +12927,80 @@ lbC00C448	adda.w	d0,a0
 	cmpi.w	#$49FA,(-2,a0)
 	bne.b	lbC00C46A
 lbC00C460	move.l	a1,d1
-	sub.l	(datasegment-datasegment,a6),d1
-	jsr	(lbC02A830-datasegment,a6)
+	sub.l	(ds-ds,a6),d1
+	jsr	(lbC02A830-ds,a6)
 lbC00C46A	andi.w	#$FFDF,(a3)
-	tst.b	(lbB02B458-datasegment,a6)
+	tst.b	(lbB02B458-ds,a6)
 	beq.b	lbC00C47E
-	tst.b	(lbB02EB59-datasegment,a6)
+	tst.b	(lbB02EB59-ds,a6)
 	beq.b	lbC00C47E
-	jsr	(lbC02852E-datasegment,a6)
+	jsr	(lbC02852E-ds,a6)
 lbC00C47E	move.l	(a3),d7
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC00C484	movem.l	(sp)+,d0/d1/a0/a1
 	bra.b	lbC00C460
 
 lbC00C48A	movem.l	d0/d1/a0/a1,-(sp)
 	move.l	(a0),d0
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcs.b	lbC00C484
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcs.b	lbC00C484
 	movea.l	a0,a1
-	suba.l	(datasegment-datasegment,a6),a1
+	suba.l	(ds-ds,a6),a1
 	lea	(DT.MSG,pc),a0
 	moveq	#2,d0
 	moveq	#1,d1
-	jsr	(_savecommonregs0-datasegment,a6)
+	jsr	(_savecommonregs0-ds,a6)
 	bra.b	lbC00C484
 
 DT.MSG	db	'DT'
 
 lbC00C4B2	move.l	a4,-(sp)
 	move.w	#$1F67,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(lbC0273CA-datasegment,a6)
+	jsr	(lbC0273CA-ds,a6)
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	move.l	(lbL02CD58-datasegment,a6),d0
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	move.l	(lbL02CD58-ds,a6),d0
 	move.l	d0,-(sp)
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5B6
-	move.l	(sp)+,(lbB02B4A8-datasegment,a6)
-	move.l	d0,(datasegment-datasegment,a6)
-	move.l	d0,(workdata_strt_cmp2-datasegment,a6)
-	clr.l	(lbL02D0C8-datasegment,a6)
-	clr.l	(lbL02D0CC-datasegment,a6)
-	clr.l	(lbL02D0D0-datasegment,a6)
-	move.l	d0,(lbL02D11C-datasegment,a6)
-	add.l	(lbB02B4A8-datasegment,a6),d0
-	move.l	d0,(lbL02A8A0-datasegment,a6)
+	move.l	(sp)+,(workdata_length-ds,a6)
+	move.l	d0,(ds-ds,a6)
+	move.l	d0,(workdata_strt_cmp2-ds,a6)
+	clr.l	(lbL02D0C8-ds,a6)
+	clr.l	(lbL02D0CC-ds,a6)
+	clr.l	(lbL02D0D0-ds,a6)
+	move.l	d0,(workdata_strt-ds,a6)
+	add.l	(workdata_length-ds,a6),d0
+	move.l	d0,(workdata_end-ds,a6)
 	subq.l	#1,d0
-	move.l	d0,(workdata_end_cmp2-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+	move.l	d0,(workdata_end_cmp2-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(lbC02A272-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	beq.w	lbC00C5B2
 	move.l	d0,d1
-	move.l	(datasegment-datasegment,a6),d2
-	move.l	(lbB02B4A8-datasegment,a6),d3
+	move.l	(ds-ds,a6),d2
+	move.l	(workdata_length-ds,a6),d3
 	move.w	#$1F53,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	jsr	(_Read-datasegment,a6)
-	jsr	(lbC0273CA-datasegment,a6)
-	cmp.l	(lbL02CD58-datasegment,a6),d0
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	jsr	(_Read-ds,a6)
+	jsr	(lbC0273CA-ds,a6)
+	cmp.l	(lbL02CD58-ds,a6),d0
 	bne.b	lbC00C5B2
 	move.l	d0,-(sp)
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	(sp)+,d0
 	lsl.l	#2,d0
 	addq.l	#8,d0
@@ -13002,10 +13008,10 @@ lbC00C4B2	move.l	a4,-(sp)
 	move.l	d0,d5
 	addq.l	#8,d0
 	addq.l	#8,d0
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.b	lbC00C5B6
-	move.l	d0,(workdata_end-datasegment,a6)
-	move.l	d5,(lbL02B4AC-datasegment,a6)
+	move.l	d0,(workdata_struct-ds,a6)
+	move.l	d5,(workdata_struct_sz-ds,a6)
 	movea.l	d0,a0
 	lea	($10,a0,d5.l),a1
 	clr.l	-(a1)
@@ -13028,86 +13034,86 @@ lbC00C59A	move.l	d0,(a0)+
 	bchg	#$1F,d0
 lbC00C5A0	subq.l	#1,d5
 	bne.b	lbC00C59A
-	st	(lbL02EB72-datasegment,a6)
-	move.w	#$FFFF,(lbL02EAD8-datasegment,a6)
+	st	(lbL02EB72-ds,a6)
+	move.w	#$FFFF,(loadbinaryfile-ds,a6)
 	bra.w	lbC00C34A
 
-lbC00C5B2	jsr	(_IoErr-datasegment,a6)
-lbC00C5B6	jsr	(lbC02A4A6-datasegment,a6)
-	jsr	(lbC026C14-datasegment,a6)
-	clr.b	(lbB02EB58-datasegment,a6)
-	clr.b	(lbL02E8C8-datasegment,a6)
-	movea.l	(lbL02D084-datasegment,a6),sp
+lbC00C5B2	jsr	(_IoErr-ds,a6)
+lbC00C5B6	jsr	(lbC02A4A6-ds,a6)
+	jsr	(freework-ds,a6)
+	clr.b	(lbB02EB58-ds,a6)
+	clr.b	(work_data_spec_str-ds,a6)
+	movea.l	(parseargs_savedsp-ds,a6),sp
 	moveq	#0,d0
 	rts
 
-lbC00C5CE	clr.b	(lbL02E8C8-datasegment,a6)
-	move.l	(lbL02B4BC-datasegment,a6),d0
+lbC00C5CE	clr.b	(work_data_spec_str-ds,a6)
+	move.l	(lbL02B4BC-ds,a6),d0
 	beq.b	lbC00C5E0
-	movea.l	(lbL02D14C-datasegment,a6),a1
-	jsr	(_FreeMem-datasegment,a6)
-lbC00C5E0	jsr	(lbC026C14-datasegment,a6)
+	movea.l	(lbL02D14C-ds,a6),a1
+	jsr	(_FreeMem-ds,a6)
+lbC00C5E0	jsr	(freework-ds,a6)
 	move.l	#$2000,d0
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00B292
-	move.l	d0,(lbL02D154-datasegment,a6)
-	move.l	d0,(lbL02D158-datasegment,a6)
-	move.l	d0,(lbL02D160-datasegment,a6)
+	move.l	d0,(lbL02D154-ds,a6)
+	move.l	d0,(lbL02D158-ds,a6)
+	move.l	d0,(lbL02D160-ds,a6)
 	move.l	#$30C,d1
-	move.l	d1,(lbL02B4B4-datasegment,a6)
-	move.l	d1,(lbL02B4BC-datasegment,a6)
-	move.l	d1,(lbL02B4C0-datasegment,a6)
+	move.l	d1,(lbL02B4B4-ds,a6)
+	move.l	d1,(lbL02B4BC-ds,a6)
+	move.l	d1,(lbL02B4C0-ds,a6)
 	add.l	d1,d0
-	clr.l	(lbL02D148-datasegment,a6)
-	move.l	d0,(lbL02D14C-datasegment,a6)
+	clr.l	(lbL02D148-ds,a6)
+	move.l	d0,(lbL02D14C-ds,a6)
 	movea.l	d0,a0
 	moveq	#-1,d1
 	move.l	#$C2,d0
 lbC00C624	move.l	d1,(a0)+
 	dbra	d0,lbC00C624
-	lea	(lbL02F600-datasegment,a6),a0
+	lea	(lbL02F600-ds,a6),a0
 	move.l	#$27F,d0
 lbC00C634	clr.l	(a0)+
 	clr.l	(a0)+
 	clr.l	(a0)+
 	clr.l	(a0)+
 	dbra	d0,lbC00C634
-	movea.l	(saved_sp-datasegment,a6),sp
-	jmp	(lbC02A84E-datasegment,a6)
+	movea.l	(saved_sp-ds,a6),sp
+	jmp	(lbC02A84E-ds,a6)
 
 lbC00C648	move.l	d0,d6
 	move.l	a4,-(sp)
 	move.w	#$1F68,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	movea.l	a0,a5
 	addq.l	#4,a5
-	movea.l	(lbL02D14C-datasegment,a6),a1
-	move.l	(lbL02B4BC-datasegment,a6),d0
-	clr.l	(lbL02B4BC-datasegment,a6)
-	jsr	(_FreeMem-datasegment,a6)
-	movea.l	(lbL02D158-datasegment,a6),a1
-	move.l	(lbL02B4B4-datasegment,a6),d0
-	clr.l	(lbL02B4B4-datasegment,a6)
-	jsr	(_FreeMem-datasegment,a6)
+	movea.l	(lbL02D14C-ds,a6),a1
+	move.l	(lbL02B4BC-ds,a6),d0
+	clr.l	(lbL02B4BC-ds,a6)
+	jsr	(_FreeMem-ds,a6)
+	movea.l	(lbL02D158-ds,a6),a1
+	move.l	(lbL02B4B4-ds,a6),d0
+	clr.l	(lbL02B4B4-ds,a6)
+	jsr	(_FreeMem-ds,a6)
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	(a5)+,d0
 	move.l	d0,d5
 	addq.l	#8,d0
 	addq.l	#8,d0
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5CE
-	move.l	d0,(workdata_end-datasegment,a6)
-	move.l	d5,(lbL02B4AC-datasegment,a6)
+	move.l	d0,(workdata_struct-ds,a6)
+	move.l	d5,(workdata_struct_sz-ds,a6)
 	add.l	d5,d0
 	subq.l	#8,d0
 	subq.l	#8,d0
-	move.l	d0,(lbL02B4A0-datasegment,a6)
+	move.l	d0,(workdata_struct_end-ds,a6)
 	movea.l	d0,a0
 	move.l	#$FFFFFFFF,(a0)+
 	clr.l	(a0)+
@@ -13123,221 +13129,221 @@ lbC00C648	move.l	d0,d6
 	move.l	d5,d0
 	cmpi.b	#$AE,d6
 	bne.b	lbC00C6E0
-	move.l	(kickstart_adr-datasegment,a6),d0
-	clr.l	(lbL02D11C-datasegment,a6)
+	move.l	(kickstart_adr-ds,a6),d0
+	clr.l	(workdata_strt-ds,a6)
 	bra.b	lbC00C6EC
 
-lbC00C6E0	jsr	(_AllocMemClear-datasegment,a6)
+lbC00C6E0	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5CE
-	move.l	d0,(lbL02D11C-datasegment,a6)
-lbC00C6EC	move.l	d5,(lbB02B4A8-datasegment,a6)
-	move.l	d0,(datasegment-datasegment,a6)
-	move.l	d0,(workdata_strt_cmp2-datasegment,a6)
-	clr.l	(lbL02D0C8-datasegment,a6)
-	clr.l	(lbL02D0CC-datasegment,a6)
-	clr.l	(lbL02D0D0-datasegment,a6)
+	move.l	d0,(workdata_strt-ds,a6)
+lbC00C6EC	move.l	d5,(workdata_length-ds,a6)
+	move.l	d0,(ds-ds,a6)
+	move.l	d0,(workdata_strt_cmp2-ds,a6)
+	clr.l	(lbL02D0C8-ds,a6)
+	clr.l	(lbL02D0CC-ds,a6)
+	clr.l	(lbL02D0D0-ds,a6)
 	add.l	d0,d5
-	move.l	d5,(lbL02A8A0-datasegment,a6)
+	move.l	d5,(workdata_end-ds,a6)
 	subq.l	#1,d5
-	move.l	d5,(workdata_end_cmp2-datasegment,a6)
+	move.l	d5,(workdata_end_cmp2-ds,a6)
 	move.l	(a5)+,d0
 	move.l	d0,d5
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5CE
-	move.l	d5,(lbL02B4BC-datasegment,a6)
-	move.l	d0,(lbL02D14C-datasegment,a6)
+	move.l	d5,(lbL02B4BC-ds,a6)
+	move.l	d0,(lbL02D14C-ds,a6)
 	move.l	(a5)+,d5
 	move.l	d5,d0
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5CE
-	move.l	d0,(lbL02D158-datasegment,a6)
-	move.l	d0,(lbL02D160-datasegment,a6)
-	move.l	d5,(lbL02B4B4-datasegment,a6)
+	move.l	d0,(lbL02D158-ds,a6)
+	move.l	d0,(lbL02D160-ds,a6)
+	move.l	d5,(lbL02B4B4-ds,a6)
 	move.l	(a5)+,d5
 	add.l	d0,d5
-	move.l	(a5)+,(lbL02D098-datasegment,a6)
-	move.l	(a5)+,(lbL02B4C8-datasegment,a6)
-	move.l	(a5)+,(lbL02B4CC-datasegment,a6)
+	move.l	(a5)+,(lbL02D098-ds,a6)
+	move.l	(a5)+,(lbL02B4C8-ds,a6)
+	move.l	(a5)+,(lbL02B4CC-ds,a6)
 	addq.l	#1,a5
-	move.b	(a5)+,(lbB02EB40-datasegment,a6)
-	move.b	(a5)+,(lbB02EB47-datasegment,a6)
-	move.b	(a5)+,(lbW02EB54-datasegment,a6)
+	move.b	(a5)+,(lbB02EB40-ds,a6)
+	move.b	(a5)+,(lbB02EB47-ds,a6)
+	move.b	(a5)+,(lbW02EB54-ds,a6)
 	move.l	(a5)+,d0
 	move.l	(a5)+,d2
 	move.l	(a5)+,d3
-	tst.b	(lbB02EB47-datasegment,a6)
+	tst.b	(lbB02EB47-ds,a6)
 	bne.b	lbC00C7C6
 	cmpi.l	#$FBFFFF,d2
 	bls.b	lbC00C7C6
 	cmpi.l	#$FFFFFF,d2
 	bhi.b	lbC00C7C6
-	cmp.l	(kickstart_adr-datasegment,a6),d3
+	cmp.l	(kickstart_adr-ds,a6),d3
 	bls.b	lbC00C7C6
 	cmpi.l	#$1000000,d3
 	bhi.b	lbC00C7C6
-	st	(lbB02EB47-datasegment,a6)
+	st	(lbB02EB47-ds,a6)
 	movem.l	d0-d2/a0-a5,-(sp)
-	movea.l	(datasegment-datasegment,a6),a1
-	move.l	(lbB02B4A8-datasegment,a6),d0
-	jsr	(_FreeMem-datasegment,a6)
-	move.l	d2,(datasegment-datasegment,a6)
-	move.l	d2,(workdata_strt_cmp2-datasegment,a6)
-	clr.l	(lbL02D0C8-datasegment,a6)
-	clr.l	(lbL02D0CC-datasegment,a6)
-	clr.l	(lbL02D0D0-datasegment,a6)
-	move.l	d2,(lbL02D11C-datasegment,a6)
-	move.l	d3,(lbL02A8A0-datasegment,a6)
-	move.l	d3,(workdata_end_cmp2-datasegment,a6)
-	subq.l	#1,(workdata_end_cmp2-datasegment,a6)
+	movea.l	(ds-ds,a6),a1
+	move.l	(workdata_length-ds,a6),d0
+	jsr	(_FreeMem-ds,a6)
+	move.l	d2,(ds-ds,a6)
+	move.l	d2,(workdata_strt_cmp2-ds,a6)
+	clr.l	(lbL02D0C8-ds,a6)
+	clr.l	(lbL02D0CC-ds,a6)
+	clr.l	(lbL02D0D0-ds,a6)
+	move.l	d2,(workdata_strt-ds,a6)
+	move.l	d3,(workdata_end-ds,a6)
+	move.l	d3,(workdata_end_cmp2-ds,a6)
+	subq.l	#1,(workdata_end_cmp2-ds,a6)
 	sub.l	d2,d3
-	move.l	d3,(lbB02B4A8-datasegment,a6)
+	move.l	d3,(workdata_length-ds,a6)
 	movem.l	(sp)+,d0-d2/a0-a5
-lbC00C7C6	add.l	(datasegment-datasegment,a6),d0
+lbC00C7C6	add.l	(ds-ds,a6),d0
 	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	move.b	(a5)+,(lbB02EB37-datasegment,a6)
-	clr.b	(lbB02EB57-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
+	move.b	(a5)+,(lbB02EB37-ds,a6)
+	clr.b	(lbB02EB57-ds,a6)
 	move.b	(a5)+,d0
 	add.b	d0,d0
-	scs	(lbB02EB57-datasegment,a6)
+	scs	(lbB02EB57-ds,a6)
 	add.b	d0,d0
-	scs	(lbL02EB36-datasegment,a6)
+	scs	(lbL02EB36-ds,a6)
 	add.b	d0,d0
-	scs	(lbB02EAD9-datasegment,a6)
+	scs	(lbB02EAD9-ds,a6)
 	add.b	d0,d0
-	scs	(lbB02EB6C-datasegment,a6)
+	scs	(lbB02EB6C-ds,a6)
 	add.b	d0,d0
-	scs	(lbB02EB6D-datasegment,a6)
+	scs	(lbB02EB6D-ds,a6)
 	add.b	d0,d0
-	scs	(lbB02EB59-datasegment,a6)
+	scs	(lbB02EB59-ds,a6)
 	add.b	d0,d0
-	scs	(lbL02EB72-datasegment,a6)
+	scs	(lbL02EB72-ds,a6)
 	add.b	d0,d0
 	bcc.b	lbC00C80E
-	jsr	(lbC02A848-datasegment,a6)
+	jsr	(lbC02A848-ds,a6)
 	bra.b	lbC00C812
 
-lbC00C80E	jsr	(lbC02A842-datasegment,a6)
+lbC00C80E	jsr	(lbC02A842-ds,a6)
 lbC00C812	move.b	(a5)+,d0
 	addq.b	#4,d0
 	andi.b	#7,d0
-	move.b	d0,(lbB02EB6B-datasegment,a6)
+	move.b	d0,(lbB02EB6B-ds,a6)
 	addq.l	#1,a5
-	move.l	(a5)+,(lbL02D1DC-datasegment,a6)
+	move.l	(a5)+,(workdata_strt_plus1-ds,a6)
 	move.l	(a5)+,d1
-	add.l	(datasegment-datasegment,a6),d1
-	move.l	d1,(lbL02CDEC-datasegment,a6)
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	move.l	(workdata_end-datasegment,a6),d2
-	move.l	(lbL02B4AC-datasegment,a6),d3
+	add.l	(ds-ds,a6),d1
+	move.l	d1,(lbL02CDEC-ds,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(workdata_struct-ds,a6),d2
+	move.l	(workdata_struct_sz-ds,a6),d3
 	move.w	#$1F53,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$1F69,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	bsr.w	lbC00C98A
-	jsr	(_Read-datasegment,a6)
+	jsr	(_Read-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC00C5CE
-	tst.b	(lbB02EB47-datasegment,a6)
+	tst.b	(lbB02EB47-ds,a6)
 	bne.b	lbC00C898
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	move.l	(datasegment-datasegment,a6),d2
-	move.l	(lbB02B4A8-datasegment,a6),d3
+	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(ds-ds,a6),d2
+	move.l	(workdata_length-ds,a6),d3
 	move.l	a4,-(sp)
 	move.w	#$1F6A,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	bsr.w	lbC00C9C0
-	jsr	(_Read-datasegment,a6)
+	jsr	(_Read-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC00C5CE
-lbC00C898	move.l	(lbB02D0E0-datasegment,a6),d1
-	lea	(lbL02F600-datasegment,a6),a0
+lbC00C898	move.l	(lbB02D0E0-ds,a6),d1
+	lea	(lbL02F600-ds,a6),a0
 	move.l	a0,d2
 	move.l	#$2800,d3
 	move.l	a4,-(sp)
 	move.w	#$1F6B,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(_Read-datasegment,a6)
-	tst.b	(lbB02EB37-datasegment,a6)
+	jsr	(_Read-ds,a6)
+	tst.b	(lbB02EB37-ds,a6)
 	beq.b	lbC00C8C8
-	jsr	(lbC02A83C-datasegment,a6)
+	jsr	(lbC02A83C-ds,a6)
 lbC00C8C8	cmp.l	d0,d3
 	bne.w	lbC00C5CE
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	move.l	(lbL02D14C-datasegment,a6),d2
-	move.l	(lbL02B4BC-datasegment,a6),d3
+	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(lbL02D14C-ds,a6),d2
+	move.l	(lbL02B4BC-ds,a6),d3
 	move.l	a4,-(sp)
 	move.w	#$1F6C,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(_Read-datasegment,a6)
+	jsr	(_Read-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC00C5CE
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	move.l	(lbL02D158-datasegment,a6),d2
-	move.l	(lbL02B4B4-datasegment,a6),d3
+	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(lbL02D158-ds,a6),d2
+	move.l	(lbL02B4B4-ds,a6),d3
 	move.l	a4,-(sp)
 	move.w	#$1F6D,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(_Read-datasegment,a6)
+	jsr	(_Read-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC00C5CE
-	move.l	#12,(lbL02D148-datasegment,a6)
-	movea.l	(lbL02D144-datasegment,a6),a1
-	move.l	(lbL02D0F8-datasegment,a6),d0
-	clr.l	(lbL02D0F8-datasegment,a6)
-	jsr	(_FreeMem-datasegment,a6)
+	move.l	#12,(lbL02D148-ds,a6)
+	movea.l	(lbL02D144-ds,a6),a1
+	move.l	(lbL02D0F8-ds,a6),d0
+	clr.l	(lbL02D0F8-ds,a6)
+	jsr	(_FreeMem-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$1F66,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(dosclose-datasegment,a6)
-	clr.l	(lbB02D0E0-datasegment,a6)
-	movea.l	(lbL02D158-datasegment,a6),a0
-	adda.l	(lbL02B4B4-datasegment,a6),a0
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(dosclose-ds,a6)
+	clr.l	(lbB02D0E0-ds,a6)
+	movea.l	(lbL02D158-ds,a6),a0
+	adda.l	(lbL02B4B4-ds,a6),a0
 	moveq	#0,d0
 lbC00C95E	tst.l	-(a0)
 	bne.b	lbC00C966
 	addq.l	#4,d0
 	bra.b	lbC00C95E
 
-lbC00C966	move.l	d0,(lbL02B4C0-datasegment,a6)
-	move.l	(lbL02D158-datasegment,a6),d1
-	add.l	(lbL02B4B4-datasegment,a6),d1
+lbC00C966	move.l	d0,(lbL02B4C0-ds,a6)
+	move.l	(lbL02D158-ds,a6),d1
+	add.l	(lbL02B4B4-ds,a6),d1
 	sub.l	d0,d1
-	move.l	d1,(lbL02D154-datasegment,a6)
-	st	(lbB02EB85-datasegment,a6)
-	jsr	(lbC02A836-datasegment,a6)
-	st	(lbB02EB48-datasegment,a6)
+	move.l	d1,(lbL02D154-ds,a6)
+	st	(lbB02EB85-ds,a6)
+	jsr	(lbC02A836-ds,a6)
+	st	(lbB02EB48-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC00C98A	tst.b	(lbB02EB37-datasegment,a6)
+lbC00C98A	tst.b	(lbB02EB37-ds,a6)
 	beq.b	lbC00C9BE
-	move.l	(workdata_end-datasegment,a6),(lbL02CDF8-datasegment,a6)
-	move.l	(lbL02B4AC-datasegment,a6),(lbL02CDF4-datasegment,a6)
+	move.l	(workdata_struct-ds,a6),(lbL02CDF8-ds,a6)
+	move.l	(workdata_struct_sz-ds,a6),(lbL02CDF4-ds,a6)
 	move.l	d3,-(sp)
 	moveq	#4,d3
-	jsr	(_Read-datasegment,a6)
+	jsr	(_Read-ds,a6)
 	move.l	(sp)+,d3
 	movea.l	d2,a0
 	move.l	(a0),d1
@@ -13345,39 +13351,39 @@ lbC00C98A	tst.b	(lbB02EB37-datasegment,a6)
 	sub.l	d1,d0
 	add.l	d0,d2
 	move.l	d1,d3
-	move.l	d2,(workdata_end-datasegment,a6)
-	move.l	d3,(lbL02B4AC-datasegment,a6)
-	move.l	(lbB02D0E0-datasegment,a6),d1
+	move.l	d2,(workdata_struct-ds,a6)
+	move.l	d3,(workdata_struct_sz-ds,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
 lbC00C9BE	rts
 
-lbC00C9C0	tst.b	(lbB02EB37-datasegment,a6)
+lbC00C9C0	tst.b	(lbB02EB37-ds,a6)
 	beq.b	lbC00C9D8
 	move.l	d3,-(sp)
 	moveq	#4,d3
-	jsr	(_Read-datasegment,a6)
+	jsr	(_Read-ds,a6)
 	move.l	(sp)+,d3
 	movea.l	d2,a0
 	move.l	(a0),d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
+	move.l	(lbB02D0E0-ds,a6),d1
 lbC00C9D8	rts
 
-lbC00C9DA	jsr	(_SetPointerAll-datasegment,a6)
+kickstart	jsr	(_SetPointerAll-ds,a6)
 	move.w	#$1F46,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	#$200020,d0
 	moveq	#1,d1
 	move.l	d0,d2
 	addq.l	#8,d0
 	addq.l	#8,d0
-	jsr	(lbC02AD6C-datasegment,a6)
+	jsr	(lbC02AD6C-ds,a6)
 	beq.w	lbC00C5B6
-	move.l	d0,(workdata_end-datasegment,a6)
-	move.l	d2,(lbL02B4AC-datasegment,a6)
+	move.l	d0,(workdata_struct-ds,a6)
+	move.l	d2,(workdata_struct_sz-ds,a6)
 	add.l	d2,d0
 	subq.l	#8,d0
 	subq.l	#8,d0
-	move.l	d0,(lbL02B4A0-datasegment,a6)
+	move.l	d0,(workdata_struct_end-ds,a6)
 	movea.l	d0,a0
 	move.l	#$FFFFFFFF,(a0)+
 	clr.l	(a0)+
@@ -13387,37 +13393,37 @@ lbC00C9DA	jsr	(_SetPointerAll-datasegment,a6)
 	clr.l	(a0)+
 	clr.l	(a0)+
 	clr.l	(a0)
-	clr.b	(lbB02EB40-datasegment,a6)
-	clr.b	(lbB02D39B-datasegment,a6)
-	clr.b	(lbB02EAD5-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+	clr.b	(lbB02EB40-ds,a6)
+	clr.b	(lbB02D39B-ds,a6)
+	clr.b	(lbB02EAD5-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	move.b	#$4B,(a0)+
 	move.b	#$49,(a0)+
 	move.b	#$43,(a0)+
 	move.b	#$4B,(a0)+
 	clr.b	(a0)
-	st	(lbB02EB47-datasegment,a6)
-	move.l	(kickstart_adr-datasegment,a6),d0
-	move.l	d0,(datasegment-datasegment,a6)
-	move.l	d0,(workdata_strt_cmp2-datasegment,a6)
-	clr.l	(lbL02D0C8-datasegment,a6)
-	clr.l	(lbL02D0CC-datasegment,a6)
-	clr.l	(lbL02D0D0-datasegment,a6)
-	move.l	#$80000,(lbB02B4A8-datasegment,a6)
-	move.l	#$1000000,(lbL02A8A0-datasegment,a6)
-	move.l	#$FFFFFF,(workdata_end_cmp2-datasegment,a6)
-	clr.l	(lbL02D11C-datasegment,a6)
-	movea.l	(workdata_end-datasegment,a6),a0
+	st	(lbB02EB47-ds,a6)
+	move.l	(kickstart_adr-ds,a6),d0
+	move.l	d0,(ds-ds,a6)
+	move.l	d0,(workdata_strt_cmp2-ds,a6)
+	clr.l	(lbL02D0C8-ds,a6)
+	clr.l	(lbL02D0CC-ds,a6)
+	clr.l	(lbL02D0D0-ds,a6)
+	move.l	#$80000,(workdata_length-ds,a6)
+	move.l	#$1000000,(workdata_end-ds,a6)
+	move.l	#$FFFFFF,(workdata_end_cmp2-ds,a6)
+	clr.l	(workdata_strt-ds,a6)
+	movea.l	(workdata_struct-ds,a6),a0
 	move.l	#$10000080,d0
 	move.l	#$90000080,d1
 lbC00CA92	move.l	d0,(a0)+
 	move.l	d1,(a0)+
-	cmpa.l	(lbL02B4A0-datasegment,a6),a0
+	cmpa.l	(workdata_struct_end-ds,a6),a0
 	bcs.b	lbC00CA92
-	movea.l	(datasegment-datasegment,a6),a2
-	movea.l	(workdata_end-datasegment,a6),a3
+	movea.l	(ds-ds,a6),a2
+	movea.l	(workdata_struct-ds,a6),a3
 	move.l	(a3),d7
-	st	(lbB02EB48-datasegment,a6)
+	st	(lbB02EB48-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
@@ -17331,7 +17337,7 @@ functable	dl	clear_ccr-functable
 	dl	_misc_FUNCTION-*
 	dw	$FFE8
 	dl	0
-	dl	datasegment-*
+	dl	ds-*
 	dw	$FFEC
 	dl	0
 	dl	lbB02EACC-*
@@ -17346,7 +17352,7 @@ functable	dl	clear_ccr-functable
 	dl	lbC02803A-*
 	dw	$FFFC
 	dl	0
-default_func	dl	_dummy_st-default_func
+default_func	dl	term1-default_func
 	dw	0
 	dl	0
 	dl	lbC02A42A-*
@@ -22152,55 +22158,55 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC014762-*
 	dw	$305
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$10
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$35
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$4A
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$60
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$61
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$6F
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$79
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$7E
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$A2
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$10B
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$13B
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$150
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$174
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$179
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$17A
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$17B
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$191
 	dl	0
 	dl	lbC02A42A-*
@@ -22209,115 +22215,115 @@ default_func	dl	_dummy_st-default_func
 	dl	lbC02A42A-*
 	dw	$19A
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$1C8
 	dl	0
-	dl	lbC02A436-*
+	dl	term2-*
 	dw	$202
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$204
 	dl	0
-	dl	_dummy_st-*
+	dl	term1-*
 	dw	$212
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$21A
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$21B
 	dl	0
-	dl	_dummy_st-*
+	dl	term1-*
 	dw	$227
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$228
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$229
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$260
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$261
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$262
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$263
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$264
 	dl	0
-	dl	_dummy_st-*
+	dl	term1-*
 	dw	$265
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$266
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$267
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$269
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$26A
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$26B
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$26C
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$26D
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$26E
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$26F
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$271
 	dl	0
-	dl	_dummy_st-*
+	dl	term1-*
 	dw	$28C
 	dl	0
-	dl	_dummy_st-*
+	dl	term1-*
 	dw	$28D
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$291
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$293
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$2A2
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$2C0
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$2C1
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$2CA
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$2CC
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$2EC
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$308
 	dl	0
-	dl	_dummy-*
+	dl	cceq-*
 	dw	$361
 	dl	0
 	dl	$FFFFFFFF
@@ -24264,19 +24270,19 @@ m01	MACRO
 	m01	AW.MSG0,'A'
 	db	0,0,0
 
-lbC013ADA	jsr	(saveregs_all-datasegment,a6)
+lbC013ADA	jsr	(saveregs_all-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$271B,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	bsr.w	lbC013C88
-	movea.l	(workdata_end-datasegment,a6),a3
+	movea.l	(workdata_struct-ds,a6),a3
 	movea.l	a3,a4
-	move.l	(lbL02B4AC-datasegment,a6),(lbL02CDF4).l
-	move.l	(workdata_end-datasegment,a6),(lbL02CDF8).l
-	lea	(lbL02D3AC-datasegment,a6),a1
+	move.l	(workdata_struct_sz-ds,a6),(lbL02CDF4).l
+	move.l	(workdata_struct-ds,a6),(lbL02CDF8).l
+	lea	(lbL02D3AC-ds,a6),a1
 	movea.l	a1,a0
 	movea.l	a1,a5
 	lea	($100,a1),a2
@@ -24284,7 +24290,7 @@ lbC013ADA	jsr	(saveregs_all-datasegment,a6)
 	moveq	#$18,d5
 	addq.l	#4,d6
 	moveq	#3,d7
-	move.l	(lbL02B4A0-datasegment,a6),d3
+	move.l	(workdata_struct_end-ds,a6),d3
 	moveq	#0,d4
 lbC013B24	moveq	#-3,d1
 	and.l	(a3)+,d1
@@ -24350,28 +24356,28 @@ lbC013BA8	move.l	a4,d0
 	addq.l	#3,d0
 	andi.b	#$FC,d0
 	movea.l	d0,a4
-	sub.l	(workdata_end-datasegment,a6),d0
-	move.l	d0,(lbL02B4AC-datasegment,a6)
-	movea.l	(lbL02B4A0-datasegment,a6),a1
+	sub.l	(workdata_struct-ds,a6),d0
+	move.l	d0,(workdata_struct_sz-ds,a6)
+	movea.l	(workdata_struct_end-ds,a6),a1
 	lea	($10,a1),a1
 lbC013BC2	move.l	-(a4),-(a1)
-	cmpa.l	(workdata_end-datasegment,a6),a4
+	cmpa.l	(workdata_struct-ds,a6),a4
 	bne.b	lbC013BC2
-	move.l	a1,(workdata_end-datasegment,a6)
+	move.l	a1,(workdata_struct-ds,a6)
 	rts
 
-lbC013BD0	jsr	(saveregs_all-datasegment,a6)
+lbC013BD0	jsr	(saveregs_all-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$271C,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	move.l	(lbL02B4A0-datasegment,a6),d2
+	move.l	(workdata_struct_end-ds,a6),d2
 	bsr.w	lbC013C88
-	movea.l	(lbL02CDF8-datasegment,a6),a4
-	movea.l	(workdata_end-datasegment,a6),a0
-	lea	(lbL02D3AC-datasegment,a6),a1
+	movea.l	(lbL02CDF8-ds,a6),a4
+	movea.l	(workdata_struct-ds,a6),a0
+	lea	(lbL02D3AC-ds,a6),a1
 	move.l	a1,d3
 	move.w	#$FC,d4
 	lea	($100,a1),a2
@@ -24421,8 +24427,8 @@ lbC013C46	moveq	#0,d0
 	move.l	d0,(a4)+
 lbC013C64	cmp.l	a4,d2
 	bhi.b	lbC013C04
-lbC013C68	move.l	(lbL02CDF4-datasegment,a6),(lbL02B4AC).l
-	move.l	(lbL02CDF8-datasegment,a6),(workdata_end).l
+lbC013C68	move.l	(lbL02CDF4-ds,a6),(workdata_struct_sz).l
+	move.l	(lbL02CDF8-ds,a6),(workdata_struct).l
 	movea.l	d2,a0
 	move.l	#$FFFFFFFF,(a0)+
 	clr.l	(a0)+
@@ -24430,17 +24436,17 @@ lbC013C68	move.l	(lbL02CDF4-datasegment,a6),(lbL02B4AC).l
 	clr.l	(a0)
 	rts
 
-lbC013C88	lea	(lbL02D3AC-datasegment,a6),a0
+lbC013C88	lea	(lbL02D3AC-ds,a6),a0
 	moveq	#-1,d1
 	moveq	#$3F,d0
 lbC013C90	move.l	d1,(a0)+
 	dbra	d0,lbC013C90
 	rts
 
-lbC013C98	st	(lbB02B3E2-datasegment,a6)
-	clr.b	(lbB02B3E3-datasegment,a6)
-	clr.b	(lbB02B3E4-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC013C98	st	(lbB02B3E2-ds,a6)
+	clr.b	(lbB02B3E3-ds,a6)
+	clr.b	(lbB02B3E4-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36C,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$370,(a0)+
@@ -24450,10 +24456,10 @@ lbC013C98	st	(lbB02B3E2-datasegment,a6)
 	clr.w	(a0)
 	bra.w	lbC013F18
 
-lbC013CC6	clr.b	(lbB02B3E2-datasegment,a6)
-	st	(lbB02B3E3-datasegment,a6)
-	clr.b	(lbB02B3E4-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC013CC6	clr.b	(lbB02B3E2-ds,a6)
+	st	(lbB02B3E3-ds,a6)
+	clr.b	(lbB02B3E4-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36C,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$370,(a0)+
@@ -24464,14 +24470,14 @@ lbC013CC6	clr.b	(lbB02B3E2-datasegment,a6)
 	bra.w	lbC013F18
 
 lbC013CF4	move.w	#$2719,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	#lbL02E4C8,d1
 	jsr	(lbC026C74).l
-	jsr	(lbC02A430-datasegment,a6)
-	clr.b	(lbB02B3E2-datasegment,a6)
-	clr.b	(lbB02B3E3-datasegment,a6)
-	st	(lbB02B3E4-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+	jsr	(term2_if_cceq-ds,a6)
+	clr.b	(lbB02B3E2-ds,a6)
+	clr.b	(lbB02B3E3-ds,a6)
+	st	(lbB02B3E4-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36C,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$370,(a0)+
@@ -24481,10 +24487,10 @@ lbC013CF4	move.w	#$2719,d0
 	clr.w	(a0)
 	bra.w	lbC013F18
 
-lbC013D3A	st	(lbB02B438-datasegment,a6)
-	clr.b	(lbB02B439-datasegment,a6)
-	clr.b	(lbB02B43A-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC013D3A	st	(lbB02B438-ds,a6)
+	clr.b	(lbB02B439-ds,a6)
+	clr.b	(lbB02B43A-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36E,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$372,(a0)+
@@ -24494,10 +24500,10 @@ lbC013D3A	st	(lbB02B438-datasegment,a6)
 	clr.w	(a0)
 	bra.w	lbC013F18
 
-lbC013D68	clr.b	(lbB02B438-datasegment,a6)
-	st	(lbB02B439-datasegment,a6)
-	clr.b	(lbB02B43A-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC013D68	clr.b	(lbB02B438-ds,a6)
+	st	(lbB02B439-ds,a6)
+	clr.b	(lbB02B43A-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36E,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$372,(a0)+
@@ -24508,14 +24514,14 @@ lbC013D68	clr.b	(lbB02B438-datasegment,a6)
 	bra.w	lbC013F18
 
 lbC013D96	move.w	#$2719,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	#lbL02E0C8,d1
 	jsr	(lbC026C74).l
-	jsr	(lbC02A430-datasegment,a6)
-	clr.b	(lbB02B438-datasegment,a6)
-	clr.b	(lbB02B439-datasegment,a6)
-	st	(lbB02B43A-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+	jsr	(term2_if_cceq-ds,a6)
+	clr.b	(lbB02B438-ds,a6)
+	clr.b	(lbB02B439-ds,a6)
+	st	(lbB02B43A-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36E,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$372,(a0)+
@@ -24525,10 +24531,10 @@ lbC013D96	move.w	#$2719,d0
 	clr.w	(a0)
 	bra.w	lbC013F18
 
-lbC013DDC	st	(lbB02B43B-datasegment,a6)
-	clr.b	(lbB02B43C-datasegment,a6)
-	clr.b	(lbB02B43D-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC013DDC	st	(lbB02B43B-ds,a6)
+	clr.b	(lbB02B43C-ds,a6)
+	clr.b	(lbB02B43D-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36B,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$36F,(a0)+
@@ -24538,10 +24544,10 @@ lbC013DDC	st	(lbB02B43B-datasegment,a6)
 	clr.w	(a0)
 	bra.w	lbC013F18
 
-lbC013E0A	clr.b	(lbB02B43B-datasegment,a6)
-	st	(lbB02B43C-datasegment,a6)
-	clr.b	(lbB02B43D-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC013E0A	clr.b	(lbB02B43B-ds,a6)
+	st	(lbB02B43C-ds,a6)
+	clr.b	(lbB02B43D-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36B,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$36F,(a0)+
@@ -24552,14 +24558,14 @@ lbC013E0A	clr.b	(lbB02B43B-datasegment,a6)
 	bra.w	lbC013F18
 
 lbC013E38	move.w	#$2719,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	#lbL02E2C8,d1
 	jsr	(lbC026C74).l
-	jsr	(lbC02A430-datasegment,a6)
-	clr.b	(lbB02B43B-datasegment,a6)
-	clr.b	(lbB02B43C-datasegment,a6)
-	st	(lbB02B43D-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+	jsr	(term2_if_cceq-ds,a6)
+	clr.b	(lbB02B43B-ds,a6)
+	clr.b	(lbB02B43C-ds,a6)
+	st	(lbB02B43D-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36B,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$36F,(a0)+
@@ -24569,10 +24575,10 @@ lbC013E38	move.w	#$2719,d0
 	clr.w	(a0)
 	bra.w	lbC013F18
 
-lbC013E7E	st	(lbB02B43E-datasegment,a6)
-	clr.b	(lbB02B43F-datasegment,a6)
-	clr.b	(lbB02B440-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC013E7E	st	(lbB02B43E-ds,a6)
+	clr.b	(lbB02B43F-ds,a6)
+	clr.b	(lbB02B440-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36D,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$371,(a0)+
@@ -24582,10 +24588,10 @@ lbC013E7E	st	(lbB02B43E-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC013F18
 
-lbC013EAA	clr.b	(lbB02B43E-datasegment,a6)
-	st	(lbB02B43F-datasegment,a6)
-	clr.b	(lbB02B440-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC013EAA	clr.b	(lbB02B43E-ds,a6)
+	st	(lbB02B43F-ds,a6)
+	clr.b	(lbB02B440-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$371,(a0)+
@@ -24596,14 +24602,14 @@ lbC013EAA	clr.b	(lbB02B43E-datasegment,a6)
 	bra.b	lbC013F18
 
 lbC013ED6	move.w	#$2719,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	#lbL02E6C8,d1
 	jsr	(lbC026C74).l
-	jsr	(lbC02A430-datasegment,a6)
-	clr.b	(lbB02B43E-datasegment,a6)
-	clr.b	(lbB02B43F-datasegment,a6)
-	st	(lbB02B440-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+	jsr	(term2_if_cceq-ds,a6)
+	clr.b	(lbB02B43E-ds,a6)
+	clr.b	(lbB02B43F-ds,a6)
+	st	(lbB02B440-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$36D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$371,(a0)+
@@ -24611,181 +24617,181 @@ lbC013ED6	move.w	#$2719,d0
 	move.w	#$369,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC013F18	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-lbC013F20	clr.b	(lbB02EB82-datasegment,a6)
-	jsr	(lbC02727C-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC013F18	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+lbC013F20	clr.b	(lbB02EB82-ds,a6)
+	jsr	(lbC02727C-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC013F2C	bsr.w	lbC014DB2
 	bne.b	lbC013F34
 	rts
 
 lbC013F34	move.l	#lbL02DFC8,d1
-	st	(lbB02EB42-datasegment,a6)
+	st	(lbB02EB42-ds,a6)
 	bra.b	lbC013F70
 
-lbC013F40	st	(lbB02EB42-datasegment,a6)
-	move.l	(datasegment-datasegment,a6),(lbL02D13C-datasegment,a6)
-	move.l	(lbL02A8A0-datasegment,a6),(lbL02D140).l
+lbC013F40	st	(lbB02EB42-ds,a6)
+	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
+	move.l	(workdata_end-ds,a6),(lbL02D140).l
 	move.l	#lbL02DFC8,d1
 	bra.b	lbC013F70
 
-lbC013F5A	move.l	(datasegment-datasegment,a6),(lbL02D13C-datasegment,a6)
-	move.l	(lbL02A8A0-datasegment,a6),(lbL02D140-datasegment,a6)
-	clr.b	(lbB02EB42-datasegment,a6)
+lbC013F5A	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
+	move.l	(workdata_end-ds,a6),(lbL02D140-ds,a6)
+	clr.b	(lbB02EB42-ds,a6)
 	move.l	#lbL02E3C8,d1
-lbC013F70	pea	(clear_ccr-datasegment,a6)
+lbC013F70	pea	(clear_ccr-ds,a6)
 	move.w	#$274C,d0
-	jsr	(gettextbynum-datasegment,a6)
-	jsr	(lbC020566).l
+	jsr	(gettextbynum-ds,a6)
+	jsr	(requestfile).l
 	beq.w	_nosymdata
 	tst.b	(a0)
 	beq.w	lbC014364
-	move.l	a0,(lbB02D0E8-datasegment,a6)
-	jsr	(_SetPointerAll-datasegment,a6)
-	move.l	(kickstart_adr-datasegment,a6),d0
-	cmp.l	(datasegment-datasegment,a6),d0
+	move.l	a0,(lbB02D0E8-ds,a6)
+	jsr	(_SetPointerAll-ds,a6)
+	move.l	(kickstart_adr-ds,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bne.b	lbC013FA8
-	cmpi.l	#$1000000,(lbL02A8A0-datasegment,a6)
+	cmpi.l	#$1000000,(workdata_end-ds,a6)
 	beq.b	lbC013FB2
-lbC013FA8	tst.b	(lbB02EAD9-datasegment,a6)
+lbC013FA8	tst.b	(lbB02EAD9-ds,a6)
 	bne.b	lbC013FB2
 	bsr.w	lbC0142D4
-lbC013FB2	move.l	(lbB02D0E8-datasegment,a6),d1
-	jsr	(lbC02A286-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+lbC013FB2	move.l	(lbB02D0E8-ds,a6),d1
+	jsr	(lbC02A286-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	beq.w	lbC01424E
 	move.l	d0,d4
-	lea	(lbB031E00-datasegment,a6),a4
-	tst.b	(lbB02EB42-datasegment,a6)
+	lea	(lbB031E00-ds,a6),a4
+	tst.b	(lbB02EB42-ds,a6)
 	bne.w	lbC01414E
 	move.l	a0,-(sp)
-	movea.l	(kickstart_adr-datasegment,a6),a0
-	cmpa.l	(datasegment-datasegment,a6),a0
+	movea.l	(kickstart_adr-ds,a6),a0
+	cmpa.l	(ds-ds,a6),a0
 	movea.l	(sp)+,a0
 	bne.b	lbC013FF0
-	cmpi.l	#$1000000,(lbL02A8A0-datasegment,a6)
+	cmpi.l	#$1000000,(workdata_end-ds,a6)
 	bne.b	lbC013FF0
 	move.l	#$CEEFDEAE,(a4)+
 	bra.b	lbC014012
 
-lbC013FF0	cmpi.l	#$FBFFFF,(datasegment-datasegment,a6)
+lbC013FF0	cmpi.l	#$FBFFFF,(ds-ds,a6)
 	bls.b	lbC01400C
-	cmpi.l	#$FFFFFF,(datasegment-datasegment,a6)
+	cmpi.l	#$FFFFFF,(ds-ds,a6)
 	bhi.b	lbC01400C
 	move.l	#$CEEFDEAF,(a4)+
 	bra.b	lbC014012
 
 lbC01400C	move.l	#$CEEFDEAD,(a4)+
-lbC014012	move.l	(lbL02B4AC-datasegment,a6),(a4)+
-	move.l	(lbL02B4BC-datasegment,a6),(a4)+
-	move.l	(lbL02B4B4-datasegment,a6),(a4)+
-	move.l	(lbL02D154-datasegment,a6),d0
-	sub.l	(lbL02D158-datasegment,a6),d0
+lbC014012	move.l	(workdata_struct_sz-ds,a6),(a4)+
+	move.l	(lbL02B4BC-ds,a6),(a4)+
+	move.l	(lbL02B4B4-ds,a6),(a4)+
+	move.l	(lbL02D154-ds,a6),d0
+	sub.l	(lbL02D158-ds,a6),d0
 	move.l	d0,(a4)+
-	move.l	(lbL02D098-datasegment,a6),(a4)+
-	move.l	(lbL02B4C8-datasegment,a6),(a4)+
-	move.l	(lbL02B4CC-datasegment,a6),(a4)+
+	move.l	(lbL02D098-ds,a6),(a4)+
+	move.l	(lbL02B4C8-ds,a6),(a4)+
+	move.l	(lbL02B4CC-ds,a6),(a4)+
 	clr.b	(a4)+
-	move.b	(lbB02EB40-datasegment,a6),(a4)+
+	move.b	(lbB02EB40-ds,a6),(a4)+
 	clr.b	(a4)+
-	move.l	(kickstart_adr-datasegment,a6),d0
-	cmp.l	(datasegment-datasegment,a6),d0
+	move.l	(kickstart_adr-ds,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bne.b	lbC014056
-	cmpi.l	#$1000000,(lbL02A8A0-datasegment,a6)
+	cmpi.l	#$1000000,(workdata_end-ds,a6)
 	bne.b	lbC014056
-	move.b	(lbB02EB47-datasegment,a6),(-1,a4)
-lbC014056	move.b	(lbW02EB54-datasegment,a6),(a4)+
+	move.b	(lbB02EB47-ds,a6),(-1,a4)
+lbC014056	move.b	(lbW02EB54-ds,a6),(a4)+
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	move.l	d0,(a4)+
-	move.l	(datasegment-datasegment,a6),(a4)+
-	move.l	(lbL02A8A0-datasegment,a6),(a4)+
+	move.l	(ds-ds,a6),(a4)+
+	move.l	(workdata_end-ds,a6),(a4)+
 	move.b	#$80,(a4)+
 	moveq	#0,d0
-	tst.b	(lbB02EB57-datasegment,a6)
+	tst.b	(lbB02EB57-ds,a6)
 	beq.b	lbC01407A
 	bset	#7,d0
-lbC01407A	tst.b	(lbL02EB36-datasegment,a6)
+lbC01407A	tst.b	(lbL02EB36-ds,a6)
 	beq.b	lbC014084
 	bset	#6,d0
-lbC014084	tst.b	(lbB02EAD9-datasegment,a6)
+lbC014084	tst.b	(lbB02EAD9-ds,a6)
 	beq.b	lbC01408E
 	bset	#5,d0
-lbC01408E	tst.b	(lbB02EB6C-datasegment,a6)
+lbC01408E	tst.b	(lbB02EB6C-ds,a6)
 	beq.b	lbC014098
 	bset	#4,d0
-lbC014098	tst.b	(lbB02EB6D-datasegment,a6)
+lbC014098	tst.b	(lbB02EB6D-ds,a6)
 	beq.b	lbC0140A2
 	bset	#3,d0
-lbC0140A2	tst.b	(lbB02EB59-datasegment,a6)
+lbC0140A2	tst.b	(lbB02EB59-ds,a6)
 	beq.b	lbC0140AC
 	bset	#2,d0
-lbC0140AC	tst.b	(lbL02EB72-datasegment,a6)
+lbC0140AC	tst.b	(lbL02EB72-ds,a6)
 	beq.b	lbC0140B6
 	bset	#1,d0
-lbC0140B6	tst.b	(lbB02B42E-datasegment,a6)
+lbC0140B6	tst.b	(lbB02B42E-ds,a6)
 	beq.b	lbC0140C0
 	bset	#0,d0
 lbC0140C0	move.b	d0,(a4)+
-	move.b	(lbB02EB6B-datasegment,a6),d0
+	move.b	(lbB02EB6B-ds,a6),d0
 	subq.b	#4,d0
 	andi.b	#7,d0
 	move.b	d0,(a4)+
 	clr.b	(a4)+
-	move.l	(lbL02D1DC-datasegment,a6),(a4)+
-	move.l	(lbL02CDEC-datasegment,a6),d1
-	sub.l	(datasegment-datasegment,a6),d1
+	move.l	(workdata_strt_plus1-ds,a6),(a4)+
+	move.l	(lbL02CDEC-ds,a6),d1
+	sub.l	(ds-ds,a6),d1
 	move.l	d1,(a4)+
 	move.l	d4,d1
-	move.l	(lbL02B480-datasegment,a6),d2
+	move.l	(lbL02B480-ds,a6),d2
 	moveq	#$40,d3
-	st	(lbB02EB48-datasegment,a6)
+	st	(lbB02EB48-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$2720,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	cmpi.l	#$40,d0
 	bne.w	lbC01424E
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.w	lbC01424E
 	move.l	d4,d1
 	bsr.w	lbC013ADA
-	move.l	(workdata_end-datasegment,a6),d2
-	move.l	(lbL02B4AC-datasegment,a6),d3
+	move.l	(workdata_struct-ds,a6),d2
+	move.l	(workdata_struct_sz-ds,a6),d3
 	move.l	d3,-(sp)
 	move.l	a4,-(sp)
 	move.w	#$2737,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	bsr.w	lbC01429A
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	bsr.w	lbC013BD0
 	cmp.l	(sp)+,d0
 	bne.w	lbC01424E
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.w	lbC01424E
 lbC01414E	move.l	d4,d1
-	move.l	(lbL02D13C-datasegment,a6),d2
-	tst.b	(lbB02EB42-datasegment,a6)
+	move.l	(lbL02D13C-ds,a6),d2
+	tst.b	(lbB02EB42-ds,a6)
 	bne.b	lbC01416A
 	cmpi.l	#$FBFFFF,d2
 	bls.b	lbC01416A
 	cmpi.l	#$FFFFFF,d2
 	bls.b	lbC0141C0
-lbC01416A	move.l	(lbL02D140-datasegment,a6),d3
-	sub.l	(lbL02D13C-datasegment,a6),d3
+lbC01416A	move.l	(lbL02D140-ds,a6),d3
+	sub.l	(lbL02D13C-ds,a6),d3
 	move.l	a4,-(sp)
 	move.w	#$272B,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	movea.l	d2,a0
 	adda.l	d3,a0
@@ -24796,129 +24802,129 @@ lbC01418A	tst.b	-(a0)
 	bra.b	lbC01418A
 
 lbC014192	andi.b	#$FC,d0
-	tst.b	(lbB02EB42-datasegment,a6)
+	tst.b	(lbB02EB42-ds,a6)
 	bne.b	lbC01419E
 	sub.l	d0,d3
 lbC01419E	move.l	d3,-(sp)
 	bsr.w	lbC01429A
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	cmp.l	(sp)+,d0
 	bne.w	lbC01424E
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.w	lbC01424E
-	tst.b	(lbB02EB42-datasegment,a6)
+	tst.b	(lbB02EB42-ds,a6)
 	bne.w	lbC014248
 	move.l	d4,d1
 lbC0141C0	move.l	#lbL02F600,d2
 	move.l	#$2800,d3
 	move.l	a4,-(sp)
 	move.w	#$2726,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	cmpi.l	#$2800,d0
 	bne.b	lbC01424E
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.b	lbC01424E
 	move.l	d4,d1
-	move.l	(lbL02D14C-datasegment,a6),d2
-	move.l	(lbL02B4BC-datasegment,a6),d3
+	move.l	(lbL02D14C-ds,a6),d2
+	move.l	(lbL02B4BC-ds,a6),d3
 	move.l	d3,-(sp)
 	move.l	a4,-(sp)
 	move.w	#$2722,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	cmp.l	(sp)+,d0
 	bne.b	lbC01424E
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.b	lbC01424E
 	move.l	d4,d1
-	move.l	(lbL02D158-datasegment,a6),d2
-	move.l	(lbL02B4B4-datasegment,a6),d3
+	move.l	(lbL02D158-ds,a6),d2
+	move.l	(lbL02B4B4-ds,a6),d3
 	move.l	d3,-(sp)
 	move.l	a4,-(sp)
 	move.w	#$2724,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	cmp.l	(sp)+,d0
 	bne.b	lbC01424E
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.b	lbC01424E
 lbC014248	bsr.b	lbC01427A
 	moveq	#1,d0
 	rts
 
-lbC01424E	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+lbC01424E	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bsr.b	lbC01427A
-	move.l	(lbB02D0E8-datasegment,a6),d1
-	jsr	(_DeleteFile-datasegment,a6)
+	move.l	(lbB02D0E8-ds,a6),d1
+	jsr	(_DeleteFile-ds,a6)
 	move.w	#$2725,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	moveq	#$3C,d1
-	jsr	(dosdelay-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
+	jsr	(dosdelay-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
 	bra.w	lbC01435C
 
 lbC01427A	move.l	a4,-(sp)
 	move.w	#$1F66,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(dosclose-datasegment,a6)
-	clr.l	(lbB02D0E0-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(dosclose-ds,a6)
+	clr.l	(lbB02D0E0-ds,a6)
 	bra.b	lbC0142B8
 
-lbC01429A	tst.b	(lbB02EB42-datasegment,a6)
+lbC01429A	tst.b	(lbB02EB42-ds,a6)
 	bne.b	lbC0142B6
 	movem.l	d1-d3/a0/a1,-(sp)
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	move.l	d3,(a0)
 	move.l	a0,d2
 	moveq	#4,d3
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	movem.l	(sp)+,d1-d3/a0/a1
 lbC0142B6	rts
 
-lbC0142B8	jsr	(_SetPointerAll-datasegment,a6)
+lbC0142B8	jsr	(_SetPointerAll-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$271D,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	st	(lbW02EB76-datasegment,a6)
+	st	(lbW02EB76-ds,a6)
 	bra.b	lbC0142EE
 
-lbC0142D4	jsr	(_SetPointerAll-datasegment,a6)
+lbC0142D4	jsr	(_SetPointerAll-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$271E,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	clr.b	(lbW02EB76-datasegment,a6)
-lbC0142EE	jsr	(saveregs_all-datasegment,a6)
-	movem.l	(datasegment-datasegment,a6),a2/a3
-	move.l	(lbL02B4A0-datasegment,a6),d1
+	clr.b	(lbW02EB76-ds,a6)
+lbC0142EE	jsr	(saveregs_all-ds,a6)
+	movem.l	(ds-ds,a6),a2/a3
+	move.l	(workdata_struct_end-ds,a6),d1
 	move.l	a2,d2
-	tst.b	(lbW02EB76-datasegment,a6)
+	tst.b	(lbW02EB76-ds,a6)
 	bne.b	lbC014306
 	neg.l	d2
 lbC014306	movea.l	a2,a1
 	moveq	#2,d3
-	move.l	(workdata_end-datasegment,a6),d4
+	move.l	(workdata_struct-ds,a6),d4
 	bra.b	lbC014314
 
 lbC014310	lea	($30,a3),a3
@@ -24948,15 +24954,15 @@ lbC014340	cmp.l	a3,d1
 	addq.l	#8,a3
 	bra.b	lbC014314
 
-lbC014352	jmp	(lbC02A422-datasegment,a6)
+lbC014352	jmp	(lbC02A422-ds,a6)
 
-_nosymdata	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
-lbC01435C	st	(lbB02EB48-datasegment,a6)
-lbC014360	jsr	(lbC02A502-datasegment,a6)
+_nosymdata	move.w	#$7FFE,(lbW02EAC8-ds,a6)
+lbC01435C	st	(lbB02EB48-ds,a6)
+lbC014360	jsr	(lbC02A502-ds,a6)
 lbC014364	cmp.l	d0,d0
 	rts
 
-writeaboutmessage	lea	(lbB031E00-datasegment,a6),a1
+writeaboutmessage	lea	(lbB031E00-ds,a6),a1
 	move.b	#2,(a1)+	;invers
 	move.w	#$3E80,d0	;commercial version
 	bsr.b	gettextbynum_copy_a1
@@ -24987,13 +24993,13 @@ writeaboutmessage	lea	(lbB031E00-datasegment,a6),a1
 	bsr.b	gettextbynum_copy_a1
 	move.b	#10,(a1)+
 	clr.b	(a1)
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 	jsr	(print_text_a0).l
-	jsr	(DropIMsgAll-datasegment,a6)
+	jsr	(DropIMsgAll-ds,a6)
 	jmp	(mainloop2).l
 
 gettextbynum_copy_a1
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 copy_a0_a1	move.b	(a0)+,(a1)+
 	bne.b	copy_a0_a1
@@ -25020,21 +25026,21 @@ ThePuzzleFact.MSG
 	db	"This version of ReSource is derrived from original 6.06 and modified by Wepl",10,0
 	EVEN
 
-lbC01455E	tst.l	(lbB02B4A8-datasegment,a6)
+lbC01455E	tst.l	(workdata_length-ds,a6)
 	beq.w	_nosymdata
 	move.w	#$274B,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(lbB031E00-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
-	jsr	(lbC020566).l
+	jsr	(requestfile).l
 	beq.w	_nosymdata
 	cmpi.b	#$2A,(a0)
 	bne.b	lbC0145A4
 	tst.b	(1,a0)
 	bne.b	lbC0145A4
 	movea.l	a2,a0
-	move.l	(lbB02B4A8-datasegment,a6),d0
+	move.l	(workdata_length-ds,a6),d0
 	bra.b	lbC014596
 
 lbC014594	clr.b	(a0)+
@@ -25043,21 +25049,21 @@ lbC014596	dbra	d0,lbC014594
 	bcc.b	lbC014594
 	bra.b	lbC0145D4
 
-lbC0145A4	move.l	a0,(lbB02D0E8-datasegment,a6)
+lbC0145A4	move.l	a0,(lbB02D0E8-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A272-datasegment,a6)
+	jsr	(lbC02A272-ds,a6)
 	tst.l	d0
 	beq.w	_nosymdata
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	move.l	d0,d1
 	move.l	a2,d2
-	move.l	(lbB02B4A8-datasegment,a6),d3
-	jsr	(_Read-datasegment,a6)
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	clr.l	(lbB02D0E0-datasegment,a6)
-	jsr	(dosclose-datasegment,a6)
+	move.l	(workdata_length-ds,a6),d3
+	jsr	(_Read-ds,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	clr.l	(lbB02D0E0-ds,a6)
+	jsr	(dosclose-ds,a6)
 	bsr.w	lbC0142B8
-lbC0145D4	jmp	(lbC02A422-datasegment,a6)
+lbC0145D4	jmp	(lbC02A422-ds,a6)
 
 data1	dl	0
 	dl	0
@@ -25083,15 +25089,15 @@ thistask2	dl	0
 	dl	0
 	dw	0
 
-lbC014632	move.b	(lbB02EB56-datasegment,a6),(lbB02EB3D).l
-	clr.l	(lbB02D118-datasegment,a6)
+lbC014632	move.b	(lbB02EB56-ds,a6),(lbB02EB3D).l
+	clr.l	(lbB02D118-ds,a6)
 	movem.l	a0/a2/a3,-(sp)
-	jsr	(lbC02A87E-datasegment,a6)
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB3D-datasegment,a6)
+	jsr	(lbC02A87E-ds,a6)
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB3D-ds,a6)
 	movem.l	(sp)+,a0/a2/a3
-	move.l	(lbB02D120-datasegment,a6),d0
-	tst.b	(lbB02B40A-datasegment,a6)
+	move.l	(lbB02D120-ds,a6),d0
+	tst.b	(lbB02B40A-ds,a6)
 	rts
 
 _getsymsdata_a5	bsr.w	getsymsdata_a5
@@ -25099,22 +25105,22 @@ _getsymsdata_a5	bsr.w	getsymsdata_a5
 	movea.l	a5,a0
 	adda.l	d0,a0
 	bsr.b	lbC014632
-	st	(lbB02EB70-datasegment,a6)
+	st	(lbB02EB70-ds,a6)
 lbC01466E	beq.b	lbC014684
 	move.l	a0,d2
-	lea	(lbL02C1D4-datasegment,a6),a0
-	jsr	(atoi-datasegment,a6)
+	lea	(lbL02C1D4-ds,a6),a0
+	jsr	(atoi-ds,a6)
 	beq.w	_nosymdata
 	movea.l	d2,a0
 	move.l	d1,d0
 	bra.b	lbC01468C
 
-lbC014684	tst.l	(lbB02D118-datasegment,a6)
+lbC014684	tst.l	(lbB02D118-ds,a6)
 	beq.w	lbC014364
 lbC01468C	bsr.w	lbC014BD8
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	move.b	#$28,(a4)+
-	move.l	d0,(lbL02D394-datasegment,a6)
+	move.l	d0,(lbL02D394-ds,a6)
 lbC01469C	move.l	a0,d4
 	move.b	(a0)+,d5
 	addq.b	#1,d5
@@ -25140,7 +25146,7 @@ lbC0146A4	move.b	(a0)+,d5
 	cmp.l	d6,d7
 	bne.b	lbC01469C
 	movem.l	d4/a2/a4,-(sp)
-	lea	(screen_pubname-datasegment,a6),a2
+	lea	(screen_pubname-ds,a6),a2
 	movea.l	d4,a1
 	movea.l	a2,a4
 	bsr.w	lbC014BF8
@@ -25150,40 +25156,40 @@ lbC0146A4	move.b	(a0)+,d5
 	beq.w	lbC014B60
 	move.l	d6,d7
 	not.l	d7
-	and.l	d7,(lbL02D394-datasegment,a6)
+	and.l	d7,(lbL02D394-ds,a6)
 	cmpi.l	#$FFFFFFFF,d1
 	bne.b	lbC01470A
-	lea	(screen_pubname-datasegment,a6),a0
+	lea	(screen_pubname-ds,a6),a0
 	move.l	a0,d4
 	move.l	d6,d1
-	jsr	(lbC02AEB2-datasegment,a6)
+	jsr	(lbC02AEB2-ds,a6)
 	bra.w	lbC014B1E
 
-lbC01470A	lea	(screen_pubname-datasegment,a6),a1
+lbC01470A	lea	(screen_pubname-ds,a6),a1
 lbC01470E	move.b	(a1)+,(a4)+
 	bne.b	lbC01470E
 	move.b	#$7C,(-1,a4)
-	addq.b	#1,(lbB02EB70-datasegment,a6)
+	addq.b	#1,(lbB02EB70-ds,a6)
 	bra.w	lbC01469C
 
-lbC014720	tst.b	(lbB02EB70-datasegment,a6)
+lbC014720	tst.b	(lbB02EB70-ds,a6)
 	bmi.w	lbC014B6C
-	move.l	(lbL02D394-datasegment,a6),d0
+	move.l	(lbL02D394-ds,a6),d0
 	beq.b	lbC014740
 	move.b	#$7C,(-1,a4)
 	jsr	(lbC022518).l
 	addq.l	#1,a4
-	addq.b	#1,(lbB02EB70-datasegment,a6)
+	addq.b	#1,(lbB02EB70-ds,a6)
 lbC014740	move.b	#$29,(-1,a4)
 	clr.b	(a4)
-	lea	(lbB031E00-datasegment,a6),a5
-	tst.b	(lbB02EB70-datasegment,a6)
+	lea	(lbB031E00-ds,a6),a5
+	tst.b	(lbB02EB70-ds,a6)
 	bne.b	lbC014756
 	addq.l	#1,a5
 	clr.b	-(a4)
 lbC014756	move.l	a5,d4
 	movea.l	d4,a0
-	jsr	(lbC02AEB2-datasegment,a6)
+	jsr	(lbC02AEB2-ds,a6)
 	bra.w	lbC014B26
 
 lbC014762	bsr.b	lbC014782
@@ -25207,39 +25213,39 @@ lbC014782	move.l	(sp)+,d0
 	suba.l	d0,a0
 	move.l	a0,d0
 	add.l	d0,d0
-	lea	(lbB02D180-datasegment,a6),a0
+	lea	(lbB02D180-ds,a6),a0
 	adda.l	d0,a0
 	movea.l	a0,a5
 	move.l	d0,d5
 	move.l	(a0),d1
 	beq.b	lbC0147A2
 	clr.l	(a0)
-	jsr	(_UnLoadSeg-datasegment,a6)
+	jsr	(_UnLoadSeg-ds,a6)
 lbC0147A2	lea	(lbL00E72C,pc),a0
 	movea.l	(a0,d5.w),a1
 	moveq	#$12,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 lbC0147B2	move.b	(a0)+,(a1)+
 	bne.b	lbC0147B2
 	move.w	#$273B,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(displayid-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(displayid-ds,a6),a0
 	move.l	a0,d1
 	move.l	#$733A6D79,(a0)+
 	move.l	#$73796D73,(a0)+
 	clr.b	(a0)
-	jsr	(lbC020566).l
-	jsr	(lbC02A430-datasegment,a6)
-	jsr	(_SetPointerAll-datasegment,a6)
+	jsr	(requestfile).l
+	jsr	(term2_if_cceq-ds,a6)
+	jsr	(_SetPointerAll-ds,a6)
 	move.l	#displayid,d1
-	jsr	(_LoadSeg-datasegment,a6)
+	jsr	(_LoadSeg-ds,a6)
 	move.l	d0,(a5)
-	jsr	(lbC02A430-datasegment,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	lsl.l	#2,d0
 	movea.l	d0,a0
 	move.l	a0,-(sp)
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	move.l	a1,d0
 lbC0147FC	tst.b	(a1)+
 	bne.b	lbC0147FC
@@ -25248,7 +25254,7 @@ lbC0147FC	tst.b	(a1)+
 	moveq	#12,d1
 	add.l	d1,d0
 	move.l	d0,d2
-	jsr	(_AllocMem-datasegment,a6)
+	jsr	(_AllocMem-ds,a6)
 	movea.l	(sp),a0
 	beq.b	lbC01483E
 lbC014812	move.l	(a0),d1
@@ -25266,7 +25272,7 @@ lbC01481C	movea.l	d0,a1
 	move.l	d2,(a1)+
 	clr.l	(a1)+
 	move.l	#$75536E4D,(a1)+
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 lbC014838	move.b	(a0)+,(a1)+
 	bne.b	lbC014838
 	movea.l	(sp)+,a0
@@ -25277,21 +25283,21 @@ lbC01483E	movea.l	(4,a0),a0
 lbC01484C	move.b	(a0)+,(a1)+
 	dbeq	d0,lbC01484C
 	clr.b	-(a1)
-	move.l	(symwindowptr-datasegment,a6),d0
+	move.l	(symwindowptr-ds,a6),d0
 	beq.b	lbC014892
 	movem.l	d1/d2/a0-a5,-(sp)
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
-	lea	(lbW029B28-datasegment,a6),a0
+	lea	(lbW029B28-ds,a6),a0
 	moveq	#0,d2
-	move.w	(lbB02CFF6-datasegment,a6),d2
+	move.w	(lbB02CFF6-ds,a6),d2
 	jsr	(lbC002A5E).l
 	beq.b	lbC01488E
 	movea.l	d0,a1
 	movea.l	($32,a5),a0
 	move.l	d2,d0
 	moveq	#15,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	_setgadget3
 	moveq	#5,d1
 _setgadget3	jsr	(setgadget).l
@@ -25320,10 +25326,10 @@ lbC0148B8	move.l	(sp)+,d0
 	suba.l	d0,a0
 	move.l	a0,d0
 	add.l	d0,d0
-	lea	(lbB02D180-datasegment,a6),a0
+	lea	(lbB02D180-ds,a6),a0
 	adda.l	d0,a0
 	move.l	(a0),d1
-	jsr	(lbC02A430-datasegment,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	lsl.l	#2,d1
 	addq.l	#8,d1
 	movea.l	d1,a0
@@ -25331,55 +25337,55 @@ lbC0148B8	move.l	(sp)+,d0
 	beq.w	_nosymdata
 	tst.b	(a0)
 	bpl.b	lbC0148EE
-	st	(lbB02EB70-datasegment,a6)
+	st	(lbB02EB70-ds,a6)
 	bsr.w	lbC014632
 	bra.w	lbC01466E
 
-lbC0148EE	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
-	lea	(displayid-datasegment,a6),a3
+lbC0148EE	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	lea	(displayid-ds,a6),a3
 	bsr.w	lbC014632
 	bra.b	lbC014914
 
 _getsymsdata_a5_save
-	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	bsr.w	getsymsdata_a5
 	beq.w	_nosymdata
 	movea.l	a5,a0
 	adda.l	d0,a0
-	lea	(displayid-datasegment,a6),a3
+	lea	(displayid-ds,a6),a3
 	bsr.w	lbC014632
 lbC014914	beq.b	lbC01495A
 	move.l	a0,d2
-	st	(lbB02EB4F-datasegment,a6)
-	tst.b	(lbB02B426-datasegment,a6)
+	st	(lbB02EB4F-ds,a6)
+	tst.b	(lbB02B426-ds,a6)
 	bne.b	lbC014930
-	neg.b	(lbB02EB4F-datasegment,a6)
-	tst.b	(lbB02B428-datasegment,a6)
+	neg.b	(lbB02EB4F-ds,a6)
+	tst.b	(lbB02B428-ds,a6)
 	bne.b	lbC014930
-	clr.b	(lbB02EB4F-datasegment,a6)
+	clr.b	(lbB02EB4F-ds,a6)
 lbC014930	moveq	#0,d0
 	st	d0
-	tst.b	(lbB02B426-datasegment,a6)
+	tst.b	(lbB02B426-ds,a6)
 	bne.b	lbC014944
 	ext.w	d0
-	tst.b	(lbB02B427-datasegment,a6)
+	tst.b	(lbB02B427-ds,a6)
 	bne.b	lbC014944
 	moveq	#-1,d0
-lbC014944	move.l	d0,(lbL02D2F8-datasegment,a6)
-	lea	(lbL02C1D4-datasegment,a6),a0
-	jsr	(atoi-datasegment,a6)
+lbC014944	move.l	d0,(lbL02D2F8-ds,a6)
+	lea	(lbL02C1D4-ds,a6),a0
+	jsr	(atoi-ds,a6)
 	beq.w	_nosymdata
 	movea.l	d2,a0
 	move.l	d1,d0
 	bra.b	lbC014962
 
-lbC01495A	tst.l	(lbB02D118-datasegment,a6)
+lbC01495A	tst.l	(lbB02D118-ds,a6)
 	beq.w	lbC014364
-lbC014962	clr.b	(lbB02EB51-datasegment,a6)
+lbC014962	clr.b	(lbB02EB51-ds,a6)
 	moveq	#0,d7
 	moveq	#0,d4
 lbC01496A	bsr.w	lbC014C32
-lbC01496E	lea	(lbL02D7A8-datasegment,a6),a5
+lbC01496E	lea	(lbL02D7A8-ds,a6),a5
 	cmpa.l	a5,a3
 	bhi.w	lbC014B6C
 	cmpi.b	#$F0,(a0)
@@ -25399,7 +25405,7 @@ lbC01496E	lea	(lbL02D7A8-datasegment,a6),a5
 	sub.l	d6,d0
 	movea.l	d4,a2
 	move.b	#$2B,(a3)+
-	st	(lbB02EB51-datasegment,a6)
+	st	(lbB02EB51-ds,a6)
 	move.l	d4,-(sp)
 	move.l	a3,d4
 	bsr.w	lbC014B90
@@ -25426,7 +25432,7 @@ lbC0149D8	move.b	(a0)+,d5
 	move.l	d1,d6
 	bsr.w	lbC014C78
 	movem.l	d0-d2,-(sp)
-	move.l	(lbL02D2F8-datasegment,a6),d2
+	move.l	(lbL02D2F8-ds,a6),d2
 	and.l	d2,d0
 	and.l	d2,d1
 	cmp.l	d1,d0
@@ -25435,8 +25441,8 @@ lbC0149D8	move.b	(a0)+,d5
 	beq.b	lbC014A14
 lbC0149FA	move.l	d6,d1
 	sub.l	d1,d0
-	and.l	(lbL02D2F8-datasegment,a6),d0
-	move.l	d0,(lbL02CDFC-datasegment,a6)
+	and.l	(lbL02D2F8-ds,a6),d0
+	move.l	d0,(lbL02CDFC-ds,a6)
 	move.l	d7,d4
 	beq.w	lbC014B6C
 	bra.b	lbC014A1A
@@ -25445,28 +25451,28 @@ lbC014A0E	move.l	d1,d6
 	move.l	d4,d7
 	bra.b	lbC0149FA
 
-lbC014A14	clr.l	(lbL02CDFC-datasegment,a6)
+lbC014A14	clr.l	(lbL02CDFC-ds,a6)
 	move.l	d1,d6
 lbC014A1A	movea.l	d4,a2
 	tst.b	(a2)
 	beq.w	lbC014B6C
-	tst.b	(lbB02EB51-datasegment,a6)
+	tst.b	(lbB02EB51-ds,a6)
 	bne.b	lbC014AA2
 	movem.l	d1-d3/a0-a3,-(sp)
 	moveq	#0,d3
-	lea	(lbB02D480-datasegment,a6),a3
+	lea	(lbB02D480-ds,a6),a3
 	bsr.w	lbC014B90
 	addq.w	#1,a3
 	movea.l	a2,a0
 	bsr.w	lbC014C78
 	movea.l	a0,a2
-	and.l	(lbL02D2F8-datasegment,a6),d1
+	and.l	(lbL02D2F8-ds,a6),d1
 	move.l	d1,d2
 lbC014A46	movea.l	a2,a0
 lbC014A48	tst.b	(a0)+
 	bne.b	lbC014A48
 	bsr.w	lbC014C78
-	and.l	(lbL02D2F8-datasegment,a6),d1
+	and.l	(lbL02D2F8-ds,a6),d1
 	cmp.l	d1,d2
 	bne.b	lbC014A76
 	cmpi.b	#$FE,(a2)
@@ -25489,7 +25495,7 @@ lbC014A76	move.b	#$FF,(a3)
 lbC014A86	movem.l	(sp)+,d1-d3/a0-a3
 	tst.w	d0
 	ble.w	_nosymdata
-	lea	(lbB02D480-datasegment,a6),a2
+	lea	(lbB02D480-ds,a6),a2
 lbC014A94	subq.w	#1,d0
 	beq.b	lbC014AA2
 lbC014A98	tst.b	(a2)+
@@ -25500,7 +25506,7 @@ lbC014A98	tst.b	(a2)+
 lbC014AA2	move.b	#$2B,(a3)+
 	move.l	d4,-(sp)
 	move.l	a3,d4
-	tst.b	(lbB02EB51-datasegment,a6)
+	tst.b	(lbB02EB51-ds,a6)
 	bne.b	lbC014AB8
 lbC014AB0	move.b	(a2)+,(a3)+
 	bne.b	lbC014AB0
@@ -25512,13 +25518,13 @@ lbC014ABC	bsr.w	lbC014CA6
 	beq.w	lbC014B5E
 	move.l	(sp)+,d4
 	movea.l	a3,a4
-	lea	(displayid-datasegment,a6),a5
+	lea	(displayid-ds,a6),a5
 	cmpa.l	a5,a4
 	beq.w	lbC014B6C
 	move.b	#$2B,(a4)+
-	move.l	(lbL02CDFC-datasegment,a6),d0
+	move.l	(lbL02CDFC-ds,a6),d0
 	beq.b	lbC014AF2
-	cmp.l	(lbL02CDF0-datasegment,a6),d0
+	cmp.l	(lbL02CDF0-ds,a6),d0
 	bhi.b	lbC014AEA
 	jsr	(lbC022542).l
 	bra.b	lbC014AF0
@@ -25526,7 +25532,7 @@ lbC014ABC	bsr.w	lbC014CA6
 lbC014AEA	jsr	(lbC022518).l
 lbC014AF0	movea.l	a4,a3
 lbC014AF2	clr.b	(a3)
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 lbC014AF8	cmpi.b	#$2B,(a0)+
 	beq.b	lbC014AF8
 	subq.l	#1,a0
@@ -25549,42 +25555,42 @@ lbC014B04	moveq	#0,d5
 lbC014B1E	move.l	d1,d6
 	bsr.w	lbC014CA6
 	beq.b	lbC014B60
-lbC014B26	tst.b	(lbB02B40A-datasegment,a6)
+lbC014B26	tst.b	(lbB02B40A-ds,a6)
 	beq.b	lbC014B3A
 	movea.l	d4,a0
-	lea	(lbL02C1D4-datasegment,a6),a1
+	lea	(lbL02C1D4-ds,a6),a1
 lbC014B32	move.b	(a0)+,(a1)+
 	bne.b	lbC014B32
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC014B3A	movea.l	(lbB02D118-datasegment,a6),a1
-	suba.l	(datasegment-datasegment,a6),a1
+lbC014B3A	movea.l	(lbB02D118-ds,a6),a1
+	suba.l	(ds-ds,a6),a1
 	move.l	a1,d0
 	moveq	#1,d1
-	jsr	(lbC027684-datasegment,a6)
+	jsr	(lbC027684-ds,a6)
 	movea.l	d4,a0
-	jsr	(lbC02AEB2-datasegment,a6)
+	jsr	(lbC02AEB2-ds,a6)
 	moveq	#1,d1
-	jsr	(_savecommonregs0-datasegment,a6)
-	jsr	(lbC029B18-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(_savecommonregs0-ds,a6)
+	jsr	(lbC029B18-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC014B5E	move.l	(sp)+,d4
 lbC014B60	move.w	#$2728,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	bra.b	lbC014B76
 
 lbC014B6C	move.w	#$2727,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-lbC014B76	tst.b	(lbB02EB41-datasegment,a6)
+lbC014B76	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC014B82
-	tst.b	(lbB02B417-datasegment,a6)
+	tst.b	(lbB02B417-ds,a6)
 	bne.b	lbC014B8C
-lbC014B82	jsr	(lbC027E7C-datasegment,a6)
+lbC014B82	jsr	(lbC027E7C-ds,a6)
 	moveq	#$3C,d1
-	jsr	(dosdelay-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
 lbC014B8C	bra.w	lbC01435C
 
 lbC014B90	movem.l	d0/a1,-(sp)
@@ -25593,7 +25599,7 @@ lbC014B96	move.b	(a2)+,d0
 	beq.b	lbC014BC8
 	bpl.b	lbC014BC4
 	subi.b	#$80,d0
-	lea	(lbL02D3AC-datasegment,a6),a1
+	lea	(lbL02D3AC-ds,a6),a1
 	cmpi.b	#$6F,d0
 	bne.b	lbC014BB0
 	lea	(SIZEOF.MSG,pc),a1
@@ -25619,7 +25625,7 @@ lbC014BC8	clr.b	(a3)
 SIZEOF.MSG	db	'SIZEOF',0,0
 
 lbC014BD8	movem.l	d0/a1,-(sp)
-	lea	(lbL02D3AC-datasegment,a6),a1
+	lea	(lbL02D3AC-ds,a6),a1
 lbC014BE0	move.l	a0,(a1)+
 	cmpi.b	#$80,(a0)
 	beq.b	lbC014BEE
@@ -25646,7 +25652,7 @@ lbC014C08	subi.w	#$80,d0
 	lea	(SIZEOF.MSG,pc),a0
 	bra.b	lbC014C22
 
-lbC014C18	lea	(lbL02D3AC-datasegment,a6),a0
+lbC014C18	lea	(lbL02D3AC-ds,a6),a0
 	lsl.w	#2,d0
 	movea.l	(a0,d0.w),a0
 lbC014C22	move.b	(a0)+,(a4)+
@@ -25659,7 +25665,7 @@ lbC014C2A	clr.b	(a4)
 	rts
 
 lbC014C32	movem.l	d0-d4/a1-a3,-(sp)
-	lea	(lbL02D3AC-datasegment,a6),a1
+	lea	(lbL02D3AC-ds,a6),a1
 lbC014C3A	move.l	a0,(a1)+
 	cmpi.b	#$14,(a0)
 	bls.b	lbC014C48
@@ -25671,35 +25677,35 @@ lbC014C48	clr.l	-(a1)
 	move.b	(a0)+,d1
 	moveq	#15,d2
 	and.b	d1,d2
-	st	(lbB02EB50-datasegment,a6)
+	st	(lbB02EB50-ds,a6)
 	subq.b	#1,d2
 	beq.b	lbC014C64
-	clr.b	(lbB02EB50-datasegment,a6)
+	clr.b	(lbB02EB50-ds,a6)
 	subq.b	#1,d2
 	beq.b	lbC014C64
-	move.b	d2,(lbB02EB50-datasegment,a6)
-lbC014C64	st	(lbW02EB6E-datasegment,a6)
+	move.b	d2,(lbB02EB50-ds,a6)
+lbC014C64	st	(lbW02EB6E-ds,a6)
 	andi.b	#$F0,d1
 	bne.b	lbC014C72
-	clr.b	(lbW02EB6E-datasegment,a6)
+	clr.b	(lbW02EB6E-ds,a6)
 lbC014C72	movem.l	(sp)+,d0-d4/a1-a3
 	rts
 
 lbC014C78	moveq	#0,d1
 	move.b	(a0)+,d1
-	tst.b	(lbB02EB50-datasegment,a6)
+	tst.b	(lbB02EB50-ds,a6)
 	bmi.b	lbC014C94
 	lsl.w	#8,d1
 	move.b	(a0)+,d1
-	tst.b	(lbB02EB50-datasegment,a6)
+	tst.b	(lbB02EB50-ds,a6)
 	beq.b	lbC014C94
 	lsl.l	#8,d1
 	move.b	(a0)+,d1
 	lsl.l	#8,d1
 	move.b	(a0)+,d1
-lbC014C94	tst.b	(lbW02EB6E-datasegment,a6)
+lbC014C94	tst.b	(lbW02EB6E-ds,a6)
 	beq.b	lbC014CA4
-	tst.b	(lbB02EB50-datasegment,a6)
+	tst.b	(lbB02EB50-ds,a6)
 	beq.b	lbC014CA2
 	ext.w	d1
 lbC014CA2	ext.l	d1
@@ -25707,10 +25713,10 @@ lbC014CA4	rts
 
 lbC014CA6	movem.l	d0-d6/a0-a5,-(sp)
 	movea.l	d4,a0
-	jsr	(lbC02AEB2-datasegment,a6)
+	jsr	(lbC02AEB2-ds,a6)
 	move.l	d0,d5
 	beq.b	lbC014CE2
-	jsr	(lbC027A26-datasegment,a6)
+	jsr	(lbC027A26-ds,a6)
 	bne.b	lbC014CE2
 	cmpi.b	#$44,(a0)
 	bne.b	lbC014CCE
@@ -25720,26 +25726,26 @@ lbC014CA6	movem.l	d0-d6/a0-a5,-(sp)
 	beq.b	lbC014CE2
 lbC014CCE	moveq	#4,d1
 	movea.l	d4,a0
-	jsr	(lbC027906-datasegment,a6)
+	jsr	(lbC027906-ds,a6)
 	bne.b	lbC014CEA
 	move.l	d5,d0
 	moveq	#4,d1
 	movea.l	d6,a1
-	jsr	(_savecommonregs0-datasegment,a6)
+	jsr	(_savecommonregs0-ds,a6)
 lbC014CE2	moveq	#1,d0
 lbC014CE4	movem.l	(sp)+,d0-d6/a0-a5
 	rts
 
-lbC014CEA	and.l	(lbL02D2F8-datasegment,a6),d0
-	and.l	(lbL02D2F8-datasegment,a6),d6
+lbC014CEA	and.l	(lbL02D2F8-ds,a6),d0
+	and.l	(lbL02D2F8-ds,a6),d6
 	cmp.l	d0,d6
 	beq.b	lbC014CE2
-	tst.b	(lbB02B459-datasegment,a6)
+	tst.b	(lbB02B459-ds,a6)
 	beq.b	lbC014CE2
 	cmpi.b	#$2D,(a0)
 	beq.b	lbC014CE2
-	jsr	(lbC02A436-datasegment,a6)
-	jsr	(lbC02A1B4-datasegment,a6)
+	jsr	(term2-ds,a6)
+	jsr	(lbC02A1B4-ds,a6)
 	bra.b	lbC014CE4
 
 getsymsdata_a5	move.l	a0,-(sp)
@@ -25750,15 +25756,15 @@ lbC014D16	movea.l	(sp)+,a0
 	rts
 
 open_resourcesyms	movem.l	d0/d1/a1,-(sp)
-	move.l	(resourcesymsbase-datasegment,a6),d0
+	move.l	(resourcesymsbase-ds,a6),d0
 	bne.b	lbC014D44
 	move.l	#$20006,d0
 	lea	(ReSourcesymsl.MSG,pc),a1
-	jsr	(openlibjmp-datasegment,a6)
-	move.l	d0,(resourcesymsbase-datasegment,a6)
+	jsr	(_openlib-ds,a6)
+	move.l	d0,(resourcesymsbase-ds,a6)
 	bne.b	lbC014D44
 	lea	(ReSourcesymsl.MSG,pc),a0
-	jsr	(error_lib-datasegment,a6)
+	jsr	(error_lib-ds,a6)
 	moveq	#0,d0
 	bra.b	lbC014D46
 
@@ -25768,59 +25774,59 @@ lbC014D46	movem.l	(sp)+,d0/d1/a1
 
 ReSourcesymsl.MSG	db	'ReSourcesyms.library',0,0
 
-lbC014D62	movea.l	(screenptr-datasegment,a6),a0
-	movea.l	(intbase-datasegment,a6),a6
+lbC014D62	movea.l	(screenptr-ds,a6),a0
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOScreenToFront,a6)
 	bra.b	lbC014D7C
 
-lbC014D70	movea.l	(screenptr-datasegment,a6),a0
-	movea.l	(intbase-datasegment,a6),a6
+lbC014D70	movea.l	(screenptr-ds,a6),a0
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOScreenToBack,a6)
-lbC014D7C	lea	(datasegment).l,a6
-	jmp	(lbC02A42A-datasegment,a6)
+lbC014D7C	lea	(ds).l,a6
+	jmp	(lbC02A42A-ds,a6)
 
 lbC014D86	move.w	#$273D,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d1
-	movea.l	(thistask1-datasegment,a6),a1
+	movea.l	(thistask1-ds,a6),a1
 	moveq	#0,d0
 	move.b	(9,a1),d0
-	jsr	(lbC02ADA2-datasegment,a6)
+	jsr	(lbC02ADA2-ds,a6)
 	beq.w	_nosymdata
-	movea.l	(thistask1-datasegment,a6),a1
+	movea.l	(thistask1-ds,a6),a1
 	move.b	d1,d0
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOSetTaskPri,a6)
 	bra.b	lbC014D7C
 
 lbC014DB2	move.l	d0,-(sp)
 	bsr.b	lbC014DDC
-	move.l	(lbL02D1BC-datasegment,a6),d0
-	add.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02D13C-datasegment,a6)
-	move.l	(lbL02D1C4-datasegment,a6),d0
+	move.l	(lbL02D1BC-ds,a6),d0
+	add.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02D13C-ds,a6)
+	move.l	(lbL02D1C4-ds,a6),d0
 	bne.b	lbC014DCE
 	movem.l	(sp)+,d0
 	rts
 
-lbC014DCE	add.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02D140-datasegment,a6)
+lbC014DCE	add.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02D140-ds,a6)
 	movem.l	(sp)+,d0
 	rts
 
-lbC014DDC	tst.l	(lbL02D1C4-datasegment,a6)
+lbC014DDC	tst.l	(lbL02D1C4-ds,a6)
 	bne.b	lbC014DEA
-	move.l	(lbB02B4A8-datasegment,a6),(lbL02D1C4).l
+	move.l	(workdata_length-ds,a6),(lbL02D1C4).l
 lbC014DEA	rts
 
-lbC014DEC	jsr	(saveregs_all-datasegment,a6)
+lbC014DEC	jsr	(saveregs_all-ds,a6)
 	jsr	(lbC0273FC).l
 	move.w	#$2762,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	#lbL02DCC8,d1
-	jsr	(lbC026C74-datasegment,a6)
+	jsr	(lbC026C74-ds,a6)
 	bne.b	lbC014E1C
-lbC014E0A	jmp	(_dummy-datasegment,a6)
+lbC014E0A	jmp	(cceq-ds,a6)
 
 lbC014E0E	move.l	a2,d2
 	lea	(lbB02DDC9).l,a0
@@ -26065,15 +26071,15 @@ lbC01504C	moveq	#-1,d0
 	move.l	d0,(lbL035128).l
 	rts
 
-lbC015056	move.l	#lbL034D20,(lbL02D358-datasegment,a6)
+lbC015056	move.l	#lbL034D20,(lbL02D358-ds,a6)
 	bra.b	lbC015068
 
-lbC015060	move.l	#lbL035128,(lbL02D358-datasegment,a6)
-lbC015068	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
-	jsr	(lbC02A3F8-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
+lbC015060	move.l	#lbL035128,(lbL02D358-ds,a6)
+lbC015068	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	jsr	(lbC02A3F8-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	moveq	#-1,d2
-	movea.l	(lbL02D358-datasegment,a6),a0
+	movea.l	(lbL02D358-ds,a6),a0
 lbC01507A	cmp.l	(a0),d2
 	beq.b	lbC0150D8
 	cmp.l	(4,a0),d1
@@ -26082,7 +26088,7 @@ lbC01507A	cmp.l	(a0),d2
 	bra.b	lbC01507A
 
 lbC015088	movea.l	(a0),a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	btst	#0,(a3)
 	bne.b	lbC0150A4
 	movea.l	a0,a1
@@ -26094,55 +26100,55 @@ lbC015096	move.l	(8,a1),(a1)+
 
 lbC0150A4	move.l	d0,-(sp)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#1,d1
-	jsr	(lbC02777C-datasegment,a6)
+	jsr	(lbC02777C-ds,a6)
 	movea.l	(sp)+,a1
-	jsr	(lbC02A430-datasegment,a6)
-	suba.l	(datasegment-datasegment,a6),a1
+	jsr	(term2_if_cceq-ds,a6)
+	suba.l	(ds-ds,a6),a1
 	movea.l	d0,a0
 	move.l	d1,d0
 	moveq	#1,d1
 	movem.l	d0/d1/a0/a1,-(sp)
 	move.l	a1,d0
-	jsr	(lbC027684-datasegment,a6)
+	jsr	(lbC027684-ds,a6)
 	movem.l	(sp)+,d0/d1/a0/a1
-	jsr	(_savecommonregs0-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(_savecommonregs0-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC0150D8	tst.b	(lbB02EB41-datasegment,a6)
+lbC0150D8	tst.b	(lbB02EB41-ds,a6)
 	bne.b	lbC0150FA
 	addq.l	#4,sp
 	movem.l	(sp)+,d2-d7/a2-a6
 	bsr.w	lbC01B7DE
-	jsr	(lbC02A430).l
-	cmpi.l	#lbL034D20,(lbL02D358-datasegment,a6)
+	jsr	(term2_if_cceq).l
+	cmpi.l	#lbL034D20,(lbL02D358-ds,a6)
 	beq.b	lbC0150FE
 	bra.b	lbC015104
 
-lbC0150FA	jmp	(lbC02A436-datasegment,a6)
+lbC0150FA	jmp	(term2-ds,a6)
 
-lbC0150FE	clr.b	(lbB02EB86-datasegment,a6)
+lbC0150FE	clr.b	(lbB02EB86-ds,a6)
 	bra.b	lbC015108
 
-lbC015104	st	(lbB02EB86-datasegment,a6)
-lbC015108	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
-lbC01510C	jsr	(lbC02A3F8-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
+lbC015104	st	(lbB02EB86-ds,a6)
+lbC015108	jsr	(saveregs_nod0d1a0a1-ds,a6)
+lbC01510C	jsr	(lbC02A3F8-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	btst	#0,(a3)
 	bne.b	lbC015136
 	movem.l	(4,sp),d2-d7/a2-a6
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	bne.b	lbC015132
 	bsr.w	lbC01B7DE
 	bne.b	lbC01510C
-lbC015132	jmp	(lbC02A436-datasegment,a6)
+lbC015132	jmp	(term2-ds,a6)
 
 lbC015136	moveq	#-1,d2
 	lea	(lbL034D20).l,a0
-	tst.b	(lbB02EB86-datasegment,a6)
+	tst.b	(lbB02EB86-ds,a6)
 	beq.b	lbC01514A
 	lea	(lbL035128).l,a0
 lbC01514A	cmp.l	(a0),d2
@@ -26154,7 +26160,7 @@ lbC01514A	cmp.l	(a0),d2
 
 lbC015158	cmpa.l	#lbL035528,a0
 	bcc.b	lbC015174
-	tst.b	(lbB02EB86-datasegment,a6)
+	tst.b	(lbB02EB86-ds,a6)
 	bne.b	lbC01516E
 	cmpa.l	#lbL035120,a0
 	bcc.b	lbC015174
@@ -26165,14 +26171,14 @@ lbC015174	moveq	#0,d0
 	rts
 
 lbC015178	move.w	#$274A,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d1
-	move.l	(lbW02B474-datasegment,a6),d0
+	move.l	(lbW02B474-ds,a6),d0
 	bsr.b	lbC015190
-	move.w	d1,(lbW02B476-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	move.w	d1,(lbW02B476-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC015190	jsr	(lbC02ADA2-datasegment,a6)
+lbC015190	jsr	(lbC02ADA2-ds,a6)
 	beq.b	lbC0151A0
 	cmpi.l	#$64,d1
 	bhi.b	lbC0151A0
@@ -26187,7 +26193,7 @@ lbC0151A4	movem.l	d2-d6/a0/a1/a5,-(sp)
 	suba.l	a1,a1
 	suba.l	a5,a5
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#2,d1
 	move.l	d0,d2
 	moveq	#0,d3
@@ -26202,10 +26208,10 @@ lbC0151BE	eor.b	d2,d3
 	lsl.w	#8,d4
 	add.l	d4,d4
 	add.l	d3,d4
-	lea	(lbL02FA00-datasegment,a6),a0
+	lea	(lbL02FA00-ds,a6),a0
 	lsl.l	#2,d4
 	lea	(a0,d4.l),a1
-	movea.l	(lbL02D14C-datasegment,a6),a0
+	movea.l	(lbL02D14C-ds,a6),a0
 lbC0151E2	move.l	(a1),d2
 	beq.b	lbC015202
 	cmp.l	(8,a0,d2.l),d0
@@ -26231,41 +26237,41 @@ lbC015202	movea.l	d5,a1
 	move.l	d0,(a5)
 	move.l	d1,(a0,d0.l)
 	movem.l	(sp)+,d2-d6/a0/a1/a5
-	jsr	(clear_ccr-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(clear_ccr-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC015222	jsr	(clear_ccr-datasegment,a6)
+lbC015222	jsr	(clear_ccr-ds,a6)
 	movem.l	(sp)+,d2-d6/a0/a1/a5
 	rts
 
-help	tst.b	(lbB02EB41-datasegment,a6)
+help	tst.b	(lbB02EB41-ds,a6)
 	bne.w	lbC01529A
-	tst.b	(lbW02EB7E-datasegment,a6)
+	tst.b	(lbW02EB7E-ds,a6)
 	bne.b	lbC015252
 	move.w	#$2754,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 	jsr	(print_text_a0).l
-	jsr	(DropIMsgAll-datasegment,a6)
-	jsr	(lbC028982-datasegment,a6)
-lbC015252	clr.b	(lbW02EB7E-datasegment,a6)
-	tst.w	(lbB02EACC-datasegment,a6)
+	jsr	(DropIMsgAll-ds,a6)
+	jsr	(lbC028982-ds,a6)
+lbC015252	clr.b	(lbW02EB7E-ds,a6)
+	tst.w	(lbB02EACC-ds,a6)
 	beq.b	lbC01529A
 	lea	(ReSourcehelpl.MSG,pc),a1
 	move.l	#$20006,d0
-	jsr	(openlibjmp-datasegment,a6)
+	jsr	(_openlib-ds,a6)
 	tst.l	d0
 	beq.b	lbC01529A
 	movea.l	d0,a1
 	bsr.b	lbC0152C4
 	moveq	#0,d0
-	move.w	(lbB02EACC-datasegment,a6),d0
+	move.w	(lbB02EACC-ds,a6),d0
 	lea	(lbL0153A0,pc),a0
 	move.l	a1,-(sp)
 	jsr	(-$1E,a1)
 	movea.l	(sp)+,a1
 	move.w	d0,-(sp)
-	jsr	(_CloseLibrary-datasegment,a6)
+	jsr	(_CloseLibrary-ds,a6)
 	bsr.w	lbC015332
 	move.w	(sp)+,d0
 	cmpi.b	#2,d0
@@ -26277,7 +26283,7 @@ lbC01529A	moveq	#0,d0
 
 lbC01529E	moveq	#1,d0
 lbC0152A0	move.l	d0,-(sp)
-	move.b	#$FF,(lbB02EB48-datasegment,a6)
+	move.b	#$FF,(lbB02EB48-ds,a6)
 	jsr	(lbC001000).l
 	jsr	(lbC001EC4).l
 	jsr	(lbC0025B6).l
@@ -26285,65 +26291,65 @@ lbC0152A0	move.l	d0,-(sp)
 	move.l	(sp)+,d0
 	rts
 
-lbC0152C4	movea.l	(window1ptr-datasegment,a6),a0
+lbC0152C4	movea.l	(window1ptr-ds,a6),a0
 	bset	#0,($19,a0)
-	move.l	(symwindowptr-datasegment,a6),d0
+	move.l	(symwindowptr-ds,a6),d0
 	beq.b	lbC0152DC
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC0152DC	move.l	(window2ptr-datasegment,a6),d0
+lbC0152DC	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC0152EA
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC0152EA	move.l	(window3ptr-datasegment,a6),d0
+lbC0152EA	move.l	(window3ptr-ds,a6),d0
 	beq.b	lbC0152F8
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC0152F8	move.l	(window4ptr-datasegment,a6),d0
+lbC0152F8	move.l	(window4ptr-ds,a6),d0
 	beq.b	lbC015306
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC015306	move.l	(window5ptr-datasegment,a6),d0
+lbC015306	move.l	(window5ptr-ds,a6),d0
 	beq.b	lbC015314
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC015314	move.l	(window6ptr-datasegment,a6),d0
+lbC015314	move.l	(window6ptr-ds,a6),d0
 	beq.b	lbC015322
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC015322	move.l	(window7ptr-datasegment,a6),d0
+lbC015322	move.l	(window7ptr-ds,a6),d0
 	beq.b	lbC015330
 	movea.l	d0,a0
 	bset	#0,($19,a0)
 lbC015330	rts
 
-lbC015332	movea.l	(window1ptr-datasegment,a6),a0
+lbC015332	movea.l	(window1ptr-ds,a6),a0
 	bclr	#0,($19,a0)
-	move.l	(symwindowptr-datasegment,a6),d0
+	move.l	(symwindowptr-ds,a6),d0
 	beq.b	lbC01534A
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC01534A	move.l	(window2ptr-datasegment,a6),d0
+lbC01534A	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC015358
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015358	move.l	(window3ptr-datasegment,a6),d0
+lbC015358	move.l	(window3ptr-ds,a6),d0
 	beq.b	lbC015366
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015366	move.l	(window4ptr-datasegment,a6),d0
+lbC015366	move.l	(window4ptr-ds,a6),d0
 	beq.b	lbC015374
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015374	move.l	(window5ptr-datasegment,a6),d0
+lbC015374	move.l	(window5ptr-ds,a6),d0
 	beq.b	lbC015382
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015382	move.l	(window6ptr-datasegment,a6),d0
+lbC015382	move.l	(window6ptr-ds,a6),d0
 	beq.b	lbC015390
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015390	move.l	(window7ptr-datasegment,a6),d0
+lbC015390	move.l	(window7ptr-ds,a6),d0
 	beq.b	lbC01539E
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
@@ -26368,17 +26374,17 @@ lbC0153E2	lea	(lbB02DEC8).l,a0
 
 lbC0153EC	lea	(lbB02DF48).l,a0
 	moveq	#1,d2
-lbC0153F4	jsr	(lbC02AEB2-datasegment,a6)
+lbC0153F4	jsr	(lbC02AEB2-ds,a6)
 	move.l	d2,d1
-	jsr	(lbC027884-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
+	jsr	(lbC027884-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	move.l	d0,d1
 	cmpi.w	#1,d2
 	beq.w	lbC01A5B4
-	add.l	(datasegment-datasegment,a6),d1
+	add.l	(ds-ds,a6),d1
 	movea.l	d1,a2
-	jsr	(clear_ccr-datasegment,a6)
-	jmp	(lbC02A3C6-datasegment,a6)
+	jsr	(clear_ccr-ds,a6)
+	jmp	(lbC02A3C6-ds,a6)
 
 lbC01541A	lea	(lbB02DEC8).l,a0
 	moveq	#0,d2
@@ -26386,17 +26392,17 @@ lbC01541A	lea	(lbB02DEC8).l,a0
 
 lbC015424	lea	(lbB02DF48).l,a0
 	moveq	#1,d2
-lbC01542C	jsr	(lbC02AEB2-datasegment,a6)
+lbC01542C	jsr	(lbC02AEB2-ds,a6)
 	move.l	d2,d1
-	jsr	(lbC0277F2-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
+	jsr	(lbC0277F2-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	move.l	d0,d1
 	cmpi.w	#1,d2
 	beq.w	lbC01A5B4
-	add.l	(datasegment-datasegment,a6),d1
+	add.l	(ds-ds,a6),d1
 	movea.l	d1,a2
-	jsr	(clear_ccr-datasegment,a6)
-	jmp	(lbC02A3C6-datasegment,a6)
+	jsr	(clear_ccr-ds,a6)
+	jmp	(lbC02A3C6-ds,a6)
 
 lbC015452	move.l	#lbB02DF48,d1
 	move.w	#$2744,d0
@@ -26404,12 +26410,12 @@ lbC015452	move.l	#lbB02DF48,d1
 
 lbC01545E	move.l	#lbB02DEC8,d1
 	move.w	#$2743,d0
-lbC015468	jsr	(gettextbynum-datasegment,a6)
-	jmp	(lbC026C74-datasegment,a6)
+lbC015468	jsr	(gettextbynum-ds,a6)
+	jmp	(lbC026C74-ds,a6)
 
-lbC015470	st	(lbB02B42E-datasegment,a6)
-	clr.b	(lbB02B42F-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015470	st	(lbB02B42E-ds,a6)
+	clr.b	(lbB02B42F-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$34D,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$350,(a0)+
@@ -26417,21 +26423,21 @@ lbC015470	st	(lbB02B42E-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC0154AE
 
-lbC015490	clr.b	(lbB02B42E-datasegment,a6)
-	st	(lbB02B42F-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015490	clr.b	(lbB02B42E-ds,a6)
+	st	(lbB02B42F-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$34D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$350,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC0154AE	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC0154AE	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC0154BA	st	(lbB02B413-datasegment,a6)
-	clr.b	(lbB02B414-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC0154BA	st	(lbB02B413-ds,a6)
+	clr.b	(lbB02B414-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$37E,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$37F,(a0)+
@@ -26439,25 +26445,25 @@ lbC0154BA	st	(lbB02B413-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC0154F8
 
-lbC0154DA	clr.b	(lbB02B413-datasegment,a6)
-	st	(lbB02B414-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC0154DA	clr.b	(lbB02B413-ds,a6)
+	st	(lbB02B414-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$37E,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$37F,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC0154F8	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC0154F8	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC015504	lea	(ABCDEFGHIJKLM.MSG,pc),a0
 	moveq	#$19,d0
 lbC01550A	ori.b	#$20,(a0)+
 	dbra	d0,lbC01550A
-	st	(case_sensitive_flag-datasegment,a6)
-	clr.b	(lbB02B412-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+	st	(case_sensitive_flag-ds,a6)
+	clr.b	(lbB02B412-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$380,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$381,(a0)+
@@ -26469,48 +26475,48 @@ lbC015532	lea	(ABCDEFGHIJKLM.MSG,pc),a0
 	moveq	#$19,d0
 lbC015538	andi.b	#$DF,(a0)+
 	dbra	d0,lbC015538
-	clr.b	(case_sensitive_flag-datasegment,a6)
-	st	(lbB02B412-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+	clr.b	(case_sensitive_flag-ds,a6)
+	st	(lbB02B412-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$380,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$381,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01555E	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC01555E	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01556A	st	(lbB02B415-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC01556A	st	(lbB02B415-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC015572	st	(lbB02B416-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC015572	st	(lbB02B416-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01557A	clr.b	(lbB02B415-datasegment,a6)
-	clr.b	(lbB02B416-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC01557A	clr.b	(lbB02B415-ds,a6)
+	clr.b	(lbB02B416-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC015586	movem.l	d2-d7/a4/a5,-(sp)
-	tst.b	(lbB02B415-datasegment,a6)
+	tst.b	(lbB02B415-ds,a6)
 	beq.b	lbC01559A
-	jsr	(lbC02AEDE-datasegment,a6)
+	jsr	(lbC02AEDE-ds,a6)
 	jsr	(lbC001674).l
-lbC01559A	move.l	a2,(lbL02D324-datasegment,a6)
+lbC01559A	move.l	a2,(lbL02D324-ds,a6)
 	addq.l	#1,a2
-	jsr	(lbC02846C-datasegment,a6)
-	lea	(lbB02DDC8-datasegment,a6),a4
+	jsr	(lbC02846C-ds,a6)
+	lea	(lbB02DDC8-ds,a6),a4
 	moveq	#0,d0
 	move.b	(a4)+,d0
 	beq.w	lbC01563C
 	move.l	a4,d6
 	move.l	a4,d7
 	add.l	d0,d7
-	movea.l	(lbL02A8A0-datasegment,a6),a1
+	movea.l	(workdata_end-ds,a6),a1
 	suba.l	d0,a1
 	cmpa.l	a1,a2
 	bhi.b	lbC01563C
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	moveq	#0,d2
 	moveq	#0,d3
 	move.l	d0,d4
@@ -26543,12 +26549,12 @@ lbC0155FE	movea.l	d4,a2
 	bra.b	lbC0155F0
 
 lbC015604	suba.l	d0,a2
-	movea.l	(lbL02A8A0-datasegment,a6),a0
+	movea.l	(workdata_end-ds,a6),a0
 	suba.l	d0,a0
 	cmpa.l	a2,a0
 	sne	d4
 	beq.b	lbC015620
-	tst.b	(lbB02B413-datasegment,a6)
+	tst.b	(lbB02B413-ds,a6)
 	beq.b	lbC015620
 	move.l	a2,d1
 	btst	#0,d1
@@ -26556,7 +26562,7 @@ lbC015604	suba.l	d0,a2
 lbC015620	move.l	a2,d1
 	andi.b	#1,d1
 	move.l	d0,d5
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC015630
 
 lbC01562E	move.b	(a1)+,(a0)+
@@ -26565,46 +26571,46 @@ lbC015630	dbra	d5,lbC01562E
 	bne.b	lbC015650
 	tst.b	d2
 	beq.b	lbC015650
-lbC01563C	movea.l	(lbL02D324-datasegment,a6),a2
-	jsr	(lbC02A3CC-datasegment,a6)
+lbC01563C	movea.l	(lbL02D324-ds,a6),a2
+	jsr	(lbC02A3CC-ds,a6)
 	movem.l	(sp)+,d2-d7/a4/a5
-	jsr	(clear_ccr-datasegment,a6)
-	jmp	(_dummy_st-datasegment,a6)
+	jsr	(clear_ccr-ds,a6)
+	jmp	(term1-ds,a6)
 
-lbC015650	jsr	(lbC02A3CC-datasegment,a6)
+lbC015650	jsr	(lbC02A3CC-ds,a6)
 	movem.l	(sp)+,d2-d7/a4/a5
-	jmp	(lbC02AF74-datasegment,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01565C	movem.l	d2-d7/a4/a5,-(sp)
-	tst.b	(lbB02B416-datasegment,a6)
+	tst.b	(lbB02B416-ds,a6)
 	beq.b	lbC015670
-	jsr	(lbC02AEC0-datasegment,a6)
+	jsr	(lbC02AEC0-ds,a6)
 	jsr	(lbC001674).l
-lbC015670	move.l	a2,(lbL02D324-datasegment,a6)
-	jsr	(lbC02846C-datasegment,a6)
-	lea	(lbB02DDC8-datasegment,a6),a4
+lbC015670	move.l	a2,(lbL02D324-ds,a6)
+	jsr	(lbC02846C-ds,a6)
+	lea	(lbB02DDC8-ds,a6),a4
 	moveq	#0,d0
 	move.b	(a4)+,d0
 	beq.b	lbC01563C
 	move.l	a4,d6
-	movea.l	(datasegment-datasegment,a6),a1
+	movea.l	(ds-ds,a6),a1
 	adda.l	d0,a1
 	subq.l	#1,a2
 	cmpa.l	a1,a2
 	bls.b	lbC01563C
 	adda.l	d0,a2
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC01569E
-	movea.l	(lbL02A8A0-datasegment,a6),a2
+	movea.l	(workdata_end-ds,a6),a2
 	subq.l	#1,a2
-lbC01569E	lea	(displayid-datasegment,a6),a0
+lbC01569E	lea	(displayid-ds,a6),a0
 	moveq	#0,d2
 	moveq	#0,d3
 	move.l	d0,d4
 	subq.w	#1,d4
 	moveq	#0,d5
 	adda.l	d0,a4
-	lea	(screen_pubname-datasegment,a6),a3
+	lea	(screen_pubname-ds,a6),a3
 	move.l	a3,d6
 lbC0156B4	move.b	-(a1),d5
 	move.b	d5,(a0)+
@@ -26635,18 +26641,18 @@ lbC0156EA	movea.l	d4,a2
 	movea.l	d5,a3
 	bra.b	lbC0156DA
 
-lbC0156F0	movea.l	(datasegment-datasegment,a6),a0
+lbC0156F0	movea.l	(ds-ds,a6),a0
 	cmpa.l	a2,a0
 	sne	d4
 	beq.b	lbC015708
-	tst.b	(lbB02B413-datasegment,a6)
+	tst.b	(lbB02B413-ds,a6)
 	beq.b	lbC015708
 	move.l	a2,d1
 	btst	#0,d1
 	bne.b	lbC0156EA
 lbC015708	adda.l	d0,a0
 	move.l	d0,d5
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC015714
 
 lbC015712	move.b	(a1)+,-(a0)
@@ -26658,14 +26664,14 @@ lbC015714	dbra	d5,lbC015712
 	bra.w	lbC01563C
 
 lbC015728	movem.l	d2-d7/a4/a5,-(sp)
-	tst.b	(lbB02B415-datasegment,a6)
+	tst.b	(lbB02B415-ds,a6)
 	beq.b	lbC01573C
-	jsr	(lbC02AEDE-datasegment,a6)
+	jsr	(lbC02AEDE-ds,a6)
 	jsr	(lbC001674).l
-lbC01573C	move.l	a2,(lbL02D324-datasegment,a6)
-	jsr	(lbC028476-datasegment,a6)
+lbC01573C	move.l	a2,(lbL02D324-ds,a6)
+	jsr	(lbC028476-ds,a6)
 	jsr	(lbC01FA52).l
-	lea	(lbL02D8C8-datasegment,a6),a4
+	lea	(lbL02D8C8-ds,a6),a4
 	lea	(case_insensitive_tab,pc),a5
 	moveq	#0,d6
 	move.l	a4,d7
@@ -26676,18 +26682,18 @@ lbC01575C	tst.b	(a4)+
 	subq.w	#1,a4
 	move.l	a4,d0
 	sub.l	d7,d0
-	movea.l	(lbL02A8A0-datasegment,a6),a1
+	movea.l	(workdata_end-ds,a6),a1
 	suba.l	d0,a1
 	cmpa.l	a1,a2
 	bhi.w	lbC0157F4
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	movea.l	d7,a4
 	moveq	#0,d2
 	moveq	#0,d3
 	move.l	d0,d4
 	subq.w	#1,d4
 	moveq	#0,d5
-	lea	(screen_pubname-datasegment,a6),a3
+	lea	(screen_pubname-ds,a6),a3
 	move.l	a3,d6
 lbC015788	move.b	(a1),d5
 	move.b	d5,(a0)+
@@ -26722,12 +26728,12 @@ lbC0157C0	move.b	(a3)+,d1
 	bra.b	lbC0157B6
 
 lbC0157D2	suba.l	d0,a2
-	movea.l	(lbL02A8A0-datasegment,a6),a0
+	movea.l	(workdata_end-ds,a6),a0
 	suba.l	d0,a0
 	cmpa.l	a2,a0
 	sne	d4
 	move.l	d0,d5
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC0157E8
 
 lbC0157E6	move.b	(a1)+,(a0)+
@@ -26736,29 +26742,29 @@ lbC0157E8	dbra	d5,lbC0157E6
 	bne.b	lbC015804
 	tst.b	d2
 	beq.b	lbC015804
-lbC0157F4	movea.l	(lbL02D324-datasegment,a6),a2
-	jsr	(lbC02A3CC-datasegment,a6)
+lbC0157F4	movea.l	(lbL02D324-ds,a6),a2
+	jsr	(lbC02A3CC-ds,a6)
 	movem.l	(sp)+,d2-d7/a4/a5
-	jmp	(_dummy_st-datasegment,a6)
+	jmp	(term1-ds,a6)
 
-lbC015804	jsr	(lbC02A3CC-datasegment,a6)
+lbC015804	jsr	(lbC02A3CC-ds,a6)
 	movem.l	a2/a3,-(sp)
-	jsr	(lbC02AEF0-datasegment,a6)
+	jsr	(lbC02AEF0-ds,a6)
 	btst	#1,(3,a3)
 	beq.b	lbC01581E
 	jsr	(lbC020BC8).l
 lbC01581E	movem.l	(sp)+,a2/a3
 	movem.l	(sp)+,d2-d7/a4/a5
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01582A	movem.l	d2-d7/a4/a5,-(sp)
-	tst.b	(lbB02B416-datasegment,a6)
+	tst.b	(lbB02B416-ds,a6)
 	beq.b	lbC01583E
-	jsr	(lbC02AEC0-datasegment,a6)
+	jsr	(lbC02AEC0-ds,a6)
 	jsr	(lbC001674).l
-lbC01583E	move.l	a2,(lbL02D324-datasegment,a6)
-	jsr	(lbC028476-datasegment,a6)
-	lea	(lbL02D8C8-datasegment,a6),a4
+lbC01583E	move.l	a2,(lbL02D324-ds,a6)
+	jsr	(lbC028476-ds,a6)
+	lea	(lbL02D8C8-ds,a6),a4
 	lea	(case_insensitive_tab,pc),a5
 	moveq	#0,d6
 	move.l	a4,d7
@@ -26769,23 +26775,23 @@ lbC015858	tst.b	(a4)+
 	subq.w	#1,a4
 	move.l	a4,d0
 	sub.l	d7,d0
-	movea.l	(datasegment-datasegment,a6),a1
+	movea.l	(ds-ds,a6),a1
 	adda.l	d0,a1
 	subq.l	#1,a2
 	cmpa.l	a1,a2
 	bls.w	lbC0158FC
 	adda.l	d0,a2
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC01587E
-	movea.l	(lbL02A8A0-datasegment,a6),a2
+	movea.l	(workdata_end-ds,a6),a2
 	subq.l	#1,a2
-lbC01587E	lea	(displayid-datasegment,a6),a0
+lbC01587E	lea	(displayid-ds,a6),a0
 	moveq	#0,d2
 	moveq	#0,d3
 	move.l	d0,d4
 	subq.w	#1,d4
 	moveq	#0,d5
-	lea	(screen_pubname-datasegment,a6),a3
+	lea	(screen_pubname-ds,a6),a3
 	move.l	a3,d6
 lbC015892	move.b	-(a1),d5
 	move.b	d5,(a0)+
@@ -26819,12 +26825,12 @@ lbC0158CA	move.b	(a3)+,d1
 	movea.l	d5,a3
 	bra.b	lbC0158C0
 
-lbC0158DC	movea.l	(datasegment-datasegment,a6),a0
+lbC0158DC	movea.l	(ds-ds,a6),a0
 	cmpa.l	a2,a0
 	sne	d4
 	adda.l	d0,a0
 	move.l	d0,d5
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC0158F0
 
 lbC0158EE	move.b	(a1)+,-(a0)
@@ -26833,20 +26839,20 @@ lbC0158F0	dbra	d5,lbC0158EE
 	bne.b	lbC01590C
 	tst.b	d2
 	beq.b	lbC01590C
-lbC0158FC	movea.l	(lbL02D324-datasegment,a6),a2
-	jsr	(lbC02A3CC-datasegment,a6)
+lbC0158FC	movea.l	(lbL02D324-ds,a6),a2
+	jsr	(lbC02A3CC-ds,a6)
 	movem.l	(sp)+,d2-d7/a4/a5
-	jmp	(_dummy_st-datasegment,a6)
+	jmp	(term1-ds,a6)
 
-lbC01590C	jsr	(lbC02A3CC-datasegment,a6)
+lbC01590C	jsr	(lbC02A3CC-ds,a6)
 	movem.l	a2/a3,-(sp)
-	jsr	(lbC02AEF0-datasegment,a6)
+	jsr	(lbC02AEF0-ds,a6)
 	btst	#1,(3,a3)
 	beq.b	lbC015926
 	jsr	(lbC020BC8).l
 lbC015926	movem.l	(sp)+,a2/a3
 	movem.l	(sp)+,d2-d7/a4/a5
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 case_insensitive_tab
 	db	0
@@ -26919,8 +26925,8 @@ ABCDEFGHIJKLM.MSG	db	'ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~'
 	db	$A0
 	db	'¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ'
 
-lbC015A32	clr.b	(lbB02EB40-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC015A32	clr.b	(lbB02EB40-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC015A3A	bsr.b	lbC015A4E
 	dw	$7FA1
@@ -26939,44 +26945,44 @@ lbC015A4A	bsr.b	lbC015A4E
 
 lbC015A4E	movea.l	(sp)+,a0
 	move.w	(a0),d0
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC015A70
-	movea.l	(lbL02D0FC-datasegment,a6),a0
-	addq.l	#2,(lbL02D0FC-datasegment,a6)
-	tst.b	(lbB02EB4B-datasegment,a6)
+	movea.l	(lbL02D0FC-ds,a6),a0
+	addq.l	#2,(lbL02D0FC-ds,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	lbC015A6C
 	move.w	d0,(a0)+
-	addq.l	#2,(lbL02D100-datasegment,a6)
+	addq.l	#2,(lbL02D100-ds,a6)
 lbC015A6C	andi.b	#$FB,ccr
 lbC015A70	rts
 
 lbC015A72	bsr.b	lbC015AEA
 	move.b	(a0)+,(a1)+
 	clr.b	(a1)+
-	move.l	a0,(lbL02D1EC-datasegment,a6)
+	move.l	a0,(lbL02D1EC-ds,a6)
 	rts
 
-lbC015A7E	tst.b	(lbB02B426-datasegment,a6)
+lbC015A7E	tst.b	(lbB02B426-ds,a6)
 	bne.b	lbC015A88
-	jsr	(lbC0295A2-datasegment,a6)
+	jsr	(lbC0295A2-ds,a6)
 lbC015A88	bsr.b	lbC015AEA
 	moveq	#0,d1
 	bra.b	lbC015AA0
 
-lbC015A8E	tst.b	(lbB02B427-datasegment,a6)
+lbC015A8E	tst.b	(lbB02B427-ds,a6)
 	bne.b	lbC015A98
-	jsr	(lbC0295CE-datasegment,a6)
+	jsr	(lbC0295CE-ds,a6)
 lbC015A98	bsr.b	lbC015AEA
 	moveq	#0,d1
 	move.b	(a0)+,d1
 	lsl.w	#8,d1
 lbC015AA0	move.b	(a0)+,d1
-	move.l	a0,(lbL02D1EC-datasegment,a6)
-	jmp	(lbC0293C2-datasegment,a6)
+	move.l	a0,(lbL02D1EC-ds,a6)
+	jmp	(lbC0293C2-ds,a6)
 
-lbC015AAA	tst.b	(lbB02B428-datasegment,a6)
+lbC015AAA	tst.b	(lbB02B428-ds,a6)
 	bne.b	lbC015AB4
-	jsr	(lbC0295FA-datasegment,a6)
+	jsr	(lbC0295FA-ds,a6)
 lbC015AB4	bsr.b	lbC015AEA
 	moveq	#0,d1
 	move.b	(a0)+,d1
@@ -27000,19 +27006,19 @@ lbC015ACC	move.b	(a0)+,d0
 	bra.b	lbC015ACC
 
 lbC015AE2	clr.b	(a1)+
-	move.l	a0,(lbL02D1EC-datasegment,a6)
+	move.l	a0,(lbL02D1EC-ds,a6)
 	rts
 
-lbC015AEA	move.l	(lbL02D1EC-datasegment,a6),d0
+lbC015AEA	move.l	(lbL02D1EC-ds,a6),d0
 	beq.b	lbC015AFE
-	cmp.l	(lbL02D380-datasegment,a6),d0
+	cmp.l	(lbL02D380-ds,a6),d0
 	bhi.b	lbC015AFE
 	movea.l	d0,a0
-	lea	(lbL02C1D4-datasegment,a6),a1
+	lea	(lbL02C1D4-ds,a6),a1
 	rts
 
 lbC015AFE	addq.l	#4,sp
-	jmp	(lbC02A436-datasegment,a6)
+	jmp	(term2-ds,a6)
 
 lbC015B04	bsr.b	lbC015B58
 	dw	$175
@@ -27071,21 +27077,21 @@ lbC015B52	bsr.b	lbC015B58
 	dw	$6FD
 
 lbC015B58	movea.l	(sp)+,a0
-	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	(a0)+,d2
-	lea	(lbB02B3F7-datasegment,a6),a2
+	lea	(lbB02B3F7-ds,a6),a2
 	moveq	#0,d0
 	move.b	(a0)+,d0
 	adda.l	d0,a2
 	move.b	(a0)+,d0
 	spl	(a2)
-	tst.b	(lbB02EBF4-datasegment,a6)
+	tst.b	(lbB02EBF4-ds,a6)
 	beq.b	lbC015B7E
-	tst.b	(lbB02EBF5-datasegment,a6)
+	tst.b	(lbB02EBF5-ds,a6)
 	sne	(a2)
 	bne.b	lbC015B7E
 	neg.b	d0
-lbC015B7E	lea	(lbW02D3A8-datasegment,a6),a0
+lbC015B7E	lea	(lbW02D3A8-ds,a6),a0
 	tst.b	d0
 	beq.b	lbC015B9E
 	bmi.b	lbC015B90
@@ -27102,15 +27108,15 @@ lbC015B90	cmpi.b	#$80,d0
 	move.w	d1,(a0)
 lbC015B9E	move.w	d2,d0
 	move.b	(a2),d1
-	jsr	(lbC02A686-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02A686-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC015BAA	move.l	(lbL02D1E4-datasegment,a6),(lbL02D1EC).l
+lbC015BAA	move.l	(lbL02D1E4-ds,a6),(lbL02D1EC).l
 	andi.b	#$FB,ccr
 	rts
 
-lbC015BB8	clr.l	(lbL02D1DC-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC015BB8	clr.l	(workdata_strt_plus1-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC015BC0	move.l	#$FFFFF000,d1
 	move.w	#$64E,d2
@@ -27120,24 +27126,24 @@ lbC015BCC	move.l	#$1000,d1
 	move.w	#$630,d2
 lbC015BD6	move.l	a2,d0
 	add.l	d1,d0
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bhi.b	lbC015BE6
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcc.b	lbC015BF4
-lbC015BE6	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
-	jsr	(clear_ccr-datasegment,a6)
+lbC015BE6	move.w	#$7FFE,(lbW02EAC8-ds,a6)
+	jsr	(clear_ccr-ds,a6)
 	jmp	(a6,d2.w)
 
 lbC015BF4	addq.l	#1,d0
 	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	jmp	(lbC01FCA6).l
 
-lbC015C02	clr.b	(lbB02B400-datasegment,a6)
-	clr.b	(lbB02B401-datasegment,a6)
-	st	(lbB02B402-datasegment,a6)
-	clr.b	(lbB02B403-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015C02	clr.b	(lbB02B400-ds,a6)
+	clr.b	(lbB02B401-ds,a6)
+	st	(lbB02B402-ds,a6)
+	clr.b	(lbB02B403-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$246,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$1A6,(a0)+
@@ -27149,11 +27155,11 @@ lbC015C02	clr.b	(lbB02B400-datasegment,a6)
 	clr.w	(a0)
 	bra.w	lbC015CE2
 
-lbC015C3C	st	(lbB02B400-datasegment,a6)
-	clr.b	(lbB02B401-datasegment,a6)
-	clr.b	(lbB02B402-datasegment,a6)
-	clr.b	(lbB02B403-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015C3C	st	(lbB02B400-ds,a6)
+	clr.b	(lbB02B401-ds,a6)
+	clr.b	(lbB02B402-ds,a6)
+	clr.b	(lbB02B403-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$246,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1A6,(a0)+
@@ -27165,11 +27171,11 @@ lbC015C3C	st	(lbB02B400-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC015CE2
 
-lbC015C74	clr.b	(lbB02B400-datasegment,a6)
-	st	(lbB02B401-datasegment,a6)
-	clr.b	(lbB02B402-datasegment,a6)
-	clr.b	(lbB02B403-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015C74	clr.b	(lbB02B400-ds,a6)
+	st	(lbB02B401-ds,a6)
+	clr.b	(lbB02B402-ds,a6)
+	clr.b	(lbB02B403-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$246,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1A6,(a0)+
@@ -27181,11 +27187,11 @@ lbC015C74	clr.b	(lbB02B400-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC015CE2
 
-lbC015CAC	clr.b	(lbB02B400-datasegment,a6)
-	clr.b	(lbB02B401-datasegment,a6)
-	clr.b	(lbB02B402-datasegment,a6)
-	st	(lbB02B403-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015CAC	clr.b	(lbB02B400-ds,a6)
+	clr.b	(lbB02B401-ds,a6)
+	clr.b	(lbB02B402-ds,a6)
+	st	(lbB02B403-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$246,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1A6,(a0)+
@@ -27195,9 +27201,9 @@ lbC015CAC	clr.b	(lbB02B400-datasegment,a6)
 	move.w	#$3B2,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC015CE2	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC015CE2	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC015CEE	bsr.b	lbC015D0A
 lbC015CF0	bsr.b	lbC015D0A
@@ -27216,9 +27222,9 @@ lbC015D08	bne.b	lbC015D06
 lbC015D0A	move.l	(sp)+,d0
 	sub.l	#lbC015D08,d0
 	lsl.l	#7,d0
-	lea	(lbL02B4D4-datasegment,a6),a0
+	lea	(lbL02B4D4-ds,a6),a0
 	suba.l	d0,a0
-	lea	(lbL02C1D4-datasegment,a6),a1
+	lea	(lbL02C1D4-ds,a6),a1
 	move.l	a1,d1
 	moveq	#$3F,d2
 	lea	(-$100,sp),sp
@@ -27240,9 +27246,9 @@ lbC015D42	move.l	(a0)+,(a1)+
 	andi.b	#$FB,ccr
 	rts
 
-lbC015D52	st	(lbB02B40B-datasegment,a6)
-	clr.b	(lbB02B40A-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015D52	st	(lbB02B40B-ds,a6)
+	clr.b	(lbB02B40A-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$268,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$270,(a0)+
@@ -27250,22 +27256,22 @@ lbC015D52	st	(lbB02B40B-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC015D90
 
-lbC015D72	clr.b	(lbB02B40B-datasegment,a6)
-	st	(lbB02B40A-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015D72	clr.b	(lbB02B40B-ds,a6)
+	st	(lbB02B40A-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$268,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$270,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
 lbC015D90	moveq	#1,d1
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC015D9A	st	(lbB02B429-datasegment,a6)
-	clr.b	(lbB02B42A-datasegment,a6)
-	clr.b	(lbB02B42B-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015D9A	st	(lbB02B429-ds,a6)
+	clr.b	(lbB02B42A-ds,a6)
+	clr.b	(lbB02B42B-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$29C,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$29D,(a0)+
@@ -27275,10 +27281,10 @@ lbC015D9A	st	(lbB02B429-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC015E1C
 
-lbC015DC6	clr.b	(lbB02B429-datasegment,a6)
-	st	(lbB02B42A-datasegment,a6)
-	clr.b	(lbB02B42B-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015DC6	clr.b	(lbB02B429-ds,a6)
+	st	(lbB02B42A-ds,a6)
+	clr.b	(lbB02B42B-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$29C,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$29D,(a0)+
@@ -27288,10 +27294,10 @@ lbC015DC6	clr.b	(lbB02B429-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC015E1C
 
-lbC015DF2	clr.b	(lbB02B429-datasegment,a6)
-	clr.b	(lbB02B42A-datasegment,a6)
-	st	(lbB02B42B-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015DF2	clr.b	(lbB02B429-ds,a6)
+	clr.b	(lbB02B42A-ds,a6)
+	st	(lbB02B42B-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$29C,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$29D,(a0)+
@@ -27299,14 +27305,14 @@ lbC015DF2	clr.b	(lbB02B429-datasegment,a6)
 	move.w	#$29E,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC015E1C	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC015E1C	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC015E28	jsr	(lbC02AFC0-datasegment,a6)
-	st	(flag_DT_enabled-datasegment,a6)
-	clr.b	(lbB02B42D-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015E28	jsr	(lbC02AFC0-ds,a6)
+	st	(flag_DT_enabled-ds,a6)
+	clr.b	(lbB02B42D-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$2AF,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$2B0,(a0)+
@@ -27314,48 +27320,48 @@ lbC015E28	jsr	(lbC02AFC0-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC015E6E
 
-lbC015E4C	jsr	(lbC02AFC0-datasegment,a6)
-	clr.b	(flag_DT_enabled-datasegment,a6)
-	st	(lbB02B42D-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015E4C	jsr	(lbC02AFC0-ds,a6)
+	clr.b	(flag_DT_enabled-ds,a6)
+	st	(lbB02B42D-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$2AF,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$2B0,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC015E6E	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC015E6E	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC015E7A	move.l	a2,(lbL02D0B0-datasegment,a6)
+lbC015E7A	move.l	a2,(lbL02D0B0-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC015E84	move.l	a2,(lbL02D09C-datasegment,a6)
+lbC015E84	move.l	a2,(lbL02D09C-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC015E8E	st	(lbB02D39B-datasegment,a6)
+lbC015E8E	st	(lbB02D39B-ds,a6)
 	movem.l	a0/a2/a3,-(sp)
-	jsr	(lbC02A87E-datasegment,a6)
-	clr.b	(lbB02EB63-datasegment,a6)
+	jsr	(lbC02A87E-ds,a6)
+	clr.b	(lbB02EB63-ds,a6)
 	movem.l	(sp)+,a0/a2/a3
-	clr.b	(lbB02D39B-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	clr.b	(lbB02D39B-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC015EAA	move.l	(a3),d7
 	bclr	#13,d7
 	move.l	d7,(a3)
-	jsr	(lbC02AFAC-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02AFAC-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC015EBA	move.l	(a3),d7
 	bset	#13,d7
 	move.l	d7,(a3)
-	jsr	(lbC02AFAC-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02AFAC-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC015ECA	lea	(lbL02C1D4-datasegment,a6),a0
+lbC015ECA	lea	(lbL02C1D4-ds,a6),a0
 	subq.l	#1,a0
 lbC015ED0	addq.l	#1,a0
 	move.b	(a0),d0
@@ -27371,51 +27377,51 @@ lbC015EDC	cmpi.b	#$5A,d0
 	move.b	d0,(a0)
 	bra.b	lbC015ED0
 
-lbC015EF0	move.l	(lbL02D1F0-datasegment,a6),d2
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	(lbL02D1F8-datasegment,a6),d3
+lbC015EF0	move.l	(lbL02D1F0-ds,a6),d2
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	(lbL02D1F8-ds,a6),d3
 	sub.l	d2,d3
 	move.w	#$274C,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(lbB031E00-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
-	jsr	(lbC020566).l
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	a0,(lbB02D0E8-datasegment,a6)
+	jsr	(requestfile).l
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	a0,(lbB02D0E8-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A286-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
+	jsr	(lbC02A286-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
 	move.l	d0,d1
-	move.l	(lbL02D1F0-datasegment,a6),d2
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbL02D1F0-ds,a6),d2
+	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	beq.b	lbC015F3A
 	moveq	#0,d3
-lbC015F3A	move.l	(lbB02D0E0-datasegment,a6),d1
-	clr.l	(lbB02D0E0-datasegment,a6)
-	jsr	(dosclose-datasegment,a6)
+lbC015F3A	move.l	(lbB02D0E0-ds,a6),d1
+	clr.l	(lbB02D0E0-ds,a6)
+	jsr	(dosclose-ds,a6)
 	move.l	d3,d0
-	jmp	(lbC02A430-datasegment,a6)
+	jmp	(term2_if_cceq-ds,a6)
 
-lbC015F4C	move.l	a2,(lbL02D2D4-datasegment,a6)
+lbC015F4C	move.l	a2,(lbL02D2D4-ds,a6)
 	rts
 
-lbC015F52	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC015F52	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02D1C4-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02D1C4-ds,a6)
 	moveq	#4,d0
 	andi.b	#$FB,ccr
 	rts
 
-lbC015F68	move.b	#1,(lbB02EB56-datasegment,a6)
-	st	(lbB02B406-datasegment,a6)
-	clr.b	(lbB02B407-datasegment,a6)
-	clr.b	(lbB02B408-datasegment,a6)
-	clr.b	(lbB02B409-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015F68	move.b	#1,(lbB02EB56-ds,a6)
+	st	(lbB02B406-ds,a6)
+	clr.b	(lbB02B407-ds,a6)
+	clr.b	(lbB02B408-ds,a6)
+	clr.b	(lbB02B409-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$50,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$51,(a0)+
@@ -27427,12 +27433,12 @@ lbC015F68	move.b	#1,(lbB02EB56-datasegment,a6)
 	clr.w	(a0)
 	bra.w	lbC016060
 
-lbC015FA8	move.b	#2,(lbB02EB56-datasegment,a6)
-	clr.b	(lbB02B406-datasegment,a6)
-	st	(lbB02B407-datasegment,a6)
-	clr.b	(lbB02B408-datasegment,a6)
-	clr.b	(lbB02B409-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015FA8	move.b	#2,(lbB02EB56-ds,a6)
+	clr.b	(lbB02B406-ds,a6)
+	st	(lbB02B407-ds,a6)
+	clr.b	(lbB02B408-ds,a6)
+	clr.b	(lbB02B409-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$50,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$51,(a0)+
@@ -27444,12 +27450,12 @@ lbC015FA8	move.b	#2,(lbB02EB56-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC016060
 
-lbC015FE6	move.b	#3,(lbB02EB56-datasegment,a6)
-	clr.b	(lbB02B406-datasegment,a6)
-	clr.b	(lbB02B407-datasegment,a6)
-	st	(lbB02B408-datasegment,a6)
-	clr.b	(lbB02B409-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC015FE6	move.b	#3,(lbB02EB56-ds,a6)
+	clr.b	(lbB02B406-ds,a6)
+	clr.b	(lbB02B407-ds,a6)
+	st	(lbB02B408-ds,a6)
+	clr.b	(lbB02B409-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$50,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$51,(a0)+
@@ -27461,12 +27467,12 @@ lbC015FE6	move.b	#3,(lbB02EB56-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC016060
 
-lbC016024	move.b	#4,(lbB02EB56-datasegment,a6)
-	clr.b	(lbB02B406-datasegment,a6)
-	clr.b	(lbB02B407-datasegment,a6)
-	clr.b	(lbB02B408-datasegment,a6)
-	st	(lbB02B409-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC016024	move.b	#4,(lbB02EB56-ds,a6)
+	clr.b	(lbB02B406-ds,a6)
+	clr.b	(lbB02B407-ds,a6)
+	clr.b	(lbB02B408-ds,a6)
+	st	(lbB02B409-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$50,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$51,(a0)+
@@ -27476,34 +27482,34 @@ lbC016024	move.b	#4,(lbB02EB56-datasegment,a6)
 	move.w	#$313,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC016060	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC016060	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01606C	bsr.w	lbC014DB2
 	bne.b	lbC016082
 	rts
 
-lbC016074	move.l	(datasegment-datasegment,a6),(lbL02D13C-datasegment,a6)
-	move.l	(lbL02A8A0-datasegment,a6),(lbL02D140).l
+lbC016074	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
+	move.l	(workdata_end-ds,a6),(lbL02D140).l
 lbC016082	move.w	#$273C,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(lbB031E00-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
-	jsr	(lbC026C74-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	jsr	(atoi-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	movea.l	(lbL02D13C-datasegment,a6),a0
+	jsr	(lbC026C74-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	jsr	(atoi-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	movea.l	(lbL02D13C-ds,a6),a0
 	movea.l	d0,a1
-	move.l	(lbL02D140-datasegment,a6),d0
+	move.l	(lbL02D140-ds,a6),d0
 	sub.l	a0,d0
-	jsr	(_CopyMem-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(_CopyMem-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC0160B6	move.l	a2,d1
-	sub.l	(datasegment-datasegment,a6),d1
+	sub.l	(ds-ds,a6),d1
 	bra.w	lbC01C2A4
 
 lbC0160C0	move.l	(a3),d7
@@ -27511,7 +27517,7 @@ lbC0160C0	move.l	(a3),d7
 	bclr	#$11,d7
 	bclr	#$10,d7
 	move.l	d7,(a3)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC0160D4	moveq	#$78,d0
 	and.l	(a3),d0
@@ -27525,7 +27531,7 @@ lbC0160D4	moveq	#$78,d0
 	move.l	d7,(a3)
 lbC0160EC	move.l	(a3),d7
 	move.l	d7,-(sp)
-	jsr	(lbC029DD2-datasegment,a6)
+	jsr	(lbC029DD2-ds,a6)
 	move.l	(sp)+,d7
 	bclr	#$19,d7
 	move.b	d7,d0
@@ -27535,28 +27541,28 @@ lbC0160EC	move.l	(a3),d7
 lbC016106	bset	#8,d7
 	move.l	d7,(a3)
 	move.l	a2,d0
-	move.w	#$FFFF,(lbB02D39A-datasegment,a6)
-	move.b	#$30,(lbB02EAD2-datasegment,a6)
-	move.b	#$30,(lbW02EB3A-datasegment,a6)
+	move.w	#$FFFF,(lbB02D39A-ds,a6)
+	move.b	#$30,(lbB02EAD2-ds,a6)
+	move.b	#$30,(lbW02EB3A-ds,a6)
 	jsr	(put_adr_d0).l
 	bset	#4,(1,a3)
-	clr.w	(lbB02D39A-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	clr.w	(lbB02D39A-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC016134	move.l	a2,(lbL02D2D8-datasegment,a6)
+lbC016134	move.l	a2,(lbL02D2D8-ds,a6)
 	rts
 
-lbC01613A	move.l	(lbB02B4A8-datasegment,a6),(lbL02D1C4).l
+lbC01613A	move.l	(workdata_length-ds,a6),(lbL02D1C4).l
 	rts
 
-lbC016144	clr.l	(lbL02D1BC-datasegment,a6)
+lbC016144	clr.l	(lbL02D1BC-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC01614E	clr.b	(lbB02EB46-datasegment,a6)
-	clr.b	(lbB02B442-datasegment,a6)
-	st	(lbB02B441-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01614E	clr.b	(lbB02EB46-ds,a6)
+	clr.b	(lbB02B442-ds,a6)
+	st	(lbB02B441-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$4B,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$4C,(a0)+
@@ -27564,25 +27570,25 @@ lbC01614E	clr.b	(lbB02EB46-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC016194
 
-lbC016172	st	(lbB02EB46-datasegment,a6)
-	st	(lbB02B442-datasegment,a6)
-	clr.b	(lbB02B441-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC016172	st	(lbB02EB46-ds,a6)
+	st	(lbB02B442-ds,a6)
+	clr.b	(lbB02B441-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$4B,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$4C,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC016194	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC016194	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC0161A0	move.l	(a3),d7
 	bset	#$10,d7
 	bclr	#$12,d7
 	bclr	#$11,d7
 	move.l	d7,(a3)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC0161B4	bsr.b	lbC0161C8
 	dw	$7FA1
@@ -27600,30 +27606,30 @@ lbC0161C4	bsr.b	lbC0161C8
 	dw	$7FA5
 
 lbC0161C8	movea.l	(sp)+,a0
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC0161F0
 	move.w	(a0),d0
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC0161F0
-	movea.l	(lbL02D0FC-datasegment,a6),a0
-lbC0161DC	cmpa.l	(lbL02CE28-datasegment,a6),a0
+	movea.l	(lbL02D0FC-ds,a6),a0
+lbC0161DC	cmpa.l	(lbL02CE28-ds,a6),a0
 	beq.b	lbC0161E8
 	cmp.w	-(a0),d0
 	bne.b	lbC0161DC
 	addq.l	#2,a0
-lbC0161E8	move.l	a0,(lbL02D0FC-datasegment,a6)
+lbC0161E8	move.l	a0,(lbL02D0FC-ds,a6)
 	andi.b	#$FB,ccr
 lbC0161F0	rts
 
 lbC0161F2	move.l	(a3),d7
 	bclr	#12,d7
 	move.l	d7,(a3)
-	jsr	(lbC02AFAC-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02AFAC-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC016202	tst.b	(lbB02EB4B-datasegment,a6)
+lbC016202	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	lbC016212
-	movea.l	(lbL02D0FC-datasegment,a6),a0
+	movea.l	(lbL02D0FC-ds,a6),a0
 	move.w	#$7FFE,(-2,a0)
 lbC016212	andi.b	#$FB,ccr
 	rts
@@ -27633,25 +27639,25 @@ lbC016218	move.l	(a3),d7
 	bclr	#$12,d7
 	bclr	#$10,d7
 	move.l	d7,(a3)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01622C	clr.l	(lbL02D11C-datasegment,a6)
-	tst.b	(lbB02EB47-datasegment,a6)
+lbC01622C	clr.l	(workdata_strt-ds,a6)
+	tst.b	(lbB02EB47-ds,a6)
 	bne.b	lbC01623C
-	move.l	(datasegment-datasegment,a6),(lbL02D11C-datasegment,a6)
-lbC01623C	jmp	(lbC02A422-datasegment,a6)
+	move.l	(ds-ds,a6),(workdata_strt-ds,a6)
+lbC01623C	jmp	(lbC02A422-ds,a6)
 
-lbC016240	lea	(endbdlw.MSG-datasegment,a6),a0
+lbC016240	lea	(endbdlw.MSG-ds,a6),a0
 	bsr.b	lbC0162BC
 	move.w	#$1A3,d0
-	jsr	(lbC02A58A-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02A58A-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC016252	lea	(WL.MSG-datasegment,a6),a0
+lbC016252	lea	(WL.MSG-ds,a6),a0
 	bsr.b	lbC0162BC
 	move.w	#$366,d0
-	jsr	(lbC02A58A-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02A58A-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbW016264	dw	CCR.MSG0-CCR.MSG
 	dw	SR.MSG-CCR.MSG
@@ -27669,9 +27675,9 @@ lbW016264	dw	CCR.MSG0-CCR.MSG
 	dw	0
 
 lbC016280	move.w	#$314,d0
-	jsr	(lbC02A58A-datasegment,a6)
-	lea	(D0D1D2D3D4D5D.MSG0-datasegment,a6),a0
-	lea	(endbdlw.MSG-datasegment,a6),a1
+	jsr	(lbC02A58A-ds,a6)
+	lea	(D0D1D2D3D4D5D.MSG0-ds,a6),a0
+	lea	(endbdlw.MSG-ds,a6),a1
 lbC016290	move.b	(a0),d0
 	cmpi.b	#$41,d0
 	bcs.b	lbC01629E
@@ -27688,7 +27694,7 @@ lbC0162A8	move.w	(a1)+,d0
 	bsr.b	lbC0162BC
 	bra.b	lbC0162A8
 
-lbC0162B8	jmp	(lbC02A422-datasegment,a6)
+lbC0162B8	jmp	(lbC02A422-ds,a6)
 
 lbC0162BC	cmpi.b	#$41,(a0)
 	bcs.b	lbC0162C6
@@ -27697,25 +27703,25 @@ lbC0162C6	tst.b	(a0)+
 	bne.b	lbC0162BC
 	rts
 
-lbC0162CC	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC0162CC	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$1A2,d0
-	jsr	(lbC02A58A-datasegment,a6)
-	lea	(LSXPWDBLSXPWD.MSG0-datasegment,a6),a0
+	jsr	(lbC02A58A-ds,a6)
+	lea	(LSXPWDBLSXPWD.MSG0-ds,a6),a0
 lbC0162DC	cmpi.b	#$41,(a0)
 	bcs.b	lbC0162E6
 	bchg	#5,(a0)
 lbC0162E6	addq.l	#1,a0
 	cmpa.l	#LSXPWDB.MSG,a0
 	bcs.b	lbC0162DC
-	lea	(AFLINEmacrodw.MSG-datasegment,a6),a0
+	lea	(AFLINEmacrodw.MSG-ds,a6),a0
 	moveq	#5,d0
 lbC0162F6	bchg	#5,(a0)+
 	dbra	d0,lbC0162F6
-	lea	(AFLINEmacrodc.MSG-datasegment,a6),a0
+	lea	(AFLINEmacrodc.MSG-ds,a6),a0
 	moveq	#5,d0
 lbC016304	bchg	#5,(a0)+
 	dbra	d0,lbC016304
-	btst	#5,(LSXPWDBLSXPWD.MSG0-datasegment,a6)
+	btst	#5,(LSXPWDBLSXPWD.MSG0-ds,a6)
 	beq.b	lbC016322
 	lea	(lbL01A83C,pc),a0
 	bsr.b	lbC016330
@@ -27759,27 +27765,27 @@ lbC016366	move.b	d0,(a1)+
 
 lbC01636A	rts
 
-lbC01636C	jmp	(lbC02A422-datasegment,a6)
+lbC01636C	jmp	(lbC02A422-ds,a6)
 
 lbC016370	move.l	(a3),d7
 	bset	#12,d7
 	move.l	d7,(a3)
-	jsr	(lbC02AFAC-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02AFAC-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC016380	move.l	a2,(lbL02D11C-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC016380	move.l	a2,(workdata_strt-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC016388	move.w	#$3000,(lbL02C1D4-datasegment,a6)
+lbC016388	move.w	#$3000,(lbL02C1D4-ds,a6)
 	rts
 
 lbC016390	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02D1BC-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02D1BC-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC0163A0	move.l	a2,(lbL02D0A0-datasegment,a6)
+lbC0163A0	move.l	a2,(lbL02D0A0-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
@@ -27787,7 +27793,7 @@ lbC0163AA	move.l	a2,d0
 	andi.b	#1,d0
 	bne.b	lbC0163DE
 	move.l	(2,a2),d1
-	sub.l	(datasegment-datasegment,a6),d1
+	sub.l	(ds-ds,a6),d1
 	move.w	(a2),d0
 	andi.w	#$F1FF,d0
 	cmpi.w	#$41F9,d0
@@ -27797,7 +27803,7 @@ lbC0163AA	move.l	a2,d0
 	lea	(2,a2),a0
 	adda.w	(a0),a0
 	move.l	a0,d1
-	sub.l	(datasegment-datasegment,a6),d1
+	sub.l	(ds-ds,a6),d1
 	cmpi.w	#$41FA,d0
 	beq.b	lbC0163E2
 lbC0163DE	moveq	#0,d0
@@ -27806,30 +27812,30 @@ lbC0163DE	moveq	#0,d0
 lbC0163E2	bsr.w	lbC01C2A4
 	moveq	#14,d0
 	and.b	(a2),d0
-	lea	(lbC02928E-datasegment,a6),a0
+	lea	(lbC02928E-ds,a6),a0
 	suba.l	d0,a0
 	jmp	(a0)
 
-lbC0163F2	move.l	#lbL02C4D4,(lbL02B4B0-datasegment,a6)
+lbC0163F2	move.l	#lbL02C4D4,(lbL02B4B0-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC016400	move.l	(lbL02D1F0-datasegment,a6),d0
+lbC016400	move.l	(lbL02D1F0-ds,a6),d0
 	beq.b	lbC016410
 	movea.l	d0,a1
-	move.l	(lbL02D1F4-datasegment,a6),d0
-	jsr	(_FreeMem-datasegment,a6)
-lbC016410	clr.l	(lbL02D1F4-datasegment,a6)
-	clr.l	(lbL02D1F0-datasegment,a6)
-	clr.l	(lbL02D1F8-datasegment,a6)
+	move.l	(lbL02D1F4-ds,a6),d0
+	jsr	(_FreeMem-ds,a6)
+lbC016410	clr.l	(lbL02D1F4-ds,a6)
+	clr.l	(lbL02D1F0-ds,a6)
+	clr.l	(lbL02D1F8-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC016422	clr.l	(lbL02CDF0-datasegment,a6)
-	st	(lbB02B3F4-datasegment,a6)
-	clr.b	(lbB02B3F5-datasegment,a6)
-	clr.b	(lbB02B3F6-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC016422	clr.l	(lbL02CDF0-ds,a6)
+	st	(lbB02B3F4-ds,a6)
+	clr.b	(lbB02B3F5-ds,a6)
+	clr.b	(lbB02B3F6-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$16A,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$16B,(a0)+
@@ -27840,11 +27846,11 @@ lbC016422	clr.l	(lbL02CDF0-datasegment,a6)
 	bra.b	lbC0164B4
 
 lbC016452	moveq	#10,d0
-	move.l	d0,(lbL02CDF0-datasegment,a6)
-	clr.b	(lbB02B3F4-datasegment,a6)
-	st	(lbB02B3F5-datasegment,a6)
-	clr.b	(lbB02B3F6-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+	move.l	d0,(lbL02CDF0-ds,a6)
+	clr.b	(lbB02B3F4-ds,a6)
+	st	(lbB02B3F5-ds,a6)
+	clr.b	(lbB02B3F6-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$16A,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$16B,(a0)+
@@ -27855,11 +27861,11 @@ lbC016452	moveq	#10,d0
 	bra.b	lbC0164B4
 
 lbC016484	moveq	#$10,d0
-	move.l	d0,(lbL02CDF0-datasegment,a6)
-	clr.b	(lbB02B3F4-datasegment,a6)
-	clr.b	(lbB02B3F5-datasegment,a6)
-	st	(lbB02B3F6-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+	move.l	d0,(lbL02CDF0-ds,a6)
+	clr.b	(lbB02B3F4-ds,a6)
+	clr.b	(lbB02B3F5-ds,a6)
+	st	(lbB02B3F6-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$16A,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$16B,(a0)+
@@ -27867,9 +27873,9 @@ lbC016484	moveq	#$10,d0
 	move.w	#$16C,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC0164B4	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC0164B4	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC0164C0	bsr.b	lbC0164D4
 	dw	$7FA1
@@ -27887,40 +27893,40 @@ lbC0164D0	bsr.b	lbC0164D4
 	dw	$7FA5
 
 lbC0164D4	movea.l	(sp)+,a0
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC0164EC
 	move.w	(a0),d0
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC0164E8
-	move.w	d0,(lbW02EAC8-datasegment,a6)
+	move.w	d0,(lbW02EAC8-ds,a6)
 lbC0164E8	andi.b	#$FB,ccr
 lbC0164EC	rts
 
-lbC0164EE	move.l	(datasegment-datasegment,a6),d0
+lbC0164EE	move.l	(ds-ds,a6),d0
 	addq.l	#1,d0
-	move.l	d0,(lbL02D1DC-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	move.l	d0,(workdata_strt_plus1-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC0164FC	andi.l	#$FFF7FDFF,(a3)
 	move.l	a4,-(sp)
 	move.w	#$271A,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	jsr	(clear_ccr-datasegment,a6)
-	jsr	(_SetPointerAll-datasegment,a6)
+	jsr	(clear_ccr-ds,a6)
+	jsr	(_SetPointerAll-ds,a6)
 lbC01651C	addq.l	#4,a3
 	move.l	#$200,d1
-	movea.l	(lbL02B4A0-datasegment,a6),a0
+	movea.l	(workdata_struct_end-ds,a6),a0
 	move.l	#$300,(a0)
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcs.b	lbC01654A
-lbC016534	movea.l	(lbL02B4A0-datasegment,a6),a0
+lbC016534	movea.l	(workdata_struct_end-ds,a6),a0
 	move.l	#$FFFFFFFF,(a0)
-	jsr	(lbC02AEDE-datasegment,a6)
-	jsr	(lbC02A1B4-datasegment,a6)
-	jmp	(_dummy_st-datasegment,a6)
+	jsr	(lbC02AEDE-ds,a6)
+	jsr	(lbC02A1B4-ds,a6)
+	jmp	(term1-ds,a6)
 
 lbC01654A	move.l	(a3)+,d0
 	or.l	(a3)+,d0
@@ -27936,29 +27942,29 @@ lbC01654A	move.l	(a3)+,d0
 lbC016562	move.l	(a3)+,d0
 	and.l	d1,d0
 	beq.b	lbC016562
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC016534
 	move.l	(-4,a3),d0
 	and.l	#$700,d0
 	cmp.l	#$300,d0
 	bne.b	lbC01654A
 	subq.l	#4,a3
-	jsr	(lbC02A3E6-datasegment,a6)
-	movea.l	(lbL02B4A0-datasegment,a6),a0
+	jsr	(lbC02A3E6-ds,a6)
+	movea.l	(workdata_struct_end-ds,a6),a0
 	move.l	#$FFFFFFFF,(a0)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC016594	movea.l	(lbL02D310-datasegment,a6),a1
-	move.l	(lbL02D314-datasegment,a6),d0
+lbC016594	movea.l	(lbL02D310-ds,a6),a1
+	move.l	(lbL02D314-ds,a6),d0
 	beq.b	lbC0165A2
-	jsr	(_FreeMem-datasegment,a6)
-lbC0165A2	clr.l	(lbL02D310-datasegment,a6)
-	clr.l	(lbL02D314-datasegment,a6)
+	jsr	(_FreeMem-ds,a6)
+lbC0165A2	clr.l	(lbL02D310-ds,a6)
+	clr.l	(lbL02D314-ds,a6)
 	rts
 
-lbC0165AC	movea.l	(workdata_end-datasegment,a6),a0
+lbC0165AC	movea.l	(workdata_struct-ds,a6),a0
 	moveq	#-2,d1
-	move.l	(lbL02B4AC-datasegment,a6),d0
+	move.l	(workdata_struct_sz-ds,a6),d0
 	lsr.l	#2,d0
 	addq.l	#3,a0
 	bra.b	lbC0165C0
@@ -27971,89 +27977,89 @@ lbC0165C0	dbra	d0,lbC0165BC
 	rts
 
 lbC0165CE	movem.l	d2-d7/a4/a5,-(sp)
-	move.l	sp,(lbL02D32C-datasegment,a6)
-	movem.l	a2/a3,(lbL02D324-datasegment,a6)
-	clr.l	(lbL02D36C-datasegment,a6)
-	st	(lbL02D364-datasegment,a6)
-	move.l	#lbL033800,(lbL02D370-datasegment,a6)
+	move.l	sp,(lbL02D32C-ds,a6)
+	movem.l	a2/a3,(lbL02D324-ds,a6)
+	clr.l	(lbL02D36C-ds,a6)
+	st	(lbL02D364-ds,a6)
+	move.l	#lbL033800,(lbL02D370-ds,a6)
 	bsr.w	lbC01D42C
 	bne.b	lbC0165FA
-	jsr	(lbC02A436-datasegment,a6)
+	jsr	(term2-ds,a6)
 	bra.w	lbC0167C6
 
-lbC0165FA	jsr	(_SetPointerAll-datasegment,a6)
-	move.l	#lbL03572C,(lbL02D35C-datasegment,a6)
-	move.l	#lbL03552C,(lbL02D360-datasegment,a6)
-	jsr	(lbC029B18-datasegment,a6)
-	movea.l	(lbL02D310-datasegment,a6),a0
+lbC0165FA	jsr	(_SetPointerAll-ds,a6)
+	move.l	#lbL03572C,(lbL02D35C-ds,a6)
+	move.l	#lbL03552C,(lbL02D360-ds,a6)
+	jsr	(lbC029B18-ds,a6)
+	movea.l	(lbL02D310-ds,a6),a0
 	cmpi.l	#$52535346,(a0)+
 	bne.w	lbC0167C6
 	cmpi.l	#14,(a0)+
 	bne.w	lbC0167C6
 	addq.l	#4,a0
 	move.l	(a0)+,d0
-	add.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02D350-datasegment,a6)
-	move.l	a0,(lbL02D1E0-datasegment,a6)
+	add.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02D350-ds,a6)
+	move.l	a0,(lbL02D1E0-ds,a6)
 	bsr.w	lbC0165AC
 	moveq	#1,d0
-	move.l	d0,(lbW02D348-datasegment,a6)
+	move.l	d0,(lbW02D348-ds,a6)
 	lea	(lbL034400).l,a0
 	moveq	#$3F,d0
 	moveq	#-1,d1
 lbC01664E	move.l	d1,(a0)+
 	dbra	d0,lbC01664E
-	move.l	(lbL02D314-datasegment,a6),d0
+	move.l	(lbL02D314-ds,a6),d0
 	subq.l	#1,d0
 	ble.w	lbC0167C6
-	movea.l	(lbL02D310-datasegment,a6),a0
+	movea.l	(lbL02D310-ds,a6),a0
 	add.l	a0,d0
-	move.l	d0,(lbL02D330-datasegment,a6)
-	move.l	(lbL02D1E0-datasegment,a6),(lbL02D344).l
+	move.l	d0,(lbL02D330-ds,a6)
+	move.l	(lbL02D1E0-ds,a6),(lbL02D344).l
 	bra.b	lbC016684
 
-lbC016672	jsr	(lbC02A4BE-datasegment,a6)
+lbC016672	jsr	(lbC02A4BE-ds,a6)
 	bne.w	lbC0167C6
-	jsr	(lbC02A3CC-datasegment,a6)
-	jsr	(lbC027DEC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
+	jsr	(lbC027DEC-ds,a6)
 	bra.b	lbC0166F6
 
-lbC016684	move.l	(lbL02D344-datasegment,a6),d0
+lbC016684	move.l	(lbL02D344-ds,a6),d0
 	beq.w	lbC0167BC
 	movem.l	d0-d7/a0-a4,-(sp)
-	movem.l	(lbL02D324-datasegment,a6),a2/a3
-	jsr	(lbC02A866-datasegment,a6)
-	move.l	(lbL02D350-datasegment,a6),d0
+	movem.l	(lbL02D324-ds,a6),a2/a3
+	jsr	(lbC02A866-ds,a6)
+	move.l	(lbL02D350-ds,a6),d0
 	addq.l	#2,d0
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bne.b	lbC0166AC
 	jsr	(lbC02028C).l
-lbC0166AC	addq.l	#1,(lbL02D36C-datasegment,a6)
-	lea	(_RawDoFmt_args-datasegment,a6),a1
-	move.l	(lbL02D36C-datasegment,a6),(a1)
+lbC0166AC	addq.l	#1,(lbL02D36C-ds,a6)
+	lea	(_RawDoFmt_args-ds,a6),a1
+	move.l	(lbL02D36C-ds,a6),(a1)
 	move.w	#$2753,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 	suba.w	#$28,sp
 	movea.l	sp,a2
-	jsr	(_RawDoFmt-datasegment,a6)
+	jsr	(_RawDoFmt-ds,a6)
 	movea.l	a2,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	adda.w	#$28,sp
 	movem.l	(sp)+,d0-d7/a0-a4
-	move.l	d0,(lbL02D1E0-datasegment,a6)
-	clr.l	(lbL02D344-datasegment,a6)
-	movea.l	(datasegment-datasegment,a6),a2
-	suba.l	(lbW02D348-datasegment,a6),a2
-	move.l	a2,(lbL02D338-datasegment,a6)
-lbC0166EE	tst.b	(lbB02EB78-datasegment,a6)
+	move.l	d0,(lbL02D1E0-ds,a6)
+	clr.l	(lbL02D344-ds,a6)
+	movea.l	(ds-ds,a6),a2
+	suba.l	(lbW02D348-ds,a6),a2
+	move.l	a2,(lbL02D338-ds,a6)
+lbC0166EE	tst.b	(lbB02EB78-ds,a6)
 	beq.w	lbC016672
-lbC0166F6	move.l	(lbL02D1E0-datasegment,a6),(lbL02D334).l
-	movea.l	(lbL02D338-datasegment,a6),a2
+lbC0166F6	move.l	(lbL02D1E0-ds,a6),(lbL02D334).l
+	movea.l	(lbL02D338-ds,a6),a2
 	moveq	#0,d0
 	lea	(lbL034400).l,a0
-	move.l	(lbL02A8A0-datasegment,a6),d2
-lbC01670E	adda.l	(lbW02D348-datasegment,a6),a2
+	move.l	(workdata_end-ds,a6),d2
+lbC01670E	adda.l	(lbW02D348-ds,a6),a2
 	cmp.l	a2,d2
 	bls.w	lbC016684
 	moveq	#7,d1
@@ -28062,36 +28068,36 @@ lbC01671C	move.b	(a1)+,d0
 	btst	d1,(a0,d0.w)
 	beq.b	lbC01670E
 	dbra	d1,lbC01671C
-	move.l	a2,(lbL02D338-datasegment,a6)
-	jsr	(lbC02A3CC-datasegment,a6)
+	move.l	a2,(lbL02D338-ds,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	move.l	(a3),d0
-	and.l	(lbW02D34C-datasegment,a6),d0
+	and.l	(lbW02D34C-ds,a6),d0
 	bne.b	lbC01670E
-lbC016738	tst.b	(lbB02EB8A-datasegment,a6)
+lbC016738	tst.b	(lbB02EB8A-ds,a6)
 	bne.b	lbC0167A2
-lbC01673E	movea.l	(lbL02D338-datasegment,a6),a2
-	movea.l	(lbL02D334-datasegment,a6),a0
-	cmpa.l	(lbL02D330-datasegment,a6),a0
+lbC01673E	movea.l	(lbL02D338-ds,a6),a2
+	movea.l	(lbL02D334-ds,a6),a0
+	cmpa.l	(lbL02D330-ds,a6),a0
 	bcc.b	lbC0166EE
 	moveq	#0,d0
 	move.b	(a0)+,d0
 	lsl.w	#8,d0
 	move.b	(a0)+,d0
 	lea	(a0,d0.w),a1
-	move.l	a1,(lbL02D334-datasegment,a6)
-	cmpa.l	(lbL02D330-datasegment,a6),a1
+	move.l	a1,(lbL02D334-ds,a6)
+	cmpa.l	(lbL02D330-ds,a6),a1
 	bhi.b	lbC0167C6
-	move.l	a0,(lbL02D33C-datasegment,a6)
-	move.l	#lbW01725C,(lbL02D340-datasegment,a6)
-lbC01676E	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	move.l	a0,(lbL02D33C-ds,a6)
+	move.l	#lbW01725C,(lbL02D340-ds,a6)
+lbC01676E	cmpa.l	(workdata_end-ds,a6),a2
 	bhi.b	lbC0167B8
-lbC016774	cmpa.l	(lbL02D330-datasegment,a6),a0
+lbC016774	cmpa.l	(lbL02D330-ds,a6),a0
 	bcc.w	lbC0166EE
-lbC01677C	movea.l	(lbL02D340-datasegment,a6),a1
+lbC01677C	movea.l	(lbL02D340-ds,a6),a1
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a3
 lbC01678E	moveq	#0,d0
 	move.b	(a0)+,d0
@@ -28101,9 +28107,9 @@ lbC01678E	moveq	#0,d0
 	move.w	(a1,d0.w),d0
 	jmp	(a1,d0.w)
 
-lbC0167A2	move.l	#lbL03572C,(lbL02D35C-datasegment,a6)
-	move.l	#lbL03552C,(lbL02D360-datasegment,a6)
-	clr.b	(lbB02EB87-datasegment,a6)
+lbC0167A2	move.l	#lbL03572C,(lbL02D35C-ds,a6)
+	move.l	#lbL03552C,(lbL02D360-ds,a6)
+	clr.b	(lbB02EB87-ds,a6)
 	bra.b	lbC01673E
 
 lbC0167B8	bra.w	lbC016684
@@ -28111,15 +28117,15 @@ lbC0167B8	bra.w	lbC016684
 lbC0167BC	moveq	#1,d0
 	bra.b	lbC0167CA
 
-lbC0167C0	movem.l	a2/a3,(lbL02D324-datasegment,a6)
-lbC0167C6	clr.l	(lbL02D364-datasegment,a6)
+lbC0167C0	movem.l	a2/a3,(lbL02D324-ds,a6)
+lbC0167C6	clr.l	(lbL02D364-ds,a6)
 lbC0167CA	bsr.w	lbC0165AC
-	movea.l	(lbL02D32C-datasegment,a6),sp
+	movea.l	(lbL02D32C-ds,a6),sp
 	bsr.w	lbC016594
 	movem.l	(sp)+,d2-d7/a4/a5
-	movem.l	(lbL02D324-datasegment,a6),a2/a3
-	st	(lbB02EB48-datasegment,a6)
-	move.l	(lbL02D364-datasegment,a6),d0
+	movem.l	(lbL02D324-ds,a6),a2/a3
+	st	(lbB02EB48-ds,a6)
+	move.l	(lbL02D364-ds,a6),d0
 	rts
 
 lbC0167EA	moveq	#0,d0
@@ -28131,15 +28137,15 @@ lbC0167EA	moveq	#0,d0
 	adda.l	d0,a0
 	bra.w	lbC016774
 
-lbC0167FC	move.b	(a0)+,(lbB02EAD5-datasegment,a6)
+lbC0167FC	move.b	(a0)+,(lbB02EAD5-ds,a6)
 	movem.l	a0/a2/a3,-(sp)
-	jsr	(lbC02A884-datasegment,a6)
+	jsr	(lbC02A884-ds,a6)
 	movem.l	(sp)+,a0/a2/a3
-	clr.b	(lbB02EAD5-datasegment,a6)
-	movea.l	(lbL02D12C-datasegment,a6),a1
-	cmpa.l	(datasegment-datasegment,a6),a1
+	clr.b	(lbB02EAD5-ds,a6)
+	movea.l	(lbL02D12C-ds,a6),a1
+	cmpa.l	(ds-ds,a6),a1
 	bcs.w	lbC016738
-	cmpa.l	(lbL02A8A0-datasegment,a6),a1
+	cmpa.l	(workdata_end-ds,a6),a1
 	bcc.w	lbC016738
 	moveq	#0,d0
 	move.b	(a0)+,d0
@@ -28291,26 +28297,26 @@ lbC01696A	cmpm.b	(a0)+,(a2)+
 	bne.w	lbC016738
 	bra.w	lbC01676E
 
-lbC016978	movea.l	(lbL02D338-datasegment,a6),a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	move.l	#lbW0173CC,(lbL02D340-datasegment,a6)
-	movea.l	(lbL02D33C-datasegment,a6),a0
+lbC016978	movea.l	(lbL02D338-ds,a6),a2
+	jsr	(lbC02A3CC-ds,a6)
+	move.l	#lbW0173CC,(lbL02D340-ds,a6)
+	movea.l	(lbL02D33C-ds,a6),a0
 	bra.w	lbC01677C
 
-lbC016990	movea.l	(lbL02D338-datasegment,a6),a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	move.l	#lbW017314,(lbL02D340-datasegment,a6)
-	movea.l	(lbL02D33C-datasegment,a6),a0
+lbC016990	movea.l	(lbL02D338-ds,a6),a2
+	jsr	(lbC02A3CC-ds,a6)
+	move.l	#lbW017314,(lbL02D340-ds,a6)
+	movea.l	(lbL02D33C-ds,a6),a0
 	bra.w	lbC01677C
 
 lbC0169A8	clr.l	(lbL033602).l
-	tst.b	(lbB02EB87-datasegment,a6)
+	tst.b	(lbB02EB87-ds,a6)
 	beq.b	lbC0169B8
-	movea.l	(lbL02D368-datasegment,a6),a3
+	movea.l	(lbL02D368-ds,a6),a3
 lbC0169B8	move.l	a3,d0
-	movea.l	(lbL02D338-datasegment,a6),a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	btst	#0,(lbB02D34F-datasegment,a6)
+	movea.l	(lbL02D338-ds,a6),a2
+	jsr	(lbC02A3CC-ds,a6)
+	btst	#0,(lbB02D34F-ds,a6)
 	beq.b	lbC0169E2
 	movem.l	a2/a3,-(sp)
 	addq.l	#3,a3
@@ -28338,21 +28344,21 @@ lbC016A02	moveq	#0,d0
 	move.b	(a0)+,d0
 	movem.l	d0/a0,-(sp)
 	move.l	d2,d1
-	jsr	(lbC027906-datasegment,a6)
+	jsr	(lbC027906-ds,a6)
 	beq.b	lbC016A1A
-	add.l	(datasegment-datasegment,a6),d0
+	add.l	(ds-ds,a6),d0
 	cmp.l	a2,d0
 	beq.b	lbC016A3E
 lbC016A1A	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	move.l	d2,d1
 	cmpi.b	#2,d1
 	beq.b	lbC016A2C
-	jsr	(lbC027684-datasegment,a6)
+	jsr	(lbC027684-ds,a6)
 lbC016A2C	movea.l	d0,a1
 	movem.l	(sp),d0/a0
 	movem.l	d1/a1,-(sp)
-	jsr	(_savecommonregs0-datasegment,a6)
+	jsr	(_savecommonregs0-ds,a6)
 	movem.l	(sp)+,d1/a1
 lbC016A3E	movem.l	(sp)+,d0/a0
 	adda.l	d0,a0
@@ -28375,20 +28381,20 @@ lbC016A68	bra.w	lbC0167C6
 lbC016A6C	lea	(lbC01FFB0).l,a5
 lbC016A72	moveq	#0,d0
 	move.b	(a0)+,d0
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC016A7E
 
 lbC016A7C	move.b	(a0)+,(a1)+
 lbC016A7E	dbra	d0,lbC016A7C
 	clr.b	(a1)
-	jsr	(lbC028F34-datasegment,a6)
+	jsr	(lbC028F34-ds,a6)
 	beq.b	lbC016A68
 	move.l	a0,-(sp)
 	jsr	(a5)
 	movea.l	(sp)+,a0
 	bra.w	lbC016774
 
-lbC016A94	move.b	(a0)+,(lbB02D34B-datasegment,a6)
+lbC016A94	move.b	(a0)+,(lbB02D34B-ds,a6)
 	move.l	a0,d1
 	move.b	(a0)+,d0
 	lsl.w	#8,d0
@@ -28400,8 +28406,8 @@ lbC016A94	move.b	(a0)+,(lbB02D34B-datasegment,a6)
 	tst.l	d0
 	beq.b	lbC016AAE
 	add.l	d1,d0
-lbC016AAE	move.l	d0,(lbL02D344-datasegment,a6)
-	lea	(lbW02D34C-datasegment,a6),a1
+lbC016AAE	move.l	d0,(lbL02D344-ds,a6)
+	lea	(lbW02D34C-ds,a6),a1
 	move.b	(a0)+,(a1)+
 	move.b	(a0)+,(a1)+
 	move.b	(a0)+,(a1)+
@@ -28411,7 +28417,7 @@ lbC016AAE	move.l	d0,(lbL02D344-datasegment,a6)
 lbC016AC8	move.b	(a0)+,(a1)+
 	dbra	d0,lbC016AC8
 	move.l	a0,-(sp)
-	movea.l	(datasegment-datasegment,a6),a0
+	movea.l	(ds-ds,a6),a0
 	moveq	#0,d0
 	lea	(lbL034400).l,a1
 	moveq	#7,d1
@@ -28419,7 +28425,7 @@ lbC016ADE	move.b	(a0)+,d0
 	bset	d1,(a1,d0.w)
 	dbra	d1,lbC016ADE
 	movea.l	(sp)+,a0
-	move.l	(lbL02D334-datasegment,a6),(lbL02D1E0).l
+	move.l	(lbL02D334-ds,a6),(lbL02D1E0).l
 	moveq	#0,d0
 	moveq	#7,d1
 lbC016AF6	move.b	(a2)+,d0
@@ -28433,10 +28439,10 @@ lbC016B08	move.l	a2,d0
 	bne.w	lbC016738
 	bra.w	lbC016774
 
-lbC016B16	move.b	(a0)+,(lbB02EAD5-datasegment,a6)
+lbC016B16	move.b	(a0)+,(lbB02EAD5-ds,a6)
 	move.l	a0,-(sp)
-	jsr	(lbC02A884-datasegment,a6)
-	clr.b	(lbB02EAD5-datasegment,a6)
+	jsr	(lbC02A884-ds,a6)
+	clr.b	(lbB02EAD5-ds,a6)
 	movea.l	(sp)+,a0
 	bra.w	lbC01676E
 
@@ -28444,7 +28450,7 @@ lbC016B2A	move.b	(a0)+,d0
 	ext.w	d0
 	ext.l	d0
 	adda.l	d0,a2
-	move.b	(a0)+,(lbB02EAD5-datasegment,a6)
+	move.b	(a0)+,(lbB02EAD5-ds,a6)
 	move.l	a0,-(sp)
 	lea	(lbL033800).l,a0
 	moveq	#15,d0
@@ -28452,23 +28458,23 @@ lbC016B40	cmpa.l	(a0)+,a2
 	addq.l	#4,a0
 	dbeq	d0,lbC016B40
 	beq.b	lbC016B78
-	movea.l	(lbL02D370-datasegment,a6),a0
+	movea.l	(lbL02D370-ds,a6),a0
 	move.l	a2,(a0)
-	jsr	(lbC02A884-datasegment,a6)
-	clr.b	(lbB02EAD5-datasegment,a6)
-	movea.l	(lbL02D370-datasegment,a6),a0
+	jsr	(lbC02A884-ds,a6)
+	clr.b	(lbB02EAD5-ds,a6)
+	movea.l	(lbL02D370-ds,a6),a0
 	addq.l	#4,a0
 	move.l	a2,(a0)+
 	cmpa.l	#lbL033880,a0
 	bcs.b	lbC016B6E
 	lea	(lbL033800).l,a0
-lbC016B6E	move.l	a0,(lbL02D370-datasegment,a6)
+lbC016B6E	move.l	a0,(lbL02D370-ds,a6)
 	movea.l	(sp)+,a0
 	bra.w	lbC01676E
 
-lbC016B78	clr.b	(lbB02EAD5-datasegment,a6)
+lbC016B78	clr.b	(lbB02EAD5-ds,a6)
 	movea.l	(-4,a0),a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	movea.l	(sp)+,a0
 	bra.w	lbC01676E
 
@@ -28480,24 +28486,24 @@ lbC016B8C	tst.b	(a0)+
 lbC016B94	addq.l	#1,a0
 	bra.w	lbC016774
 
-lbC016B9A	tst.b	(lbB02B453-datasegment,a6)
+lbC016B9A	tst.b	(lbB02B453-ds,a6)
 	bne.b	lbC016BB8
 	bsr.w	lbC016F10
 	beq.b	lbC016BB8
 	movem.l	a0/a2/a3,-(sp)
 	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	bsr.w	lbC016370
 	movem.l	(sp)+,a0/a2/a3
 lbC016BB8	bra.w	lbC016774
 
-lbC016BBC	tst.b	(lbB02B44F-datasegment,a6)
+lbC016BBC	tst.b	(lbB02B44F-ds,a6)
 	bne.b	lbC016BDA
 	bsr.w	lbC016F10
 	beq.b	lbC016BDA
 	movem.l	a0/a2/a3,-(sp)
 	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	bsr.w	lbC015EBA
 	movem.l	(sp)+,a0/a2/a3
 lbC016BDA	bra.w	lbC016774
@@ -28513,14 +28519,14 @@ lbC016BEE	bsr.w	lbC016F10
 	beq.b	lbC016C04
 	movem.l	a0/a2/a3,-(sp)
 	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	jsr	(a5)
 	movem.l	(sp)+,a0/a2/a3
 lbC016C04	bra.w	lbC016774
 
 lbC016C08	bsr.w	lbC016F10
 	beq.b	lbC016C28
-	movea.l	(lbL02D360-datasegment,a6),a1
+	movea.l	(lbL02D360-ds,a6),a1
 	moveq	#0,d1
 	move.b	(a0)+,d1
 	cmpi.b	#7,d1
@@ -28535,20 +28541,20 @@ lbC016C28	addq.l	#1,a0
 lbC016C2E	moveq	#0,d0
 	move.b	(a0)+,d0
 	lsl.w	#2,d0
-	movea.l	(lbL02D360-datasegment,a6),a1
-	tst.b	(lbB02EB87-datasegment,a6)
+	movea.l	(lbL02D360-ds,a6),a1
+	tst.b	(lbB02EB87-ds,a6)
 	bne.b	lbC016C42
-	move.l	a3,(lbL02D368-datasegment,a6)
+	move.l	a3,(lbL02D368-ds,a6)
 lbC016C42	movem.l	a2/a3,-(sp)
 	movea.l	(a1,d0.w),a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	cmpi.l	#lbW01725C,(lbL02D340-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
+	cmpi.l	#lbW01725C,(lbL02D340-ds,a6)
 	beq.b	lbC016C60
 	bset	#0,(3,a3)
 	bne.b	lbC016C6C
 lbC016C60	addq.l	#8,sp
-	st	(lbB02EB87-datasegment,a6)
-	st	(lbB02EB8A-datasegment,a6)
+	st	(lbB02EB87-ds,a6)
+	st	(lbB02EB8A-ds,a6)
 	bra.b	lbC016C76
 
 lbC016C6C	movem.l	(sp)+,a2/a3
@@ -28562,11 +28568,11 @@ lbC016C76	move.b	(a0)+,d0
 	move.b	(a0)+,d0
 	lsl.l	#8,d0
 	move.b	(a0)+,d0
-	add.l	(lbL02D310-datasegment,a6),d0
-	movea.l	(lbL02D35C-datasegment,a6),a1
+	add.l	(lbL02D310-ds,a6),d0
+	movea.l	(lbL02D35C-ds,a6),a1
 	move.l	a0,(a1)+
-	move.l	a1,(lbL02D35C-datasegment,a6)
-	addi.l	#$20,(lbL02D360-datasegment,a6)
+	move.l	a1,(lbL02D35C-ds,a6)
+	addi.l	#$20,(lbL02D360-ds,a6)
 	movea.l	d0,a0
 	bra.w	lbC016774
 
@@ -28586,9 +28592,9 @@ lbC016CB8	lea	(lbW033600).l,a1
 	beq.b	lbC016CEE
 	bsr.w	lbC016F10
 	beq.b	lbC016CD4
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#0,d1
-	jsr	(lbC02777C-datasegment,a6)
+	jsr	(lbC02777C-ds,a6)
 lbC016CD4	beq.b	lbC016CFC
 	movea.l	d0,a1
 	lea	(lbW033600).l,a5
@@ -28658,7 +28664,7 @@ lbC016D68	lea	(lbC01FFB0).l,a5
 lbC016D6E	movem.l	a2/a3,-(sp)
 	moveq	#0,d0
 	move.b	(a0)+,d0
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC016D7E
 
 lbC016D7C	move.b	(a0)+,(a1)+
@@ -28667,12 +28673,12 @@ lbC016D7E	dbra	d0,lbC016D7C
 	bsr.w	lbC016F10
 	beq.b	lbC016DAE
 	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	move.l	(a3),d0
 	andi.l	#$2100000,d0
 	cmpi.l	#$2000000,d0
 	beq.b	lbC016DA8
-	jsr	(lbC028F34-datasegment,a6)
+	jsr	(lbC028F34-ds,a6)
 	beq.w	lbC016A68
 lbC016DA8	move.l	a0,-(sp)
 	jsr	(a5)
@@ -28684,7 +28690,7 @@ lbC016DB6	lea	(lbC02003C).l,a5
 	movem.l	a2/a3,-(sp)
 	moveq	#0,d0
 	move.b	(a0)+,d0
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC016DCC
 
 lbC016DCA	move.b	(a0)+,(a1)+
@@ -28692,18 +28698,18 @@ lbC016DCC	dbra	d0,lbC016DCA
 	clr.b	(a1)
 	bsr.w	lbC016F10
 	beq.w	lbC016E9C
-	st	(lbW02EB88-datasegment,a6)
+	st	(lbW02EB88-ds,a6)
 	move.l	a2,d1
 	andi.b	#1,d1
 	bne.b	lbC016DF4
-	move.w	(lbB02EAD0-datasegment,a6),d1
+	move.w	(lbB02EAD0-ds,a6),d1
 	andi.w	#$6106,d1
 	beq.b	lbC016DF4
-	clr.b	(lbW02EB88-datasegment,a6)
+	clr.b	(lbW02EB88-ds,a6)
 lbC016DF4	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	movem.l	a2/a3,-(sp)
-lbC016DFE	cmpi.b	#$14,(lbW02EB88-datasegment,a6)
+lbC016DFE	cmpi.b	#$14,(lbW02EB88-ds,a6)
 	bhi.b	lbC016E48
 	move.l	a2,d1
 	andi.b	#1,d1
@@ -28716,8 +28722,8 @@ lbC016DFE	cmpi.b	#$14,(lbW02EB88-datasegment,a6)
 	move.l	a1,d1
 	cmpi.w	#$4EFA,(a2)
 	bne.b	lbC016E48
-lbC016E26	addq.b	#1,(lbW02EB88-datasegment,a6)
-	lea	(displayid-datasegment,a6),a1
+lbC016E26	addq.b	#1,(lbW02EB88-ds,a6)
+	lea	(displayid-ds,a6),a1
 lbC016E2E	tst.b	(a1)+
 	bne.b	lbC016E2E
 lbC016E32	move.b	(-1,a1),(a1)
@@ -28734,15 +28740,15 @@ lbC016E4C	movem.l	a2/a3,-(sp)
 	andi.l	#$2100000,d0
 	cmpi.l	#$2000000,d0
 	beq.b	lbC016E68
-	jsr	(lbC028F34-datasegment,a6)
+	jsr	(lbC028F34-ds,a6)
 	beq.w	lbC016A68
 lbC016E68	move.l	a0,-(sp)
 	jsr	(a5)
 	movea.l	(sp)+,a0
 	movem.l	(sp)+,a2/a3
-	subq.b	#1,(lbW02EB88-datasegment,a6)
+	subq.b	#1,(lbW02EB88-ds,a6)
 	bmi.b	lbC016E9C
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 lbC016E7C	move.b	(1,a1),(a1)+
 	bne.b	lbC016E7C
 	move.l	(2,a2),d1
@@ -28752,7 +28758,7 @@ lbC016E7C	move.b	(1,a1),(a1)+
 	adda.w	(a1),a1
 	move.l	a1,d1
 lbC016E94	movea.l	d1,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	bra.b	lbC016E4C
 
 lbC016E9C	movem.l	(sp)+,a2/a3
@@ -28774,7 +28780,7 @@ lbC016EC4	lea	(lbC01FFB0).l,a5
 lbC016ECA	movem.l	a2/a3,-(sp)
 	moveq	#0,d0
 	move.b	(a0)+,d0
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC016EDA
 
 lbC016ED8	move.b	(a0)+,(a1)+
@@ -28783,12 +28789,12 @@ lbC016EDA	dbra	d0,lbC016ED8
 	bsr.b	lbC016F2A
 	beq.b	lbC016F08
 	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	move.l	(a3),d0
 	andi.l	#$2100000,d0
 	cmpi.l	#$2000000,d0
 	beq.b	lbC016F02
-	jsr	(lbC028F34-datasegment,a6)
+	jsr	(lbC028F34-ds,a6)
 	beq.w	lbC016A68
 lbC016F02	move.l	a0,-(sp)
 	jsr	(a5)
@@ -28796,20 +28802,20 @@ lbC016F02	move.l	a0,-(sp)
 lbC016F08	movem.l	(sp)+,a2/a3
 	bra.w	lbC016774
 
-lbC016F10	move.b	(a0)+,(lbB02EAD5-datasegment,a6)
+lbC016F10	move.b	(a0)+,(lbB02EAD5-ds,a6)
 	movem.l	a0/a2/a3/a5,-(sp)
-	jsr	(lbC02A884-datasegment,a6)
+	jsr	(lbC02A884-ds,a6)
 	movem.l	(sp)+,a0/a2/a3/a5
-	clr.b	(lbB02EAD5-datasegment,a6)
-	move.l	(lbL02D12C-datasegment,a6),d0
+	clr.b	(lbB02EAD5-ds,a6)
+	move.l	(lbL02D12C-ds,a6),d0
 	rts
 
-lbC016F2A	move.b	(a0)+,(lbB02EAD5-datasegment,a6)
+lbC016F2A	move.b	(a0)+,(lbB02EAD5-ds,a6)
 	movem.l	a0/a2/a3/a5,-(sp)
-	jsr	(lbC02A884-datasegment,a6)
+	jsr	(lbC02A884-ds,a6)
 	movem.l	(sp)+,a0/a2/a3/a5
-	clr.b	(lbB02EAD5-datasegment,a6)
-	move.l	(lbL02D130-datasegment,a6),d0
+	clr.b	(lbB02EAD5-ds,a6)
+	move.l	(lbL02D130-ds,a6),d0
 	rts
 
 lbC016F44	bsr.w	lbC0160C0
@@ -28879,15 +28885,15 @@ lbC016FD8	move.l	a2,-(sp)
 lbC016FE8	adda.w	(a2),a2
 	bra.b	lbC016FFE
 
-lbC016FEC	tst.b	(lbB02EB40-datasegment,a6)
+lbC016FEC	tst.b	(lbB02EB40-ds,a6)
 	beq.b	lbC017030
-	movea.l	(datasegment-datasegment,a6),a1
-	adda.l	(lbL02D098-datasegment,a6),a1
+	movea.l	(ds-ds,a6),a1
+	adda.l	(lbL02D098-ds,a6),a1
 	adda.w	(a2),a1
 	movea.l	a1,a2
-lbC016FFE	jsr	(lbC02A3CC-datasegment,a6)
+lbC016FFE	jsr	(lbC02A3CC-ds,a6)
 	movem.l	d0/a0,-(sp)
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	bra.b	lbC01700E
 
 lbC01700C	move.b	(a0)+,(a1)+
@@ -28897,7 +28903,7 @@ lbC01700E	dbra	d0,lbC01700C
 	andi.l	#$2100000,d0
 	cmpi.l	#$2000000,d0
 	beq.b	lbC01702A
-	jsr	(lbC028F34-datasegment,a6)
+	jsr	(lbC028F34-ds,a6)
 	beq.b	lbC017038
 lbC01702A	jsr	(a5)
 	movem.l	(sp)+,d0/a0
@@ -28928,17 +28934,17 @@ lbC017048	move.l	a2,-(sp)
 lbC01705C	adda.w	(a2),a2
 	bra.b	lbC017072
 
-lbC017060	tst.b	(lbB02EB40-datasegment,a6)
+lbC017060	tst.b	(lbB02EB40-ds,a6)
 	beq.b	lbC017082
-	movea.l	(datasegment-datasegment,a6),a1
-	adda.l	(lbL02D098-datasegment,a6),a1
+	movea.l	(ds-ds,a6),a1
+	adda.l	(lbL02D098-ds,a6),a1
 	adda.w	(a2),a1
 	movea.l	a1,a2
-lbC017072	jsr	(lbC02A3CC-datasegment,a6)
+lbC017072	jsr	(lbC02A3CC-ds,a6)
 	movea.l	a2,a1
-	suba.l	(datasegment-datasegment,a6),a1
+	suba.l	(ds-ds,a6),a1
 	moveq	#2,d1
-	jsr	(_savecommonregs0-datasegment,a6)
+	jsr	(_savecommonregs0-ds,a6)
 lbC017082	movem.l	(sp)+,d0/a0
 	adda.l	d0,a0
 	movea.l	(sp)+,a2
@@ -28963,16 +28969,16 @@ lbC0170A0	move.b	(a0)+,d6
 	move.l	a0,d4
 	bsr.w	lbC014CA6
 	beq.w	lbC0167C0
-	jsr	(lbC02AEB2-datasegment,a6)
+	jsr	(lbC02AEB2-ds,a6)
 	movem.l	d0/a0,-(sp)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#1,d1
-	jsr	(lbC027684-datasegment,a6)
+	jsr	(lbC027684-ds,a6)
 	movea.l	d0,a1
 	movem.l	(sp),d0/a0
 	movem.l	d1/a1,-(sp)
-	jsr	(_savecommonregs0-datasegment,a6)
+	jsr	(_savecommonregs0-ds,a6)
 	movem.l	(sp)+,d1/a1
 	movem.l	(sp)+,d0/a0
 	adda.l	d0,a0
@@ -29005,7 +29011,7 @@ lbC017114	move.b	(a0)+,d0
 	lsl.l	#8,d0
 	move.b	(a0)+,d0
 	move.l	a2,d1
-	sub.l	(datasegment-datasegment,a6),d1
+	sub.l	(ds-ds,a6),d1
 	cmp.l	d0,d1
 	beq.w	lbC016774
 	bra.w	lbC016738
@@ -29028,17 +29034,17 @@ lbC01715A	jsr	(lbC01FFD6).l
 lbC017164	addq.l	#3,a0
 	bra.w	lbC016774
 
-lbC01716A	move.b	(a0)+,(lbB02EAD5-datasegment,a6)
+lbC01716A	move.b	(a0)+,(lbB02EAD5-ds,a6)
 	moveq	#0,d0
 	move.b	(a0)+,d0
 	lsl.w	#8,d0
 	move.b	(a0)+,d0
 	move.l	a0,-(sp)
-	jsr	(getfuncbynum-datasegment,a6)
+	jsr	(getfuncbynum-ds,a6)
 	move.l	(6,a0),d0
 	movea.l	(a0),a0
 	jsr	(a0)
-	clr.b	(lbB02EAD5-datasegment,a6)
+	clr.b	(lbB02EAD5-ds,a6)
 	movea.l	(sp)+,a0
 	bra.w	lbC01676E
 
@@ -29054,13 +29060,13 @@ lbC01719E	bra.w	lbC016774
 
 lbC0171A2	bra.w	lbC016774
 
-lbC0171A6	addq.l	#4,(lbL02D334-datasegment,a6)
+lbC0171A6	addq.l	#4,(lbL02D334-ds,a6)
 	bra.w	lbC016738
 
-lbC0171AE	movea.l	(lbL02D35C-datasegment,a6),a1
+lbC0171AE	movea.l	(lbL02D35C-ds,a6),a1
 	movea.l	-(a1),a0
-	move.l	a1,(lbL02D35C-datasegment,a6)
-	subi.l	#$20,(lbL02D360-datasegment,a6)
+	move.l	a1,(lbL02D35C-ds,a6)
+	subi.l	#$20,(lbL02D360-ds,a6)
 	bra.w	lbC016774
 
 lbC0171C4	bset	#0,(3,a3)
@@ -29070,7 +29076,7 @@ lbC0171C4	bset	#0,(3,a3)
 lbC0171D2	addq.l	#4,a0
 	bra.w	lbC016774
 
-lbC0171D8	move.l	(lbL02D334-datasegment,a6),(lbL02D374).l
+lbC0171D8	move.l	(lbL02D334-ds,a6),(lbL02D374).l
 	move.b	(a0)+,d0
 	lsl.w	#8,d0
 	move.b	(a0)+,d0
@@ -29078,11 +29084,11 @@ lbC0171D8	move.l	(lbL02D334-datasegment,a6),(lbL02D374).l
 	move.b	(a0)+,d0
 	lsl.l	#8,d0
 	move.b	(a0)+,d0
-	add.l	(lbL02D310-datasegment,a6),d0
-	move.l	d0,(lbL02D334-datasegment,a6)
+	add.l	(lbL02D310-ds,a6),d0
+	move.l	d0,(lbL02D334-ds,a6)
 	bra.w	lbC016774
 
-lbC0171FA	move.l	(lbL02D374-datasegment,a6),(lbL02D334).l
+lbC0171FA	move.l	(lbL02D374-ds,a6),(lbL02D334).l
 	bra.w	lbC016774
 
 lbC017206	moveq	#-1,d2
@@ -29096,7 +29102,7 @@ lbC01720C	move.b	(a0)+,d0
 	move.b	(a0)+,d0
 	lsl.l	#8,d0
 	move.b	(a0)+,d0
-	add.l	(lbL02D310-datasegment,a6),d0
+	add.l	(lbL02D310-ds,a6),d0
 	moveq	#0,d1
 	move.b	(a0)+,d1
 	lea	(a0,d1.w),a5
@@ -29121,7 +29127,7 @@ lbC017244	move.b	(a0)+,d0
 	move.b	(a0)+,d0
 	lsl.l	#8,d0
 	move.b	(a0)+,d0
-	add.l	(lbL02D310-datasegment,a6),d0
+	add.l	(lbL02D310-ds,a6),d0
 	movea.l	d0,a0
 	bra.w	lbC016774
 
@@ -29402,35 +29408,35 @@ lbW0173CC	dw	lbC0167C6-lbW0173CC
 	dw	lbC017206-lbW0173CC
 	dw	lbC017244-lbW0173CC
 
-lbC017484	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(dosclose-datasegment,a6)
-	clr.l	(lbB02D0E0-datasegment,a6)
-	movea.l	(lbL02D2FC-datasegment,a6),a1
-	move.l	(lbL02D304-datasegment,a6),d0
-	jsr	(_FreeMem-datasegment,a6)
-	clr.l	(lbL02D2FC-datasegment,a6)
+lbC017484	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(dosclose-ds,a6)
+	clr.l	(lbB02D0E0-ds,a6)
+	movea.l	(lbL02D2FC-ds,a6),a1
+	move.l	(lbL02D304-ds,a6),d0
+	jsr	(_FreeMem-ds,a6)
+	clr.l	(lbL02D2FC-ds,a6)
 	cmp.w	d0,d0
 	rts
 
-lbC0174A4	st	(lbB02EB84-datasegment,a6)
+lbC0174A4	st	(lbB02EB84-ds,a6)
 	bra.b	lbC0174AE
 
-lbC0174AA	clr.b	(lbB02EB84-datasegment,a6)
-lbC0174AE	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC0174AA	clr.b	(lbB02EB84-ds,a6)
+lbC0174AE	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2738,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(lbL02E5C8-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(lbL02E5C8-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC020566).l
+	jsr	(requestfile).l
 	beq.b	lbC017484
-	jsr	(_SetPointerAll-datasegment,a6)
+	jsr	(_SetPointerAll-ds,a6)
 	move.l	#lbL02E5C8,d1
-	jsr	(lbC02A286-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(lbC02A286-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	beq.b	lbC017484
-	movem.l	(datasegment-datasegment,a6),a2/a3
-	lea	(lbB031E00-datasegment,a6),a4
-	move.l	(lbL02B4A0-datasegment,a6),d0
+	movem.l	(ds-ds,a6),a2/a3
+	lea	(lbB031E00-ds,a6),a4
+	move.l	(workdata_struct_end-ds,a6),d0
 	moveq	#0,d5
 	moveq	#0,d3
 lbC0174EE	cmpa.l	#lbL034200,a4
@@ -29438,7 +29444,7 @@ lbC0174EE	cmpa.l	#lbL034200,a4
 	cmp.l	a3,d0
 	beq.b	lbC017530
 	addq.l	#1,d5
-	jsr	(lbC02A3E6-datasegment,a6)
+	jsr	(lbC02A3E6-ds,a6)
 	move.l	(a3),(a4)+
 	move.l	a2,(a4)+
 	move.l	a3,(a4)+
@@ -29462,28 +29468,28 @@ lbC017524	addq.l	#1,d2
 	addq.l	#1,d1
 	bra.b	lbC01750C
 
-lbC017530	move.w	d5,(lbW02D39E-datasegment,a6)
+lbC017530	move.w	d5,(lbW02D39E-ds,a6)
 	clr.l	(a4)
-	move.l	(lbL02A8A0-datasegment,a6),(4,a4)
-	move.l	(lbL02B4A0-datasegment,a6),(8,a4)
+	move.l	(workdata_end-ds,a6),(4,a4)
+	move.l	(workdata_struct_end-ds,a6),(8,a4)
 	move.l	d3,d0
 	addq.l	#1,d0
 	add.l	d0,d0
-	move.l	d0,(lbL02D304-datasegment,a6)
+	move.l	d0,(lbL02D304-ds,a6)
 	moveq	#1,d1
-	jsr	(lbC02AD6C-datasegment,a6)
-	move.l	d0,(lbL02D2FC-datasegment,a6)
+	jsr	(lbC02AD6C-ds,a6)
+	move.l	d0,(lbL02D2FC-ds,a6)
 	beq.w	lbC017484
 	movea.l	d0,a0
-	movem.l	(datasegment-datasegment,a6),a2/a3
-lbC017562	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	movem.l	(ds-ds,a6),a2/a3
+lbC017562	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC0175B8
 	move.l	(a3)+,d0
 	btst	#$1A,d0
 	beq.b	lbC017562
 	subq.l	#4,a3
-	jsr	(lbC02A3E6-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
+	jsr	(lbC02A3E6-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
 	moveq	#0,d2
 	move.l	(4,a4),d0
 	subq.l	#8,d0
@@ -29507,13 +29513,13 @@ lbC017594	addq.l	#1,d2
 	bra.b	lbC01758E
 
 lbC0175AC	moveq	#0,d2
-	tst.l	(lbB031E14-datasegment,a6)
+	tst.l	(lbB031E14-ds,a6)
 	beq.b	lbC01758E
 	moveq	#1,d2
 	bra.b	lbC01758E
 
-lbC0175B8	lea	(lbB031E00-datasegment,a6),a4
-	lea	(displayid-datasegment,a6),a5
+lbC0175B8	lea	(lbB031E00-ds,a6),a4
+	lea	(displayid-ds,a6),a5
 	move.l	a5,d2
 	move.l	#$3F3,(a5)+
 	clr.l	(a5)+
@@ -29523,8 +29529,8 @@ lbC0175B8	lea	(lbB031E00-datasegment,a6),a4
 	subq.l	#1,d5
 	move.l	d5,(a5)+
 	moveq	#$14,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC017484
 	movea.l	d2,a5
@@ -29541,20 +29547,20 @@ lbC0175FC	btst	#14,d1
 	bset	#$1E,d0
 lbC017606	move.l	d0,(a5)
 	moveq	#4,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	subq.l	#4,d0
 	bne.w	lbC017484
 	lea	($14,a4),a4
 	bra.b	lbC0175E8
 
-lbC01761E	lea	(lbB031E00-datasegment,a6),a4
-	move.l	(lbL02D2FC-datasegment,a6),(lbL02D300).l
+lbC01761E	lea	(lbB031E00-ds,a6),a4
+	move.l	(lbL02D2FC-ds,a6),(lbL02D300).l
 lbC01762A	tst.l	(a4)
 	beq.w	lbC017846
 	movem.l	(4,a4),a2/a3
 	bsr.w	lbC017868
-	lea	(displayid-datasegment,a6),a5
+	lea	(displayid-ds,a6),a5
 	move.l	a5,d2
 	move.l	(a4),d1
 	btst	#$1E,d1
@@ -29565,8 +29571,8 @@ lbC01762A	tst.l	(a4)
 	lsr.l	#2,d0
 	move.l	d0,(a5)+
 	moveq	#8,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC017484
 	bra.b	lbC0176CA
@@ -29582,14 +29588,14 @@ lbC01767E	move.l	(12,a4),d0
 	lsr.l	#2,d0
 	move.l	d0,(a5)+
 	moveq	#8,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC017484
 	move.l	(12,a4),d3
 	move.l	a2,d2
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC017484
 	moveq	#3,d0
@@ -29599,16 +29605,16 @@ lbC01767E	move.l	(12,a4),d0
 	sub.l	d0,d3
 	clr.l	-(sp)
 	move.l	sp,d2
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
 	bne.w	lbC017484
-lbC0176CA	jsr	(lbC02A3CC-datasegment,a6)
+lbC0176CA	jsr	(lbC02A3CC-ds,a6)
 	bsr.w	lbC0178B4
 	movem.l	a2-a4,-(sp)
 	bsr.b	lbC017716
-	tst.b	(lbB02EB84-datasegment,a6)
+	tst.b	(lbB02EB84-ds,a6)
 	beq.b	lbC0176E4
 	movem.l	(sp)+,a2-a4
 	bra.b	lbC0176F4
@@ -29621,41 +29627,41 @@ lbC0176F4	lea	($14,a4),a4
 	move.l	#$3F2,-(sp)
 	move.l	sp,d2
 	moveq	#4,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
 	bne.w	lbC017484
 	bra.w	lbC01762A
 
-lbC017716	clr.b	(lbB02EB74-datasegment,a6)
-	move.w	#$FFFF,(lbW02D3A0-datasegment,a6)
+lbC017716	clr.b	(lbB02EB74-ds,a6)
+	move.w	#$FFFF,(lbW02D3A0-ds,a6)
 lbC017720	movem.l	(4,sp),a2/a3
-	movea.l	(lbL02D300-datasegment,a6),a1
-	move.w	(lbW02D3A0-datasegment,a6),d0
+	movea.l	(lbL02D300-ds,a6),a1
+	move.w	(lbW02D3A0-ds,a6),d0
 	addq.w	#1,d0
-	move.w	d0,(lbW02D3A0-datasegment,a6)
-	cmp.w	(lbW02D39E-datasegment,a6),d0
+	move.w	d0,(lbW02D3A0-ds,a6)
+	cmp.w	(lbW02D39E-ds,a6),d0
 	bcs.b	lbC01775C
-	move.l	(lbL02D30C-datasegment,a6),(lbL02D300).l
-	tst.b	(lbB02EB74-datasegment,a6)
+	move.l	(lbL02D30C-ds,a6),(lbL02D300).l
+	tst.b	(lbB02EB74-ds,a6)
 	beq.b	lbC01775A
 	clr.l	-(sp)
 	moveq	#4,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
+	move.l	(lbB02D0E0-ds,a6),d1
 	move.l	sp,d2
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	subq.l	#4,d0
 lbC01775A	rts
 
-lbC01775C	lea	(lbB031E00-datasegment,a6),a4
+lbC01775C	lea	(lbB031E00-ds,a6),a4
 	move.l	d0,d1
 	bra.b	lbC017768
 
 lbC017764	lea	($14,a4),a4
 lbC017768	dbra	d1,lbC017764
-	move.l	a3,(lbL02D308-datasegment,a6)
+	move.l	a3,(lbL02D308-ds,a6)
 	moveq	#0,d3
 	movea.l	a1,a0
 	btst	#3,(a3)
@@ -29671,7 +29677,7 @@ lbC01778E	move.l	(a3)+,d0
 	beq.b	lbC01778E
 	btst	#2,d0
 	bne.b	lbC0177A6
-lbC01779A	move.w	(lbW02D3A0-datasegment,a6),d0
+lbC01779A	move.w	(lbW02D3A0-ds,a6),d0
 	cmp.w	(a0)+,d0
 	bne.b	lbC017788
 	addq.l	#1,d3
@@ -29679,24 +29685,24 @@ lbC01779A	move.w	(lbW02D3A0-datasegment,a6),d0
 
 lbC0177A6	tst.l	d3
 	beq.w	lbC017720
-	move.l	a0,(lbL02D30C-datasegment,a6)
-	lea	(displayid-datasegment,a6),a5
+	move.l	a0,(lbL02D30C-ds,a6)
+	lea	(displayid-ds,a6),a5
 	move.l	a5,d2
 	moveq	#0,d0
-	tst.b	(lbB02EB74-datasegment,a6)
+	tst.b	(lbB02EB74-ds,a6)
 	bne.b	lbC0177CA
-	st	(lbB02EB74-datasegment,a6)
+	st	(lbB02EB74-ds,a6)
 	moveq	#4,d0
 	move.l	#$3EC,(a5)+
 lbC0177CA	move.l	d3,(a5)+
 	moveq	#0,d1
-	move.w	(lbW02D3A0-datasegment,a6),d1
+	move.w	(lbW02D3A0-ds,a6),d1
 	move.l	d1,(a5)+
 	addq.l	#8,d0
 	move.l	a1,-(sp)
 	move.l	d0,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	movea.l	(sp)+,a1
 	cmp.l	d0,d3
 	beq.b	lbC0177EA
@@ -29715,37 +29721,37 @@ lbC017808	move.l	(a3)+,d0
 	btst	#2,d0
 	bne.w	lbC017720
 	subq.l	#4,a3
-lbC017818	move.w	(lbW02D3A0-datasegment,a6),d0
+lbC017818	move.w	(lbW02D3A0-ds,a6),d0
 	cmp.w	(a1)+,d0
 	bne.b	lbC0177F6
 	move.l	a3,d0
-	sub.l	(lbL02D308-datasegment,a6),d0
+	sub.l	(lbL02D308-ds,a6),d0
 	lsr.l	#2,d0
-	lea	(displayid-datasegment,a6),a5
+	lea	(displayid-ds,a6),a5
 	move.l	d0,(a5)
 	moveq	#4,d3
 	move.l	a5,d2
-	move.l	(lbB02D0E0-datasegment,a6),d1
+	move.l	(lbB02D0E0-ds,a6),d1
 	move.l	a1,-(sp)
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	movea.l	(sp)+,a1
 	addq.l	#4,a3
 	cmp.l	d0,d3
 	beq.b	lbC017802
 	rts
 
-lbC017846	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(dosclose-datasegment,a6)
-	clr.l	(lbB02D0E0-datasegment,a6)
-	movea.l	(lbL02D2FC-datasegment,a6),a1
-	move.l	(lbL02D304-datasegment,a6),d0
-	jsr	(_FreeMem-datasegment,a6)
-	clr.l	(lbL02D2FC-datasegment,a6)
+lbC017846	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(dosclose-ds,a6)
+	clr.l	(lbB02D0E0-ds,a6)
+	movea.l	(lbL02D2FC-ds,a6),a1
+	move.l	(lbL02D304-ds,a6),d0
+	jsr	(_FreeMem-ds,a6)
+	clr.l	(lbL02D2FC-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
 lbC017868	movem.l	d0-d7/a0-a5,-(sp)
-	movea.l	(lbL02D300-datasegment,a6),a1
+	movea.l	(lbL02D300-ds,a6),a1
 	move.l	#$4000004,d1
 	btst	#2,(a3)
 	addq.l	#4,a3
@@ -29755,9 +29761,9 @@ lbC01787E	move.l	(a3)+,d0
 	beq.b	lbC01787E
 	btst	#2,d0
 	bne.b	lbC0178AE
-lbC01788A	jsr	(lbC02A3E6-datasegment,a6)
+lbC01788A	jsr	(lbC02A3E6-ds,a6)
 	subq.l	#1,a2
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	move.w	(a1)+,d0
 	bra.b	lbC01789C
 
@@ -29772,7 +29778,7 @@ lbC0178AE	movem.l	(sp)+,d0-d7/a0-a5
 	rts
 
 lbC0178B4	movem.l	d0-d7/a0-a5,-(sp)
-	movea.l	(lbL02D300-datasegment,a6),a1
+	movea.l	(lbL02D300-ds,a6),a1
 	move.l	#$4000004,d1
 	btst	#2,(a3)
 	addq.l	#4,a3
@@ -29782,9 +29788,9 @@ lbC0178CA	move.l	(a3)+,d0
 	beq.b	lbC0178CA
 	btst	#2,d0
 	bne.b	lbC0178FA
-lbC0178D6	jsr	(lbC02A3E6-datasegment,a6)
+lbC0178D6	jsr	(lbC02A3E6-ds,a6)
 	subq.l	#1,a2
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	move.w	(a1)+,d0
 	bra.b	lbC0178E8
 
@@ -29798,7 +29804,7 @@ lbC0178E8	dbra	d0,lbC0178E4
 lbC0178FA	movem.l	(sp)+,d0-d7/a0-a5
 	rts
 
-lbC017900	clr.b	(lbB02EB75-datasegment,a6)
+lbC017900	clr.b	(lbB02EB75-ds,a6)
 	btst	#1,(a3)
 	addq.l	#4,a3
 	bne.b	lbC01793C
@@ -29808,13 +29814,13 @@ lbC017912	move.l	(a3)+,d0
 	beq.b	lbC017912
 	btst	#2,d0
 	beq.b	lbC01793C
-	tst.b	(lbB02EB75-datasegment,a6)
+	tst.b	(lbB02EB75-ds,a6)
 	beq.b	lbC017938
 	clr.l	-(sp)
 	moveq	#4,d3
 	move.l	sp,d2
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	addq.l	#4,sp
 	rts
@@ -29823,22 +29829,22 @@ lbC017938	cmp.w	d0,d0
 	rts
 
 lbC01793C	subq.l	#4,a3
-	tst.b	(lbB02EB75-datasegment,a6)
+	tst.b	(lbB02EB75-ds,a6)
 	bne.b	lbC017960
-	st	(lbB02EB75-datasegment,a6)
+	st	(lbB02EB75-ds,a6)
 	move.l	#$3F0,-(sp)
 	moveq	#4,d3
 	move.l	sp,d2
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
 	bne.b	lbC01799E
-lbC017960	jsr	(lbC02A3E6-datasegment,a6)
+lbC017960	jsr	(lbC02A3E6-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#0,d1
-	jsr	(lbC02777C-datasegment,a6)
+	jsr	(lbC02777C-ds,a6)
 	beq.b	lbC0179BC
 	movem.l	d0/d1,-(sp)
 	addq.l	#3,d1
@@ -29846,14 +29852,14 @@ lbC017960	jsr	(lbC02A3E6-datasegment,a6)
 	move.l	d1,-(sp)
 	move.l	sp,d2
 	moveq	#4,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
 	movem.l	(sp)+,d2/d3
 	bne.b	lbC01799E
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	beq.b	lbC0179C2
 lbC01799E	rts
@@ -29864,8 +29870,8 @@ lbC0179A0	move.l	a3,d0
 	move.l	d0,-(sp)
 	moveq	#4,d3
 	move.l	sp,d2
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
 	bne.b	lbC01799E
@@ -29879,8 +29885,8 @@ lbC0179C2	moveq	#3,d0
 	sub.l	d0,d3
 	clr.l	-(sp)
 	move.l	sp,d2
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Write-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
 	beq.b	lbC0179A0
@@ -29889,7 +29895,7 @@ lbC0179C2	moveq	#3,d0
 lbC0179E0	move.l	#$4C280380,d1
 	move.l	#$180,d2
 	move.l	#$100,d3
-	movea.l	(lbL02B4A0-datasegment,a6),a0
+	movea.l	(workdata_struct_end-ds,a6),a0
 	move.l	d2,(a0)
 	move.l	d2,(4,a0)
 	move.l	a2,d0
@@ -29907,39 +29913,39 @@ lbC017A0A	move.w	(a3),d0
 	cmp.l	d2,d0
 	bne.b	lbC017A0A
 	lea	(-10,a3),a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC017A46
 	move.l	a3,d0
-	sub.l	(workdata_end-datasegment,a6),d0
+	sub.l	(workdata_struct-ds,a6),d0
 	lsr.l	#2,d0
 	movea.l	d0,a2
-	adda.l	(datasegment-datasegment,a6),a2
-	movea.l	(lbL02B4A0-datasegment,a6),a0
+	adda.l	(ds-ds,a6),a2
+	movea.l	(workdata_struct_end-ds,a6),a0
 	move.l	#$FFFFFFFF,(a0)
 	clr.l	(4,a0)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC017A46	movem.l	(datasegment-datasegment,a6),a2/a3
-	jsr	(lbC02A1B4-datasegment,a6)
-	movea.l	(lbL02B4A0-datasegment,a6),a0
+lbC017A46	movem.l	(ds-ds,a6),a2/a3
+	jsr	(lbC02A1B4-ds,a6)
+	movea.l	(workdata_struct_end-ds,a6),a0
 	move.l	#$FFFFFFFF,(a0)
-	st	(lbB02EB48-datasegment,a6)
+	st	(lbB02EB48-ds,a6)
 	moveq	#0,d0
 	rts
 
-lbC017A62	jmp	(_dummy_st-datasegment,a6)
+lbC017A62	jmp	(term1-ds,a6)
 
-lbC017A66	clr.b	(lbB02EB9E-datasegment,a6)
+lbC017A66	clr.b	(lbB02EB9E-ds,a6)
 	rts
 
-lbC017A6C	jsr	(saveregs_all-datasegment,a6)
-	st	(lbB02EB9E-datasegment,a6)
+lbC017A6C	jsr	(saveregs_all-ds,a6)
+	st	(lbB02EB9E-ds,a6)
 	pea	(lbC017A66,pc)
-	jsr	(lbC02AFC0-datasegment,a6)
+	jsr	(lbC02AFC0-ds,a6)
 lbC017A7C	moveq	#0,d2
-	movem.l	(datasegment-datasegment,a6),a2/a3
+	movem.l	(ds-ds,a6),a2/a3
 	bclr	#5,(1,a3)
-	cmpi.l	#8,(lbB02B4A8-datasegment,a6)
+	cmpi.l	#8,(workdata_length-ds,a6)
 	bcs.b	lbC017AB2
 	cmpi.l	#$ABCD,(4,a2)
 	bne.b	lbC017AB2
@@ -29947,11 +29953,11 @@ lbC017A7C	moveq	#0,d2
 	lea	($10,a3),a3
 	move.l	(a3),d7
 	jsr	(lbC01FFD6).l
-	movem.l	(datasegment-datasegment,a6),a2/a3
+	movem.l	(ds-ds,a6),a2/a3
 lbC017AB2	move.l	(a3),d7
-lbC017AB4	jsr	(lbC02A4BE-datasegment,a6)
+lbC017AB4	jsr	(lbC02A4BE-ds,a6)
 	bne.b	lbC017A62
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.w	lbC017B8A
 	move.w	a2,d0
 	btst	#0,d0
@@ -29962,9 +29968,9 @@ lbC017AB4	jsr	(lbC02A4BE-datasegment,a6)
 
 lbC017AD0	cmpi.w	#$4EFB,(-2,a2)
 	beq.w	lbC017B96
-lbC017ADA	tst.b	(lbB02EB78-datasegment,a6)
+lbC017ADA	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC017AE4
-	jsr	(lbC027DEC-datasegment,a6)
+	jsr	(lbC027DEC-ds,a6)
 lbC017AE4	bsr.w	lbC01ED0A
 	move.l	a2,d0
 	btst	#0,d0
@@ -29998,17 +30004,17 @@ lbC017B3E	cmpi.b	#$30,(-8,a2)
 	beq.b	lbC017B9C
 	subq.l	#1,a2
 	subq.l	#4,a3
-lbC017B5A	move.b	(lbB02EB43-datasegment,a6),-(sp)
-	st	(lbB02EB43-datasegment,a6)
+lbC017B5A	move.b	(lbB02EB43-ds,a6),-(sp)
+	st	(lbB02EB43-ds,a6)
 	bsr.w	lbC0179E0
-	move.b	(sp)+,(lbB02EB43-datasegment,a6)
-	cmpa.l	(datasegment-datasegment,a6),a2
+	move.b	(sp)+,(lbB02EB43-ds,a6)
+	cmpa.l	(ds-ds,a6),a2
 	bne.w	lbC017AB4
-	move.b	(lbB02EB43-datasegment,a6),-(sp)
-	st	(lbB02EB43-datasegment,a6)
+	move.b	(lbB02EB43-ds,a6),-(sp)
+	st	(lbB02EB43-ds,a6)
 	bsr.w	lbC0179E0
-	move.b	(sp)+,(lbB02EB43-datasegment,a6)
-	cmpa.l	(datasegment-datasegment,a6),a2
+	move.b	(sp)+,(lbB02EB43-ds,a6)
+	cmpa.l	(ds-ds,a6),a2
 	bne.w	lbC017AB4
 lbC017B8A	bra.w	lbC017E6A
 
@@ -30033,9 +30039,9 @@ lbC017BAC	cmpi.l	#$4EFB0002,(-4,a2)
 	bne.b	lbC017B5A
 	btst	#0,(5,a2)
 	bne.b	lbC017B5A
-	move.l	(lbL02D09C-datasegment,a6),-(sp)
+	move.l	(lbL02D09C-ds,a6),-(sp)
 	movem.l	a2/a3,-(sp)
-	move.l	a2,(lbL02D09C-datasegment,a6)
+	move.l	a2,(lbL02D09C-ds,a6)
 	move.l	(a3),d7
 	bra.b	lbC017C46
 
@@ -30051,23 +30057,23 @@ lbC017BE0	bne.w	lbC017ADA
 	bne.b	lbC017BE0
 	cmpi.l	#$30300000,(-6,a2)
 	bne.b	lbC017BE0
-	move.l	(lbL02D09C-datasegment,a6),-(sp)
+	move.l	(lbL02D09C-ds,a6),-(sp)
 	movem.l	a2/a3,-(sp)
-	move.l	a2,(lbL02D09C-datasegment,a6)
+	move.l	a2,(lbL02D09C-ds,a6)
 	subq.l	#8,a2
 	move.w	(a2),d0
 	bra.b	lbC017C40
 
-lbC017C28	move.l	(lbL02D09C-datasegment,a6),-(sp)
+lbC017C28	move.l	(lbL02D09C-ds,a6),-(sp)
 	movem.l	a2/a3,-(sp)
-	move.l	a2,(lbL02D09C-datasegment,a6)
+	move.l	a2,(lbL02D09C-ds,a6)
 	subq.l	#4,a2
 	move.w	(a2),d0
 	ext.w	d0
 	btst	#0,d0
 	bne.b	lbC017C8C
 lbC017C40	adda.w	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 lbC017C46	btst	#$18,d7
 	bne.b	lbC017C8C
 	btst	#8,d7
@@ -30088,7 +30094,7 @@ lbC017C6A	move.l	(a3),d7
 	cmpi.l	#$20,d7
 	beq.b	lbC017C6A
 lbC017C8C	movem.l	(sp)+,a2/a3
-	move.l	(sp)+,(lbL02D09C-datasegment,a6)
+	move.l	(sp)+,(lbL02D09C-ds,a6)
 	bset	#5,(1,a3)
 	bra.w	lbC017B5A
 
@@ -30233,28 +30239,28 @@ lbC017E38	cmpi.w	#$6000,(a2)
 
 lbC017E5A	tst.w	d6
 	bne.w	lbC017A7C
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC017E64	jsr	(lbC027DEC-datasegment,a6)
+lbC017E64	jsr	(lbC027DEC-ds,a6)
 	bra.b	lbC017E92
 
-lbC017E6A	movem.l	(datasegment-datasegment,a6),a2/a3
+lbC017E6A	movem.l	(ds-ds,a6),a2/a3
 	moveq	#0,d6
-	movem.l	a2/a3,(lbL02D29C-datasegment,a6)
-lbC017E78	movem.l	(lbL02D29C-datasegment,a6),a2/a3
+	movem.l	a2/a3,(lbL02D29C-ds,a6)
+lbC017E78	movem.l	(lbL02D29C-ds,a6),a2/a3
 	move.l	(a3),d7
 	movem.l	d7/a3,-(sp)
-	move.b	(lbB02EB43-datasegment,a6),-(sp)
-	st	(lbB02EB43-datasegment,a6)
-	tst.b	(lbB02EB78-datasegment,a6)
+	move.b	(lbB02EB43-ds,a6),-(sp)
+	st	(lbB02EB43-ds,a6)
+	tst.b	(lbB02EB78-ds,a6)
 	beq.b	lbC017E64
 lbC017E92	bsr.w	lbC01651C
-	move.b	(sp)+,(lbB02EB43-datasegment,a6)
+	move.b	(sp)+,(lbB02EB43-ds,a6)
 	movem.l	(sp)+,d0/a0
 	move.l	d0,(a0)
-	cmpa.l	(datasegment-datasegment,a6),a2
+	cmpa.l	(ds-ds,a6),a2
 	beq.b	lbC017E5A
-	movem.l	a2/a3,(lbL02D29C-datasegment,a6)
+	movem.l	a2/a3,(lbL02D29C-ds,a6)
 	move.w	a2,d0
 	btst	#0,d0
 	bne.w	lbC018106
@@ -30373,21 +30379,21 @@ lbC01801C	btst	#2,($10,a3)
 	andi.w	#$CFC0,d1
 	cmpi.w	#$3C0,d1
 	beq.w	lbC018122
-lbC018050	movea.l	(lbL02D168-datasegment,a6),a0
+lbC018050	movea.l	(lbL02D168-ds,a6),a0
 	moveq	#7,d1
 	and.w	d0,d1
 	lsr.w	#3,d0
 	btst	d1,(a0,d0.w)
 	beq.b	lbC01809E
 	move.l	a3,-(sp)
-	move.b	#1,(lbB02EAD5-datasegment,a6)
+	move.b	#1,(lbB02EAD5-ds,a6)
 	move.l	d6,-(sp)
-	jsr	(lbC02A87E-datasegment,a6)
-	clr.b	(lbB02EB63-datasegment,a6)
+	jsr	(lbC02A87E-ds,a6)
+	clr.b	(lbB02EB63-ds,a6)
 	move.l	(sp)+,d6
-	clr.b	(lbB02EAD5-datasegment,a6)
+	clr.b	(lbB02EAD5-ds,a6)
 	movea.l	(sp)+,a0
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.w	lbC01811E
 	addq.l	#8,a0
 lbC018084	cmpa.l	a3,a0
@@ -30398,13 +30404,13 @@ lbC018084	cmpa.l	a3,a0
 	beq.b	lbC018084
 	cmpi.l	#$500,d0
 	beq.b	lbC018084
-lbC01809E	movem.l	(lbL02D29C-datasegment,a6),a2/a3
+lbC01809E	movem.l	(lbL02D29C-ds,a6),a2/a3
 	addq.l	#4,a3
 	moveq	#0,d0
 lbC0180A8	move.b	(a2)+,d0
 	bne.b	lbC0180B8
 	move.l	a2,d1
-	movea.l	(lbL02D29C-datasegment,a6),a0
+	movea.l	(lbL02D29C-ds,a6),a0
 	sub.l	a0,d1
 	subq.l	#2,d1
 	bcc.b	lbC0180DE
@@ -30422,7 +30428,7 @@ lbC0180B8	moveq	#7,d1
 	beq.b	lbC0180A8
 lbC0180DE	bra.b	lbC01810E
 
-lbC0180E0	movem.l	(lbL02D29C-datasegment,a6),d0/a3
+lbC0180E0	movem.l	(lbL02D29C-ds,a6),d0/a3
 	btst	#0,d0
 	bne.b	lbC01810E
 	addq.l	#4,a3
@@ -30437,25 +30443,25 @@ lbC0180E0	movem.l	(lbL02D29C-datasegment,a6),d0/a3
 
 lbC018106	btst	#0,(6,a3)
 	bne.b	lbC01813C
-lbC01810E	movem.l	(lbL02D29C-datasegment,a6),a2/a3
+lbC01810E	movem.l	(lbL02D29C-ds,a6),a2/a3
 	bsr.w	lbC01FFB0
 lbC018118	andi.l	#$FFF7FDFF,(a3)
 lbC01811E	bra.w	lbC017E78
 
 lbC018122	moveq	#-1,d6
-	movem.l	(lbL02D29C-datasegment,a6),a2/a3
+	movem.l	(lbL02D29C-ds,a6),a2/a3
 	bsr.w	lbC02003C
 	bra.b	lbC018118
 
-lbC018130	movem.l	(lbL02D29C-datasegment,a6),a2/a3
+lbC018130	movem.l	(lbL02D29C-ds,a6),a2/a3
 	bsr.w	lbC01FFFC
 	bra.b	lbC01811E
 
-lbC01813C	movem.l	(lbL02D29C-datasegment,a6),a2/a3
+lbC01813C	movem.l	(lbL02D29C-ds,a6),a2/a3
 	bsr.w	lbC020016
 	bra.b	lbC01811E
 
-lbC018148	movem.l	(lbL02D29C-datasegment,a6),a2/a3
+lbC018148	movem.l	(lbL02D29C-ds,a6),a2/a3
 	bsr.w	lbC01FFD6
 	bra.b	lbC01811E
 
@@ -32516,35 +32522,35 @@ lbL019974	dl	0
 	dl	$660066
 	dl	$663C18FF
 
-lbC01A174	move.l	(lbL02D128-datasegment,a6),d1
+lbC01A174	move.l	(lbL02D128-ds,a6),d1
 	beq.b	lbC01A182
-	jsr	(lbC029A9E-datasegment,a6)
-	jsr	(dosclose-datasegment,a6)
-lbC01A182	move.b	(sp)+,(lbB02EB46-datasegment,a6)
-lbC01A186	jmp	(lbC02A436-datasegment,a6)
+	jsr	(lbC029A9E-ds,a6)
+	jsr	(dosclose-ds,a6)
+lbC01A182	move.b	(sp)+,(lbB02EB46-ds,a6)
+lbC01A186	jmp	(term2-ds,a6)
 
-lbC01A18A	jsr	(saveregs_nod0d1-datasegment,a6)
-	move.b	(lbB02EB46-datasegment,a6),-(sp)
-	st	(lbB02EB46-datasegment,a6)
+lbC01A18A	jsr	(saveregs_nod0d1-ds,a6)
+	move.b	(lbB02EB46-ds,a6),-(sp)
+	st	(lbB02EB46-ds,a6)
 	move.w	#$2763,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(displayid-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(displayid-ds,a6),a0
 	move.l	a0,d1
 	move.l	#$5052543A,(a0)+
 	clr.b	(a0)
-	bsr.w	lbC020566
+	bsr.w	requestfile
 lbC01A1B0	beq.b	lbC01A174
-	jsr	(_SetPointerAll-datasegment,a6)
+	jsr	(_SetPointerAll-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A286-datasegment,a6)
-	jsr	(lbC029A9E-datasegment,a6)
-	move.l	d0,(lbL02D128-datasegment,a6)
+	jsr	(lbC02A286-ds,a6)
+	jsr	(lbC029A9E-ds,a6)
+	move.l	d0,(lbL02D128-ds,a6)
 	beq.b	lbC01A1B0
-	jsr	(lbC029A66-datasegment,a6)
+	jsr	(lbC029A66-ds,a6)
 	moveq	#0,d4
-	move.b	(lbB02EB6A-datasegment,a6),d4
-	lea	(lbB031E00-datasegment,a6),a3
-lbC01A1D4	lea	(displayid-datasegment,a6),a4
+	move.b	(lbB02EB6A-ds,a6),d4
+	lea	(lbB031E00-ds,a6),a3
+lbC01A1D4	lea	(displayid-ds,a6),a4
 	moveq	#0,d6
 lbC01A1DA	cmpi.b	#9,(a3)
 	bne.b	lbC01A200
@@ -32589,50 +32595,50 @@ lbC01A22A	tst.b	(a3)
 	bra.b	lbC01A1DA
 
 lbC01A23A	moveq	#0,d4
-lbC01A23C	move.l	(lbL02D128-datasegment,a6),d1
-	lea	(displayid-datasegment,a6),a0
+lbC01A23C	move.l	(lbL02D128-ds,a6),d1
+	lea	(displayid-ds,a6),a0
 	move.l	a0,d2
 	move.l	a4,d3
 	sub.l	d2,d3
 	beq.b	lbC01A256
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC01A174
 lbC01A256	dbra	d4,lbC01A1D4
-	move.l	(lbL02D128-datasegment,a6),d1
+	move.l	(lbL02D128-ds,a6),d1
 	beq.b	lbC01A268
-	jsr	(lbC029A9E-datasegment,a6)
-	jsr	(dosclose-datasegment,a6)
-lbC01A268	move.b	(sp)+,(lbB02EB46-datasegment,a6)
+	jsr	(lbC029A9E-ds,a6)
+	jsr	(dosclose-ds,a6)
+lbC01A268	move.b	(sp)+,(lbB02EB46-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
 lbC01A272	moveq	#0,d0
 	rts
 
-lbC01A276	jsr	(_SetPointerAll-datasegment,a6)
-	jsr	(saveregs_all-datasegment,a6)
-	move.l	(lbL02D2D4-datasegment,a6),d3
+lbC01A276	jsr	(_SetPointerAll-ds,a6)
+	jsr	(saveregs_all-ds,a6)
+	move.l	(lbL02D2D4-ds,a6),d3
 	bne.b	lbC01A28C
-	move.l	(datasegment-datasegment,a6),d3
-	move.l	d3,(lbL02D2D4-datasegment,a6)
-lbC01A28C	movea.l	(lbL02D2D8-datasegment,a6),a2
+	move.l	(ds-ds,a6),d3
+	move.l	d3,(lbL02D2D4-ds,a6)
+lbC01A28C	movea.l	(lbL02D2D8-ds,a6),a2
 	cmpa.l	#0,a2
 	bne.b	lbC01A2A0
-	movea.l	(lbL02A8A0-datasegment,a6),a2
-	move.l	a2,(lbL02D2D8-datasegment,a6)
+	movea.l	(workdata_end-ds,a6),a2
+	move.l	a2,(lbL02D2D8-ds,a6)
 lbC01A2A0	cmp.l	a2,d3
 	beq.b	lbC01A272
 	bls.b	lbC01A2A8
 	exg	d3,a2
 lbC01A2A8	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a0
-	sub.l	(datasegment-datasegment,a6),d3
+	sub.l	(ds-ds,a6),d3
 	lsl.l	#2,d3
-	add.l	(workdata_end-datasegment,a6),d3
+	add.l	(workdata_struct-ds,a6),d3
 	move.l	(a0),d0
 	bset	#$1F,d0
 	andi.l	#$800000F8,d0
@@ -32648,12 +32654,12 @@ lbC01A2E8	andi.l	#$FFFFFE07,(a0)
 lbC01A2EE	or.l	d0,(a0)+
 	cmp.l	a0,d3
 	bhi.b	lbC01A2E8
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01A2F8	st	(lbB02B443-datasegment,a6)
-	clr.b	(lbB02B444-datasegment,a6)
-	clr.b	(lbB02B445-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A2F8	st	(lbB02B443-ds,a6)
+	clr.b	(lbB02B444-ds,a6)
+	clr.b	(lbB02B445-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$192,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$193,(a0)+
@@ -32663,10 +32669,10 @@ lbC01A2F8	st	(lbB02B443-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC01A37A
 
-lbC01A324	clr.b	(lbB02B443-datasegment,a6)
-	st	(lbB02B444-datasegment,a6)
-	clr.b	(lbB02B445-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A324	clr.b	(lbB02B443-ds,a6)
+	st	(lbB02B444-ds,a6)
+	clr.b	(lbB02B445-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$192,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$193,(a0)+
@@ -32676,10 +32682,10 @@ lbC01A324	clr.b	(lbB02B443-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC01A37A
 
-lbC01A350	clr.b	(lbB02B443-datasegment,a6)
-	clr.b	(lbB02B444-datasegment,a6)
-	st	(lbB02B445-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A350	clr.b	(lbB02B443-ds,a6)
+	clr.b	(lbB02B444-ds,a6)
+	st	(lbB02B445-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$192,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$193,(a0)+
@@ -32687,13 +32693,13 @@ lbC01A350	clr.b	(lbB02B443-datasegment,a6)
 	move.w	#$194,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01A37A	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC01A37A	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01A386	st	(lbB02B404-datasegment,a6)
-	clr.b	(lbB02B405-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A386	st	(lbB02B404-ds,a6)
+	clr.b	(lbB02B405-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$195,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$196,(a0)+
@@ -32701,20 +32707,20 @@ lbC01A386	st	(lbB02B404-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC01A3C4
 
-lbC01A3A6	clr.b	(lbB02B404-datasegment,a6)
-	st	(lbB02B405-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A3A6	clr.b	(lbB02B404-ds,a6)
+	st	(lbB02B405-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$195,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$196,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01A3C4	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC01A3C4	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01A3D0	bsr.w	lbC01A488
-	dw	lbB02B417-datasegment	;some flag (bit #0)
+	dw	lbB02B417-ds	;some flag (bit #0)
 	dw	$35A	;itemcode
 	dw	1	;status
 	dl	$2000000	;...
@@ -32725,7 +32731,7 @@ lbC01A3D0	bsr.w	lbC01A488
 	dw	0
 
 lbC01A3F0	bsr.w	lbC01A488
-	dw	lbB02B418-datasegment
+	dw	lbB02B418-ds
 	dl	$35A0000
 	dl	$2000001
 	dl	$19B0000
@@ -32735,7 +32741,7 @@ lbC01A3F0	bsr.w	lbC01A488
 	dw	0
 
 lbC01A410	bsr.b	lbC01A488
-	dw	lbB02B419-datasegment
+	dw	lbB02B419-ds
 	dl	$35A0000
 	dl	$2000000
 	dl	$19B0001
@@ -32745,7 +32751,7 @@ lbC01A410	bsr.b	lbC01A488
 	dw	0
 
 lbC01A42E	bsr.b	lbC01A488
-	dw	lbB02B41A-datasegment
+	dw	lbB02B41A-ds
 	dl	$35A0000
 	dl	$2000000
 	dl	$19B0000
@@ -32755,7 +32761,7 @@ lbC01A42E	bsr.b	lbC01A488
 	dw	0
 
 lbC01A44C	bsr.b	lbC01A488
-	dw	lbB02B41B-datasegment
+	dw	lbB02B41B-ds
 	dl	$35A0000
 	dl	$2000000
 	dl	$19B0000
@@ -32765,7 +32771,7 @@ lbC01A44C	bsr.b	lbC01A488
 	dw	0
 
 lbC01A46A	bsr.b	lbC01A488
-	dw	lbB02B41C-datasegment
+	dw	lbB02B41C-ds
 	dl	$35A0000
 	dl	$2000000
 	dl	$19B0000
@@ -32774,54 +32780,54 @@ lbC01A46A	bsr.b	lbC01A488
 	dl	$19D0001
 	dw	0
 
-lbC01A488	clr.b	(lbB02B417-datasegment,a6)
-	clr.b	(lbB02B418-datasegment,a6)
-	clr.b	(lbB02B419-datasegment,a6)
-	clr.b	(lbB02B41A-datasegment,a6)
-	clr.b	(lbB02B41B-datasegment,a6)
-	clr.b	(lbB02B41C-datasegment,a6)
+lbC01A488	clr.b	(lbB02B417-ds,a6)
+	clr.b	(lbB02B418-ds,a6)
+	clr.b	(lbB02B419-ds,a6)
+	clr.b	(lbB02B41A-ds,a6)
+	clr.b	(lbB02B41B-ds,a6)
+	clr.b	(lbB02B41C-ds,a6)
 	movea.l	(sp)+,a0
 	move.w	(a0)+,d0
 	bset	#0,(a6,d0.w)
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01A4B2	move.w	#$2742,d0
-	jsr	(gettextbynum-datasegment,a6)
-	jsr	(lbC02ADBC-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	jsr	(lbC02ADBC-ds,a6)
 	beq.w	lbC01A272
-lbC01A4C2	cmp.l	(lbB02B4A8-datasegment,a6),d1
+lbC01A4C2	cmp.l	(workdata_length-ds,a6),d1
 	bcc.w	lbC01A272
-	add.l	(datasegment-datasegment,a6),d1
+	add.l	(ds-ds,a6),d1
 	movea.l	d1,a2
-	jsr	(lbC02A3C6-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02A3C6-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01A4D8	move.l	(lbL02D0C8-datasegment,a6),d1
+lbC01A4D8	move.l	(lbL02D0C8-ds,a6),d1
 	bra.b	lbC01A4C2
 
-lbC01A4DE	move.l	(lbL02D0CC-datasegment,a6),d1
+lbC01A4DE	move.l	(lbL02D0CC-ds,a6),d1
 	bra.b	lbC01A4C2
 
-lbC01A4E4	move.l	(lbL02D0D0-datasegment,a6),d1
+lbC01A4E4	move.l	(lbL02D0D0-ds,a6),d1
 	bra.b	lbC01A4C2
 
-lbC01A4EA	move.l	(lbL02D0C8-datasegment,a6),d1
+lbC01A4EA	move.l	(lbL02D0C8-ds,a6),d1
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02D0C8-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02D0C8-ds,a6)
 	bra.b	lbC01A4C2
 
-lbC01A4FA	move.l	(lbL02D0CC-datasegment,a6),d1
+lbC01A4FA	move.l	(lbL02D0CC-ds,a6),d1
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02D0CC-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02D0CC-ds,a6)
 	bra.b	lbC01A4C2
 
-lbC01A50A	move.l	(lbL02D0D0-datasegment,a6),d1
+lbC01A50A	move.l	(lbL02D0D0-ds,a6),d1
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02D0D0-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02D0D0-ds,a6)
 	bra.b	lbC01A4C2
 
 lbC01A51A	move.w	#$2838,d1
@@ -32832,20 +32838,20 @@ lbC01A520	move.w	#$283C,d1
 
 lbC01A526	move.w	#$2840,d1
 lbC01A52A	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	move.l	d0,(a6,d1.w)
 	andi.b	#$FB,ccr
 	rts
 
 lbC01A53A	move.w	#$2711,d0
-	jsr	(gettextbynum-datasegment,a6)
-	jsr	(lbC026C6C-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	jsr	(lbC026C6C-ds,a6)
 	beq.w	lbC01A186
-	jsr	(atoi-datasegment,a6)
+	jsr	(atoi-ds,a6)
 	beq.w	lbC01A272
 	tst.l	d0
 	beq.b	lbC01A5B0
-	move.l	(lbB02B4A8-datasegment,a6),d1
+	move.l	(workdata_length-ds,a6),d1
 	moveq	#0,d2
 lbC01A55C	cmpi.l	#$FFFF,d1
 	bls.b	lbC01A56A
@@ -32890,26 +32896,26 @@ lbC01A5A8	subq.l	#1,d3
 	lsr.l	#1,d1
 	bra.b	lbC01A5A8
 
-lbC01A5B0	jmp	(lbC02AEDE-datasegment,a6)
+lbC01A5B0	jmp	(lbC02AEDE-ds,a6)
 
-lbC01A5B4	cmp.l	(lbB02B4A8-datasegment,a6),d1
+lbC01A5B4	cmp.l	(workdata_length-ds,a6),d1
 	bcc.w	lbC01A272
-	add.l	(datasegment-datasegment,a6),d1
+	add.l	(ds-ds,a6),d1
 	movea.l	d1,a2
-	jsr	(lbC02A3C6-datasegment,a6)
-	jmp	(lbC02AEF0-datasegment,a6)
+	jsr	(lbC02A3C6-ds,a6)
+	jmp	(lbC02AEF0-ds,a6)
 
-lbC01A5CA	tst.b	(lbB02EB63-datasegment,a6)
+lbC01A5CA	tst.b	(lbB02EB63-ds,a6)
 	bne.b	lbC01A628
-	tst.b	(lbB02EAD5-datasegment,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC01A628
-	tst.b	(lbB02B44A-datasegment,a6)
+	tst.b	(lbB02B44A-ds,a6)
 	beq.b	lbC01A5F4
 	movem.l	d1-d7/a0/a1/a5,-(sp)
 	moveq	#$20,d3
-	tst.w	(lbW02B478-datasegment,a6)
+	tst.w	(lbW02B478-ds,a6)
 	bne.b	lbC01A5FA
-	tst.b	(lbB02EB46-datasegment,a6)
+	tst.b	(lbB02EB46-ds,a6)
 	bne.b	lbC01A5FA
 	move.b	#9,(a4)+
 	bra.b	lbC01A616
@@ -32918,35 +32924,35 @@ lbC01A5F4	andi.b	#$FB,ccr
 	rts
 
 lbC01A5FA	move.b	d3,(a4)+
-	move.l	(lbB02D37C-datasegment,a6),d2
+	move.l	(lbB02D37C-ds,a6),d2
 	sub.l	a4,d2
 	moveq	#0,d1
-	move.w	(lbB02D3AA-datasegment,a6),d1
+	move.w	(lbB02D3AA-ds,a6),d1
 	sub.l	d1,d2
-	add.l	(lbW02B474-datasegment,a6),d2
+	add.l	(lbW02B474-ds,a6),d2
 	bmi.b	lbC01A616
 lbC01A610	move.b	d3,(a4)+
 	dbra	d2,lbC01A610
 lbC01A616	move.b	#$3B,(a4)+
-	addq.l	#1,(lbB02D240-datasegment,a6)
+	addq.l	#1,(lbB02D240-ds,a6)
 	jsr	(lbC02390A).l
 	movem.l	(sp)+,d1-d7/a0/a1/a5
 lbC01A628	rts
 
 lbC01A62A	bsr.w	lbC015452
 	beq.b	lbC01A638
-	jsr	(lbC02AEDE-datasegment,a6)
+	jsr	(lbC02AEDE-ds,a6)
 	bra.w	lbC015424
 
 lbC01A638	rts
 
 lbC01A63A	bsr.w	lbC01545E
 	beq.b	lbC01A638
-	jsr	(lbC02AEDE-datasegment,a6)
+	jsr	(lbC02AEDE-ds,a6)
 	bra.w	lbC01541A
 
 lbC01A648	bsr.w	lbC01A700
-	dw	lbB02B430-datasegment
+	dw	lbB02B430-ds
 	dl	$1BD0001
 	dl	$1BE0000
 	dl	$1BF0000
@@ -32956,7 +32962,7 @@ lbC01A648	bsr.w	lbC01A700
 	dw	0
 
 lbC01A668	bsr.w	lbC01A700
-	dw	lbB02B431-datasegment
+	dw	lbB02B431-ds
 	dl	$1BD0000
 	dl	$1BE0001
 	dl	$1BF0000
@@ -32966,7 +32972,7 @@ lbC01A668	bsr.w	lbC01A700
 	dw	0
 
 lbC01A688	bsr.b	lbC01A700
-	dw	lbB02B432-datasegment
+	dw	lbB02B432-ds
 	dl	$1BD0000
 	dl	$1BE0000
 	dl	$1BF0001
@@ -32976,7 +32982,7 @@ lbC01A688	bsr.b	lbC01A700
 	dw	0
 
 lbC01A6A6	bsr.b	lbC01A700
-	dw	lbB02B433-datasegment
+	dw	lbB02B433-ds
 	dl	$1BD0000
 	dl	$1BE0000
 	dl	$1BF0000
@@ -32986,7 +32992,7 @@ lbC01A6A6	bsr.b	lbC01A700
 	dw	0
 
 lbC01A6C4	bsr.b	lbC01A700
-	dw	lbB02B434-datasegment
+	dw	lbB02B434-ds
 	dl	$1BD0000
 	dl	$1BE0000
 	dl	$1BF0000
@@ -32996,7 +33002,7 @@ lbC01A6C4	bsr.b	lbC01A700
 	dw	0
 
 lbC01A6E2	bsr.b	lbC01A700
-	dw	lbB02B435-datasegment
+	dw	lbB02B435-ds
 	dl	$1BD0000
 	dl	$1BE0000
 	dl	$1BF0000
@@ -33005,21 +33011,21 @@ lbC01A6E2	bsr.b	lbC01A700
 	dl	$1C20001
 	dw	0
 
-lbC01A700	clr.b	(lbB02B430-datasegment,a6)
-	clr.b	(lbB02B431-datasegment,a6)
-	clr.b	(lbB02B432-datasegment,a6)
-	clr.b	(lbB02B433-datasegment,a6)
-	clr.b	(lbB02B434-datasegment,a6)
-	clr.b	(lbB02B435-datasegment,a6)
+lbC01A700	clr.b	(lbB02B430-ds,a6)
+	clr.b	(lbB02B431-ds,a6)
+	clr.b	(lbB02B432-ds,a6)
+	clr.b	(lbB02B433-ds,a6)
+	clr.b	(lbB02B434-ds,a6)
+	clr.b	(lbB02B435-ds,a6)
 	movea.l	(sp)+,a0
 	move.w	(a0)+,d0
 	bset	#0,(a6,d0.w)
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01A72A	st	(lbC02B436-datasegment,a6)
-	clr.b	(lbB02B437-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A72A	st	(lbC02B436-ds,a6)
+	clr.b	(lbB02B437-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$1C3,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$1C4,(a0)+
@@ -33027,21 +33033,21 @@ lbC01A72A	st	(lbC02B436-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC01A768
 
-lbC01A74A	clr.b	(lbC02B436-datasegment,a6)
-	st	(lbB02B437-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A74A	clr.b	(lbC02B436-ds,a6)
+	st	(lbB02B437-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$1C3,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1C4,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01A768	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC01A768	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01A774	st	(lbB02B3FE-datasegment,a6)
-	clr.b	(lbC02B3FF-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A774	st	(lbB02B3FE-ds,a6)
+	clr.b	(lbC02B3FF-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$1C5,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$1C6,(a0)+
@@ -33049,17 +33055,17 @@ lbC01A774	st	(lbB02B3FE-datasegment,a6)
 	clr.w	(a0)
 	bra.b	lbC01A7B2
 
-lbC01A794	clr.b	(lbB02B3FE-datasegment,a6)
-	st	(lbC02B3FF-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC01A794	clr.b	(lbB02B3FE-ds,a6)
+	st	(lbC02B3FF-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$1C5,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1C6,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01A7B2	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC01A7B2	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 CmpTabTab	dl	CmpTab1
 	dl	CmpTab2
@@ -34064,15 +34070,15 @@ lbL01B18C	dl	i_movem2
 	dl	0
 	dl	0
 
-lbC01B760	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01B760	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2712,d0
-	jsr	(gettextbynum-datasegment,a6)
-	jsr	(lbC026C6C-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	jsr	(lbC026C6C-ds,a6)
 	beq.b	lbC01B7DA
 	cmpi.b	#$27,(a0)
 	bne.b	lbC01B788
 	addq.w	#1,a0
-lbC01B77A	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+lbC01B77A	cmpa.l	(workdata_end-ds,a6),a2
 	beq.b	lbC01B7C8
 	move.b	(a0)+,d0
 	beq.b	lbC01B7C8
@@ -34085,7 +34091,7 @@ lbC01B788	moveq	#0,d2
 	moveq	#$5F,d2
 	and.b	(a0),d2
 	addq.w	#2,a0
-lbC01B798	jsr	(atoi-datasegment,a6)
+lbC01B798	jsr	(atoi-ds,a6)
 	beq.b	lbC01B7DA
 	cmpi.b	#$4C,d2
 	beq.b	lbC01B7CC
@@ -34093,17 +34099,17 @@ lbC01B798	jsr	(atoi-datasegment,a6)
 	beq.b	lbC01B7C0
 	cmpi.b	#$42,d2
 	beq.b	lbC01B7B6
-	tst.b	(lbB02B426-datasegment,a6)
+	tst.b	(lbB02B426-ds,a6)
 	beq.b	lbC01B7BA
 lbC01B7B6	move.b	d1,(a2)
 	bra.b	lbC01B7C8
 
-lbC01B7BA	tst.b	(lbB02B427-datasegment,a6)
+lbC01B7BA	tst.b	(lbB02B427-ds,a6)
 	beq.b	lbC01B7CC
 lbC01B7C0	move.b	d1,(1,a2)
 	lsr.w	#8,d1
 	move.b	d1,(a2)
-lbC01B7C8	jmp	(lbC02A422-datasegment,a6)
+lbC01B7C8	jmp	(lbC02A422-ds,a6)
 
 lbC01B7CC	move.b	d1,(3,a2)
 	lsr.l	#8,d1
@@ -34111,30 +34117,30 @@ lbC01B7CC	move.b	d1,(3,a2)
 	lsr.l	#8,d1
 	bra.b	lbC01B7C0
 
-lbC01B7DA	jmp	(lbC02A436-datasegment,a6)
+lbC01B7DA	jmp	(term2-ds,a6)
 
 lbC01B7DE	moveq	#$41,d5
 	bra.b	lbC01B7E4
 
 lbC01B7E2	moveq	#1,d5
-lbC01B7E4	move.b	(lbB02EB56-datasegment,a6),(lbB02EB3D).l
+lbC01B7E4	move.b	(lbB02EB56-ds,a6),(lbB02EB3D).l
 	bra.b	lbC01B7FA
 
 lbC01B7EE	moveq	#1,d5
-	jsr	(lbC029B18-datasegment,a6)
-	move.b	#2,(lbB02EB3D-datasegment,a6)
-lbC01B7FA	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
-	clr.l	(lbB02D118-datasegment,a6)
+	jsr	(lbC029B18-ds,a6)
+	move.b	#2,(lbB02EB3D-ds,a6)
+lbC01B7FA	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	clr.l	(lbB02D118-ds,a6)
 	movem.l	d5/a0/a2/a3,-(sp)
 	bsr.w	lbC020CB8
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB3D-datasegment,a6)
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB3D-ds,a6)
 	movem.l	(sp)+,d5/a0/a2/a3
-	move.l	(lbB02D118-datasegment,a6),d6
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	(lbB02D120-datasegment,a6),(lbL02D1CC).l
+	move.l	(lbB02D118-ds,a6),d6
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	(lbB02D120-ds,a6),(lbL02D1CC).l
 	move.w	#$2761,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	bra.b	lbC01B86C
 
@@ -34143,7 +34149,7 @@ lbC01B832	moveq	#$42,d5
 
 lbC01B836	moveq	#2,d5
 lbC01B838	move.w	#$275F,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	bra.b	lbC01B866
 
@@ -34152,7 +34158,7 @@ lbC01B844	moveq	#$43,d5
 
 lbC01B848	moveq	#3,d5
 lbC01B84A	move.w	#$2760,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	bra.b	lbC01B866
 
@@ -34161,18 +34167,18 @@ lbC01B856	moveq	#$40,d5
 
 lbC01B85A	moveq	#0,d5
 lbC01B85C	move.w	#$275E,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
-lbC01B866	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01B866	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.l	a2,d6
-lbC01B86C	move.b	d5,(lbB02EB7F-datasegment,a6)
+lbC01B86C	move.b	d5,(lbB02EB7F-ds,a6)
 	move.l	d6,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	lea	(aslfr_initialfile-datasegment,a6),a1
+	sub.l	(ds-ds,a6),d0
+	lea	(aslfr_initialfile-ds,a6),a1
 	bclr	#6,d5
 	bne.b	lbC01B890
 	move.l	d5,d1
-	jsr	(lbC02777C-datasegment,a6)
+	jsr	(lbC02777C-ds,a6)
 	beq.b	lbC01B890
 	movea.l	d0,a0
 lbC01B88A	move.b	(a0)+,(a1)+
@@ -34181,9 +34187,9 @@ lbC01B88A	move.b	(a0)+,(a1)+
 lbC01B890	clr.b	(a1)
 	move.l	d4,d0
 lbC01B894	move.l	#aslfr_initialfile,d1
-	jsr	(lbC026C74-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	jsr	(lbC02AEB2-datasegment,a6)
+	jsr	(lbC026C74-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	jsr	(lbC02AEB2-ds,a6)
 	move.b	d5,d1
 	cmpi.b	#1,d1
 	beq.b	lbC01B8C2
@@ -34212,29 +34218,29 @@ lbC01B8EA	cmpi.b	#$1B,(a0)+
 	beq.b	lbC01B942
 	move.l	d1,-(sp)
 	moveq	#0,d1
-	jsr	(lbC027906-datasegment,a6)
+	jsr	(lbC027906-ds,a6)
 	movem.l	(sp)+,d1
 	beq.b	lbC01B942
-	add.l	(datasegment-datasegment,a6),d0
+	add.l	(ds-ds,a6),d0
 	cmp.l	d0,d6
 	beq.b	lbC01B942
 	tst.b	d1
 	beq.b	lbC01B91E
-	jsr	(lbC02A1B4-datasegment,a6)
+	jsr	(lbC02A1B4-ds,a6)
 	bra.b	lbC01B942
 
 lbC01B918	move.w	#$2728,d0
 	bra.b	lbC01B922
 
 lbC01B91E	move.w	#$2729,d0
-lbC01B922	jsr	(gettextbynum-datasegment,a6)
-	tst.b	(lbB02EB41-datasegment,a6)
+lbC01B922	jsr	(gettextbynum-ds,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC01B930
-	jmp	(lbC02A436-datasegment,a6)
+	jmp	(term2-ds,a6)
 
 lbC01B930	movem.l	d0/a0/a1,-(sp)
 	moveq	#$19,d1
-	jsr	(dosdelay-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
 	movem.l	(sp)+,d0/a0/a1
 	bra.w	lbC01B894
 
@@ -34242,39 +34248,39 @@ lbC01B942	cmpi.b	#1,d5
 	bne.b	lbC01B95A
 	move.l	a0,d4
 	move.l	d6,-(sp)
-	move.l	(lbL02D1CC-datasegment,a6),d6
+	move.l	(lbL02D1CC-ds,a6),d6
 	bsr.w	lbC014CA6
 	movem.l	(sp)+,d6
 	beq.b	lbC01B918
 lbC01B95A	move.l	d5,d1
 	move.l	d6,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	cmpi.b	#$42,(lbB02EB7F-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	cmpi.b	#$42,(lbB02EB7F-ds,a6)
 	beq.b	lbC01B96E
-	jsr	(lbC027684-datasegment,a6)
+	jsr	(lbC027684-ds,a6)
 lbC01B96E	movea.l	d6,a1
-	suba.l	(datasegment-datasegment,a6),a1
+	suba.l	(ds-ds,a6),a1
 	move.l	d5,d1
-	lea	(aslfr_initialfile-datasegment,a6),a0
-	jsr	(lbC02AEB2-datasegment,a6)
+	lea	(aslfr_initialfile-ds,a6),a0
+	jsr	(lbC02AEB2-ds,a6)
 	tst.l	d0
 	beq.b	lbC01B996
 	tst.b	d1
 	bne.b	lbC01B98C
 	bclr	#4,(1,a3)
-lbC01B98C	jsr	(_savecommonregs0-datasegment,a6)
+lbC01B98C	jsr	(_savecommonregs0-ds,a6)
 	bne.b	lbC01B996
-	jmp	(_dummy_st-datasegment,a6)
+	jmp	(term1-ds,a6)
 
-lbC01B996	jmp	(lbC02A422-datasegment,a6)
+lbC01B996	jmp	(lbC02A422-ds,a6)
 
 lbC01B99A	movem.l	d0-d5/a0-a3/a5,-(sp)
 	movea.l	a0,a5
 	move.l	d0,d5
 	move.l	a3,d3
 	move.l	a2,d4
-	sub.l	(datasegment-datasegment,a6),d4
-	move.l	(workdata_end-datasegment,a6),d2
+	sub.l	(ds-ds,a6),d4
+	move.l	(workdata_struct-ds,a6),d2
 lbC01B9AE	subq.l	#4,a3
 	cmp.l	a3,d2
 	bhi.b	lbC01B9F0
@@ -34326,27 +34332,27 @@ lbC01BA22	cmpm.b	(a0)+,(a1)+
 	bra.b	lbC01B9E2
 
 lbC01BA2C	movem.l	a2/a3,-(sp)
-	lea	(lbL02C1D4-datasegment,a6),a3
-	move.l	(lbL02D1F4-datasegment,a6),d3
+	lea	(lbL02C1D4-ds,a6),a3
+	move.l	(lbL02D1F4-ds,a6),d3
 	bne.b	lbC01BA5C
 	move.l	#$1000,d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	move.l	#$1000,(lbL02D1F4-datasegment,a6)
-	move.l	d0,(lbL02D1F0-datasegment,a6)
-	move.l	d0,(lbL02D1F8-datasegment,a6)
-	move.l	(lbL02D1F4-datasegment,a6),d3
-lbC01BA5C	movea.l	(lbL02D1F8-datasegment,a6),a2
+	jsr	(_AllocMemClear-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	move.l	#$1000,(lbL02D1F4-ds,a6)
+	move.l	d0,(lbL02D1F0-ds,a6)
+	move.l	d0,(lbL02D1F8-ds,a6)
+	move.l	(lbL02D1F4-ds,a6),d3
+lbC01BA5C	movea.l	(lbL02D1F8-ds,a6),a2
 	move.l	a2,d4
-	sub.l	(lbL02D1F0-datasegment,a6),d4
+	sub.l	(lbL02D1F0-ds,a6),d4
 lbC01BA66	cmp.l	d3,d4
 	bcs.b	lbC01BAA0
 	move.l	d3,d0
 	add.l	d0,d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	jsr	(lbC02A430-datasegment,a6)
-	movea.l	(lbL02D1F0-datasegment,a6),a1
-	move.l	d0,(lbL02D1F0-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
+	jsr	(term2_if_cceq-ds,a6)
+	movea.l	(lbL02D1F0-ds,a6),a1
+	move.l	d0,(lbL02D1F0-ds,a6)
 	movea.l	d0,a2
 	move.l	d3,d0
 	movem.l	d0/a1/a2,-(sp)
@@ -34354,70 +34360,70 @@ lbC01BA86	move.l	(a1)+,(a2)+
 	subq.l	#4,d0
 	bne.b	lbC01BA86
 	movem.l	(sp)+,d0/a1/a2
-	jsr	(_FreeMem-datasegment,a6)
+	jsr	(_FreeMem-ds,a6)
 	add.l	d3,d3
-	move.l	d3,(lbL02D1F4-datasegment,a6)
-	movea.l	(lbL02D1F0-datasegment,a6),a2
+	move.l	d3,(lbL02D1F4-ds,a6)
+	movea.l	(lbL02D1F0-ds,a6),a2
 	adda.l	d4,a2
 lbC01BAA0	addq.l	#1,d4
 	move.b	(a3)+,(a2)+
 	bne.b	lbC01BA66
 	subq.l	#1,a2
-	move.l	a2,(lbL02D1F8-datasegment,a6)
+	move.l	a2,(lbL02D1F8-ds,a6)
 	movem.l	(sp)+,a2/a3
 	andi.b	#$FB,ccr
 	rts
 
-lbC01BAB6	tst.b	(lbB02EB41-datasegment,a6)
+lbC01BAB6	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC01BAC0
-	jmp	(lbC02A436-datasegment,a6)
+	jmp	(term2-ds,a6)
 
-lbC01BAC0	clr.b	(lbB02EB49-datasegment,a6)
-	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01BAC0	clr.b	(lbB02EB49-ds,a6)
+	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2747,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(path_macros-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(path_macros-ds,a6),a0
 	move.l	a0,d1
-	bsr.w	lbC020566
+	bsr.w	requestfile
 	bne.b	lbC01BADE
 	rts
 
-lbC01BADE	jsr	(_SetPointerAll-datasegment,a6)
-	move.l	a0,(lbB02D0E8-datasegment,a6)
+lbC01BADE	jsr	(_SetPointerAll-ds,a6)
+	move.l	a0,(lbB02D0E8-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A286-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(lbC02A286-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$274D,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	move.l	(sp)+,d1
 	beq.w	lbC01BB9A
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	move.l	#$BABEF00F,(a4)+
 	clr.l	(a4)+
-	lea	(Macros1.MSG-datasegment,a6),a0
+	lea	(Macros1.MSG-ds,a6),a0
 	moveq	#$17,d0
 lbC01BB14	move.b	(a0)+,(a4)+
 	dbra	d0,lbC01BB14
-	lea	(Macros2.MSG-datasegment,a6),a0
+	lea	(Macros2.MSG-ds,a6),a0
 	moveq	#$17,d0
 lbC01BB20	move.b	(a0)+,(a4)+
 	dbra	d0,lbC01BB20
-	lea	(Macros3.MSG-datasegment,a6),a0
+	lea	(Macros3.MSG-ds,a6),a0
 	moveq	#$17,d0
 lbC01BB2C	move.b	(a0)+,(a4)+
 	dbra	d0,lbC01BB2C
-	move.l	(lbL02B480-datasegment,a6),d2
+	move.l	(lbL02B480-ds,a6),d2
 	moveq	#$50,d3
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$274E,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	cmp.l	(sp)+,d3
 	bne.b	lbC01BB9A
-	movea.l	(lbL02B484-datasegment,a6),a5
+	movea.l	(lbL02B484-ds,a6),a5
 	moveq	#0,d5
 lbC01BB52	cmpa.l	#lbC01C658,a5
 	beq.b	lbC01BBB0
@@ -34428,99 +34434,99 @@ lbC01BB52	cmpa.l	#lbC01C658,a5
 	movea.l	(a5)+,a0
 	tst.l	d6
 	beq.b	lbC01BB52
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	move.l	d5,(a4)+
 	move.l	d7,(a4)+
 	moveq	#$17,d0
 lbC01BB72	move.b	(a0)+,(a4)+
 	dbra	d0,lbC01BB72
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	move.l	(lbL02B480-datasegment,a6),d2
+	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(lbL02B480-ds,a6),d2
 	moveq	#$20,d3
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	cmp.l	d3,d0
 	bne.b	lbC01BB9A
-	move.l	(lbB02D0E0-datasegment,a6),d1
+	move.l	(lbB02D0E0-ds,a6),d1
 	move.l	d6,d2
 	move.l	d7,d3
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	cmp.l	d3,d0
 	beq.b	lbC01BB52
-lbC01BB9A	jsr	(lbC02A1B4-datasegment,a6)
+lbC01BB9A	jsr	(lbC02A1B4-ds,a6)
 	move.l	a4,-(sp)
 	movea.l	d4,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#$50,d1
-	jsr	(dosdelay-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
 	bra.b	lbC01BBB4
 
-lbC01BBB0	clr.b	(lbB02EBF6-datasegment,a6)
-lbC01BBB4	move.l	(lbL02D0C0-datasegment,a6),d1
+lbC01BBB0	clr.b	(lbB02EBF6-ds,a6)
+lbC01BBB4	move.l	(lbL02D0C0-ds,a6),d1
 	beq.b	lbC01BBC8
 	movea.l	d1,a1
-	move.l	(lbL02D0C4-datasegment,a6),d0
-	clr.l	(lbL02D0C0-datasegment,a6)
-	jsr	(_FreeMem-datasegment,a6)
-lbC01BBC8	move.l	(lbB02D0E0-datasegment,a6),d1
-	clr.l	(lbB02D0E0-datasegment,a6)
-	jsr	(dosclose-datasegment,a6)
+	move.l	(lbL02D0C4-ds,a6),d0
+	clr.l	(lbL02D0C0-ds,a6)
+	jsr	(_FreeMem-ds,a6)
+lbC01BBC8	move.l	(lbB02D0E0-ds,a6),d1
+	clr.l	(lbB02D0E0-ds,a6)
+	jsr	(dosclose-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC01BBDA	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01BBDA	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2745,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(path_keytable-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(path_keytable-ds,a6),a0
 	move.l	a0,d1
-	bsr.w	lbC020566
+	bsr.w	requestfile
 	bne.b	lbC01BBF4
 	rts
 
-lbC01BBF4	jsr	(_SetPointerAll-datasegment,a6)
-	move.l	a0,(lbB02D0E8-datasegment,a6)
+lbC01BBF4	jsr	(_SetPointerAll-ds,a6)
+	move.l	a0,(lbB02D0E8-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A286-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(lbC02A286-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$274D,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	move.l	(sp)+,d1
 	beq.b	lbC01BC36
 	move.l	#lbL034500,d2
 	move.l	#$820,d3
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$274E,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	cmp.l	(sp)+,d3
 	beq.b	lbC01BC4A
-lbC01BC36	jsr	(lbC02A1B4-datasegment,a6)
+lbC01BC36	jsr	(lbC02A1B4-ds,a6)
 	move.l	a4,-(sp)
 	movea.l	d4,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#$50,d1
-	jsr	(dosdelay-datasegment,a6)
-lbC01BC4A	move.l	(lbB02D0E0-datasegment,a6),d1
-	clr.l	(lbB02D0E0-datasegment,a6)
-	jsr	(dosclose-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
+lbC01BC4A	move.l	(lbB02D0E0-ds,a6),d1
+	clr.l	(lbB02D0E0-ds,a6)
+	jsr	(dosclose-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC01BC5C	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01BC5C	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2759,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
-	clr.w	(lbB02EACA-datasegment,a6)
-	st	(lbB02EB7A-datasegment,a6)
-	jsr	(lbC028982-datasegment,a6)
-	clr.b	(lbB02EB7A-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
-	move.l	(lbB02D17C-datasegment,a6),d1
+	jsr	(lbC027E7C-ds,a6)
+	clr.w	(lbB02EACA-ds,a6)
+	st	(lbB02EB7A-ds,a6)
+	jsr	(lbC028982-ds,a6)
+	clr.b	(lbB02EB7A-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
+	move.l	(lbB02D17C-ds,a6),d1
 	beq.b	lbC01BC94
 	lea	(lbL034500).l,a0
 	move.w	(a0,d1.l),d0
@@ -34529,7 +34535,7 @@ lbC01BC94	rts
 
 lbC01BC96	move.l	d0,-(sp)
 	move.w	#$275A,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 lbC01BCA2	move.b	(a0)+,(a4)+
 	bne.b	lbC01BCA2
@@ -34540,22 +34546,22 @@ lbC01BCA2	move.b	(a0)+,(a4)+
 	move.b	#1,(-1,a4)
 	move.b	#10,(a4)+
 	move.b	#0,(a4)
-	jsr	(lbC02803A-datasegment,a6)
-	clr.b	(lbB02EB48-datasegment,a6)
-	jmp	(lbC02A42A-datasegment,a6)
+	jsr	(lbC02803A-ds,a6)
+	clr.b	(lbB02EB48-ds,a6)
+	jmp	(lbC02A42A-ds,a6)
 
-lbC01BCD0	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01BCD0	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2757,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
-	clr.w	(lbB02EACA-datasegment,a6)
-	st	(lbB02EB7A-datasegment,a6)
-	jsr	(lbC028982-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
+	clr.w	(lbB02EACA-ds,a6)
+	st	(lbB02EB7A-ds,a6)
+	jsr	(lbC028982-ds,a6)
 	moveq	#0,d0
-	move.b	d0,(lbB02EB7A-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
-	move.w	(lbB02EACC-datasegment,a6),d0
+	move.b	d0,(lbB02EB7A-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
+	move.w	(lbB02EACC-ds,a6),d0
 	bne.b	lbC01BD00
 	rts
 
@@ -34565,7 +34571,7 @@ lbC01BD00	bclr	#15,d0
 	move.b	#10,(a4)+
 	move.l	d0,-(sp)
 	move.w	#$275B,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 lbC01BD1E	move.b	(a0)+,(a4)+
 	bne.b	lbC01BD1E
@@ -34598,28 +34604,28 @@ lbC01BD6E	tst.b	(a0)+
 	tst.b	(a0)
 	bne.b	lbC01BD38
 	move.b	#0,(a4)
-	movea.l	(datasegment-datasegment,a6),a2
-	jsr	(lbC02803A-datasegment,a6)
-	jsr	(DropIMsgAll-datasegment,a6)
+	movea.l	(ds-ds,a6),a2
+	jsr	(lbC02803A-ds,a6)
+	jsr	(DropIMsgAll-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$2758,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-	st	(lbB02EB7A-datasegment,a6)
-	jsr	(lbC028982-datasegment,a6)
-	clr.b	(lbB02EB7A-datasegment,a6)
+	st	(lbB02EB7A-ds,a6)
+	jsr	(lbC028982-ds,a6)
+	clr.b	(lbB02EB7A-ds,a6)
 	move.l	(sp)+,d0
-	move.l	(lbB02D17C-datasegment,a6),d1
+	move.l	(lbB02D17C-ds,a6),d1
 	beq.b	lbC01BDC2
 	cmpi.w	#$212,d0
 	bne.b	lbC01BDB8
 	moveq	#0,d0
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 lbC01BDB8	lea	(lbL034500).l,a0
 	move.w	d0,(a0,d1.l)
-lbC01BDC2	jmp	(lbC02A422-datasegment,a6)
+lbC01BDC2	jmp	(lbC02A422-ds,a6)
 
 keyboard_qualifier	db	'normal-',0
 	db	'shft-',0
@@ -34752,40 +34758,40 @@ lbC01BFE8	move.b	(a0)+,(a4)+
 	move.b	#$3A,(a4)+
 lbC01BFF8	tst.w	d0
 	beq.w	lbC01C0DE
-	jsr	(findmenu-datasegment,a6)
+	jsr	(findmenu-ds,a6)
 	bne.b	lbC01C048
 	move.l	(sp),d0
-	movea.l	(resourceutilbase-datasegment,a6),a1
+	movea.l	(resourceutilbase-ds,a6),a1
 	jsr	(-$30,a1)
 	beq.w	lbC01C0DE
 	movea.l	d0,a1
 	move.w	(a1)+,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 lbC01C01C	move.b	(a0)+,(a4)+
 	bne.b	lbC01C01C
 	move.b	#$2F,(-1,a4)
 	move.w	(a1)+,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 lbC01C02E	move.b	(a0)+,(a4)+
 	bne.b	lbC01C02E
 	move.b	#$2F,(-1,a4)
 	move.w	(a1),d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 lbC01C040	move.b	(a0)+,(a4)+
 	bne.b	lbC01C040
 	bra.w	lbC01C0DE
 
-lbC01C048	movea.l	(findmenu_strip-datasegment,a6),a0
+lbC01C048	movea.l	(findmenu_strip-ds,a6),a0
 	movea.l	($12,a0),a0
 	movea.l	($12,a0),a0
 	movea.l	(12,a0),a0
 lbC01C058	move.b	(a0)+,(a4)+
 	bne.b	lbC01C058
 	move.b	#$2F,(-1,a4)
-	movea.l	(findmenu_item-datasegment,a6),a1
+	movea.l	(findmenu_item-ds,a6),a1
 	movea.l	($12,a1),a0
 	movea.l	(12,a0),a0
 lbC01C06E	cmpi.b	#$20,(a0)+
@@ -34793,7 +34799,7 @@ lbC01C06E	cmpi.b	#$20,(a0)+
 	subq.w	#1,a0
 lbC01C076	move.b	(a0)+,(a4)+
 	bne.b	lbC01C076
-	move.l	(findmenu_sub-datasegment,a6),d0
+	move.l	(findmenu_sub-ds,a6),d0
 	beq.b	lbC01C09C
 	move.b	#$2F,(-1,a4)
 	movea.l	d0,a1
@@ -34818,7 +34824,7 @@ lbC01C09C	move.w	(12,a1),d1
 lbC01C0C0	move.b	(a0)+,(a4)+
 	bne.b	lbC01C0C0
 	movea.l	a1,a0
-	jsr	(_ClearMenuStrip-datasegment,a6)
+	jsr	(_ClearMenuStrip-ds,a6)
 	bra.b	lbC01C0DE
 
 lbC01C0CC	lea	(ON.MSG,pc),a0
@@ -34836,74 +34842,74 @@ FUNCTION.MSG	db	2
 ON.MSG	db	'ON',0
 OFF.MSG	db	'OFF',0,0
 
-lbC01C0FA	lea	(lbB02D24F-datasegment,a6),a5
-	jsr	(_SetPointerAll-datasegment,a6)
-	jsr	(lbC0273FC-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
+lbC01C0FA	lea	(lbB02D24F-ds,a6),a5
+	jsr	(_SetPointerAll-ds,a6)
+	jsr	(lbC0273FC-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
 	move.l	a5,-(sp)
 	bsr.w	lbC020D16
 	movea.l	(sp)+,a5
 	clr.b	(a5)
-	clr.w	(lbB02EAD0-datasegment,a6)
-lbC01C118	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	clr.w	(lbB02EAD0-ds,a6)
+lbC01C118	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC01C168
 	movem.l	a2/a5,-(sp)
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	bsr.w	lbC020D16
 	movem.l	(sp)+,d0/a5
 	tst.b	(a5)
 	bne.b	lbC01C158
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC01C168
 	movem.l	a2/a5,-(sp)
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	bsr.w	lbC020D16
-	tst.b	(lbB02EB78-datasegment,a6)
+	tst.b	(lbB02EB78-ds,a6)
 	beq.b	lbC01C162
 lbC01C14A	movem.l	(sp)+,d0/a5
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.b	lbC01C158
 	tst.b	(a5)
 	beq.b	lbC01C118
 lbC01C158	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
-lbC01C162	jsr	(lbC027E00-datasegment,a6)
+lbC01C162	jsr	(lbC027E00-ds,a6)
 	bra.b	lbC01C14A
 
-lbC01C168	jsr	(lbC02742E-datasegment,a6)
-	jmp	(lbC02AF6C-datasegment,a6)
+lbC01C168	jsr	(lbC02742E-ds,a6)
+	jmp	(lbC02AF6C-ds,a6)
 
-lbC01C170	lea	(lbB02D3A4-datasegment,a6),a5
-	jsr	(_SetPointerAll-datasegment,a6)
-	jsr	(lbC0273FC-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
+lbC01C170	lea	(lbB02D3A4-ds,a6),a5
+	jsr	(_SetPointerAll-ds,a6)
+	jsr	(lbC0273FC-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
 	move.l	a5,-(sp)
 	bsr.w	lbC020D16
 	movea.l	(sp)+,a5
 	clr.w	(a5)
-	clr.w	(lbB02EAD0-datasegment,a6)
-lbC01C18E	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	clr.w	(lbB02EAD0-ds,a6)
+lbC01C18E	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.w	lbC01C266
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.w	lbC01C266
 	movem.l	a2/a5,-(sp)
-	clr.w	(lbB02D39C-datasegment,a6)
-lbC01C1A6	lea	(lbB031E00-datasegment,a6),a4
-	clr.w	(lbL02D226-datasegment,a6)
-	addq.w	#1,(lbB02D39C-datasegment,a6)
-	move.b	(lbB02D39D-datasegment,a6),(lbB02EB3D).l
+	clr.w	(lbB02D39C-ds,a6)
+lbC01C1A6	lea	(lbB031E00-ds,a6),a4
+	clr.w	(lbL02D226-ds,a6)
+	addq.w	#1,(lbB02D39C-ds,a6)
+	move.b	(lbB02D39D-ds,a6),(lbB02EB3D).l
 	bsr.w	lbC020D16
-	btst	#1,(lbB02D3A7-datasegment,a6)
+	btst	#1,(lbB02D3A7-ds,a6)
 	beq.b	lbC01C20A
-	move.w	(lbB02D39C-datasegment,a6),d0
-	cmp.w	(lbL02D226-datasegment,a6),d0
+	move.w	(lbB02D39C-ds,a6),d0
+	cmp.w	(lbL02D226-ds,a6),d0
 	bhi.b	lbC01C20A
 	movea.l	(sp),a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	move.l	(lbB02D118-datasegment,a6),d0
-	sub.l	(datasegment-datasegment,a6),d0
+	jsr	(lbC02A3CC-ds,a6)
+	move.l	(lbB02D118-ds,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#1,d1
 	jsr	(lbC02777C).l
 	beq.b	lbC01C1A6
@@ -34912,50 +34918,50 @@ lbC01C1A6	lea	(lbB031E00-datasegment,a6),a4
 	moveq	#4,d1
 	jsr	(lbC027906).l
 	beq.b	lbC01C1A6
-	move.l	(lbL02D2F8-datasegment,a6),d1
+	move.l	(lbL02D2F8-ds,a6),d1
 	and.l	d1,d0
-	and.l	(lbB02D120-datasegment,a6),d1
+	and.l	(lbB02D120-ds,a6),d1
 	cmp.l	d0,d1
 	beq.b	lbC01C1A6
 	movem.l	(sp)+,d0/a5
 	bra.b	lbC01C256
 
-lbC01C20A	tst.b	(lbB02EB78-datasegment,a6)
+lbC01C20A	tst.b	(lbB02EB78-ds,a6)
 	beq.b	lbC01C260
 lbC01C210	movem.l	(sp)+,d0/a5
-	move.w	(lbB02D3A6-datasegment,a6),d1
+	move.w	(lbB02D3A6-ds,a6),d1
 	and.w	(a5),d1
 	bne.b	lbC01C256
-	move.w	(lbB02EAD0-datasegment,a6),d1
+	move.w	(lbB02EAD0-ds,a6),d1
 	bpl.w	lbC01C18E
 	btst	#0,d0
 	bne.w	lbC01C18E
-	btst	#0,(lbB02D3A7-datasegment,a6)
+	btst	#0,(lbB02D3A7-ds,a6)
 	beq.w	lbC01C18E
 	movea.l	d0,a0
-	movea.l	(lbL02D168-datasegment,a6),a1
+	movea.l	(lbL02D168-ds,a6),a1
 	move.w	(a0),d5
 	moveq	#7,d1
 	and.w	d5,d1
 	lsr.w	#3,d5
 	btst	d1,(a1,d5.w)
 	bne.w	lbC01C18E
-	btst	#0,(lbB02D3A5-datasegment,a6)
+	btst	#0,(lbB02D3A5-ds,a6)
 	beq.w	lbC01C18E
 lbC01C256	movea.l	d0,a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
-lbC01C260	jsr	(lbC027DEC-datasegment,a6)
+lbC01C260	jsr	(lbC027DEC-ds,a6)
 	bra.b	lbC01C210
 
-lbC01C266	jsr	(lbC02742E-datasegment,a6)
-	jmp	(lbC02AF6C-datasegment,a6)
+lbC01C266	jsr	(lbC02742E-ds,a6)
+	jmp	(lbC02AF6C-ds,a6)
 
 lbC01C26E	move.w	#$2749,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
-	lea	(screen_pubname-datasegment,a6),a1
+	lea	(screen_pubname-ds,a6),a1
 	move.l	a1,d0
 lbC01C27E	move.b	(a0)+,d1
 	beq.b	lbC01C29C
@@ -34966,20 +34972,20 @@ lbC01C27E	move.b	(a0)+,d1
 	addq.w	#1,a0
 	move.b	d1,(a1)+
 	moveq	#$30,d1
-	add.b	(lbB02EB6B-datasegment,a6),d1
+	add.b	(lbB02EB6B-ds,a6),d1
 lbC01C298	move.b	d1,(a1)+
 	bra.b	lbC01C27E
 
 lbC01C29C	clr.b	(a1)
-	jsr	(lbC02ADBC-datasegment,a6)
+	jsr	(lbC02ADBC-ds,a6)
 	beq.b	lbC01C2C4
-lbC01C2A4	st	(lbB02EB40-datasegment,a6)
-	move.l	d1,(lbL02D098-datasegment,a6)
-	clr.l	(lbL02B4C8-datasegment,a6)
-	move.l	(lbB02B4A8-datasegment,a6),(lbL02B4CC).l
-	jsr	(lbC02AFC0-datasegment,a6)
+lbC01C2A4	st	(lbB02EB40-ds,a6)
+	move.l	d1,(lbL02D098-ds,a6)
+	clr.l	(lbL02B4C8-ds,a6)
+	move.l	(workdata_length-ds,a6),(lbL02B4CC).l
+	jsr	(lbC02AFC0-ds,a6)
 	andi.b	#$FB,ccr
-	st	(lbB02EB48-datasegment,a6)
+	st	(lbB02EB48-ds,a6)
 lbC01C2C4	rts
 
 	dw	0
@@ -35212,11 +35218,11 @@ lbL01C3E8	dl	0
 	dl	lbB02B3E1
 	dl	lbB039EA2
 
-lbC01C658	lea	(lbL02C1D4-datasegment,a6),a0
+lbC01C658	lea	(lbL02C1D4-ds,a6),a0
 	move.l	a0,d1
 	tst.b	(a0)
 	bne.b	lbC01C666
-	jmp	(lbC02A436-datasegment,a6)
+	jmp	(term2-ds,a6)
 
 lbC01C666	clr.b	-(sp)
 lbC01C668	move.b	(a0)+,d0
@@ -35231,7 +35237,7 @@ lbC01C672	move.b	(sp)+,d0
 	rts
 
 load_keytable	lea	(RSkeytable.MSG,pc),a0
-	lea	(path_keytable-datasegment,a6),a1
+	lea	(path_keytable-ds,a6),a1
 	jsr	(getfilepath).l
 	move.l	d0,d1
 	bne.b	lbC01C6B8
@@ -35239,35 +35245,35 @@ load_keytable	lea	(RSkeytable.MSG,pc),a0
 
 RSkeytable.MSG	db	'RS.keytable',0
 
-lbC01C69E	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01C69E	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2746,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(path_keytable-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(path_keytable-ds,a6),a0
 	move.l	a0,d1
-	bsr.w	lbC020566
+	bsr.w	requestfile
 	bne.b	lbC01C6BC
 	rts
 
-lbC01C6B8	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01C6B8	jsr	(saveregs_nod0d1a0a1-ds,a6)
 lbC01C6BC	move.l	#path_keytable,d1
-	jsr	(_SetPointerAll-datasegment,a6)
-	jsr	(lbC02A272-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(_SetPointerAll-ds,a6)
+	jsr	(lbC02A272-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	move.l	d0,d1
 lbC01C6D0	move.w	#$2751,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	tst.l	d1
 	bne.b	lbC01C6E2
 lbC01C6DE	bra.w	lbC01BC36
 
-lbC01C6E2	move.l	(lbB02D0E0-datasegment,a6),d1
+lbC01C6E2	move.l	(lbB02D0E0-ds,a6),d1
 	move.l	#lbL034500,d2
 	move.l	#$820,d3
-	jsr	(_Read-datasegment,a6)
+	jsr	(_Read-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$274F,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	cmp.l	(sp)+,d3
 	bne.b	lbC01C6DE
@@ -35284,30 +35290,30 @@ lbC01C712	moveq	#2,d2
 
 lbC01C716	moveq	#$19,d2
 lbC01C718	move.l	a3,d3
-lbC01C71A	jsr	(lbC02A4BE-datasegment,a6)
+lbC01C71A	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC01C728
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	lbC01C73E
 
 lbC01C728	addq.l	#4,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC01C73E
 	move.l	(a3),d7
 	btst	d2,d7
 	beq.b	lbC01C71A
-	jsr	(lbC02A3E6-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+	jsr	(lbC02A3E6-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01C73E	movea.l	d3,a3
-	jsr	(lbC02A3E6-datasegment,a6)
-	st	(lbB02EB48-datasegment,a6)
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	jsr	(lbC02A3E6-ds,a6)
+	st	(lbB02EB48-ds,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	cmp.w	d0,d0
 	rts
 
 lbC01C752	bsr.w	lbC01C7E0
 	dw	$7FE9
-	dw	lbB02B41D-datasegment
+	dw	lbB02B41D-ds
 	dl	$2200000
 	dl	$2210000
 	dl	$2220000
@@ -35317,7 +35323,7 @@ lbC01C752	bsr.w	lbC01C7E0
 
 lbC01C770	bsr.b	lbC01C7E0
 	dw	$7FEA
-	dw	lbB02B41E-datasegment
+	dw	lbB02B41E-ds
 	dl	$2200000
 	dl	$2210000
 	dl	$2220000
@@ -35327,7 +35333,7 @@ lbC01C770	bsr.b	lbC01C7E0
 
 lbC01C78C	bsr.b	lbC01C7E0
 	dw	$7FEB
-	dw	lbB02B41F-datasegment
+	dw	lbB02B41F-ds
 	dl	$2200000
 	dl	$2210000
 	dl	$2220000
@@ -35337,7 +35343,7 @@ lbC01C78C	bsr.b	lbC01C7E0
 
 lbC01C7A8	bsr.b	lbC01C7E0
 	dw	$7FEC
-	dw	lbB02B420-datasegment
+	dw	lbB02B420-ds
 	dl	$2200000
 	dl	$2210000
 	dl	$2220000
@@ -35347,7 +35353,7 @@ lbC01C7A8	bsr.b	lbC01C7E0
 
 lbC01C7C4	bsr.b	lbC01C7E0
 	dw	$7FED
-	dw	lbB02B421-datasegment
+	dw	lbB02B421-ds
 	dl	$2200000
 	dl	$2210000
 	dl	$2220000
@@ -35357,49 +35363,49 @@ lbC01C7C4	bsr.b	lbC01C7E0
 
 lbC01C7E0	movea.l	(sp)+,a1
 	move.w	(a1)+,d0
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC01C800
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	lbC01C7FA
-	movea.l	(lbL02D0FC-datasegment,a6),a0
+	movea.l	(lbL02D0FC-ds,a6),a0
 	move.w	d0,(a0)+
-	move.l	a0,(lbL02D0FC-datasegment,a6)
-lbC01C7FA	move.w	d0,(lbW02B4D2-datasegment,a6)
+	move.l	a0,(lbL02D0FC-ds,a6)
+lbC01C7FA	move.w	d0,(lbW02B4D2-ds,a6)
 	bra.b	lbC01C804
 
-lbC01C800	move.w	d0,(lbW02B4D0-datasegment,a6)
-lbC01C804	clr.b	(lbB02B41D-datasegment,a6)
-	clr.b	(lbB02B41E-datasegment,a6)
-	clr.b	(lbB02B41F-datasegment,a6)
-	clr.b	(lbB02B420-datasegment,a6)
-	clr.b	(lbB02B421-datasegment,a6)
+lbC01C800	move.w	d0,(lbW02B4D0-ds,a6)
+lbC01C804	clr.b	(lbB02B41D-ds,a6)
+	clr.b	(lbB02B41E-ds,a6)
+	clr.b	(lbB02B41F-ds,a6)
+	clr.b	(lbB02B420-ds,a6)
+	clr.b	(lbB02B421-ds,a6)
 	move.w	(a1)+,d0
 	bset	#0,(a6,d0.w)
 	movea.l	a1,a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01C82A	move.l	(a3),d7
 	bclr	#$10,d7
 	bclr	#$12,d7
 	bclr	#$11,d7
 	move.l	d7,(a3)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01C83E	movem.l	d2-d7/a2-a5,-(sp)
-	movea.l	(lbL02B488-datasegment,a6),a5
+	movea.l	(lbL02B488-ds,a6),a5
 	move.l	(a5),d1
 	beq.b	lbC01C854
 	movea.l	d1,a1
 	move.l	(4,a5),d0
-	jsr	(_FreeMem-datasegment,a6)
+	jsr	(_FreeMem-ds,a6)
 lbC01C854	move.w	#$2710,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 	movea.l	(12,a5),a1
 lbC01C862	move.b	(a0)+,(a1)+
 	bne.b	lbC01C862
-	lea	(lbB031E00-datasegment,a6),a5
+	lea	(lbB031E00-ds,a6),a5
 	lea	(OptionTable,pc),a1
 .loop	move.w	(a1)+,d0
 	beq.b	.end
@@ -35413,128 +35419,128 @@ lbC01C862	move.b	(a0)+,(a1)+
 	bra.b	.loop
 
 .end	move.w	#$294,d0
-	tst.b	(lbB02B46D-datasegment,a6)
+	tst.b	(lbB02B46D-ds,a6)
 	bne.b	lbC01C898
 	addq.w	#1,d0
-	tst.b	(lbB02B46E-datasegment,a6)
+	tst.b	(lbB02B46E-ds,a6)
 	beq.b	lbC01C89A
 lbC01C898	move.w	d0,(a5)+
 lbC01C89A	move.w	#$16A,d1
-	move.l	(lbL02CDF0-datasegment,a6),d0
+	move.l	(lbL02CDF0-ds,a6),d0
 	beq.b	lbC01C8AC
 	addq.w	#1,d1
 	cmpi.w	#10,d0
 	bne.b	lbC01C8AE
 lbC01C8AC	move.w	d1,(a5)+
 lbC01C8AE	move.w	#$1A7,d1
-	tst.b	(lbB02B401-datasegment,a6)
+	tst.b	(lbB02B401-ds,a6)
 	bne.b	lbC01C8CC
 	move.w	#$246,d1
-	tst.b	(lbB02B402-datasegment,a6)
+	tst.b	(lbB02B402-ds,a6)
 	bne.b	lbC01C8CC
 	move.w	#$3B2,d1
-	tst.b	(lbB02B403-datasegment,a6)
+	tst.b	(lbB02B403-ds,a6)
 	beq.b	lbC01C8CE
 lbC01C8CC	move.w	d1,(a5)+
-lbC01C8CE	cmpi.b	#$58,(XEFM.MSG-datasegment,a6)
+lbC01C8CE	cmpi.b	#$58,(XEFM.MSG-ds,a6)
 	beq.b	lbC01C8DA
 	move.w	#$1A2,(a5)+
-lbC01C8DA	cmpi.b	#$78,(xpsc.MSG-datasegment,a6)
+lbC01C8DA	cmpi.b	#$78,(xpsc.MSG-ds,a6)
 	beq.b	lbC01C8E6
 	move.w	#$1A3,(a5)+
-lbC01C8E6	cmpi.b	#$41,(ADUSPUSPMMUMM.MSG-datasegment,a6)
+lbC01C8E6	cmpi.b	#$41,(ADUSPUSPMMUMM.MSG-ds,a6)
 	beq.b	lbC01C8F2
 	move.w	#$314,(a5)+
-lbC01C8F2	cmpi.b	#$57,(WL.MSG-datasegment,a6)
+lbC01C8F2	cmpi.b	#$57,(WL.MSG-ds,a6)
 	beq.b	lbC01C8FE
 	move.w	#$366,(a5)+
 lbC01C8FE	moveq	#$36,d1
-	tst.b	(lbB02B410-datasegment,a6)
+	tst.b	(lbB02B410-ds,a6)
 	bne.b	lbC01C91E
 	moveq	#$37,d1
-	tst.b	(lbB02B40F-datasegment,a6)
+	tst.b	(lbB02B40F-ds,a6)
 	bne.b	lbC01C91E
 	moveq	#$39,d1
-	tst.b	(lbB02B40D-datasegment,a6)
+	tst.b	(lbB02B40D-ds,a6)
 	bne.b	lbC01C91E
 	moveq	#$3A,d1
-	tst.b	(lbB02B40C-datasegment,a6)
+	tst.b	(lbB02B40C-ds,a6)
 	beq.b	lbC01C920
 lbC01C91E	move.w	d1,(a5)+
 lbC01C920	move.w	#$35A,d1
-	tst.b	(lbB02B417-datasegment,a6)
+	tst.b	(lbB02B417-ds,a6)
 	bne.b	lbC01C94E
 	move.w	#$19B,d1
-	tst.b	(lbB02B419-datasegment,a6)
+	tst.b	(lbB02B419-ds,a6)
 	bne.b	lbC01C94E
 	addq.w	#1,d1
-	tst.b	(lbB02B41A-datasegment,a6)
+	tst.b	(lbB02B41A-ds,a6)
 	bne.b	lbC01C94E
 	addq.w	#1,d1
-	tst.b	(lbB02B41C-datasegment,a6)
+	tst.b	(lbB02B41C-ds,a6)
 	bne.b	lbC01C94E
 	move.w	#$1A4,d1
-	tst.b	(lbB02B41B-datasegment,a6)
+	tst.b	(lbB02B41B-ds,a6)
 	beq.b	lbC01C950
 lbC01C94E	move.w	d1,(a5)+
 lbC01C950	move.w	#$221,d1
-	tst.b	(lbB02B41E-datasegment,a6)
+	tst.b	(lbB02B41E-ds,a6)
 	bne.b	lbC01C972
 	addq.w	#1,d1
-	tst.b	(lbB02B41F-datasegment,a6)
+	tst.b	(lbB02B41F-ds,a6)
 	bne.b	lbC01C972
 	addq.w	#1,d1
-	tst.b	(lbB02B420-datasegment,a6)
+	tst.b	(lbB02B420-ds,a6)
 	bne.b	lbC01C972
 	addq.w	#1,d1
-	tst.b	(lbB02B421-datasegment,a6)
+	tst.b	(lbB02B421-ds,a6)
 	beq.b	lbC01C974
 lbC01C972	move.w	d1,(a5)+
 lbC01C974	move.w	#$25D,d1
-	tst.b	(lbB02B426-datasegment,a6)
+	tst.b	(lbB02B426-ds,a6)
 	bne.b	lbC01C986
 	addq.w	#1,d1
-	tst.b	(lbB02B427-datasegment,a6)
+	tst.b	(lbB02B427-ds,a6)
 	beq.b	lbC01C988
 lbC01C986	move.w	d1,(a5)+
 lbC01C988	move.w	#$29D,d1
-	tst.b	(lbB02B42A-datasegment,a6)
+	tst.b	(lbB02B42A-ds,a6)
 	bne.b	lbC01C99A
 	addq.w	#1,d1
-	tst.b	(lbB02B42B-datasegment,a6)
+	tst.b	(lbB02B42B-ds,a6)
 	beq.b	lbC01C99C
 lbC01C99A	move.w	d1,(a5)+
 lbC01C99C	moveq	#0,d0
-	move.b	(lbB02EB6B-datasegment,a6),d0
+	move.b	(lbB02EB6B-ds,a6),d0
 	cmpi.w	#4,d0
 	beq.b	lbC01C9B0
 	move.w	#$2D3,d1
 	add.w	d0,d1
 	move.w	d1,(a5)+
 lbC01C9B0	move.w	#$1BE,d1
-	tst.b	(lbB02B431-datasegment,a6)
+	tst.b	(lbB02B431-ds,a6)
 	bne.b	lbC01C9DA
 	addq.w	#1,d1
-	tst.b	(lbB02B432-datasegment,a6)
+	tst.b	(lbB02B432-ds,a6)
 	bne.b	lbC01C9DA
 	addq.w	#1,d1
-	tst.b	(lbB02B433-datasegment,a6)
+	tst.b	(lbB02B433-ds,a6)
 	bne.b	lbC01C9DA
 	addq.w	#1,d1
-	tst.b	(lbB02B434-datasegment,a6)
+	tst.b	(lbB02B434-ds,a6)
 	bne.b	lbC01C9DA
 	addq.w	#1,d1
-	tst.b	(lbB02B435-datasegment,a6)
+	tst.b	(lbB02B435-ds,a6)
 	beq.b	lbC01C9DC
 lbC01C9DA	move.w	d1,(a5)+
 lbC01C9DC	move.w	#$192,d1
-	tst.b	(lbB02B443-datasegment,a6)
+	tst.b	(lbB02B443-ds,a6)
 	bne.b	lbC01C9EE
 	addq.w	#1,d1
-	tst.b	(lbB02B444-datasegment,a6)
+	tst.b	(lbB02B444-ds,a6)
 	beq.b	lbC01C9F0
 lbC01C9EE	move.w	d1,(a5)+
-lbC01C9F0	lea	(lbB02D180-datasegment,a6),a0
+lbC01C9F0	lea	(lbB02D180-ds,a6),a0
 	moveq	#14,d0
 	move.w	#$2F7,d4
 lbC01C9FA	move.l	(a0)+,d2
@@ -35568,8 +35574,8 @@ lbC01CA38	tst.w	(-2,a5)
 	st	(-1,a5)
 lbC01CA42	addq.w	#1,d4
 	dbra	d0,lbC01C9FA
-	lea	(displayid-datasegment,a6),a4
-	move.w	(lbW02B476-datasegment,a6),d0
+	lea	(displayid-ds,a6),a4
+	move.w	(lbW02B476-ds,a6),d0
 	bsr.w	lbC0224DE
 	clr.b	(a4)
 	lea	(lbW01CCCC,pc),a1
@@ -35621,315 +35627,315 @@ lbC01CAB4	move.b	(a0)+,(a5)+
 lbC01CAC8	move.w	#$339,(a5)+
 	clr.w	(a5)+
 	move.l	a5,d0
-	movea.l	(lbL02B488-datasegment,a6),a5
+	movea.l	(lbL02B488-ds,a6),a5
 	sub.l	#lbB031E00,d0
 	move.l	d0,(4,a5)
-	jsr	(_AllocMem-datasegment,a6)
+	jsr	(_AllocMem-ds,a6)
 	beq.b	lbC01CB02
 	movea.l	d0,a1
 	move.l	d0,(a5)
 	move.l	(4,a5),d0
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 lbC01CAF0	move.w	(a0)+,(a1)+
 	subq.l	#2,d0
 	bne.b	lbC01CAF0
 	movem.l	(sp)+,d2-d7/a2-a5
 	bsr.w	lbC01BAB6
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01CB02	clr.l	(4,a5)
 	movem.l	(sp)+,d2-d7/a2-a5
-	jmp	(_dummy_st-datasegment,a6)
+	jmp	(term1-ds,a6)
 
-OptionTable	dw	lbB02B3E5-datasegment
+OptionTable	dw	lbB02B3E5-ds
 	dw	0
 	dw	$1C
-	dw	lbB02B3E6-datasegment
+	dw	lbB02B3E6-ds
 	dw	0
 	dw	$1B
-	dw	lbB02B3E7-datasegment
+	dw	lbB02B3E7-ds
 	dw	0
 	dw	$1A
-	dw	lbB02B3E8-datasegment
+	dw	lbB02B3E8-ds
 	dw	0
 	dw	$5E
-	dw	lbB02B3E9-datasegment
+	dw	lbB02B3E9-ds
 	dw	0
 	dw	$5D
-	dw	lbB02B3EA-datasegment
+	dw	lbB02B3EA-ds
 	dw	1
 	dw	$394
-	dw	lbB02B3EB-datasegment
+	dw	lbB02B3EB-ds
 	dw	0
 	dw	$151
-	dw	lbB02B3EC-datasegment
+	dw	lbB02B3EC-ds
 	dw	0
 	dw	$152
-	dw	lbB02B3ED-datasegment
+	dw	lbB02B3ED-ds
 	dw	0
 	dw	$153
-	dw	lbB02B3EE-datasegment
+	dw	lbB02B3EE-ds
 	dw	0
 	dw	$154
-	dw	lbB02B3EF-datasegment
+	dw	lbB02B3EF-ds
 	dw	0
 	dw	$2B9
-	dw	lbB02B3F0-datasegment
+	dw	lbB02B3F0-ds
 	dw	0
 	dw	$2CB
-	dw	lbB02B3F1-datasegment
+	dw	lbB02B3F1-ds
 	dw	0
 	dw	$2CD
-	dw	lbB02B3F2-datasegment
+	dw	lbB02B3F2-ds
 	dw	0
 	dw	$34E
-	dw	lbB02B3F3-datasegment
+	dw	lbB02B3F3-ds
 	dw	0
 	dw	$34F
-	dw	lbB02B3F7-datasegment
+	dw	lbB02B3F7-ds
 	dw	1
 	dw	$39E
-	dw	lbB02B3F8-datasegment
+	dw	lbB02B3F8-ds
 	dw	0
 	dw	$176
-	dw	lbB02B3F9-datasegment
+	dw	lbB02B3F9-ds
 	dw	0
 	dw	$2B1
-	dw	lbB02B3FA-datasegment
+	dw	lbB02B3FA-ds
 	dw	0
 	dw	$2B2
-	dw	lbB02B3FB-datasegment
+	dw	lbB02B3FB-ds
 	dw	1
 	dw	$3A2
-	dw	lbB02B3FC-datasegment
+	dw	lbB02B3FC-ds
 	dw	1
 	dw	$3A3
-	dw	lbB02B3FD-datasegment
+	dw	lbB02B3FD-ds
 	dw	0
 	dw	$2A3
-	dw	lbB02B405-datasegment
+	dw	lbB02B405-ds
 	dw	1
 	dw	$195
-	dw	lbB02B3FE-datasegment
+	dw	lbB02B3FE-ds
 	dw	1
 	dw	$1C6
-	dw	lbB02B40B-datasegment
+	dw	lbB02B40B-ds
 	dw	1
 	dw	$270
-	dw	lbB02B412-datasegment
+	dw	lbB02B412-ds
 	dw	1
 	dw	$380
-	dw	lbB02B414-datasegment
+	dw	lbB02B414-ds
 	dw	1
 	dw	$37E
-	dw	lbB02B422-datasegment
+	dw	lbB02B422-ds
 	dw	0
 	dw	$22C
-	dw	flag_DT_enabled-datasegment
+	dw	flag_DT_enabled-ds
 	dw	1
 	dw	$2B0
-	dw	lbB02B42F-datasegment
+	dw	lbB02B42F-ds
 	dw	1
 	dw	$34D
-	dw	lbB02B437-datasegment
+	dw	lbB02B437-ds
 	dw	1
 	dw	$1C3
-	dw	lbB02B441-datasegment
+	dw	lbB02B441-ds
 	dw	1
 	dw	$4C
-	dw	lbB02B446-datasegment
+	dw	lbB02B446-ds
 	dw	0
 	dw	$170
-	dw	lbB02B447-datasegment
+	dw	lbB02B447-ds
 	dw	1
 	dw	$17D
-	dw	lbB02B448-datasegment
+	dw	lbB02B448-ds
 	dw	1
 	dw	$189
-	dw	lbB02B449-datasegment
+	dw	lbB02B449-ds
 	dw	1
 	dw	$17F
-	dw	lbB02B44A-datasegment
+	dw	lbB02B44A-ds
 	dw	1
 	dw	$181
-	dw	lbB02B44B-datasegment
+	dw	lbB02B44B-ds
 	dw	1
 	dw	$183
-	dw	lbB02B44C-datasegment
+	dw	lbB02B44C-ds
 	dw	1
 	dw	$18B
-	dw	lbB02B44D-datasegment
+	dw	lbB02B44D-ds
 	dw	1
 	dw	$18D
-	dw	lbB02B44E-datasegment
+	dw	lbB02B44E-ds
 	dw	1
 	dw	$18F
-	dw	lbB02B44F-datasegment
+	dw	lbB02B44F-ds
 	dw	0
 	dw	$1B0
-	dw	lbB02B450-datasegment
+	dw	lbB02B450-ds
 	dw	0
 	dw	$2A5
-	dw	lbB02B451-datasegment
+	dw	lbB02B451-ds
 	dw	0
 	dw	$2A7
-	dw	lbB02B452-datasegment
+	dw	lbB02B452-ds
 	dw	0
 	dw	$29B
-	dw	lbB02B453-datasegment
+	dw	lbB02B453-ds
 	dw	0
 	dw	$2C8
-	dw	lbB02B454-datasegment
+	dw	lbB02B454-ds
 	dw	0
 	dw	$35B
-	dw	lbB02B455-datasegment
+	dw	lbB02B455-ds
 	dw	1
 	dw	$35D
-	dw	lbB02B456-datasegment
+	dw	lbB02B456-ds
 	dw	1
 	dw	$35F
-	dw	lbB02B457-datasegment
+	dw	lbB02B457-ds
 	dw	1
 	dw	$219
-	dw	lbB02B458-datasegment
+	dw	lbB02B458-ds
 	dw	1
 	dw	$2BB
-	dw	lbB02B459-datasegment
+	dw	lbB02B459-ds
 	dw	1
 	dw	$37C
-	dw	lbB02B45A-datasegment
+	dw	lbB02B45A-ds
 	dw	0
 	dw	$3B4
-	dw	lbB02B470-datasegment
+	dw	lbB02B470-ds
 	dw	1
 	dw	$3AE
-	dw	lbB02B471-datasegment
+	dw	lbB02B471-ds
 	dw	1
 	dw	$3AF
-	dw	lbB02B472-datasegment
+	dw	lbB02B472-ds
 	dw	0
 	dw	$364
-	dw	lbB02B45B-datasegment
+	dw	lbB02B45B-ds
 	dw	1
 	dw	$173
-	dw	lbB02B45C-datasegment
+	dw	lbB02B45C-ds
 	dw	1
 	dw	$27
-	dw	lbB02B45D-datasegment
+	dw	lbB02B45D-ds
 	dw	0
 	dw	$2A
-	dw	lbB02B45E-datasegment
+	dw	lbB02B45E-ds
 	dw	1
 	dw	$2B5
-	dw	lbB02B45F-datasegment
+	dw	lbB02B45F-ds
 	dw	0
 	dw	$675
-	dw	lbB02B46A-datasegment
+	dw	lbB02B46A-ds
 	dw	1
 	dw	$38A
-	dw	lbB02B46B-datasegment
+	dw	lbB02B46B-ds
 	dw	1
 	dw	$38C
-	dw	lbB02B46C-datasegment
+	dw	lbB02B46C-ds
 	dw	0
 	dw	$38D
-	dw	lbB02B460-datasegment
+	dw	lbB02B460-ds
 	dw	1
 	dw	$3A5
-	dw	lbB02B461-datasegment
+	dw	lbB02B461-ds
 	dw	1
 	dw	$3A6
-	dw	lbB02B462-datasegment
+	dw	lbB02B462-ds
 	dw	1
 	dw	$3A7
-	dw	lbB02B463-datasegment
+	dw	lbB02B463-ds
 	dw	1
 	dw	$3A8
-	dw	lbB02B464-datasegment
+	dw	lbB02B464-ds
 	dw	1
 	dw	$3A9
-	dw	lbB02B465-datasegment
+	dw	lbB02B465-ds
 	dw	1
 	dw	$3AA
-	dw	lbB02B466-datasegment
+	dw	lbB02B466-ds
 	dw	1
 	dw	$3AB
-	dw	lbB02B467-datasegment
+	dw	lbB02B467-ds
 	dw	0
 	dw	$310
-	dw	lbB02B468-datasegment
+	dw	lbB02B468-ds
 	dw	1
 	dw	$3AD
-	dw	lbB02B469-datasegment
+	dw	lbB02B469-ds
 	dw	1
 	dw	$3B1
 	dw	0
 lbW01CCCC	dw	$8000
-	dw	lbL02E2C8-datasegment
+	dw	lbL02E2C8-ds
 	dw	$BAD
 	dw	$367
 	dw	$8000
-	dw	lbL02E4C8-datasegment
+	dw	lbL02E4C8-ds
 	dw	$B54
 	dw	$368
 	dw	$8000
-	dw	lbL02E6C8-datasegment
+	dw	lbL02E6C8-ds
 	dw	$BB0
 	dw	$369
 	dw	$8000
-	dw	lbL02E0C8-datasegment
+	dw	lbL02E0C8-ds
 	dw	$BAA
 	dw	$36A
 	dw	0
-	dw	lbL02D8C8-datasegment
+	dw	lbL02D8C8-ds
 	dw	$4D
 	dw	0
-	dw	lbL02DCC8-datasegment
+	dw	lbL02DCC8-ds
 	dw	$37D
 	dw	0
-	dw	displayid-datasegment
+	dw	displayid-ds
 	dw	$384
 	dw	0
-	dw	lbL02C1D4-datasegment
+	dw	lbL02C1D4-ds
 	dw	$225
 	dw	0
-	dw	lbL02B4D4-datasegment
+	dw	lbL02B4D4-ds
 	dw	$233
 	dw	0
-	dw	lbL02B5D4-datasegment
+	dw	lbL02B5D4-ds
 	dw	$234
 	dw	0
-	dw	lbL02B6D4-datasegment
+	dw	lbL02B6D4-ds
 	dw	$235
 	dw	0
-	dw	lbL02B7D4-datasegment
+	dw	lbL02B7D4-ds
 	dw	$236
 	dw	0
-	dw	lbL02B8D4-datasegment
+	dw	lbL02B8D4-ds
 	dw	$237
 	dw	0
-	dw	lbL02B9D4-datasegment
+	dw	lbL02B9D4-ds
 	dw	$238
 	dw	0
-	dw	lbL02BAD4-datasegment
+	dw	lbL02BAD4-ds
 	dw	$239
 	dw	0
-	dw	lbL02BBD4-datasegment
+	dw	lbL02BBD4-ds
 	dw	$23A
 	dw	0
-	dw	lbL02BCD4-datasegment
+	dw	lbL02BCD4-ds
 	dw	$23B
 	dw	0
-	dw	lbL02BDD4-datasegment
+	dw	lbL02BDD4-ds
 	dw	$23C
 	dw	0
-	dw	lbL02BED4-datasegment
+	dw	lbL02BED4-ds
 	dw	$23D
 	dw	0
-	dw	lbL02BFD4-datasegment
+	dw	lbL02BFD4-ds
 	dw	$23E
 	dw	0
-	dw	lbL02C0D4-datasegment
+	dw	lbL02C0D4-ds
 	dw	$23F
 	dw	0
 	dw	0
@@ -35996,7 +36002,7 @@ lbW01CDC8	dw	0
 lbC01CDCA	movea.l	(sp)+,a0
 	move.l	a0,d0
 	subq.l	#2,d0
-	move.l	d0,(lbL02D2F0-datasegment,a6)
+	move.l	d0,(lbL02D2F0-ds,a6)
 	lea	(lbW01CDC8,pc),a1
 	suba.l	a0,a1
 	move.l	a1,d0
@@ -36006,124 +36012,124 @@ lbC01CDCA	movea.l	(sp)+,a0
 	adda.w	d1,a1
 	st	(a1)
 	move.l	a1,-(sp)
-	pea	(lbC029A5C-datasegment,a6)
-	lea	(lbC0297D8-datasegment,a6),a0
+	pea	(lbC029A5C-ds,a6)
+	lea	(lbC0297D8-ds,a6),a0
 	suba.l	d0,a0
-	move.l	a0,(lbL02D2F4-datasegment,a6)
+	move.l	a0,(lbL02D2F4-ds,a6)
 	lsl.l	#3,d0
 	lea	(lbL01C2C8,pc),a1
 	adda.l	d0,a1
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	bne.w	lbC01D09C
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	lbC01CE1A
-	jmp	(lbC02A436-datasegment,a6)
+	jmp	(term2-ds,a6)
 
-lbC01CE14	jsr	(lbC027E00-datasegment,a6)
+lbC01CE14	jsr	(lbC027E00-ds,a6)
 	bra.b	lbC01CE2C
 
-lbC01CE1A	st	(lbB02EBF6-datasegment,a6)
-	move.l	a1,(lbL02D104-datasegment,a6)
+lbC01CE1A	st	(lbB02EBF6-ds,a6)
+	move.l	a1,(lbL02D104-ds,a6)
 	movea.l	(8,a1),a0
-	tst.b	(lbB02EB78-datasegment,a6)
+	tst.b	(lbB02EB78-ds,a6)
 	beq.b	lbC01CE14
 lbC01CE2C	bsr.w	lbC020BBE
 	st	(a0)
 	move.w	#$2740,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	tst.l	(a1)
 	bne.b	lbC01CE8E
 	move.l	(12,a1),d1
 	movea.l	d1,a0
 	clr.b	(a0)
 	move.l	a1,-(sp)
-	jsr	(lbC028D54-datasegment,a6)
+	jsr	(lbC028D54-ds,a6)
 	movea.l	(sp)+,a1
 	beq.w	lbC01D09C
-	move.l	(lbB02CF86-datasegment,a6),d0
+	move.l	(lbB02CF86-ds,a6),d0
 	beq.b	lbC01CE8E
 	movem.l	d1/a0-a3,-(sp)
 	movea.l	d0,a3
 	movea.l	($78,a3),a2
-	lea	(lbB02CFF8-datasegment,a6),a0
+	lea	(lbB02CFF8-ds,a6),a0
 	move.w	($C8,a2),d0
 	add.w	d0,d0
 	move.w	(a0,d0.w),d0
 	ext.l	d0
 	moveq	#13,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC01CE7C
 	moveq	#7,d1
 lbC01CE7C	movea.l	($2A,a2),a0
 	lea	($B2,a2),a1
 	jsr	(setgadget).l
 	movem.l	(sp)+,d1/a0-a3
-lbC01CE8E	jsr	(lbC02A4EA-datasegment,a6)
-	clr.l	(lbL02D100-datasegment,a6)
-	jsr	(lbC029730-datasegment,a6)
+lbC01CE8E	jsr	(lbC02A4EA-ds,a6)
+	clr.l	(lbL02D100-ds,a6)
+	jsr	(lbC029730-ds,a6)
 	move.l	(a1)+,d1
 	beq.b	lbC01CEAA
 	move.l	(a1),d0
 	clr.l	(-4,a1)
 	movea.l	d1,a1
-	jsr	(_FreeMem-datasegment,a6)
+	jsr	(_FreeMem-ds,a6)
 lbC01CEAA	move.l	#$1000,d0
-	movea.l	(lbL02D104-datasegment,a6),a1
+	movea.l	(lbL02D104-ds,a6),a1
 	move.l	d0,(4,a1)
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC01D090
-	movea.l	(lbL02D104-datasegment,a6),a1
+	movea.l	(lbL02D104-ds,a6),a1
 	move.l	d0,(a1)
 	movea.l	d0,a1
-	move.b	#1,(lbB02EB41-datasegment,a6)
-	clr.l	(lbL02D100-datasegment,a6)
-	jsr	(lbC027E00-datasegment,a6)
+	move.b	#1,(lbB02EB41-ds,a6)
+	clr.l	(lbL02D100-ds,a6)
+	jsr	(lbC027E00-ds,a6)
 	clr.w	(a1)
 lbC01CED8	move.l	a1,-(sp)
-	jsr	(lbC028982-datasegment,a6)
+	jsr	(lbC028982-ds,a6)
 	movea.l	(sp)+,a1
-	move.l	a0,(lbL02D0D8-datasegment,a6)
-	move.l	d0,(lbL02D0DC-datasegment,a6)
+	move.l	a0,(lbL02D0D8-ds,a6)
+	move.l	d0,(lbL02D0DC-ds,a6)
 	cmpa.l	#lbC01EA10,a0
 	bne.b	lbC01CEF6
-	jsr	(lbC02A1B4-datasegment,a6)
+	jsr	(lbC02A1B4-ds,a6)
 	bra.b	lbC01CED8
 
-lbC01CEF6	cmpa.l	(lbL02D2F4-datasegment,a6),a0
+lbC01CEF6	cmpa.l	(lbL02D2F4-ds,a6),a0
 	beq.w	lbC01D026
-	cmpa.l	(lbL02D2F0-datasegment,a6),a0
+	cmpa.l	(lbL02D2F0-ds,a6),a0
 	beq.w	lbC01D026
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC01CF16
-lbC01CF0C	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+lbC01CF0C	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	lbC01D026
 
 lbC01CF16	cmpa.l	#lbC014360,a0
 	beq.b	lbC01CF0C
-	move.l	a1,(lbL02CE30-datasegment,a6)
-	move.l	(lbL02D100-datasegment,a6),d1
+	move.l	a1,(lbL02CE30-ds,a6)
+	move.l	(lbL02D100-ds,a6),d1
 	addi.l	#$200,d1
-	movea.l	(lbL02D104-datasegment,a6),a1
+	movea.l	(lbL02D104-ds,a6),a1
 	cmp.l	(4,a1),d1
 	bls.b	lbC01CF8C
 	move.l	(a1),d3
-	move.l	(lbL02CE30-datasegment,a6),d4
+	move.l	(lbL02CE30-ds,a6),d4
 	sub.l	d3,d4
-	move.l	d4,(lbL02CE30-datasegment,a6)
+	move.l	d4,(lbL02CE30-ds,a6)
 	move.l	(4,a1),d1
 	add.l	d1,d1
 	move.l	d1,d0
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC01D090
-	move.l	(lbL02CE30-datasegment,a6),d1
+	move.l	(lbL02CE30-ds,a6),d1
 	add.l	d0,d1
-	move.l	d1,(lbL02CE30-datasegment,a6)
+	move.l	d1,(lbL02CE30-ds,a6)
 	movea.l	d0,a1
-	movea.l	(lbL02D104-datasegment,a6),a0
+	movea.l	(lbL02D104-ds,a6),a0
 	movea.l	(a0),a5
 	move.l	(4,a0),d0
-	move.l	a5,(lbL02D108-datasegment,a6)
-	move.l	d0,(lbL02D10C-datasegment,a6)
+	move.l	a5,(lbL02D108-ds,a6)
+	move.l	d0,(lbL02D10C-ds,a6)
 	move.l	d0,d1
 	move.l	a1,(a0)
 	add.l	d1,d1
@@ -36131,11 +36137,11 @@ lbC01CF16	cmpa.l	#lbC014360,a0
 lbC01CF7A	move.l	(a5)+,(a1)+
 	subq.l	#4,d0
 	bne.b	lbC01CF7A
-	move.l	(lbL02D10C-datasegment,a6),d0
-	movea.l	(lbL02D108-datasegment,a6),a1
-	jsr	(_FreeMem-datasegment,a6)
-lbC01CF8C	movea.l	(lbL02CE30-datasegment,a6),a1
-	move.w	(lbB02EACC-datasegment,a6),d0
+	move.l	(lbL02D10C-ds,a6),d0
+	movea.l	(lbL02D108-ds,a6),a1
+	jsr	(_FreeMem-ds,a6)
+lbC01CF8C	movea.l	(lbL02CE30-ds,a6),a1
+	move.w	(lbB02EACC-ds,a6),d0
 	bclr	#15,d0
 	cmpi.w	#$11,d0
 	beq.b	lbC01CFBC
@@ -36149,7 +36155,7 @@ lbC01CF8C	movea.l	(lbL02CE30-datasegment,a6),a1
 	beq.b	lbC01CFBC
 	cmpi.w	#10,d0
 	bne.b	lbC01CFE4
-lbC01CFBC	tst.l	(lbL02D100-datasegment,a6)
+lbC01CFBC	tst.l	(lbL02D100-ds,a6)
 	beq.b	lbC01CFE4
 	tst.b	(-2,a1)
 	bpl.b	lbC01CFE0
@@ -36166,41 +36172,41 @@ lbC01CFBC	tst.l	(lbL02D100-datasegment,a6)
 lbC01CFE0	ori.w	#$8100,d0
 lbC01CFE4	move.w	d0,(a1)+
 	beq.b	lbC01CFEE
-	tst.b	(lbB02B424-datasegment,a6)
+	tst.b	(lbB02B424-ds,a6)
 	beq.b	lbC01CFF4
 lbC01CFEE	subq.l	#2,a1
-	subq.l	#2,(lbL02D100-datasegment,a6)
+	subq.l	#2,(lbL02D100-ds,a6)
 lbC01CFF4	clr.w	(a1)
-	addq.l	#2,(lbL02D100-datasegment,a6)
-	movea.l	(lbL02D0D8-datasegment,a6),a0
-	move.l	(lbL02D0DC-datasegment,a6),d0
-	move.l	a1,(lbL02D0FC-datasegment,a6)
-	jsr	(lbC029754-datasegment,a6)
-	movea.l	(lbL02D0FC-datasegment,a6),a1
-	move.b	#1,(lbB02EB41-datasegment,a6)
-	tst.b	(lbB02EB78-datasegment,a6)
+	addq.l	#2,(lbL02D100-ds,a6)
+	movea.l	(lbL02D0D8-ds,a6),a0
+	move.l	(lbL02D0DC-ds,a6),d0
+	move.l	a1,(lbL02D0FC-ds,a6)
+	jsr	(lbC029754-ds,a6)
+	movea.l	(lbL02D0FC-ds,a6),a1
+	move.b	#1,(lbB02EB41-ds,a6)
+	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC01D01E
-	jsr	(lbC027E00-datasegment,a6)
+	jsr	(lbC027E00-ds,a6)
 lbC01D01E	bsr.w	lbC020BBE
 	bra.w	lbC01CED8
 
-lbC01D026	jsr	(lbC029730-datasegment,a6)
-	tst.l	(lbL02D100-datasegment,a6)
+lbC01D026	jsr	(lbC029730-ds,a6)
+	tst.l	(lbL02D100-ds,a6)
 	beq.b	lbC01D03C
 	clr.w	(a1)+
 	moveq	#2,d0
-	add.l	d0,(lbL02D100-datasegment,a6)
-	add.l	d0,(lbL02D0FC-datasegment,a6)
-lbC01D03C	movea.l	(lbL02D104-datasegment,a6),a5
+	add.l	d0,(lbL02D100-ds,a6)
+	add.l	d0,(lbL02D0FC-ds,a6)
+lbC01D03C	movea.l	(lbL02D104-ds,a6),a5
 	movea.l	(a5),a1
 	move.l	(4,a5),d0
-	move.l	(lbL02D100-datasegment,a6),d1
+	move.l	(lbL02D100-ds,a6),d1
 	addq.l	#7,d1
 	andi.b	#$F8,d1
 	adda.l	d1,a1
 	sub.l	d1,d0
 	move.l	d0,-(sp)
-	jsr	(_FreeMem-datasegment,a6)
+	jsr	(_FreeMem-ds,a6)
 	move.l	(sp)+,d0
 	move.l	(4,a5),d1
 	sub.l	d0,d1
@@ -36209,26 +36215,26 @@ lbC01D03C	movea.l	(lbL02D104-datasegment,a6),a5
 	clr.l	(a5)
 	movea.l	(12,a5),a0
 	moveq	#$12,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a1
 lbC01D076	move.b	(a1)+,(a0)+
 	bne.b	lbC01D076
-lbC01D07A	clr.b	(lbB02EB41-datasegment,a6)
-	jsr	(lbC02A502-datasegment,a6)
+lbC01D07A	clr.b	(lbB02EB41-ds,a6)
+	jsr	(lbC02A502-ds,a6)
 	jsr	(lbC001C12).l
-	jsr	(lbC02973C-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02973C-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC01D090	jsr	(lbC027C36-datasegment,a6)
-	clr.b	(lbB02EB41-datasegment,a6)
-	jsr	(lbC02A502-datasegment,a6)
-lbC01D09C	jsr	(lbC02973C-datasegment,a6)
-	st	(lbB02EB48-datasegment,a6)
+lbC01D090	jsr	(lbC027C36-ds,a6)
+	clr.b	(lbB02EB41-ds,a6)
+	jsr	(lbC02A502-ds,a6)
+lbC01D09C	jsr	(lbC02973C-ds,a6)
+	st	(lbB02EB48-ds,a6)
 	cmp.b	d0,d0
 	rts
 
 load_macros	lea	(RSmacros.MSG,pc),a0
-	lea	(path_macros-datasegment,a6),a1
+	lea	(path_macros-ds,a6),a1
 	jsr	(getfilepath).l
 	move.l	d0,d1
 	bne.b	lbC01D0E0
@@ -36236,146 +36242,146 @@ load_macros	lea	(RSmacros.MSG,pc),a0
 
 RSmacros.MSG	db	'RS.macros',0
 
-lbC01D0C6	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01D0C6	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2748,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(path_macros-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(path_macros-ds,a6),a0
 	move.l	a0,d1
-	bsr.w	lbC020566
+	bsr.w	requestfile
 	bne.b	lbC01D0E4
 	rts
 
-lbC01D0E0	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
-lbC01D0E4	jsr	(_SetPointerAll-datasegment,a6)
+lbC01D0E0	jsr	(saveregs_nod0d1a0a1-ds,a6)
+lbC01D0E4	jsr	(_SetPointerAll-ds,a6)
 	move.l	#path_macros,d1
-	jsr	(_Lock-datasegment,a6)
-	move.l	d0,(lbL02D0E4-datasegment,a6)
+	jsr	(_Lock-ds,a6)
+	move.l	d0,(parseargs_lock-ds,a6)
 	move.l	d0,d1
 lbC01D0F8	move.w	#$2752,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	tst.l	d1
 	bne.b	lbC01D10A
 	bra.w	lbC01BB9A
 
-lbC01D10A	move.l	#lbL02CCDC,d2
-	jsr	(_Examine-datasegment,a6)
+lbC01D10A	move.l	#examine_buffer,d2
+	jsr	(_Examine-ds,a6)
 	move.l	d0,-(sp)
-	move.l	(lbL02D0E4-datasegment,a6),d1
-	jsr	(lbC02A388-datasegment,a6)
-	clr.l	(lbL02D0E4-datasegment,a6)
+	move.l	(parseargs_lock-ds,a6),d1
+	jsr	(_UnLock_ifd1-ds,a6)
+	clr.l	(parseargs_lock-ds,a6)
 	move.w	#$1F53,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	move.l	(sp)+,d0
 	beq.w	lbC01D2BA
-	move.l	(lbL02CD58-datasegment,a6),d0
-	move.l	d0,(lbL02D0C4-datasegment,a6)
+	move.l	(lbL02CD58-ds,a6),d0
+	move.l	d0,(lbL02D0C4-ds,a6)
 	beq.w	lbC01D2BA
-	jsr	(_AllocMemClear-datasegment,a6)
-	move.l	d0,(lbL02D0C0-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
+	move.l	d0,(lbL02D0C0-ds,a6)
 	move.l	d0,d1
 	move.w	#$275D,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	move.l	d1,d0
 	beq.w	lbC01D2BA
-	add.l	(lbL02CD58-datasegment,a6),d0
-	move.l	d0,(lbL02D1D0-datasegment,a6)
-	lea	(path_macros-datasegment,a6),a0
+	add.l	(lbL02CD58-ds,a6),d0
+	move.l	d0,(lbL02D1D0-ds,a6)
+	lea	(path_macros-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(lbC02A272-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	move.l	d0,d1
 	move.w	#$2752,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	tst.l	d1
 	beq.w	lbC01D2BA
-	move.l	(lbL02D0C0-datasegment,a6),d2
-	move.l	(lbL02D0C4-datasegment,a6),d3
-	jsr	(_Read-datasegment,a6)
+	move.l	(lbL02D0C0-ds,a6),d2
+	move.l	(lbL02D0C4-ds,a6),d3
+	jsr	(_Read-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$2750,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	cmp.l	(sp)+,d3
 	bne.w	lbC01D2BA
 	movea.l	d2,a0
-	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+	cmpa.l	(lbL02D1D0-ds,a6),a0
 	bhi.w	lbC01D2BA
 	move.l	(a0)+,d0
-	st	(lbB02EB49-datasegment,a6)
+	st	(lbB02EB49-ds,a6)
 	cmpi.l	#$BABEF00E,d0
 	beq.b	lbC01D1EC
-	neg.b	(lbB02EB49-datasegment,a6)
+	neg.b	(lbB02EB49-ds,a6)
 	cmpi.l	#$BABEF00F,d0
 	beq.b	lbC01D1EC
-	clr.b	(lbB02EB49-datasegment,a6)
+	clr.b	(lbB02EB49-ds,a6)
 	cmpi.l	#$BABEF00D,d0
 	beq.b	lbC01D1EC
-	move.l	(lbL02CD58-datasegment,a6),d1
+	move.l	(lbL02CD58-ds,a6),d1
 	cmpi.l	#$1800,d1
 	bne.w	lbC01D2BA
-	jsr	(lbC029AF4-datasegment,a6)
-	jsr	(lbC029C5A-datasegment,a6)
-	clr.l	(lbL02D0C0-datasegment,a6)
+	jsr	(lbC029AF4-ds,a6)
+	jsr	(lbC029C5A-ds,a6)
+	clr.l	(lbL02D0C0-ds,a6)
 	bra.w	lbC01D2B6
 
-lbC01D1EC	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+lbC01D1EC	cmpa.l	(lbL02D1D0-ds,a6),a0
 	bhi.w	lbC01D2BA
 	move.l	(a0)+,d1
 	add.l	d1,d1
 	adda.l	d1,a0
-	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+	cmpa.l	(lbL02D1D0-ds,a6),a0
 	bhi.w	lbC01D2BA
 	beq.w	lbC01D2B6
-	tst.b	(lbB02EB49-datasegment,a6)
+	tst.b	(lbB02EB49-ds,a6)
 	beq.b	lbC01D220
-	lea	(Macros1.MSG-datasegment,a6),a1
+	lea	(Macros1.MSG-ds,a6),a1
 	moveq	#5,d0
-lbC01D212	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+lbC01D212	cmpa.l	(lbL02D1D0-ds,a6),a0
 	bhi.w	lbC01D2BA
 	move.l	(a0)+,(a1)+
 	dbra	d0,lbC01D212
-lbC01D220	tst.b	(lbB02EB49-datasegment,a6)
+lbC01D220	tst.b	(lbB02EB49-ds,a6)
 	bmi.b	lbC01D23A
-	lea	(Macros2.MSG-datasegment,a6),a1
+	lea	(Macros2.MSG-ds,a6),a1
 	moveq	#5,d0
-lbC01D22C	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+lbC01D22C	cmpa.l	(lbL02D1D0-ds,a6),a0
 	bhi.w	lbC01D2BA
 	move.l	(a0)+,(a1)+
 	dbra	d0,lbC01D22C
-lbC01D23A	tst.b	(lbB02EB49-datasegment,a6)
+lbC01D23A	tst.b	(lbB02EB49-ds,a6)
 	ble.b	lbC01D252
-	lea	(Macros3.MSG-datasegment,a6),a1
+	lea	(Macros3.MSG-ds,a6),a1
 	moveq	#5,d0
-lbC01D246	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+lbC01D246	cmpa.l	(lbL02D1D0-ds,a6),a0
 	bhi.b	lbC01D2BA
 	move.l	(a0)+,(a1)+
 	dbra	d0,lbC01D246
-lbC01D252	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+lbC01D252	cmpa.l	(lbL02D1D0-ds,a6),a0
 	beq.b	lbC01D2B6
 	bhi.b	lbC01D2BA
 	move.l	(a0)+,d0
 	cmpi.l	#$39,d0
 	bhi.b	lbC01D2BA
-	movea.l	(lbL02B484-datasegment,a6),a5
+	movea.l	(lbL02B484-ds,a6),a5
 	subq.l	#1,d0
 	bmi.b	lbC01D2BA
 	lsl.l	#4,d0
 	adda.l	d0,a5
-	jsr	(lbC029AEC-datasegment,a6)
-	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+	jsr	(lbC029AEC-ds,a6)
+	cmpa.l	(lbL02D1D0-ds,a6),a0
 	bhi.b	lbC01D2BA
 	move.l	(a0)+,d0
 	move.l	d0,(4,a5)
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	move.l	d0,(a5)
 	beq.b	lbC01D2BA
 	movea.l	(12,a5),a1
 	moveq	#5,d1
-lbC01D28E	cmpa.l	(lbL02D1D0-datasegment,a6),a0
+lbC01D28E	cmpa.l	(lbL02D1D0-ds,a6),a0
 	bhi.b	lbC01D2BA
 	move.l	(a0)+,(a1)+
 	dbra	d1,lbC01D28E
@@ -36383,7 +36389,7 @@ lbC01D28E	cmpa.l	(lbL02D1D0-datasegment,a6),a0
 	move.l	(4,a5),d0
 	move.l	a0,d1
 	add.l	d0,d1
-	cmp.l	(lbL02D1D0-datasegment,a6),d1
+	cmp.l	(lbL02D1D0-ds,a6),d1
 	bhi.b	lbC01D2BA
 	lsr.l	#1,d0
 	subq.l	#1,d0
@@ -36395,223 +36401,223 @@ lbC01D2B6	bra.w	lbC01BBB0
 
 lbC01D2BA	bra.w	lbC01BB9A
 
-lbC01D2BE	move.l	(lbL02D09C-datasegment,a6),(lbL02D0B4).l
+lbC01D2BE	move.l	(lbL02D09C-ds,a6),(lbL02D0B4).l
 	bra.b	lbC01D2DA
 
-lbC01D2C8	move.l	(lbL02D0A0-datasegment,a6),(lbL02D0B4).l
+lbC01D2C8	move.l	(lbL02D0A0-ds,a6),(lbL02D0B4).l
 	bra.b	lbC01D2DA
 
-lbC01D2D2	move.l	(lbL02D0B0-datasegment,a6),(lbL02D0B4).l
-lbC01D2DA	clr.l	(lbB02D118-datasegment,a6)
-	move.b	(lbB02EB56-datasegment,a6),(lbB02EB3D).l
+lbC01D2D2	move.l	(lbL02D0B0-ds,a6),(lbL02D0B4).l
+lbC01D2DA	clr.l	(lbB02D118-ds,a6)
+	move.b	(lbB02EB56-ds,a6),(lbB02EB3D).l
 	movem.l	a0/a2/a3,-(sp)
 	bsr.w	lbC020CB8
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB3D-datasegment,a6)
-	jsr	(lbC029B18-datasegment,a6)
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB3D-ds,a6)
+	jsr	(lbC029B18-ds,a6)
 	movem.l	(sp)+,a0/a2/a3
-	move.l	(lbB02D120-datasegment,a6),d0
-	tst.b	(lbB02EB4F-datasegment,a6)
+	move.l	(lbB02D120-ds,a6),d0
+	tst.b	(lbB02EB4F-ds,a6)
 	bne.b	lbC01D30A
 	ext.l	d0
-lbC01D30A	tst.l	(lbB02D118-datasegment,a6)
+lbC01D30A	tst.l	(lbB02D118-ds,a6)
 	bne.b	lbC01D312
 	rts
 
-lbC01D312	add.l	(lbL02D0B4-datasegment,a6),d0
-	move.b	#$30,(lbB02EAD2-datasegment,a6)
-	tst.b	(lbB02B435-datasegment,a6)
+lbC01D312	add.l	(lbL02D0B4-ds,a6),d0
+	move.b	#$30,(lbB02EAD2-ds,a6)
+	tst.b	(lbB02B435-ds,a6)
 	bne.b	lbC01D38C
 	move.l	#$180,d1
-	move.b	#$43,(lbB02EAD2-datasegment,a6)
-	tst.b	(lbB02B430-datasegment,a6)
+	move.b	#$43,(lbB02EAD2-ds,a6)
+	tst.b	(lbB02B430-ds,a6)
 	bne.b	lbC01D376
 	move.l	#$148,d1
-	move.b	#$41,(lbB02EAD2-datasegment,a6)
-	tst.b	(lbB02B431-datasegment,a6)
+	move.b	#$41,(lbB02EAD2-ds,a6)
+	tst.b	(lbB02B431-ds,a6)
 	bne.b	lbC01D376
 	move.l	#$110,d1
-	move.b	#$42,(lbB02EAD2-datasegment,a6)
-	tst.b	(lbB02B432-datasegment,a6)
+	move.b	#$42,(lbB02EAD2-ds,a6)
+	tst.b	(lbB02B432-ds,a6)
 	bne.b	lbC01D376
 	move.l	#$120,d1
-	move.b	#$57,(lbB02EAD2-datasegment,a6)
-	tst.b	(lbB02B433-datasegment,a6)
+	move.b	#$57,(lbB02EAD2-ds,a6)
+	tst.b	(lbB02B433-ds,a6)
 	bne.b	lbC01D376
 	move.l	#$130,d1
-	move.b	#$4C,(lbB02EAD2-datasegment,a6)
+	move.b	#$4C,(lbB02EAD2-ds,a6)
 lbC01D376	move.l	d0,d2
-	sub.l	(datasegment-datasegment,a6),d2
+	sub.l	(ds-ds,a6),d2
 	lsl.l	#2,d2
-	add.l	(workdata_end-datasegment,a6),d2
+	add.l	(workdata_struct-ds,a6),d2
 	movea.l	d2,a0
 	andi.l	#$FFFFFF07,(a0)
 	or.l	d1,(a0)
 lbC01D38C	move.l	d0,-(sp)
-	st	(lbB02D39A-datasegment,a6)
-	st	(lbB02EB67-datasegment,a6)
+	st	(lbB02D39A-ds,a6)
+	st	(lbB02EB67-ds,a6)
 	bsr.w	put_adr_d0
-	clr.b	(lbB02EB67-datasegment,a6)
+	clr.b	(lbB02EB67-ds,a6)
 	move.l	(sp)+,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02CDE0-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02CDE0-ds,a6)
 	movem.l	d0/d1,-(sp)
-	move.l	(lbB02D118-datasegment,a6),d0
-	sub.l	(datasegment-datasegment,a6),d0
+	move.l	(lbB02D118-ds,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#1,d1
-	jsr	(lbC027684-datasegment,a6)
+	jsr	(lbC027684-ds,a6)
 	movem.l	(sp)+,d0/d1
 	movea.l	d0,a0
 	move.l	d1,d0
 	movem.l	d0/a0,-(sp)
-	move.l	(lbL02D0B4-datasegment,a6),d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02CDE4-datasegment,a6)
+	move.l	(lbL02D0B4-ds,a6),d0
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02CDE4-ds,a6)
 	movem.l	(sp)+,d2/a0
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	move.b	#$1B,(a4)+
 	move.b	#$30,(a4)+
-	move.l	(lbL02CDE0-datasegment,a6),d0
+	move.l	(lbL02CDE0-ds,a6),d0
 	bsr.w	lbC022542
 	move.b	#$1B,(a4)+
-	tst.b	(lbB02B437-datasegment,a6)
+	tst.b	(lbB02B437-ds,a6)
 	beq.b	lbC01D40C
 	move.b	#$2D,(a4)+
 	move.b	#$1B,(a4)+
 	move.b	#$30,(a4)+
-	move.l	(lbL02CDE4-datasegment,a6),d0
+	move.l	(lbL02CDE4-ds,a6),d0
 	bsr.w	lbC022542
 	move.b	#$1B,(a4)+
 lbC01D40C	clr.b	(a4)
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	movea.l	a4,a0
-	jsr	(lbC02AEB2-datasegment,a6)
-	movea.l	(lbB02D118-datasegment,a6),a1
-	suba.l	(datasegment-datasegment,a6),a1
+	jsr	(lbC02AEB2-ds,a6)
+	movea.l	(lbB02D118-ds,a6),a1
+	suba.l	(ds-ds,a6),a1
 	moveq	#1,d1
-	jsr	(_savecommonregs0-datasegment,a6)
-	st	(lbB02EB48-datasegment,a6)
+	jsr	(_savecommonregs0-ds,a6)
+	st	(lbB02EB48-ds,a6)
 	rts
 
 lbC01D42C	move.w	#$2739,d0
-	jsr	(gettextbynum-datasegment,a6)
-	st	(lbB02EB77-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	st	(lbB02EB77-ds,a6)
 	bra.b	lbC01D446
 
-lbC01D43A	clr.b	(lbB02EB77-datasegment,a6)
+lbC01D43A	clr.b	(lbB02EB77-ds,a6)
 	move.w	#$273E,d0
-	jsr	(gettextbynum-datasegment,a6)
-lbC01D446	lea	(lbB031E00-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+lbC01D446	lea	(lbB031E00-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
-	tst.b	(lbB02EB77-datasegment,a6)
+	tst.b	(lbB02EB77-ds,a6)
 	beq.b	lbC01D45E
 	lea	(lbB02EB9F).l,a1
 lbC01D45A	move.b	(a1)+,(a0)+
 	bne.b	lbC01D45A
-lbC01D45E	bsr.w	lbC020566
+lbC01D45E	bsr.w	requestfile
 	beq.w	lbC01D56C
-	move.l	a0,(lbB02D0E8-datasegment,a6)
-	tst.b	(lbB02EB77-datasegment,a6)
+	move.l	a0,(lbB02D0E8-ds,a6)
+	tst.b	(lbB02EB77-ds,a6)
 	bne.b	lbC01D484
-	move.l	(lbL02D1E4-datasegment,a6),d0
+	move.l	(lbL02D1E4-ds,a6),d0
 	beq.b	lbC01D484
 	movea.l	d0,a1
-	move.l	(lbL02D1E8-datasegment,a6),d0
-	jsr	(_FreeMem-datasegment,a6)
-	clr.l	(lbL02D1E4-datasegment,a6)
-lbC01D484	movea.l	(lbB02D0E8-datasegment,a6),a0
+	move.l	(lbL02D1E8-ds,a6),d0
+	jsr	(_FreeMem-ds,a6)
+	clr.l	(lbL02D1E4-ds,a6)
+lbC01D484	movea.l	(lbB02D0E8-ds,a6),a0
 	move.l	a0,d1
-	jsr	(_Lock-datasegment,a6)
-	move.l	d0,(lbL02D0E4-datasegment,a6)
+	jsr	(_Lock-ds,a6)
+	move.l	d0,(parseargs_lock-ds,a6)
 	beq.w	lbC01D51C
 	move.l	d0,d1
-	move.l	#lbL02CCDC,d2
-	jsr	(_Examine-datasegment,a6)
+	move.l	#examine_buffer,d2
+	jsr	(_Examine-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$1F52,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	move.l	(lbL02D0E4-datasegment,a6),d1
-	jsr	(lbC02A388-datasegment,a6)
-	clr.l	(lbL02D0E4-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	move.l	(parseargs_lock-ds,a6),d1
+	jsr	(_UnLock_ifd1-ds,a6)
+	clr.l	(parseargs_lock-ds,a6)
 	move.l	(sp)+,d0
 	beq.b	lbC01D51C
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-datasegment,a6)
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	jsr	(lbC02A272-ds,a6)
+	move.l	d0,(lbB02D0E0-ds,a6)
 	beq.b	lbC01D51C
-	move.l	(lbL02CD58-datasegment,a6),d0
+	move.l	(lbL02CD58-ds,a6),d0
 	addq.l	#1,d0
 	move.l	d0,d2
-	jsr	(_AllocMemClear-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
 	beq.b	lbC01D51C
-	tst.b	(lbB02EB77-datasegment,a6)
+	tst.b	(lbB02EB77-ds,a6)
 	bne.b	lbC01D4FC
-	move.l	d2,(lbL02D1E8-datasegment,a6)
-	move.l	d0,(lbL02D1E4-datasegment,a6)
-	move.l	d0,(lbL02D1EC-datasegment,a6)
-	lea	(lbL02D380-datasegment,a6),a0
+	move.l	d2,(lbL02D1E8-ds,a6)
+	move.l	d0,(lbL02D1E4-ds,a6)
+	move.l	d0,(lbL02D1EC-ds,a6)
+	lea	(lbL02D380-ds,a6),a0
 	move.l	d0,(a0)
 	add.l	d2,(a0)
 	subq.l	#1,(a0)
 	bra.b	lbC01D504
 
-lbC01D4FC	move.l	d2,(lbL02D314-datasegment,a6)
-	move.l	d0,(lbL02D310-datasegment,a6)
+lbC01D4FC	move.l	d2,(lbL02D314-ds,a6)
+	move.l	d0,(lbL02D310-ds,a6)
 lbC01D504	move.l	d2,d3
 	movea.l	d0,a0
 	move.l	d0,d2
 	clr.b	(a0,d3.l)
 	subq.l	#1,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	jsr	(_Read-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	jsr	(_Read-ds,a6)
 	cmp.l	d0,d3
 	beq.b	lbC01D54E
 lbC01D51C	moveq	#0,d3
-	movea.l	(lbL02D1E4-datasegment,a6),a1
-	move.l	(lbL02D1E8-datasegment,a6),d0
-	tst.b	(lbB02EB77-datasegment,a6)
+	movea.l	(lbL02D1E4-ds,a6),a1
+	move.l	(lbL02D1E8-ds,a6),d0
+	tst.b	(lbB02EB77-ds,a6)
 	beq.b	lbC01D542
-	movea.l	(lbL02D310-datasegment,a6),a1
-	move.l	(lbL02D314-datasegment,a6),d0
-	jsr	(_FreeMem-datasegment,a6)
-	clr.l	(lbL02D310-datasegment,a6)
-	clr.l	(lbL02D314-datasegment,a6)
+	movea.l	(lbL02D310-ds,a6),a1
+	move.l	(lbL02D314-ds,a6),d0
+	jsr	(_FreeMem-ds,a6)
+	clr.l	(lbL02D310-ds,a6)
+	clr.l	(lbL02D314-ds,a6)
 	bra.b	lbC01D54E
 
-lbC01D542	jsr	(_FreeMem-datasegment,a6)
-	clr.l	(lbL02D1E4-datasegment,a6)
-	clr.l	(lbL02D1EC-datasegment,a6)
+lbC01D542	jsr	(_FreeMem-ds,a6)
+	clr.l	(lbL02D1E4-ds,a6)
+	clr.l	(lbL02D1EC-ds,a6)
 lbC01D54E	move.l	d0,d3
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	clr.l	(lbB02D0E0-datasegment,a6)
-	jsr	(dosclose-datasegment,a6)
-	move.l	(lbL02D0E4-datasegment,a6),d1
-	clr.l	(lbL02D0E4-datasegment,a6)
-	jsr	(lbC02A388-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	clr.l	(lbB02D0E0-ds,a6)
+	jsr	(dosclose-ds,a6)
+	move.l	(parseargs_lock-ds,a6),d1
+	clr.l	(parseargs_lock-ds,a6)
+	jsr	(_UnLock_ifd1-ds,a6)
 	move.l	d3,d0
 	bne.b	lbC01D570
-lbC01D56C	jmp	(lbC02A436-datasegment,a6)
+lbC01D56C	jmp	(term2-ds,a6)
 
 lbC01D570	rts
 
-Start	lea	(datasegment).l,a5
-	lea	(lbL02B4A0-datasegment,a5),a1
+Start	lea	(ds).l,a5
+	lea	(workdata_struct_end-ds,a5),a1
 	moveq	#0,d1
 	move.w	#$3A86,d2
 lbC01D582	move.l	d1,(a1)+
 	dbra	d2,lbC01D582
-	move.l	sp,(saved_sp-datasegment,a5)
+	move.l	sp,(saved_sp-ds,a5)
 	movea.l	(4).w,a6
-	move.l	a6,(execbase-datasegment,a5)
+	move.l	a6,(execbase-ds,a5)
 	movea.l	(ThisTask,a6),a4
-	move.l	a4,(thistask1-datasegment,a5)
+	move.l	a4,(thistask1-ds,a5)
 	move.l	a4,(thistask2).l
 	move.l	(LN_NAME,a6),d1
 	andi.l	#$FFF80000,d1
-	move.l	d1,(kickstart_adr-datasegment,a5)
+	move.l	d1,(kickstart_adr-ds,a5)
 	movea.l	a0,a3
 	move.l	d0,d3
 	moveq	#0,d0
@@ -36630,7 +36636,7 @@ lbC01D5D2	move.l	a1,d0
 	lea	(doslibrary.MSG,pc),a1
 	moveq	#0,d0
 	jsr	(_LVOOpenLibrary,a6)
-	move.l	d0,(dosbase-datasegment,a5)
+	move.l	d0,(dosbase-ds,a5)
 	beq.w	lbC01D924
 	tst.l	(pr_CLI,a4)
 	bne.w	_fromcli
@@ -36638,12 +36644,12 @@ lbC01D5D2	move.l	a1,d0
 	jsr	(_LVOWaitPort,a6)
 	lea	(pr_MsgPort,a4),a0
 	jsr	(_LVOGetMsg,a6)
-	move.l	d0,(wbmsg-datasegment,a5)
+	move.l	d0,(wbmsg-ds,a5)
 	movea.l	d0,a2
 	move.l	#MODE_NEWFILE,d2
 	lea	(CON2020400100.MSG,pc),a0
 	move.l	a0,d1
-	movea.l	(dosbase-datasegment,a5),a6
+	movea.l	(dosbase-ds,a5),a6
 	jsr	(_LVOOpen,a6)
 	tst.l	d0
 	beq.w	_nocon
@@ -36660,7 +36666,7 @@ lbC01D5D2	move.l	a1,d0
 	jsr	(_LVOCurrentDir,a6)
 lbC01D64C	lea	(iconlibrary.MSG,pc),a1
 	moveq	#$22,d0
-	movea.l	(execbase-datasegment,a5),a6
+	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOOpenLibrary,a6)
 	tst.l	d0
 	beq.w	_nocon
@@ -36686,7 +36692,7 @@ lbC01D694	addq.w	#1,a0
 	beq.b	_reqmode
 	cmpi.b	#'n',(a0)
 	bne.b	lbC01D6A6
-_reqmode	st	(reqmodeflag-datasegment,a5)
+_reqmode	st	(reqmodeflag-ds,a5)
 lbC01D6A6	movea.l	(do_ToolTypes,a2),a0
 	lea	(SYSRENDER.MSG,pc),a1
 	jsr	(_LVOFindToolType,a6)
@@ -36702,7 +36708,7 @@ lbC01D6C4	addq.w	#1,a0
 	beq.b	_sysrender
 	cmpi.b	#'n',(a0)
 	bne.b	_noreqmode
-_sysrender	st	(sysrenderflag-datasegment,a5)
+_sysrender	st	(sysrenderflag-ds,a5)
 _noreqmode	movea.l	(do_ToolTypes,a2),a0
 	lea	(LACEFLAG.MSG,pc),a1
 	jsr	(_LVOFindToolType,a6)
@@ -36718,7 +36724,7 @@ lbC01D6F4	addq.w	#1,a0
 	beq.b	_lace
 	cmpi.b	#'n',(a0)
 	bne.b	_nolace
-_lace	st	(laceflag-datasegment,a5)
+_lace	st	(laceflag-ds,a5)
 _nolace	movea.l	(do_ToolTypes,a2),a0
 	lea	(NO.MSG,pc),a1
 	jsr	(_LVOFindToolType,a6)
@@ -36734,20 +36740,20 @@ lbC01D724	addq.w	#1,a0
 	beq.b	lbC01D732
 	cmpi.b	#'n',(a0)
 	bne.b	lbC01D736
-lbC01D732	st	(nolaceflag-datasegment,a5)
+lbC01D732	st	(nolaceflag-ds,a5)
 lbC01D736	movea.l	a2,a0
 	jsr	(_LVOFreeDiskObject,a6)
 _noicon	movea.l	a6,a1
-	movea.l	(execbase-datasegment,a5),a6
+	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOCloseLibrary,a6)
 	moveq	#0,d0
-	tst.b	(laceflag-datasegment,a5)
+	tst.b	(laceflag-ds,a5)
 	beq.b	lbC01D750
 	addq.w	#1,d0
-lbC01D750	tst.b	(nolaceflag-datasegment,a5)
+lbC01D750	tst.b	(nolaceflag-ds,a5)
 	beq.b	lbC01D758
 	addq.w	#1,d0
-lbC01D758	tst.b	(reqmodeflag-datasegment,a5)
+lbC01D758	tst.b	(reqmodeflag-ds,a5)
 	beq.b	lbC01D760
 	addq.w	#1,d0
 lbC01D760	subq.w	#1,d0
@@ -36756,41 +36762,41 @@ lbC01D760	subq.w	#1,d0
 	bra.w	lbC01D90E
 
 _nocon	move.w	#$1C9,d0
-	jsr	(getfuncbynum-datasegment,a5)
+	jsr	(getfuncbynum-ds,a5)
 	lea	(dummy_setflags_d0,pc),a1
 	move.l	a1,(a0)
-_fromcli	movea.l	(execbase-datasegment,a5),a6
+_fromcli	movea.l	(execbase-ds,a5),a6
 	cmpi.w	#$25,(LIB_VERSION,a6)
 	bcs.w	_autorequest
 	lea	(intuitionlibr.MSG,pc),a1
 	moveq	#$25,d0
 	jsr	(_LVOOpenLibrary,a6)
-	move.l	d0,(intbase-datasegment,a5)
+	move.l	d0,(intbase-ds,a5)
 	beq.w	_nointlib
 	lea	(graphicslibra.MSG,pc),a1
 	moveq	#$25,d0
 	jsr	(_LVOOpenLibrary,a6)
-	move.l	d0,(gfxbase-datasegment,a5)
+	move.l	d0,(gfxbase-ds,a5)
 	beq.w	_nogfxlib
 	lea	(asllibrary.MSG,pc),a1
 	moveq	#$25,d0
 	jsr	(_LVOOpenLibrary,a6)
-	move.l	d0,(aslbase-datasegment,a5)
+	move.l	d0,(aslbase-ds,a5)
 	beq.w	_noasllib
 	lea	(gadtoolslibra.MSG,pc),a1
 	moveq	#$25,d0
 	jsr	(_LVOOpenLibrary,a6)
-	move.l	d0,(gadtoolsbase-datasegment,a5)
+	move.l	d0,(gadtoolsbase-ds,a5)
 	beq.w	nogadtools
-	tst.l	(wbmsg-datasegment,a5)
+	tst.l	(wbmsg-ds,a5)
 	bne.w	argsparsing_end
 	movea.l	a3,a0
-lbC01D7DA	lea	(a0,d3.w),a1
+example_code_strt	lea	(a0,d3.w),a1
 lbC01D7DE	cmpi.b	#$20,-(a1)
 	dbhi	d3,lbC01D7DE
-lbC01D7E6	blt.w	argsparsing_end
+example_code_end	blt.w	argsparsing_end
 	clr.b	(1,a1)
-	lea	(lbL02E8C8-datasegment,a5),a1
+	lea	(work_data_spec_str-ds,a5),a1
 lbC01D7F2	move.b	(a0)+,d0
 	beq.w	lbC01D8C4
 	cmpi.b	#' ',d0
@@ -36811,7 +36817,7 @@ lbC01D828	cmpi.b	#'F',d0
 	bne.b	lbC01D856
 	moveq	#0,d0
 	moveq	#0,d1
-lbC01D832	move.l	d0,(lbL02D174-datasegment,a5)
+lbC01D832	move.l	d0,(lbL02D174-ds,a5)
 	move.b	(a0)+,d1
 	cmpi.b	#$20,d1
 	bls.b	lbC01D7F2
@@ -36828,33 +36834,33 @@ lbC01D852	subq.w	#1,a0
 
 lbC01D856	cmpi.b	#'R',d0
 	bne.b	lbC01D872
-	st	(reqmodeflag-datasegment,a5)
-	tst.b	(laceflag-datasegment,a5)
+	st	(reqmodeflag-ds,a5)
+	tst.b	(laceflag-ds,a5)
 	bne.w	lbC01D90A
-	tst.b	(nolaceflag-datasegment,a5)
+	tst.b	(nolaceflag-ds,a5)
 	bne.w	lbC01D90A
 	bra.b	lbC01D7F2
 
 lbC01D872	cmpi.b	#'S',d0
 	bne.b	lbC01D880
-	st	(sysrenderflag-datasegment,a5)
+	st	(sysrenderflag-ds,a5)
 	bra.w	lbC01D7F2
 
 lbC01D880	cmpi.b	#'N',d0
 	bne.b	lbC01D89A
-	st	(nolaceflag-datasegment,a5)
-	tst.b	(laceflag-datasegment,a5)
+	st	(nolaceflag-ds,a5)
+	tst.b	(laceflag-ds,a5)
 	bne.b	lbC01D90A
-	tst.b	(reqmodeflag-datasegment,a5)
+	tst.b	(reqmodeflag-ds,a5)
 	bne.b	lbC01D90A
 	bra.w	lbC01D7F2
 
 lbC01D89A	cmpi.b	#'I',d0
 	bne.b	lbC01D8B4
-	st	(laceflag-datasegment,a5)
-	tst.b	(nolaceflag-datasegment,a5)
+	st	(laceflag-ds,a5)
+	tst.b	(nolaceflag-ds,a5)
 	bne.b	lbC01D90A
-	tst.b	(reqmodeflag-datasegment,a5)
+	tst.b	(reqmodeflag-ds,a5)
 	bne.b	lbC01D90A
 	bra.w	lbC01D7F2
 
@@ -36869,10 +36875,10 @@ lbC01D8C4	clr.b	(a1)
 argsparsing_end	movea.l	a5,a6
 	lea	(ReSourceutill.MSG,pc),a1
 	move.l	#$20006,d0	;version/revision
-	jsr	(openlibjmp-datasegment,a6)
-	move.l	d0,(resourceutilbase-datasegment,a6)
+	jsr	(_openlib-ds,a6)
+	move.l	d0,(resourceutilbase-ds,a6)
 	beq.b	noresourceutillib
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	clr.b	(a0)
 	lea	(lbB02EB9F).l,a1
 	tst.b	(a1)
@@ -36892,7 +36898,7 @@ lbC01D908	bra.b	Start2
 
 lbC01D90A	lea	(txt_usage,pc),a0
 lbC01D90E	move.l	a0,d1
-	movea.l	(dosbase-datasegment,a5),a6
+	movea.l	(dosbase-ds,a5),a6
 	jsr	(_LVOPutStr,a6)
 	moveq	#0,d0
 	bra.b	_shutdown
@@ -36911,40 +36917,40 @@ _alert	jsr	(_LVOAlert,a6)
 	bra.b	shutdown_nolib
 
 _noasllib	movea.l	a5,a6
-	jsr	(easyrequest_32-datasegment,a5)
+	jsr	(easyrequest_32-ds,a5)
 	bra.b	shutdown_nolib
 
 nogadtools	movea.l	a5,a6
-	jsr	(easyrequest_33-datasegment,a5)
+	jsr	(easyrequest_33-ds,a5)
 	bra.b	shutdown_nolib
 
 noresourceutillib	lea	(ReSourceutill.MSG,pc),a0
-	jsr	(error_lib-datasegment,a6)
+	jsr	(error_lib-ds,a6)
 shutdown_nolib	moveq	#ERROR_INVALID_RESIDENT_LIBRARY,d0
 	move.l	d0,(pr_Result2,a4)
 shutdown_fail	moveq	#RETURN_FAIL,d0
-_shutdown	lea	(datasegment).l,a5
+_shutdown	lea	(ds).l,a5
 	bra.w	shutdown
 
-Start2	move.b	#$14,(lbL02D114-datasegment,a6)
-	move.l	#lbL02C4D4,(lbL02B4B0-datasegment,a6)
-	move.w	#$7F03,(lbB02D3A6-datasegment,a6)
+Start2	move.b	#$14,(lbL02D114-ds,a6)
+	move.l	#lbL02C4D4,(lbL02B4B0-ds,a6)
+	move.w	#$7F03,(lbB02D3A6-ds,a6)
 	move.l	#$30C,d2
-	move.l	d2,(lbL02B4B4-datasegment,a6)
-	move.l	d2,(lbL02B4B8-datasegment,a6)
-	move.l	d2,(lbL02B4BC-datasegment,a6)
-	move.l	d2,(lbL02B4C0-datasegment,a6)
+	move.l	d2,(lbL02B4B4-ds,a6)
+	move.l	d2,(lbL02B4B8-ds,a6)
+	move.l	d2,(lbL02B4BC-ds,a6)
+	move.l	d2,(lbL02B4C0-ds,a6)
 	moveq	#-1,d2
 	move.l	d2,(lbL035120).l
 	move.l	d2,(lbL035528).l
 	move.l	d2,(lbL034D20).l
 	move.l	d2,(lbL035128).l
-	move.l	d2,(lbL02B4CC-datasegment,a6)
-	move.w	#$7FE9,(lbW02B4D0-datasegment,a6)
-	move.w	#$7FED,(lbW02B4D2-datasegment,a6)
+	move.l	d2,(lbL02B4CC-ds,a6)
+	move.w	#$7FE9,(lbW02B4D0-ds,a6)
+	move.w	#$7FED,(lbW02B4D2-ds,a6)
 	moveq	#$10,d2
-	move.l	d2,(lbL02CDF0-datasegment,a6)
-	addq.b	#1,(lbB02EB56-datasegment,a6)
+	move.l	d2,(lbL02CDF0-ds,a6)
+	addq.b	#1,(lbB02EB56-ds,a6)
 	lea	(lbL034500).l,a1
 	moveq	#8,d0
 	move.w	d0,($3BC,a1)
@@ -36967,41 +36973,41 @@ Start2	move.b	#$14,(lbL02D114-datasegment,a6)
 	addq.w	#1,d0
 	move.w	d0,($9C,a1)
 	move.w	#$357,($BE,a1)
-	addq.b	#4,(lbB02EB6B-datasegment,a6)
-	move.l	#lbL01A840,(lbL02D164-datasegment,a6)
-	move.l	#lbL03576C,(lbL02D168-datasegment,a6)
-	st	(lbB02EB69-datasegment,a6)
-	move.l	#$4000000,(lbL02D2E8-datasegment,a6)
+	addq.b	#4,(lbB02EB6B-ds,a6)
+	move.l	#lbL01A840,(lbL02D164-ds,a6)
+	move.l	#lbL03576C,(lbL02D168-ds,a6)
+	st	(lbB02EB69-ds,a6)
+	move.l	#$4000000,(lbL02D2E8-ds,a6)
 	jsr	(lbC029630).l
 	bra.b	Start3
 
-routines_68020	dl	extract_ea_68020-datasegment
-	dl	lbL00DF08-datasegment
-	dl	extract_dn_68020-datasegment
-	dl	lbL00DF24-datasegment
-	dl	extract_ea2_68020-datasegment
-	dl	lbL00DF3C-datasegment
-	dl	extract_an_68020-datasegment
-	dl	lbL00DF40-datasegment
-	dl	extract_ea3_68020-datasegment
-	dl	lbL00DF74-datasegment
-	dl	extract_ea4_68020-datasegment
-	dl	lbL00DFA8-datasegment
-	dl	extract_shift_68020-datasegment
-	dl	lbL00DFB4-datasegment
-	dl	extract_ea5_68020-datasegment
-	dl	lbL00DFB8-datasegment
-	dl	extract_size_68020-datasegment
-	dl	lbL00E068-datasegment
-	dl	extract_cc_68020-datasegment
-	dl	lbL00E07C-datasegment
+routines_68020	dl	extract_ea_68020-ds
+	dl	lbL00DF08-ds
+	dl	extract_dn_68020-ds
+	dl	lbL00DF24-ds
+	dl	extract_ea2_68020-ds
+	dl	lbL00DF3C-ds
+	dl	extract_an_68020-ds
+	dl	lbL00DF40-ds
+	dl	extract_ea3_68020-ds
+	dl	lbL00DF74-ds
+	dl	extract_ea4_68020-ds
+	dl	lbL00DFA8-ds
+	dl	extract_shift_68020-ds
+	dl	lbL00DFB4-ds
+	dl	extract_ea5_68020-ds
+	dl	lbL00DFB8-ds
+	dl	extract_size_68020-ds
+	dl	lbL00E068-ds
+	dl	extract_cc_68020-ds
+	dl	lbL00E07C-ds
 	dl	0
 
-Start3	movea.l	(execbase-datasegment,a6),a0
+Start3	movea.l	(execbase-ds,a6),a0
 	btst	#AFB_68881,(AttnFlags+1,a0)
-	sne	(fpu_available-datasegment,a6)
+	sne	(fpu_available-ds,a6)
 	btst	#AFB_68020,(AttnFlags+1,a0)
-	sne	(mc68020_available-datasegment,a6)
+	sne	(mc68020_available-ds,a6)
 	beq.b	.no68020
 	lea	(routines_68020,pc),a0
 .loop	move.l	(a0)+,d0
@@ -37021,25 +37027,25 @@ Start3	movea.l	(execbase-datasegment,a6),a0
 	clr.l	(a1)
 	movea.l	d0,a1
 	move.l	-(a1),d0	;segment size
-	jsr	(_FreeMem-datasegment,a6)
-	move.l	(lbL02B4B4-datasegment,a6),d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	move.l	d0,(lbL02D154-datasegment,a6)
+	jsr	(_FreeMem-ds,a6)
+	move.l	(lbL02B4B4-ds,a6),d0
+	jsr	(_AllocMemClear-ds,a6)
+	move.l	d0,(lbL02D154-ds,a6)
 	beq.w	nomemory
-	move.l	d0,(lbL02D158-datasegment,a6)
-	move.l	d0,(lbL02D160-datasegment,a6)
-	move.l	(lbL02B4BC-datasegment,a6),d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	move.l	d0,(lbL02D14C-datasegment,a6)
+	move.l	d0,(lbL02D158-ds,a6)
+	move.l	d0,(lbL02D160-ds,a6)
+	move.l	(lbL02B4BC-ds,a6),d0
+	jsr	(_AllocMemClear-ds,a6)
+	move.l	d0,(lbL02D14C-ds,a6)
 	beq.w	nomemory
 	movea.l	d0,a0
-	clr.l	(lbL02D148-datasegment,a6)
+	clr.l	(lbL02D148-ds,a6)
 	move.w	#$C2,d0
 	moveq	#-1,d1
 lbC01DB10	move.l	d1,(a0)+
 	dbra	d0,lbC01DB10
 	moveq	#$12,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	lea	(lbB03976C).l,a1
 	moveq	#$47,d1
 lbC01DB24	movea.l	d0,a0
@@ -37049,25 +37055,25 @@ lbC01DB26	move.b	(a0)+,(a1)+
 	clr.b	(a1)+
 	dbra	d1,lbC01DB24
 	moveq	#-1,d0
-	lea	(lbL02CCD4-datasegment,a6),a1
+	lea	(lbL02CCD4-ds,a6),a1
 	move.l	d0,(a1)+
 	move.l	d0,(a1)
-	move.w	d0,(symactivenum_dirs-datasegment,a6)
-	move.w	d0,(symactivenum_incs-datasegment,a6)
-	move.w	d0,(lbB02CFF6-datasegment,a6)
-	lea	(lbB02CFF8-datasegment,a6),a0
+	move.w	d0,(symactivenum_dirs-ds,a6)
+	move.w	d0,(symactivenum_incs-ds,a6)
+	move.w	d0,(lbB02CFF6-ds,a6)
+	lea	(lbB02CFF8-ds,a6),a0
 	move.w	d0,(a0)+
 	move.w	d0,(a0)+
 	move.w	d0,(a0)
-	move.w	#$FFFF,(lbW02CFB2-datasegment,a6)
-	tst.b	(reqmodeflag-datasegment,a6)
-	beq.w	oldasllibver
-	movea.l	(aslbase-datasegment,a6),a0
+	move.w	#$FFFF,(lbW02CFB2-ds,a6)
+	tst.b	(reqmodeflag-ds,a6)
+	beq.w	noaslscreenmodereq
+	movea.l	(aslbase-ds,a6),a0
 	cmpi.w	#38,(LIB_VERSION,a0)
-	bcs.w	oldasllibver
+	bcs.w	noaslscreenmodereq
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOLockPubScreen,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -37075,14 +37081,14 @@ lbC01DB26	move.b	(a0)+,(a1)+
 	movea.l	d0,a2
 	lea	(sc_ViewPort,a2),a0
 	move.l	a6,-(sp)
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOGetVPModeID,a6)
 	movea.l	(sp)+,a6
 	move.l	d0,d2
 	suba.l	a0,a0
 	movea.l	a2,a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOUnlockPubScreen,a6)
 	movea.l	(sp)+,a6
 	cmpi.l	#$FFFFFFFF,d2
@@ -37093,7 +37099,7 @@ lbC01DB26	move.b	(a0)+,(a1)+
 	suba.l	a0,a0
 	movea.l	sp,a1
 	move.l	a6,-(sp)
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOGetDisplayInfoData,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -37107,7 +37113,7 @@ lbC01DB26	move.b	(a0)+,(a1)+
 	sub.w	(2,a0),d1
 	adda.w	#$58,sp
 	clr.l	-(sp)
-	lea	(aslsm_filterfunc_hook-datasegment,a6),a1
+	lea	(aslsm_filterfunc_hook-ds,a6),a1
 	lea	(aslsm_filterfunc,pc),a0
 	move.l	a0,(h_Entry,a1)
 	move.l	a6,(h_Data,a1)
@@ -37122,52 +37128,52 @@ lbC01DB26	move.b	(a0)+,(a1)+
 	movea.l	sp,a0
 	moveq	#ASL_ScreenModeRequest,d0
 	move.l	a6,-(sp)
-	movea.l	(aslbase-datasegment,a6),a6
+	movea.l	(aslbase-ds,a6),a6
 	jsr	(_LVOAllocAslRequest,a6)
 	movea.l	(sp)+,a6
 	lea	($24,sp),sp
 	tst.l	d0
 	bne.b	.allocok
-	jsr	(easyrequest_39-datasegment,a6)
+	jsr	(easyrequest_39-ds,a6)
 	bra.w	nomemory
 
 .allocok	movea.l	d0,a3
 	movea.l	d0,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(aslbase-datasegment,a6),a6
+	movea.l	(aslbase-ds,a6),a6
 	jsr	(_LVOAslRequest,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
 	bne.b	.requestok
 	move.l	a6,-(sp)
-	movea.l	(dosbase-datasegment,a6),a6
+	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOIoErr,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
 	beq.w	nomemory
 	movea.l	a3,a0
 	move.l	a6,-(sp)
-	movea.l	(aslbase-datasegment,a6),a6
+	movea.l	(aslbase-ds,a6),a6
 	jsr	(_LVOFreeAslRequest,a6)
 	movea.l	(sp)+,a6
-	bra.w	oldasllibver
+	bra.w	noaslscreenmodereq
 
-.requestok	lea	(displayid-datasegment,a6),a2
+.requestok	lea	(displayid-ds,a6),a2
 	move.l	(a3),(a2)	;sm_DisplayID
 	move.l	(sm_DisplayWidth,a3),d5
 	move.l	d5,(12,a2)
 	andi.b	#$E0,d5
-	move.w	d5,(displaywidth_rounddown-datasegment,a6)
+	move.w	d5,(displaywidth_rounddown-ds,a6)
 	move.l	(sm_DisplayHeight,a3),d6
 	cmpi.w	#$190,d6
-	scc	(laceflag-datasegment,a6)
+	scc	(laceflag-ds,a6)
 	subq.l	#4,d6
 	andi.b	#$F8,d6
 	addq.l	#4,d6
 	movea.l	a3,a0
 	move.l	a6,-(sp)
-	movea.l	(aslbase-datasegment,a6),a6
+	movea.l	(aslbase-ds,a6),a6
 	jsr	(_LVOFreeAslRequest,a6)
 	movea.l	(sp)+,a6
 	bra.w	displaydimknown
@@ -37180,7 +37186,7 @@ aslsm_filterfunc	movem.l	d2/a5/a6,-(sp)
 	move.l	a1,d2
 	suba.l	a0,a0
 	movea.l	sp,a1
-	movea.l	(gfxbase-datasegment,a5),a6
+	movea.l	(gfxbase-ds,a5),a6
 	jsr	(_LVOGetDisplayInfoData,a6)
 	tst.l	d0
 	beq.b	lbC01DD04
@@ -37203,9 +37209,9 @@ lbC01DD06	adda.w	#$58,sp
 	movem.l	(sp)+,d2/a5/a6
 	rts
 
-oldasllibver	suba.l	a0,a0
+noaslscreenmodereq	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOLockPubScreen,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -37213,14 +37219,14 @@ oldasllibver	suba.l	a0,a0
 	movea.l	d0,a2
 	lea	($2C,a2),a0
 	move.l	a6,-(sp)
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOGetVPModeID,a6)
 	movea.l	(sp)+,a6
 	move.l	d0,d2
 	suba.l	a0,a0
 	movea.l	a2,a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOUnlockPubScreen,a6)
 	movea.l	(sp)+,a6
 	cmpi.l	#$FFFFFFFF,d2
@@ -37230,25 +37236,25 @@ lbC01DD56	move.l	(a0)+,d0
 	beq.b	lbC01DD7E
 	cmp.l	d2,d0
 	bne.b	lbC01DD56
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	beq.b	lbC01DD6A
 	bset	#2,d2
 	bra.b	lbC01DD7E
 
-lbC01DD6A	tst.b	(nolaceflag-datasegment,a6)
+lbC01DD6A	tst.b	(nolaceflag-ds,a6)
 	beq.b	lbC01DD76
 	bclr	#2,d2
 	bra.b	lbC01DD7E
 
 lbC01DD76	btst	#2,d2
-	sne	(laceflag-datasegment,a6)
+	sne	(laceflag-ds,a6)
 lbC01DD7E	movea.l	d2,a0
-	lea	(displayid-datasegment,a6),a2
+	lea	(displayid-ds,a6),a2
 	movea.l	a2,a1
 	move.l	d2,(a1)+
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOQueryOverscan,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -37260,16 +37266,16 @@ lbC01DD7E	movea.l	d2,a0
 	sub.w	(a0),d5
 	move.l	d5,(12,a2)
 	andi.b	#$E0,d5
-	move.w	d5,(displaywidth_rounddown-datasegment,a6)
+	move.w	d5,(displaywidth_rounddown-ds,a6)
 	moveq	#1,d6
 	add.w	(6,a0),d6
 	sub.w	(2,a0),d6
 	cmpi.w	#$190,d6
-	scc	(laceflag-datasegment,a6)
+	scc	(laceflag-ds,a6)
 	subq.l	#4,d6
 	andi.b	#$F8,d6
 	addq.l	#4,d6
-displaydimknown	lea	(nw_win1-datasegment,a6),a0
+displaydimknown	lea	(nw_win1-ds,a6),a0
 	move.w	d5,d0	;width
 	subi.w	#$15E,d0
 	lsr.w	#1,d0
@@ -37281,109 +37287,109 @@ displaydimknown	lea	(nw_win1-datasegment,a6),a0
 	move.w	d5,d0
 	subi.w	#627,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFCE-datasegment,a6)
+	move.w	d0,(lbB02CFCE-ds,a6)
 	move.w	d6,d0
 	move.w	#185,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC01DE06
 	move.w	#93,d1
 lbC01DE06	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD0-datasegment,a6)
+	move.w	d0,(lbB02CFD0-ds,a6)
 	move.w	#$10C,d1
 	move.w	#$B9,d2
 	move.w	d5,d0
 	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD2-datasegment,a6)
+	move.w	d0,(lbB02CFD2-ds,a6)
 	move.w	d6,d0
 	sub.w	d2,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD4-datasegment,a6)
-	tst.b	(laceflag-datasegment,a6)
+	move.w	d0,(lbB02CFD4-ds,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC01DE34
 	move.w	#$66,d2
 lbC01DE34	move.w	d5,d0
 	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD6-datasegment,a6)
+	move.w	d0,(lbB02CFD6-ds,a6)
 	move.w	d6,d0
 	sub.w	d2,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD8-datasegment,a6)
+	move.w	d0,(lbB02CFD8-ds,a6)
 	move.w	d5,d0
 	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFDA-datasegment,a6)
+	move.w	d0,(lbB02CFDA-ds,a6)
 	move.w	d6,d0
 	sub.w	d2,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFDC-datasegment,a6)
+	move.w	d0,(lbB02CFDC-ds,a6)
 	move.w	d5,d0
 	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFDE-datasegment,a6)
+	move.w	d0,(lbB02CFDE-ds,a6)
 	move.w	d6,d0
 	sub.w	d2,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE0-datasegment,a6)
+	move.w	d0,(lbB02CFE0-ds,a6)
 	move.w	d5,d0
 	subi.w	#$194,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE2-datasegment,a6)
+	move.w	d0,(lbB02CFE2-ds,a6)
 	move.w	d6,d0
 	move.w	#$97,d1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	bne.b	lbC01DE8C
 	move.w	#$6B,d1
 lbC01DE8C	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE4-datasegment,a6)
+	move.w	d0,(lbB02CFE4-ds,a6)
 	move.w	d5,d0
 	subi.w	#$247,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE6-datasegment,a6)
+	move.w	d0,(lbB02CFE6-ds,a6)
 	move.w	d6,d0
 	subi.w	#$A8,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE8-datasegment,a6)
+	move.w	d0,(lbB02CFE8-ds,a6)
 	move.w	d5,d0
 	subi.w	#$164,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFEA-datasegment,a6)
+	move.w	d0,(lbB02CFEA-ds,a6)
 	move.w	d6,d0
 	subi.w	#$B1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFEC-datasegment,a6)
+	move.w	d0,(lbB02CFEC-ds,a6)
 	move.w	d5,d0
 	subi.w	#$15F,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbW02CFEE-datasegment,a6)
+	move.w	d0,(lbW02CFEE-ds,a6)
 	move.l	d6,d0
 	subi.w	#$58,d0
 	divu.w	#3,d0
-	move.w	d0,(lbW02CFF0-datasegment,a6)
+	move.w	d0,(lbW02CFF0-ds,a6)
 	move.w	d5,d0
 	subq.w	#2,d0
-	move.w	d0,(lbW02D3A2-datasegment,a6)
+	move.w	d0,(lbW02D3A2-ds,a6)
 	move.l	d5,d3
 	lsr.l	#3,d3
 	move.l	d3,d0
 	mulu.w	#12,d0
-	move.l	d0,(lbL02CF3E-datasegment,a6)
+	move.l	d0,(lbL02CF3E-ds,a6)
 	moveq	#$64,d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	move.l	d0,(lbB02CF38-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
+	move.l	d0,(lbB02CF38-ds,a6)
 	beq.w	lbC01E08A
 	movem.l	a5/a6,-(sp)
 	movea.l	a6,a5
-	lea	(screen_bitmap-datasegment,a5),a4
+	lea	(screen_bitmap-ds,a5),a4
 	moveq	#2,d4
 	movea.l	a4,a0
 	move.l	d4,d0
 	move.l	d5,d1
 	move.l	d6,d2
-	movea.l	(gfxbase-datasegment,a5),a6
+	movea.l	(gfxbase-ds,a5),a6
 	jsr	(_LVOInitBitMap,a6)
 	lea	(8,a4),a2
 	move.w	d4,d2
@@ -37402,7 +37408,7 @@ lbC01DF26	move.l	d5,d0
 	moveq	#3,d1
 	jsr	(_LVOBltClear,a6)
 lbC01DF44	dbra	d2,lbC01DF26
-	lea	(lbB02CF10-datasegment,a5),a3
+	lea	(lbB02CF10-ds,a5),a3
 	movea.l	a3,a0
 	moveq	#1,d0
 	move.l	d5,d1
@@ -37420,12 +37426,12 @@ lbC01DF44	dbra	d2,lbC01DF26
 	lsr.w	#3,d0
 	moveq	#3,d1
 	jsr	(_LVOBltClear,a6)
-	movea.l	(lbB02CF38-datasegment,a5),a2
+	movea.l	(lbB02CF38-ds,a5),a2
 	movea.l	a2,a1
 	jsr	(_LVOInitRastPort,a6)
 	move.l	a3,(4,a2)
 	movem.l	(sp)+,a5/a6
-	lea	(screen_pubname-datasegment,a6),a2
+	lea	(screen_pubname-ds,a6),a2
 	moveq	#0,d2
 	lea	(ReSourced.MSG,pc),a0
 	movea.l	a2,a1
@@ -37435,12 +37441,12 @@ lbC01DF96	move.b	(a0)+,(a1)+
 	bra.b	lbC01DFAE
 
 lbC01DFA0	addq.w	#1,d2
-	move.w	d2,(_RawDoFmt_args-datasegment,a6)
+	move.w	d2,(_RawDoFmt_args-ds,a6)
 	lea	(ReSourced.MSG,pc),a0
-	jsr	(_RawDoFmt-datasegment,a6)
+	jsr	(_RawDoFmt-ds,a6)
 lbC01DFAE	movea.l	a2,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOLockPubScreen,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -37448,7 +37454,7 @@ lbC01DFAE	movea.l	a2,a0
 	suba.l	a0,a0
 	movea.l	d0,a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOUnlockPubScreen,a6)
 	movea.l	(sp)+,a6
 	bra.b	lbC01DFA0
@@ -37458,7 +37464,7 @@ lbC01DFD2	clr.l	-(sp)
 	move.l	#SA_Pens,-(sp)
 	pea	(topas_TextAttr,pc)
 	move.l	#SA_Font,-(sp)
-	pea	(screen_title-datasegment,a6)
+	pea	(screen_title-ds,a6)
 	move.l	#SA_Title,-(sp)
 	pea	(1).w
 	move.l	#SA_ShowTitle,-(sp)
@@ -37468,7 +37474,7 @@ lbC01DFD2	clr.l	-(sp)
 	move.l	#SA_BitMap,-(sp)
 	move.l	#(CUSTOMSCREEN|$40),-(sp)
 	move.l	#SA_Type,-(sp)
-	lea	(displayid-datasegment,a6),a1
+	lea	(displayid-ds,a6),a1
 	move.l	(a1),-(sp)
 	move.l	#SA_DisplayID,-(sp)
 	pea	(1).w
@@ -37491,16 +37497,16 @@ lbC01DFD2	clr.l	-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenScreenTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($7C,sp),sp
-	move.l	d0,(screenptr-datasegment,a6)
+	move.l	d0,(screenptr-ds,a6)
 	bne.b	screen_ok
 	bra.b	lbC01E08A
 
 lbC01E086	movem.l	(sp)+,a5/a6
-lbC01E08A	jsr	(easyrequest_36-datasegment,a6)
+lbC01E08A	jsr	(easyrequest_36-ds,a6)
 	bra.w	nomemory
 
 screen_ok	movea.l	d0,a2
@@ -37511,7 +37517,7 @@ screen_ok	movea.l	d0,a2
 	moveq	#15,d1
 	moveq	#0,d2
 	moveq	#0,d3
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOSetRGB4,a6)
 	movea.l	a2,a0
 	moveq	#$12,d0
@@ -37529,12 +37535,12 @@ screen_ok	movea.l	d0,a2
 	movea.l	a2,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGetVisualInfoA,a6)
 	movea.l	(sp)+,a6
-	move.l	d0,(visualinfo-datasegment,a6)
+	move.l	d0,(visualinfo-ds,a6)
 	bne.b	.visualinfo_ok
-	jsr	(easyrequest_37-datasegment,a6)
+	jsr	(easyrequest_37-ds,a6)
 	bra.w	nomemory
 
 .visualinfo_ok	lea	(gglist_screen).l,a0
@@ -37567,36 +37573,36 @@ screen_ok	movea.l	d0,a2
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($54,sp),sp
-	move.l	d0,(window1ptr-datasegment,a6)
+	move.l	d0,(window1ptr-ds,a6)
 	bne.b	lbC01E184
-	jsr	(easyrequest_38-datasegment,a6)
+	jsr	(easyrequest_38-ds,a6)
 	bra.w	nomemory
 
-lbC01E17C	jsr	(easyrequest_3a-datasegment,a6)
+lbC01E17C	jsr	(easyrequest_3a-ds,a6)
 	bra.w	nomemory
 
-lbC01E184	movea.l	(screenptr-datasegment,a6),a2
+lbC01E184	movea.l	(screenptr-ds,a6),a2
 	movea.l	(sc_BarLayer,a2),a2
 	movea.l	(12,a2),a2
 	moveq	#$64,d2
 	move.l	d2,d0
 	add.l	d0,d0
-	jsr	(_AllocMemClear-datasegment,a6)
-	move.l	d0,(lbL02CEE0-datasegment,a6)
+	jsr	(_AllocMemClear-ds,a6)
+	move.l	d0,(lbL02CEE0-ds,a6)
 	beq.b	lbC01E17C
 	movea.l	d0,a1
 	add.l	d2,d0
-	move.l	d0,(lbL02CEDC-datasegment,a6)
+	move.l	d0,(lbL02CEDC-ds,a6)
 	movea.l	d0,a0
 	move.l	a6,-(sp)
 	movem.l	a0/a1,-(sp)
 	moveq	#1,d0
 	movea.l	a2,a1
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOSetDrMd,a6)
 	moveq	#2,d0
 	movea.l	a2,a1
@@ -37614,27 +37620,27 @@ lbC01E1CA	move.b	(a2),(a0)+
 	jsr	(_LVOSetAPen,a6)
 	movea.l	(sp)+,a6
 	clr.l	-(sp)
-	pea	(aslfr_initialfile-datasegment,a6)
+	pea	(aslfr_initialfile-ds,a6)
 	move.l	#ASLFR_Window+6,-(sp)	;InitialFile
-	pea	(aslfr_initialdrawer-datasegment,a6)
+	pea	(aslfr_initialdrawer-ds,a6)
 	move.l	#ASLFR_Window+7,-(sp)	;InitialDrawer
 	move.l	#FRF_PRIVATEIDCMP,-(sp)
 	move.l	#ASLFR_Window+$12,-(sp)	;Flags1
-	move.l	(window1ptr-datasegment,a6),-(sp)
+	move.l	(window1ptr-ds,a6),-(sp)
 	move.l	#ASLFR_Window,-(sp)
 	movea.l	sp,a0
 	moveq	#ASL_FileRequest,d0
 	move.l	a6,-(sp)
-	movea.l	(aslbase-datasegment,a6),a6
+	movea.l	(aslbase-ds,a6),a6
 	jsr	(_LVOAllocAslRequest,a6)
 	movea.l	(sp)+,a6
 	lea	($24,sp),sp
-	move.l	d0,(aslfr-datasegment,a6)
+	move.l	d0,(aslfr-ds,a6)
 	bne.b	.aslfr_ok
-	jsr	(easyrequest_39-datasegment,a6)
+	jsr	(easyrequest_39-ds,a6)
 	bra.w	nomemory
 
-.aslfr_ok	lea	(lbB02CF10-datasegment,a6),a0
+.aslfr_ok	lea	(lbB02CF10-ds,a6),a0
 	movea.l	(8,a0),a0
 	move.l	d6,d0
 	mulu.w	d3,d0
@@ -37643,59 +37649,59 @@ lbC01E1CA	move.b	(a2),(a0)+
 	suba.l	d5,a0
 	suba.l	d5,a0
 	suba.l	d5,a0
-	move.l	a0,(lbL02CF46-datasegment,a6)
+	move.l	a0,(lbL02CF46-ds,a6)
 	moveq	#0,d0
-	tst.b	(lbB02B3F9-datasegment,a6)
+	tst.b	(lbB02B3F9-ds,a6)
 	beq.b	lbC01E258
 	bset	#5,d0
-lbC01E258	tst.b	(lbB02B3FA-datasegment,a6)
+lbC01E258	tst.b	(lbB02B3FA-ds,a6)
 	beq.b	lbC01E262
 	bset	#6,d0
-lbC01E262	tst.b	(lbB02B3F7-datasegment,a6)
+lbC01E262	tst.b	(lbB02B3F7-ds,a6)
 	beq.b	lbC01E26C
 	bset	#1,d0
-lbC01E26C	tst.b	(lbB02B3F8-datasegment,a6)
+lbC01E26C	tst.b	(lbB02B3F8-ds,a6)
 	beq.b	lbC01E276
 	bset	#2,d0
-lbC01E276	tst.b	(lbB02B3FC-datasegment,a6)
+lbC01E276	tst.b	(lbB02B3FC-ds,a6)
 	beq.b	lbC01E280
 	bset	#4,d0
-lbC01E280	tst.b	(lbB02B3FD-datasegment,a6)
+lbC01E280	tst.b	(lbB02B3FD-ds,a6)
 	beq.b	lbC01E28A
 	bset	#3,d0
-lbC01E28A	move.w	d0,(lbW02D3A8-datasegment,a6)
-	movea.l	(execbase-datasegment,a6),a1
+lbC01E28A	move.w	d0,(lbW02D3A8-ds,a6)
+	movea.l	(execbase-ds,a6),a1
 	movea.l	(ThisTask,a1),a1
-	move.l	(pr_WindowPtr,a1),(saved_pr_window-datasegment,a6)
-	movea.l	(window1ptr-datasegment,a6),a2
+	move.l	(pr_WindowPtr,a1),(saved_pr_window-ds,a6)
+	movea.l	(window1ptr-ds,a6),a2
 	move.l	a2,(pr_WindowPtr,a1)
 	lea	(wd_Flags+2,a2),a0
-	move.l	a0,(window_flags_lw_ptr-datasegment,a6)
-	move.l	(wd_UserPort,a2),(userport-datasegment,a6)
-	lea	(lbL02CE50-datasegment,a6),a0
-	movea.l	(resourceutilbase-datasegment,a6),a1
+	move.l	a0,(window_flags_lw_ptr-ds,a6)
+	move.l	(wd_UserPort,a2),(userport-ds,a6)
+	lea	(lbL02CE50-ds,a6),a0
+	movea.l	(resourceutilbase-ds,a6),a1
 	jsr	(-$1E,a1)	;create menu strip
-	move.l	d0,(menustrip-datasegment,a6)
+	move.l	d0,(menustrip-ds,a6)
 	bne.b	.menustrip_ok
-	jsr	(easyrequest_35-datasegment,a6)
+	jsr	(easyrequest_35-ds,a6)
 	bra.w	nomemory
 
 .menustrip_ok	movea.l	a2,a0
 	movea.l	d0,a1
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
-	movea.l	(screenptr-datasegment,a6),a0
+	movea.l	(screenptr-ds,a6),a0
 	moveq	#0,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOPubScreenStatus,a6)
 	movea.l	(sp)+,a6
 	btst	#0,d0
-	sne	(pubscreen_private_flag-datasegment,a6)
-	clr.b	(vblank_counter-datasegment,a6)
-	lea	(vblank_struct-datasegment,a6),a1
+	sne	(pubscreen_private_flag-ds,a6)
+	clr.b	(vblank_counter-ds,a6)
+	lea	(vblank_struct-ds,a6),a1
 	move.b	#2,(LN_TYPE,a1)
 	move.b	#$88,(LN_PRI,a1)
 	lea	(rsvblankserve.MSG,pc),a0
@@ -37705,50 +37711,50 @@ lbC01E28A	move.w	d0,(lbW02D3A8-datasegment,a6)
 	move.l	a0,(IS_CODE,a1)
 	moveq	#5,d0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAddIntServer,a6)
 	movea.l	(sp)+,a6
-	st	(vblank_inited-datasegment,a6)
+	st	(vblank_inited-ds,a6)
 	bsr.w	load_keytable
 	bsr.w	load_macros
 	move.w	#$273A,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
-	tst.b	(lbL02E8C8-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
+	tst.b	(work_data_spec_str-ds,a6)
 	beq.b	lbC01E368
-	jsr	(lbC00B73A).l
+	jsr	(parseargs).l
 	bne.b	lbC01E3A2
 	move.l	a4,-(sp)
-	movea.l	(lbB02D124-datasegment,a6),a4
-	jsr	(lbC027E7C-datasegment,a6)
+	movea.l	(error_text-ds,a6),a4
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#60,d1
-	jsr	(dosdelay-datasegment,a6)
-lbC01E368	lea	(_RawDoFmt_args-datasegment,a6),a1
-	move.l	#lbC01D7DA,(a1)+
-	move.l	#lbC01D7E6,(a1)
-	lea	(lbL02E8C8-datasegment,a6),a2
+	jsr	(dosdelay-ds,a6)
+lbC01E368	lea	(_RawDoFmt_args-ds,a6),a1
+	move.l	#example_code_strt,(a1)+
+	move.l	#example_code_end,(a1)
+	lea	(work_data_spec_str-ds,a6),a2
 	lea	(mlxlx.MSG,pc),a0
-	jsr	(_RawDoFmt-datasegment,a6)
-	jsr	(lbC00B73A).l
+	jsr	(_RawDoFmt-ds,a6)
+	jsr	(parseargs).l
 	bne.b	lbC01E3A2
 	move.l	a4,-(sp)
-	movea.l	(lbB02D124-datasegment,a6),a4
-	jsr	(lbC027E7C-datasegment,a6)
+	movea.l	(error_text-ds,a6),a4
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#120,d1
-	jsr	(dosdelay-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
 	bra.w	nomemory
 
-lbC01E3A2	clr.b	(lbB02EB69-datasegment,a6)
-	jsr	(lbC0297B4-datasegment,a6)
-	jsr	(DropIMsgAll-datasegment,a6)
+lbC01E3A2	clr.b	(lbB02EB69-ds,a6)
+	jsr	(lbC0297B4-ds,a6)
+	jsr	(DropIMsgAll-ds,a6)
 	bsr.w	lbC020BBE
-	jsr	(lbC027E00-datasegment,a6)
-	move.l	(lbL02D174-datasegment,a6),d0
+	jsr	(lbC027E00-ds,a6)
+	move.l	(lbL02D174-ds,a6),d0
 	beq.w	mainloop2
-	jsr	(getfuncbynum-datasegment,a6)
+	jsr	(getfuncbynum-ds,a6)
 	cmpa.l	#default_func,a0
 	beq.w	mainloop2
 	move.l	(a3),d7
@@ -37771,7 +37777,7 @@ lbL01E3DA	dl	$8000
 	dl	$29024
 	dl	0
 
-vblank_code	addq.b	#1,(vblank_counter-datasegment,a1)
+vblank_code	addq.b	#1,(vblank_counter-ds,a1)
 	moveq	#0,d0
 	rts
 
@@ -37814,13 +37820,13 @@ LACEFLAG.MSG	db	'LACEFLAG',0
 libs.MSG0	db	'libs:',0
 mlxlx.MSG	db	'*m $%lx $%lx',0,0
 
-mainloop1	jsr	(lbC02A1B4-datasegment,a6)
-mainloop2	movea.l	(saved_sp-datasegment,a6),sp
+mainloop1	jsr	(lbC02A1B4-ds,a6)
+mainloop2	movea.l	(saved_sp-ds,a6),sp
 	pea	(lbC01E854,pc)
-	jsr	(lbC02A3CC-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
-	jsr	(lbC028982-datasegment,a6)
-	tst.b	(lbW02EB7E-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
+	jsr	(lbC028982-ds,a6)
+	tst.b	(lbW02EB7E-ds,a6)
 	bne.b	_help
 	exg	d0,a0
 	tst.l	d0
@@ -37831,23 +37837,23 @@ mainloop2	movea.l	(saved_sp-datasegment,a6),sp
 _help	jmp	(help).l
 
 lbC01E854	bne.b	lbC01E85A
-	jsr	(lbC02A1B4-datasegment,a6)
-lbC01E85A	tst.b	(lbB02B45F-datasegment,a6)
+	jsr	(lbC02A1B4-ds,a6)
+lbC01E85A	tst.b	(lbB02B45F-ds,a6)
 	bne.b	lbC01E866
-	tst.b	(lbB02EB45-datasegment,a6)
+	tst.b	(lbB02EB45-ds,a6)
 	beq.b	lbC01E86A
-lbC01E866	jsr	(lbC027E00-datasegment,a6)
-lbC01E86A	tst.b	(lbB02EB48-datasegment,a6)
+lbC01E866	jsr	(lbC027E00-ds,a6)
+lbC01E86A	tst.b	(lbB02EB48-ds,a6)
 	beq.b	lbC01E874
 	bsr.w	lbC020BBE
 lbC01E874	bra.b	mainloop2
 
 lbC01E876	movem.l	d0-d2/a0/a1/a4/a5,-(sp)
-	clr.l	(lbL02D16C-datasegment,a6)
+	clr.l	(lbL02D16C-ds,a6)
 	btst	#1,(a3)
 	beq.b	lbC01E8EE
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bsr.w	lbC023364
 	cmpi.b	#$5F,(a0)
 	beq.b	lbC01E8E8
@@ -37877,7 +37883,7 @@ lbC01E8E8	movem.l	(sp)+,d0-d2/a0/a1/a4/a5
 	rts
 
 lbC01E8EE	movea.l	a2,a0
-	lea	(displayid-datasegment,a6),a4
+	lea	(displayid-ds,a6),a4
 	moveq	#0,d1
 lbC01E8F6	move.b	(a0),d0
 	beq.b	lbC01E95A
@@ -37905,9 +37911,9 @@ lbC01E92E	move.b	d0,(a4)+
 	bhi.b	lbC01E95A
 lbC01E938	addq.l	#1,a0
 	move.l	a0,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a1
 	move.l	(a1),d0
 	andi.l	#$4FC00004,d0
@@ -37918,7 +37924,7 @@ lbC01E938	addq.l	#1,a0
 	beq.b	lbC01E8F6
 lbC01E95A	tst.b	d1
 	bne.b	lbC01E96C
-	lea	(displayid-datasegment,a6),a4
+	lea	(displayid-ds,a6),a4
 	move.l	#$61736369,(a4)+
 	move.b	#$69,(a4)+
 lbC01E96C	move.b	#$2E,(a4)+
@@ -37926,8 +37932,8 @@ lbC01E96C	move.b	#$2E,(a4)+
 	move.b	#$53,(a4)+
 	move.b	#$47,(a4)+
 	clr.b	(a4)
-	move.l	a4,(lbL02D170-datasegment,a6)
-	lea	(displayid-datasegment,a6),a4
+	move.l	a4,(lbL02D170-ds,a6)
+	lea	(displayid-ds,a6),a4
 lbC01E986	movea.l	a4,a0
 lbC01E988	tst.b	(a0)+
 	bne.b	lbC01E988
@@ -37937,17 +37943,17 @@ lbC01E988	tst.b	(a0)+
 	movea.l	a4,a0
 	moveq	#0,d1
 	movea.l	a2,a1
-	suba.l	(datasegment-datasegment,a6),a1
-	jsr	(lbC027906-datasegment,a6)
+	suba.l	(ds-ds,a6),a1
+	jsr	(lbC027906-ds,a6)
 	beq.b	lbC01E9D8
 	move.l	a2,d2
-	sub.l	(datasegment-datasegment,a6),d2
+	sub.l	(ds-ds,a6),d2
 	cmp.l	d0,d2
 	beq.b	lbC01E9EE
 	move.l	a4,-(sp)
-	movea.l	(lbL02D170-datasegment,a6),a4
-	move.l	(lbL02D16C-datasegment,a6),d0
-	addq.l	#1,(lbL02D16C-datasegment,a6)
+	movea.l	(lbL02D170-ds,a6),a4
+	move.l	(lbL02D16C-ds,a6),d0
+	addq.l	#1,(lbL02D16C-ds,a6)
 	bsr.w	lbC022542
 	clr.b	(a4)
 	movea.l	(sp)+,a4
@@ -37963,69 +37969,69 @@ lbC01E9C4	movem.l	d0/d1,-(sp)
 lbC01E9D8	move.l	a1,-(sp)
 	adda.l	a1,a1
 	adda.l	a1,a1
-	adda.l	(workdata_end-datasegment,a6),a1
+	adda.l	(workdata_struct-ds,a6),a1
 	btst	#1,(a1)
 	movea.l	(sp)+,a1
 	bne.b	lbC01E9C4
-lbC01E9EA	jsr	(lbC027A80-datasegment,a6)
+lbC01E9EA	jsr	(lbC027A80-ds,a6)
 lbC01E9EE	movem.l	(sp)+,d0-d2/a0/a1/a4/a5
 	rts
 
-lbC01E9F4	movea.l	(window1ptr-datasegment,a6),a0
+lbC01E9F4	movea.l	(window1ptr-ds,a6),a0
 	lea	($19,a0),a0
 	bset	#0,(a0)
 	rts
 
-lbC01EA02	movea.l	(window1ptr-datasegment,a6),a0
+lbC01EA02	movea.l	(window1ptr-ds,a6),a0
 	lea	($19,a0),a0
 	bclr	#0,(a0)
 	rts
 
-lbC01EA10	st	(lbB02EBF0-datasegment,a6)
-	clr.b	(lbB02EB7B-datasegment,a6)
-	jsr	(lbC029B18-datasegment,a6)
+lbC01EA10	st	(lbB02EBF0-ds,a6)
+	clr.b	(lbB02EB7B-ds,a6)
+	jsr	(lbC029B18-ds,a6)
 	pea	(lbC01EA02,pc)
 	bsr.b	lbC01E9F4
-	movea.l	(window1ptr-datasegment,a6),a0
+	movea.l	(window1ptr-ds,a6),a0
 	move.w	(12,a0),d6
 	moveq	#0,d3
 lbC01EA2C	swap	d3
 	moveq	#0,d0
 	move.b	d3,d0
 	andi.b	#$FD,d0
-	clr.b	(lbB02D39B-datasegment,a6)
-	move.b	#2,(lbB02EAD5-datasegment,a6)
+	clr.b	(lbB02D39B-ds,a6)
+	move.b	#2,(lbB02EAD5-ds,a6)
 	cmpi.b	#$10,d0
 	beq.b	lbC01EA84
-	move.b	#3,(lbB02EAD5-datasegment,a6)
+	move.b	#3,(lbB02EAD5-ds,a6)
 	cmpi.b	#1,d0
 	beq.b	lbC01EA84
-	move.b	#4,(lbB02EAD5-datasegment,a6)
+	move.b	#4,(lbB02EAD5-ds,a6)
 	cmpi.b	#$11,d0
 	beq.b	lbC01EA84
-	move.b	#5,(lbB02EAD5-datasegment,a6)
+	move.b	#5,(lbB02EAD5-ds,a6)
 	cmpi.b	#$19,d0
 	beq.b	lbC01EA84
 	bclr	#6,d0
 	beq.b	lbC01EA74
-	st	(lbB02D39B-datasegment,a6)
-lbC01EA74	move.b	#1,(lbB02EAD5-datasegment,a6)
+	st	(lbB02D39B-ds,a6)
+lbC01EA74	move.b	#1,(lbB02EAD5-ds,a6)
 	cmpi.b	#8,d0
 	beq.b	lbC01EA84
-	clr.b	(lbB02EAD5-datasegment,a6)
+	clr.b	(lbB02EAD5-ds,a6)
 lbC01EA84	movem.l	d0-d7/a0-a6,-(sp)
 	bsr.w	lbC020BBE
 	movem.l	(sp)+,d0-d7/a0-a6
-lbC01EA90	tst.b	(lbB02EB7B-datasegment,a6)
+lbC01EA90	tst.b	(lbB02EB7B-ds,a6)
 	bne.w	lbC01EC4C
-	movea.l	(window1ptr-datasegment,a6),a0
+	movea.l	(window1ptr-ds,a6),a0
 	moveq	#0,d0
 	move.w	(14,a0),d0
-	cmp.w	(lbW02D3A2-datasegment,a6),d0
+	cmp.w	(lbW02D3A2-ds,a6),d0
 	bcs.b	lbC01EAAC
-	st	(lbB02D39B-datasegment,a6)
+	st	(lbB02D39B-ds,a6)
 lbC01EAAC	lea	(lbW01EC5C,pc),a1
-	tst.b	(laceflag-datasegment,a6)
+	tst.b	(laceflag-ds,a6)
 	beq.b	lbC01EABA
 	adda.w	#10,a1
 lbC01EABA	move.w	(12,a0),d0
@@ -38069,7 +38075,7 @@ lbC01EB06	addq.w	#1,d0
 lbC01EB16	movem.l	d0/d6,-(sp)
 	bsr.w	lbC01FA52
 	movem.l	(sp)+,d0/d6
-	tst.b	(lbB02EB7B-datasegment,a6)
+	tst.b	(lbB02EB7B-ds,a6)
 	bne.w	lbC01EC4C
 	btst	#6,($BFE001).l
 	dbne	d0,lbC01EB16
@@ -38103,7 +38109,7 @@ lbC01EB68	sub.w	(a1)+,d0
 	bra.b	lbC01EBB6
 
 lbC01EB74	addq.w	#1,d0
-	tst.b	(lbB02D39B-datasegment,a6)
+	tst.b	(lbB02D39B-ds,a6)
 	beq.b	lbC01EB7E
 	moveq	#0,d0
 lbC01EB7E	move.w	(a1),d1
@@ -38120,7 +38126,7 @@ lbC01EB7E	move.w	(a1),d1
 lbC01EB94	movem.l	d0/d6,-(sp)
 	bsr.w	lbC01FCA6
 	movem.l	(sp)+,d0/d6
-	tst.b	(lbB02EB7B-datasegment,a6)
+	tst.b	(lbB02EB7B-ds,a6)
 	bne.w	lbC01EC4C
 	btst	#6,($BFE001).l
 	dbne	d0,lbC01EB94
@@ -38128,10 +38134,10 @@ lbC01EB94	movem.l	d0/d6,-(sp)
 
 lbC01EBB6	move.l	(sp)+,d6
 lbC01EBB8	bsr.w	lbC020BBE
-	jsr	(lbC027E00-datasegment,a6)
-lbC01EBC0	movea.l	(userport-datasegment,a6),a0
+	jsr	(lbC027E00-ds,a6)
+lbC01EBC0	movea.l	(userport-ds,a6),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_GetIMsg,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -38145,7 +38151,7 @@ lbC01EBE2	movea.l	d0,a1
 	move.l	($18,a1),d3
 	swap	d3
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_ReplyIMsg,a6)
 	movea.l	(sp)+,a6
 	btst	#6,($BFE001).l
@@ -38155,9 +38161,9 @@ lbC01EBE2	movea.l	d0,a1
 	bne.w	lbC01EA2C
 	cmpi.w	#$69,d3
 	bne.w	lbC01EA2C
-	jsr	(lbC02A3CC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
 	moveq	#0,d0
-	move.b	(lbB02EAD5-datasegment,a6),d0
+	move.b	(lbB02EAD5-ds,a6),d0
 	beq.w	lbC01EA2C
 	lea	(lbC02003C,pc),a0
 	subq.b	#1,d0
@@ -38175,10 +38181,10 @@ lbC01EBE2	movea.l	d0,a1
 lbC01EC46	jsr	(a0)
 	bra.w	lbC01EA90
 
-lbC01EC4C	clr.b	(lbB02D39B-datasegment,a6)
-	clr.b	(lbB02EAD5-datasegment,a6)
-	clr.b	(lbB02EBF0-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC01EC4C	clr.b	(lbB02D39B-ds,a6)
+	clr.b	(lbB02EAD5-ds,a6)
+	clr.b	(lbB02EBF0-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbW01EC5C	dw	10
 	dw	8
@@ -38191,10 +38197,10 @@ lbW01EC5C	dw	10
 	dw	6
 	dw	$50
 
-lbC01EC70	jsr	(lbC029DD2-datasegment,a6)
-	jsr	(lbC029D6C-datasegment,a6)
-	jsr	(lbC029DCA-datasegment,a6)
-lbC01EC7C	jsr	(lbC029DC2-datasegment,a6)
+lbC01EC70	jsr	(lbC029DD2-ds,a6)
+	jsr	(lbC029D6C-ds,a6)
+	jsr	(lbC029DCA-ds,a6)
+lbC01EC7C	jsr	(lbC029DC2-ds,a6)
 	bne.b	lbC01EC7C
 lbC01EC82	move.l	(a3),d7
 	andi.l	#$7FF7FC07,d7
@@ -38203,12 +38209,12 @@ lbC01EC82	move.l	(a3),d7
 lbC01EC90	subq.l	#4,a3
 	btst	#0,(2,a3)
 	bne.b	lbC01ECA6
-	cmpa.l	(workdata_end-datasegment,a6),a3
+	cmpa.l	(workdata_struct-ds,a6),a3
 	bhi.b	lbC01EC90
 	movem.l	(sp)+,a2/a3
 	bra.b	lbC01ECC6
 
-lbC01ECA6	jsr	(lbC02A3E6-datasegment,a6)
+lbC01ECA6	jsr	(lbC02A3E6-ds,a6)
 	move.w	#$F8,d0
 	and.l	(a3),d0
 	bclr	#7,d0
@@ -38216,46 +38222,46 @@ lbC01ECA6	jsr	(lbC02A3E6-datasegment,a6)
 	movea.l	(lbL01ECCA,pc,d0.w),a0
 	jsr	(a6,a0.l)
 	movem.l	(sp)+,a2/a3
-	jsr	(lbC02AEF0-datasegment,a6)
-lbC01ECC6	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02AEF0-ds,a6)
+lbC01ECC6	jmp	(lbC02A422-ds,a6)
 
-lbL01ECCA	dl	lbC02003C-datasegment
-	dl	lbC02003C-datasegment
-	dl	lbC020016-datasegment
-	dl	lbC02003C-datasegment
-	dl	lbC01FFFC-datasegment
-	dl	lbC02003C-datasegment
-	dl	lbC01FFD6-datasegment
-	dl	lbC02003C-datasegment
-	dl	lbC020016-datasegment
-	dl	lbC01FFB0-datasegment
-	dl	lbC02003C-datasegment
-	dl	lbC02003C-datasegment
-	dl	lbC02003C-datasegment
-	dl	lbC02003C-datasegment
-	dl	lbC01FFFC-datasegment
-	dl	lbC01FFD6-datasegment
+lbL01ECCA	dl	lbC02003C-ds
+	dl	lbC02003C-ds
+	dl	lbC020016-ds
+	dl	lbC02003C-ds
+	dl	lbC01FFFC-ds
+	dl	lbC02003C-ds
+	dl	lbC01FFD6-ds
+	dl	lbC02003C-ds
+	dl	lbC020016-ds
+	dl	lbC01FFB0-ds
+	dl	lbC02003C-ds
+	dl	lbC02003C-ds
+	dl	lbC02003C-ds
+	dl	lbC02003C-ds
+	dl	lbC01FFFC-ds
+	dl	lbC01FFD6-ds
 
-lbC01ED0A	pea	(clear_ccr-datasegment,a6)
-	jsr	(_SetPointerAll-datasegment,a6)
-lbC01ED12	lea	(lbB031E00-datasegment,a6),a4
-	move.w	#$FFFF,(lbB02D39A-datasegment,a6)
+lbC01ED0A	pea	(clear_ccr-ds,a6)
+	jsr	(_SetPointerAll-ds,a6)
+lbC01ED12	lea	(lbB031E00-ds,a6),a4
+	move.w	#$FFFF,(lbB02D39A-ds,a6)
 	bset	#5,(1,a3)
 	bne.b	lbC01ED7A
 	bsr.w	lbC020D16
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC01ED86
 	move.l	(a3),d7
-	tst.b	(lbB02D39B-datasegment,a6)
+	tst.b	(lbB02D39B-ds,a6)
 	beq.b	lbC01ED3C
-	tst.b	(lbB02EAD1-datasegment,a6)
+	tst.b	(lbB02EAD1-ds,a6)
 	bpl.b	lbC01ED68
 lbC01ED3C	andi.l	#$180,d7
 	cmpi.l	#$180,d7
 	beq.b	lbC01ED12
 	btst	#2,(8,a3)
 	beq.b	lbC01ED72
-	tst.b	(lbB02D39B-datasegment,a6)
+	tst.b	(lbB02D39B-ds,a6)
 	beq.b	lbC01ED72
 	move.l	a2,d0
 	btst	#0,d0
@@ -38268,17 +38274,17 @@ lbC01ED68	btst	#8,d7
 	beq.b	lbC01ED12
 	tst.b	d7
 	bmi.b	lbC01ED12
-lbC01ED72	clr.w	(lbB02D39A-datasegment,a6)
+lbC01ED72	clr.w	(lbB02D39A-ds,a6)
 lbC01ED76	tst.b	(a3)
 	bmi.b	lbC01ED82
-lbC01ED7A	clr.w	(lbB02D39A-datasegment,a6)
-	jmp	(lbC02A3E2-datasegment,a6)
+lbC01ED7A	clr.w	(lbB02D39A-ds,a6)
+	jmp	(lbC02A3E2-ds,a6)
 
 lbC01ED82	subq.l	#4,a3
 	bra.b	lbC01ED76
 
-lbC01ED86	clr.w	(lbB02D39A-datasegment,a6)
-	jmp	(lbC02AEDE-datasegment,a6)
+lbC01ED86	clr.w	(lbB02D39A-ds,a6)
+	jmp	(lbC02AEDE-ds,a6)
 
 lbC01ED8E	bsr.w	lbC01EE54
 	dw	$1C
@@ -38401,21 +38407,21 @@ lbC01EE4E	bsr.b	lbC01EE54
 	dw	$E80
 
 lbC01EE54	movea.l	(sp)+,a0
-	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	(a0)+,d2
-	lea	(lbB02B3E5-datasegment,a6),a2
+	lea	(lbB02B3E5-ds,a6),a2
 	moveq	#0,d0
 	move.b	(a0)+,d0
 	adda.l	d0,a2
 	move.b	(a0)+,d0
 	spl	(a2)
-	tst.b	(lbB02EBF4-datasegment,a6)
+	tst.b	(lbB02EBF4-ds,a6)
 	beq.b	lbC01EE7A
-	tst.b	(lbB02EBF5-datasegment,a6)
+	tst.b	(lbB02EBF5-ds,a6)
 	sne	(a2)
 	bne.b	lbC01EE7A
 	neg.b	d0
-lbC01EE7A	lea	(lbL02D2E8-datasegment,a6),a0
+lbC01EE7A	lea	(lbL02D2E8-ds,a6),a0
 	tst.b	d0
 	beq.b	lbC01EEA0
 	bmi.b	lbC01EE8C
@@ -38433,8 +38439,8 @@ lbC01EE8C	cmpi.b	#$80,d0
 lbC01EE9A	jsr	(lbC029630).l
 lbC01EEA0	move.w	d2,d0
 	move.b	(a2),d1
-	jsr	(lbC02A686-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02A686-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01EEAC	lea	(lbW01EEE4,pc),a1
 lbC01EEB0	move.w	(a1)+,d1
@@ -38487,85 +38493,85 @@ WarningAFLINE.MSG	db	'Warning - AFLINE used',0
 _LVOtypesymbo.MSG	db	'"_LVO" type symbol expected',0
 Illegalinstru.MSG	db	'Illegal instruction',0,0
 
-lbC01EFCE	st	(lbB02EB64-datasegment,a6)
+lbC01EFCE	st	(lbB02EB64-ds,a6)
 	bra.b	lbC01EFD8
 
-lbC01EFD4	clr.b	(lbB02EB64-datasegment,a6)
-lbC01EFD8	st	(lbB02EB65-datasegment,a6)
-	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
+lbC01EFD4	clr.b	(lbB02EB64-ds,a6)
+lbC01EFD8	st	(lbB02EB65-ds,a6)
+	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	jsr	(lbC014DB2).l
 	bne.b	lbC01F010
 	rts
 
-lbC01EFEA	st	(lbB02EB64-datasegment,a6)
+lbC01EFEA	st	(lbB02EB64-ds,a6)
 	bra.b	lbC01EFF4
 
-lbC01EFF0	clr.b	(lbB02EB64-datasegment,a6)
-lbC01EFF4	clr.b	(lbB02EB65-datasegment,a6)
-	bclr	#0,(lbL02EB36-datasegment,a6)
-	jsr	(saveregs_nod0d1a0a1-datasegment,a6)
-	move.l	(datasegment-datasegment,a6),(lbL02D13C-datasegment,a6)
-	move.l	(lbL02A8A0-datasegment,a6),(lbL02D140).l
-lbC01F010	clr.w	(lbB02D3A4-datasegment,a6)
-	clr.l	(lbL02D0D4-datasegment,a6)
-	clr.b	(lbB02EB5A-datasegment,a6)
-	lea	(lbL02D218-datasegment,a6),a0
+lbC01EFF0	clr.b	(lbB02EB64-ds,a6)
+lbC01EFF4	clr.b	(lbB02EB65-ds,a6)
+	bclr	#0,(lbL02EB36-ds,a6)
+	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
+	move.l	(workdata_end-ds,a6),(lbL02D140).l
+lbC01F010	clr.w	(lbB02D3A4-ds,a6)
+	clr.l	(lbL02D0D4-ds,a6)
+	clr.b	(lbB02EB5A-ds,a6)
+	lea	(lbL02D218-ds,a6),a0
 	moveq	#$20,d0
 lbC01F022	clr.l	(a0)+
 	dbra	d0,lbC01F022
-	move.l	#1,(lbL02D128-datasegment,a6)
-	jsr	(lbC029A66-datasegment,a6)
-	tst.b	(lbB02EB64-datasegment,a6)
+	move.l	#1,(lbL02D128-ds,a6)
+	jsr	(lbC029A66-ds,a6)
+	tst.b	(lbB02EB64-ds,a6)
 	bne.b	lbC01F07A
 	move.w	#$275C,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(lbL02E1C8-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(lbL02E1C8-ds,a6),a0
 	move.l	a0,d1
-	bsr.w	lbC020566
+	bsr.w	requestfile
 	bne.b	lbC01F054
-	jsr	(lbC029A9E-datasegment,a6)
+	jsr	(lbC029A9E-ds,a6)
 	rts
 
-lbC01F054	st	(lbB02EB7D-datasegment,a6)
-	jsr	(_SetPointerAll-datasegment,a6)
+lbC01F054	st	(lbB02EB7D-ds,a6)
+	jsr	(_SetPointerAll-ds,a6)
 	move.l	a0,d1
-	move.l	d1,(lbB02D0E8-datasegment,a6)
+	move.l	d1,(lbB02D0E8-ds,a6)
 	move.l	d1,d4
-	jsr	(lbC02A286-datasegment,a6)
-	jsr	(lbC029A66-datasegment,a6)
-	move.l	d0,(lbL02D128-datasegment,a6)
+	jsr	(lbC02A286-ds,a6)
+	jsr	(lbC029A66-ds,a6)
+	move.l	d0,(lbL02D128-ds,a6)
 	bne.b	lbC01F07A
-	jsr	(lbC029A9E-datasegment,a6)
-	jmp	(__IoErr-datasegment,a6)
+	jsr	(lbC029A9E-ds,a6)
+	jmp	(__IoErr-ds,a6)
 
 lbC01F07A	movem.l	a2/a3,-(sp)
-	movea.l	(lbL02D13C-datasegment,a6),a2
-	jsr	(lbC02A3CC-datasegment,a6)
+	movea.l	(lbL02D13C-ds,a6),a2
+	jsr	(lbC02A3CC-ds,a6)
 	move.w	#$2735,d0
-	tst.b	(lbB02EB64-datasegment,a6)
+	tst.b	(lbB02EB64-ds,a6)
 	bne.b	lbC01F094
 	move.w	#$2736,d0
-lbC01F094	jsr	(gettextbynum-datasegment,a6)
+lbC01F094	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
-	tst.b	(lbB02EB65-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
+	tst.b	(lbB02EB65-ds,a6)
 	bne.w	lbC01F26E
 	move.b	#10,(a4)+
-	addq.l	#1,(lbW02D228-datasegment,a6)
-	tst.b	(lbB02B443-datasegment,a6)
+	addq.l	#1,(lbW02D228-ds,a6)
+	tst.b	(lbB02B443-ds,a6)
 	bne.w	lbC01F26E
-	tst.b	(lbL02EB36-datasegment,a6)
+	tst.b	(lbL02EB36-ds,a6)
 	beq.b	lbC01F0D8
-	lea	(AFLINEmacrodw.MSG-datasegment,a6),a0
-	tst.b	(lbB02EB46-datasegment,a6)
+	lea	(AFLINEmacrodw.MSG-ds,a6),a0
+	tst.b	(lbB02EB46-ds,a6)
 	beq.b	lbC01F0CE
-	lea	(AFLINEmacrodc.MSG-datasegment,a6),a0
+	lea	(AFLINEmacrodc.MSG-ds,a6),a0
 lbC01F0CE	move.b	(a0)+,(a4)+
 	bne.b	lbC01F0CE
-	addq.l	#3,(lbW02D228-datasegment,a6)
+	addq.l	#3,(lbW02D228-ds,a6)
 	subq.l	#1,a4
-lbC01F0D8	lea	(lbL02F600-datasegment,a6),a0
+lbC01F0D8	lea	(lbL02F600-ds,a6),a0
 	lea	($2000,a0),a0
 	move.l	a0,d7
 	addi.l	#$400,d7
@@ -38581,14 +38587,14 @@ lbC01F0F8	movem.l	(sp)+,d0-d2/a1/a5
 	bra.b	lbC01F0F0
 
 lbC01F0FE	movea.l	d0,a1
-	adda.l	(lbL02D14C-datasegment,a6),a1
+	adda.l	(lbL02D14C-ds,a6),a1
 	move.l	(8,a1),d1
 	moveq	#0,d2
 	move.b	d1,d2
 	beq.b	lbC01F0F0
 	lsr.l	#8,d1
 	movea.l	d1,a5
-	adda.l	(lbL02D158-datasegment,a6),a5
+	adda.l	(lbL02D158-ds,a6),a5
 	cmpi.b	#2,d2
 	bne.b	lbC01F12A
 	cmpi.b	#$44,(a5)
@@ -38610,12 +38616,12 @@ lbC01F146	cmp.b	(a1)+,d0
 	dbra	d2,lbC01F13E
 	movem.l	(sp)+,d0-d2/a1/a5
 	moveq	#0,d3
-	tst.b	(lbB02B445-datasegment,a6)
+	tst.b	(lbB02B445-ds,a6)
 	beq.w	lbC01F204
 	moveq	#0,d6
 	tst.b	d2
 	beq.b	lbC01F192
-	clr.b	(lbB02EB71-datasegment,a6)
+	clr.b	(lbB02EB71-ds,a6)
 	cmpi.b	#$5F,(a5)
 	bne.b	lbC01F18A
 	cmpi.b	#$4C,(1,a5)
@@ -38623,21 +38629,21 @@ lbC01F146	cmp.b	(a1)+,d0
 	cmpi.b	#$56,(2,a5)
 	bne.b	lbC01F18A
 	cmpi.b	#$4F,(3,a5)
-	seq	(lbB02EB71-datasegment,a6)
+	seq	(lbB02EB71-ds,a6)
 lbC01F18A	move.b	(a5)+,(a4)+
 	addq.w	#1,d6
 	subq.b	#1,d2
 	bne.b	lbC01F18A
-lbC01F192	tst.b	(lbB02B451-datasegment,a6)
+lbC01F192	tst.b	(lbB02B451-ds,a6)
 	beq.b	lbC01F19E
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
 lbC01F19E	bsr.w	lbC020C10
-	move.b	(EF.MSG-datasegment,a6),(a4)+
-	move.b	(QR.MSG-datasegment,a6),(a4)+
-	move.b	(UW.MSG-datasegment,a6),(a4)+
+	move.b	(EF.MSG-ds,a6),(a4)+
+	move.b	(QR.MSG-ds,a6),(a4)+
+	move.b	(UW.MSG-ds,a6),(a4)+
 	move.b	#9,(a4)+
-	tst.b	(lbB02EB46-datasegment,a6)
+	tst.b	(lbB02EB46-ds,a6)
 	beq.b	lbC01F1CE
 	move.b	#$20,(-1,a4)
 	move.b	#$20,(a4)+
@@ -38645,7 +38651,7 @@ lbC01F19E	bsr.w	lbC020C10
 	move.b	#$20,(a4)+
 	move.b	#$20,(a4)+
 lbC01F1CE	move.l	(4,a1),d0
-	tst.b	(lbB02EB71-datasegment,a6)
+	tst.b	(lbB02EB71-ds,a6)
 	beq.b	lbC01F1DE
 	neg.l	d0
 	move.b	#$2D,(a4)+
@@ -38653,22 +38659,22 @@ lbC01F1DE	movem.l	a0/a1,-(sp)
 	bsr.w	lbC022518
 	movem.l	(sp)+,a0/a1
 	move.b	#10,(a4)+
-	addq.l	#1,(lbW02D228-datasegment,a6)
+	addq.l	#1,(lbW02D228-ds,a6)
 	move.l	a4,d3
-	sub.l	(lbL02B480-datasegment,a6),d3
+	sub.l	(lbL02B480-ds,a6),d3
 	bsr.w	lbC01F38A
 	beq.w	lbC01F0F0
 	bra.w	lbC01F2F4
 
-lbC01F204	tst.b	(lbB02B451-datasegment,a6)
+lbC01F204	tst.b	(lbB02B451-ds,a6)
 	beq.b	lbC01F210
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
 lbC01F210	bsr.w	lbC020C02
-	move.b	(XEFM.MSG-datasegment,a6),(a4)+
-	move.b	(RS.MSG-datasegment,a6),(a4)+
-	move.b	(EF.MSG-datasegment,a6),(a4)+
-	move.b	(FM.MSG-datasegment,a6),(a4)+
+	move.b	(XEFM.MSG-ds,a6),(a4)+
+	move.b	(RS.MSG-ds,a6),(a4)+
+	move.b	(EF.MSG-ds,a6),(a4)+
+	move.b	(FM.MSG-ds,a6),(a4)+
 	move.b	#$20,(a4)+
 	move.b	#$20,(a4)+
 	move.b	#$20,(a4)+
@@ -38677,166 +38683,166 @@ lbC01F234	move.b	(a5)+,(a4)+
 	subq.l	#1,d2
 	bne.b	lbC01F234
 	move.b	#10,(a4)+
-	addq.l	#1,(lbW02D228-datasegment,a6)
+	addq.l	#1,(lbW02D228-ds,a6)
 	move.l	a4,d3
-	sub.l	(lbL02B480-datasegment,a6),d3
+	sub.l	(lbL02B480-ds,a6),d3
 	bsr.w	lbC01F38A
 	beq.w	lbC01F0F0
 	bra.w	lbC01F2F4
 
-lbC01F254	move.l	(lbW02D228-datasegment,a6),d0
+lbC01F254	move.l	(lbW02D228-ds,a6),d0
 	subq.l	#1,d0
 	beq.b	lbC01F26E
 	moveq	#$4B,d0
 lbC01F25E	move.b	#$2A,(a4)+
 	dbra	d0,lbC01F25E
 	move.b	#10,(a4)+
-	addq.l	#1,(lbW02D228-datasegment,a6)
-lbC01F26E	cmpa.l	(lbL02D140-datasegment,a6),a2
+	addq.l	#1,(lbW02D228-ds,a6)
+lbC01F26E	cmpa.l	(lbL02D140-ds,a6),a2
 	bge.w	lbC01F342
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC01F286
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	lbC01F34E
 
-lbC01F286	move.l	a2,(lbL02D2C4-datasegment,a6)
-	move.l	(lbL02D28C-datasegment,a6),(lbL02D2B8).l
-	move.l	(lbL02D218-datasegment,a6),(lbL02D2BC).l
-	move.l	(lbL02D258-datasegment,a6),(lbL02D2C0).l
+lbC01F286	move.l	a2,(lbL02D2C4-ds,a6)
+	move.l	(lbL02D28C-ds,a6),(lbL02D2B8).l
+	move.l	(lbL02D218-ds,a6),(lbL02D2BC).l
+	move.l	(lbL02D258-ds,a6),(lbL02D2C0).l
 	bsr.w	lbC020D02
-	move.w	(lbB02D3A6-datasegment,a6),d0
-	and.w	(lbB02D3A4-datasegment,a6),d0
+	move.w	(lbB02D3A6-ds,a6),d0
+	and.w	(lbB02D3A4-ds,a6),d0
 	beq.b	lbC01F2D0
-	tst.b	(lbB02B45A-datasegment,a6)
+	tst.b	(lbB02B45A-ds,a6)
 	beq.b	lbC01F2BA
 	bsr.w	lbC01EEAC
-lbC01F2BA	clr.w	(lbB02D3A4-datasegment,a6)
+lbC01F2BA	clr.w	(lbB02D3A4-ds,a6)
 	move.l	a2,-(sp)
-	movea.l	(lbL02D2C4-datasegment,a6),a2
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	movea.l	(lbL02D2C4-ds,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC01F2CE
-	jsr	(lbC0273FC-datasegment,a6)
+	jsr	(lbC0273FC-ds,a6)
 lbC01F2CE	movea.l	(sp)+,a2
 lbC01F2D0	move.l	a4,d3
-	sub.l	(lbL02B480-datasegment,a6),d3
+	sub.l	(lbL02B480-ds,a6),d3
 	beq.b	lbC01F342
-	tst.b	(lbB02EB5A-datasegment,a6)
+	tst.b	(lbB02EB5A-ds,a6)
 	bne.b	lbC01F2EC
-	cmpa.l	(lbL02D140-datasegment,a6),a2
+	cmpa.l	(lbL02D140-ds,a6),a2
 	bcc.b	lbC01F2EC
 	cmpa.l	#stringbuffer,a4
 	bcs.b	lbC01F26E
 lbC01F2EC	bsr.w	lbC01F3A2
 	beq.w	lbC01F26E
-lbC01F2F4	move.l	(lbL02D128-datasegment,a6),d1
+lbC01F2F4	move.l	(lbL02D128-ds,a6),d1
 	beq.b	lbC01F306
 	cmpi.l	#1,d1
 	beq.b	lbC01F306
-	jsr	(dosclose-datasegment,a6)
-lbC01F306	jsr	(lbC029A9E-datasegment,a6)
-	clr.b	(lbB02EB65-datasegment,a6)
-	move.l	(lbB02D0E8-datasegment,a6),d1
-	jsr	(_DeleteFile-datasegment,a6)
+	jsr	(dosclose-ds,a6)
+lbC01F306	jsr	(lbC029A9E-ds,a6)
+	clr.b	(lbB02EB65-ds,a6)
+	move.l	(lbB02D0E8-ds,a6),d1
+	jsr	(_DeleteFile-ds,a6)
 	movem.l	(sp)+,a2/a3
-	jsr	(lbC02A4A6-datasegment,a6)
+	jsr	(lbC02A4A6-ds,a6)
 	move.w	#$2725,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	moveq	#$3C,d1
-	jsr	(dosdelay-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
-	jsr	(lbC029A9E-datasegment,a6)
-	clr.b	(lbB02EB65-datasegment,a6)
-	jmp	(_dummy-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
+	jsr	(lbC029A9E-ds,a6)
+	clr.b	(lbB02EB65-ds,a6)
+	jmp	(cceq-ds,a6)
 
-lbC01F342	btst	#0,(lbL02EB36-datasegment,a6)
+lbC01F342	btst	#0,(lbL02EB36-ds,a6)
 	bne.b	lbC01F34E
-	clr.b	(lbL02EB36-datasegment,a6)
+	clr.b	(lbL02EB36-ds,a6)
 lbC01F34E	movem.l	(sp)+,a2/a3
-	move.l	(lbL02D128-datasegment,a6),d1
+	move.l	(lbL02D128-ds,a6),d1
 	cmpi.l	#1,d1
 	beq.b	lbC01F362
-	jsr	(dosclose-datasegment,a6)
-lbC01F362	jsr	(lbC029A9E-datasegment,a6)
-	clr.b	(lbB02EB65-datasegment,a6)
-	clr.b	(lbB02EB48-datasegment,a6)
-	tst.b	(lbL02EB36-datasegment,a6)
-	smi	(lbL02EB36-datasegment,a6)
+	jsr	(dosclose-ds,a6)
+lbC01F362	jsr	(lbC029A9E-ds,a6)
+	clr.b	(lbB02EB65-ds,a6)
+	clr.b	(lbB02EB48-ds,a6)
+	tst.b	(lbL02EB36-ds,a6)
+	smi	(lbL02EB36-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
 lbC01F37C	move.l	-(a4),-(a6)
 	move.l	($2829,a2),d3
 	move.l	(a3)+,-(a3)
-	move.l	(lbB02D3B1-datasegment,a5),-(a2)
+	move.l	(lbB02D3B1-ds,a5),-(a2)
 	moveq	#$7E,d6
 lbC01F38A	cmpa.l	#stringbuffer,a4
 	bcc.b	lbC01F3A2
-	tst.b	(lbB02EB5A-datasegment,a6)
+	tst.b	(lbB02EB5A-ds,a6)
 	bne.b	lbC01F3A2
-	cmpa.l	(lbL02D140-datasegment,a6),a2
+	cmpa.l	(lbL02D140-ds,a6),a2
 	bcc.b	lbC01F3A2
 	cmp.w	d0,d0
 	rts
 
 lbC01F3A2	movem.l	d2-d7/a0-a3/a5,-(sp)
-	move.l	(lbL02B480-datasegment,a6),d2
-	add.l	d3,(lbL02D0D4-datasegment,a6)
+	move.l	(lbL02B480-ds,a6),d2
+	add.l	d3,(lbL02D0D4-ds,a6)
 	move.l	d3,d0
-	move.l	(lbL02D128-datasegment,a6),d1
+	move.l	(lbL02D128-ds,a6),d1
 	cmpi.l	#1,d1
 	beq.b	lbC01F3C0
-	jsr	(_Write-datasegment,a6)
+	jsr	(_Write-ds,a6)
 lbC01F3C0	movea.l	d2,a4
 	cmp.l	d0,d3
 	bne.b	lbC01F3CE
-	tst.b	(lbB02B45E-datasegment,a6)
+	tst.b	(lbB02B45E-ds,a6)
 	bne.b	lbC01F3D4
 	cmp.w	d0,d0
 lbC01F3CE	movem.l	(sp)+,d2-d7/a0-a3/a5
 	rts
 
-lbC01F3D4	tst.b	(lbB02EB78-datasegment,a6)
+lbC01F3D4	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC01F3DE
-	jsr	(lbC027E00-datasegment,a6)
-lbC01F3DE	move.l	(lbW02D228-datasegment,a6),-(sp)
-	move.l	(lbL02D290-datasegment,a6),-(sp)
-	move.l	(lbL02D250-datasegment,a6),-(sp)
-	move.l	(lbL02D258-datasegment,a6),-(sp)
-	move.l	(lbL02D23C-datasegment,a6),-(sp)
-	move.l	(lbL02D298-datasegment,a6),-(sp)
-	move.l	(lbB02D240-datasegment,a6),-(sp)
-	move.l	(lbL02D218-datasegment,a6),-(sp)
-	move.l	(lbL02D27C-datasegment,a6),-(sp)
-	move.l	(lbL02D288-datasegment,a6),-(sp)
+	jsr	(lbC027E00-ds,a6)
+lbC01F3DE	move.l	(lbW02D228-ds,a6),-(sp)
+	move.l	(lbL02D290-ds,a6),-(sp)
+	move.l	(lbL02D250-ds,a6),-(sp)
+	move.l	(lbL02D258-ds,a6),-(sp)
+	move.l	(lbL02D23C-ds,a6),-(sp)
+	move.l	(lbL02D298-ds,a6),-(sp)
+	move.l	(lbB02D240-ds,a6),-(sp)
+	move.l	(lbL02D218-ds,a6),-(sp)
+	move.l	(lbL02D27C-ds,a6),-(sp)
+	move.l	(lbL02D288-ds,a6),-(sp)
 	lea	(xxA.MSG).l,a0
 	move.l	a0,-(sp)
-	move.l	(lbL02D278-datasegment,a6),-(sp)
-	move.l	(lbL02D294-datasegment,a6),-(sp)
-	move.l	(lbL02D274-datasegment,a6),-(sp)
-	move.l	(lbL02D234-datasegment,a6),-(sp)
-	move.l	(lbL02D270-datasegment,a6),-(sp)
-	move.l	(lbL02D248-datasegment,a6),-(sp)
-	move.l	(lbL02D26C-datasegment,a6),-(sp)
-	move.l	(lbL02D238-datasegment,a6),-(sp)
-	move.l	(lbL02D268-datasegment,a6),-(sp)
-	move.l	(lbL02D230-datasegment,a6),-(sp)
-	move.l	(lbL02D264-datasegment,a6),-(sp)
-	move.l	(lbL02D22C-datasegment,a6),-(sp)
-	move.l	(lbL02D260-datasegment,a6),-(sp)
-	move.l	(lbW02D24C-datasegment,a6),-(sp)
-	move.l	(lbL02D284-datasegment,a6),-(sp)
-	move.l	(lbW02D224-datasegment,a6),-(sp)
-	move.l	(lbL02D280-datasegment,a6),-(sp)
-	move.l	(lbL02D244-datasegment,a6),-(sp)
-	move.l	(lbL02D25C-datasegment,a6),-(sp)
-	move.l	(lbL02D21C-datasegment,a6),-(sp)
-	move.l	(lbL02D28C-datasegment,a6),-(sp)
-	move.l	(lbL02D220-datasegment,a6),-(sp)
-	move.l	(lbL02D254-datasegment,a6),-(sp)
+	move.l	(lbL02D278-ds,a6),-(sp)
+	move.l	(lbL02D294-ds,a6),-(sp)
+	move.l	(lbL02D274-ds,a6),-(sp)
+	move.l	(lbL02D234-ds,a6),-(sp)
+	move.l	(lbL02D270-ds,a6),-(sp)
+	move.l	(lbL02D248-ds,a6),-(sp)
+	move.l	(lbL02D26C-ds,a6),-(sp)
+	move.l	(lbL02D238-ds,a6),-(sp)
+	move.l	(lbL02D268-ds,a6),-(sp)
+	move.l	(lbL02D230-ds,a6),-(sp)
+	move.l	(lbL02D264-ds,a6),-(sp)
+	move.l	(lbL02D22C-ds,a6),-(sp)
+	move.l	(lbL02D260-ds,a6),-(sp)
+	move.l	(lbW02D24C-ds,a6),-(sp)
+	move.l	(lbL02D284-ds,a6),-(sp)
+	move.l	(lbW02D224-ds,a6),-(sp)
+	move.l	(lbL02D280-ds,a6),-(sp)
+	move.l	(lbL02D244-ds,a6),-(sp)
+	move.l	(lbL02D25C-ds,a6),-(sp)
+	move.l	(lbL02D21C-ds,a6),-(sp)
+	move.l	(lbL02D28C-ds,a6),-(sp)
+	move.l	(lbL02D220-ds,a6),-(sp)
+	move.l	(lbL02D254-ds,a6),-(sp)
 	move.w	#$25,-(sp)
-	move.l	(lbL02D0D4-datasegment,a6),d0
+	move.l	(lbL02D0D4-ds,a6),d0
 	move.l	#$CF800,d1
 lbC01F478	tst.l	d1
 	bne.b	lbC01F480
@@ -38854,18 +38860,18 @@ lbC01F490	lsr.l	#2,d1
 lbC01F496	mulu.w	#$64,d0
 	divu.w	d1,d0
 lbC01F49C	move.w	d0,-(sp)
-	move.l	(lbL02D0D4-datasegment,a6),d1
+	move.l	(lbL02D0D4-ds,a6),d1
 	move.l	d1,d0
 	lsr.l	#8,d0
 	lsr.l	#2,d0
 	move.w	d0,-(sp)
 	move.l	d1,-(sp)
 	lea	(saved.MSG,pc),a0
-	tst.b	(lbB02EB64-datasegment,a6)
+	tst.b	(lbB02EB64-ds,a6)
 	beq.b	lbC01F4BA
 	lea	(counted.MSG,pc),a0
 lbC01F4BA	move.l	a0,-(sp)
-	lea	(lbL02E1C8-datasegment,a6),a0
+	lea	(lbL02E1C8-ds,a6),a0
 	move.l	a0,-(sp)
 	lea	(Sourceprofile.MSG,pc),a0
 	movea.l	sp,a1
@@ -38877,8 +38883,8 @@ lbC01F4BA	move.l	a0,-(sp)
 	exg	a5,a6
 	lea	($9A,sp),sp
 	movea.l	a4,a0
-	jsr	(print_text_a0-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
+	jsr	(print_text_a0-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
 	cmp.w	d0,d0
 	movem.l	(sp)+,d2-d7/a0-a3/a5
 	rts
@@ -38906,220 +38912,220 @@ Sourceprofile.MSG	db	'Source profile of "%s"',$A
 saved.MSG	db	'saved',0
 counted.MSG	db	'counted',0,0
 
-lbC01F9E4	jsr	(lbC029B18-datasegment,a6)
+lbC01F9E4	jsr	(lbC029B18-ds,a6)
 	addq.l	#1,a2
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bne.b	lbC01F9FA
-	jsr	(lbC02A4A6-datasegment,a6)
+	jsr	(lbC02A4A6-ds,a6)
 	subq.l	#1,a2
-	jmp	(_dummy_st-datasegment,a6)
+	jmp	(term1-ds,a6)
 
 lbC01F9FA	addq.l	#4,a3
-	jmp	(lbC02AF74-datasegment,a6)
+	jmp	(lbC02AF74-ds,a6)
 
-lbC01FA00	jsr	(lbC029B18-datasegment,a6)
+lbC01FA00	jsr	(lbC029B18-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bne.b	lbC01FA14
-	jsr	(lbC02A4A6-datasegment,a6)
-	jmp	(_dummy_st-datasegment,a6)
+	jsr	(lbC02A4A6-ds,a6)
+	jmp	(term1-ds,a6)
 
 lbC01FA14	subq.l	#1,a2
 	subq.l	#4,a3
-	jmp	(lbC02AF74-datasegment,a6)
+	jmp	(lbC02AF74-ds,a6)
 
-lbC01FA1C	jsr	(lbC029B18-datasegment,a6)
+lbC01FA1C	jsr	(lbC029B18-ds,a6)
 	moveq	#0,d0
-	move.w	(lbB02CEEA-datasegment,a6),d0
+	move.w	(lbB02CEEA-ds,a6),d0
 	divu.w	#12,d0
 lbC01FA2A	movem.l	d0/a2,-(sp)
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	bsr.w	lbC020D16
 	movem.l	(sp)+,d0/d1
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	blt.b	lbC01FA4A
 	movea.l	d1,a2
-	jsr	(lbC02A3CC-datasegment,a6)
-	jmp	(lbC02AF68-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
+	jmp	(lbC02AF68-ds,a6)
 
 lbC01FA4A	dbra	d0,lbC01FA2A
-	jmp	(lbC02AF74-datasegment,a6)
+	jmp	(lbC02AF74-ds,a6)
 
-lbC01FA52	st	(lbB02EB61-datasegment,a6)
-lbC01FA56	clr.b	(lbB02EB5F-datasegment,a6)
+lbC01FA52	st	(lbB02EB61-ds,a6)
+lbC01FA56	clr.b	(lbB02EB5F-ds,a6)
 	move.l	a2,-(sp)
 	bsr.w	lbC020CB8
 	move.l	(sp)+,d0
-	clr.b	(lbB02EB63-datasegment,a6)
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	clr.b	(lbB02EB63-ds,a6)
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC01FA74
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF62-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF62-ds,a6)
 
-lbC01FA74	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FA74	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
-lbC01FA7C	cmpi.b	#1,(lbB02EB56-datasegment,a6)
+lbC01FA7C	cmpi.b	#1,(lbB02EB56-ds,a6)
 	bne.b	lbC01FA9C
-lbC01FA84	tst.b	(lbB02EB41-datasegment,a6)
+lbC01FA84	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC01FA9A
-	tst.b	(lbB02B417-datasegment,a6)
+	tst.b	(lbB02B417-ds,a6)
 	bne.b	lbC01FA9A
-	tst.b	(lbB02B418-datasegment,a6)
+	tst.b	(lbB02B418-ds,a6)
 	bne.b	lbC01FA9A
-	tst.b	(lbB02B419-datasegment,a6)
+	tst.b	(lbB02B419-ds,a6)
 lbC01FA9A	rts
 
-lbC01FA9C	jsr	(lbC029B18-datasegment,a6)
+lbC01FA9C	jsr	(lbC029B18-ds,a6)
 	bra.b	lbC01FA84
 
 lbC01FAA2	bsr.b	lbC01FA7C
 	bne.b	lbC01FA56
-	jsr	(lbC029B18-datasegment,a6)
-	clr.b	(lbB02EB5F-datasegment,a6)
+	jsr	(lbC029B18-ds,a6)
+	clr.b	(lbB02EB5F-ds,a6)
 	move.l	a2,-(sp)
 	bsr.w	lbC020CB8
 	move.l	(sp)+,d0
-	clr.b	(lbB02EB63-datasegment,a6)
-	move.b	(lbB02EB5F-datasegment,a6),(lbB02EB60-datasegment,a6)
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	clr.b	(lbB02EB63-ds,a6)
+	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC01FACE
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF62-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF62-ds,a6)
 
-lbC01FACE	tst.b	(lbB02EB61-datasegment,a6)
+lbC01FACE	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FAF6
-	cmpi.b	#1,(lbB02EB60-datasegment,a6)
+	cmpi.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FAF6
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 lbC01FAE0	moveq	#8,d0
-	jsr	(lbC02A88A-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
 lbC01FAE6	cmpi.b	#10,(a0)+
 	bne.b	lbC01FAE6
-	jsr	(print_text_a0-datasegment,a6)
-	subq.b	#1,(lbB02EB60-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
+	subq.b	#1,(lbB02EB60-ds,a6)
 	bne.b	lbC01FAE0
-lbC01FAF6	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FAF6	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01FAFE	bsr.w	lbC01FA7C
 	bne.w	lbC01FA56
-	clr.b	(lbB02EB5F-datasegment,a6)
+	clr.b	(lbB02EB5F-ds,a6)
 	move.l	a2,-(sp)
 	bsr.w	lbC020CB8
 	move.l	(sp)+,d0
-	clr.b	(lbB02EB63-datasegment,a6)
-	move.b	(lbB02EB5F-datasegment,a6),(lbB02EB60-datasegment,a6)
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	clr.b	(lbB02EB63-ds,a6)
+	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC01FB2A
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF62-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF62-ds,a6)
 
-lbC01FB2A	tst.b	(lbB02EB61-datasegment,a6)
+lbC01FB2A	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FB4C
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 lbC01FB34	moveq	#4,d0
-	jsr	(lbC02A88A-datasegment,a6)
-	subq.b	#1,(lbB02EB60-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
+	subq.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FB4C
 lbC01FB40	cmpi.b	#10,(a0)+
 	bne.b	lbC01FB40
-	jsr	(print_text_a0-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC01FB34
 
-lbC01FB4C	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FB4C	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01FB54	bsr.w	lbC01FA7C
 	bne.w	lbC01FA56
-	clr.b	(lbB02EB5F-datasegment,a6)
+	clr.b	(lbB02EB5F-ds,a6)
 	move.l	a2,-(sp)
 	bsr.w	lbC020CB8
 	move.l	(sp)+,d0
-	clr.b	(lbB02EB63-datasegment,a6)
-	move.b	(lbB02EB5F-datasegment,a6),(lbB02EB60-datasegment,a6)
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	clr.b	(lbB02EB63-ds,a6)
+	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC01FB80
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF62-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF62-ds,a6)
 
-lbC01FB80	tst.b	(lbB02EB61-datasegment,a6)
+lbC01FB80	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FBAA
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 lbC01FB8A	moveq	#2,d1
 	moveq	#0,d0
 lbC01FB8E	addq.l	#1,d0
-	jsr	(lbC02A88A-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
 	dbra	d1,lbC01FB8E
-	subq.b	#1,(lbB02EB60-datasegment,a6)
+	subq.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FBAA
 lbC01FB9E	cmpi.b	#10,(a0)+
 	bne.b	lbC01FB9E
-	jsr	(print_text_a0-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC01FB8A
 
-lbC01FBAA	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FBAA	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01FBB2	bsr.w	lbC01FA7C
 	bne.w	lbC01FA56
-	clr.b	(lbB02EB5F-datasegment,a6)
+	clr.b	(lbB02EB5F-ds,a6)
 	move.l	a2,-(sp)
 	bsr.w	lbC020CB8
 	move.l	(sp)+,d0
-	clr.b	(lbB02EB63-datasegment,a6)
-	move.b	(lbB02EB5F-datasegment,a6),(lbB02EB60-datasegment,a6)
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	clr.b	(lbB02EB63-ds,a6)
+	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC01FBDE
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF62-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF62-ds,a6)
 
-lbC01FBDE	tst.b	(lbB02EB61-datasegment,a6)
+lbC01FBDE	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FC08
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 lbC01FBE8	moveq	#6,d1
 	moveq	#0,d0
 lbC01FBEC	addq.l	#1,d0
-	jsr	(lbC02A88A-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
 	dbra	d1,lbC01FBEC
-	subq.b	#1,(lbB02EB60-datasegment,a6)
+	subq.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FC08
 lbC01FBFC	cmpi.b	#10,(a0)+
 	bne.b	lbC01FBFC
-	jsr	(print_text_a0-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC01FBE8
 
-lbC01FC08	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FC08	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
-lbC01FC10	jsr	(lbC02A3CC-datasegment,a6)
+lbC01FC10	jsr	(lbC02A3CC-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bne.b	lbC01FC20
-	jmp	(lbC02AF68-datasegment,a6)
+	jmp	(lbC02AF68-ds,a6)
 
 lbC01FC20	moveq	#0,d0
-	move.w	(lbB02CEEA-datasegment,a6),d0
+	move.w	(lbB02CEEA-ds,a6),d0
 	divu.w	#12,d0
 lbC01FC2A	move.w	d0,-(sp)
 	bsr.b	lbC01FCA6
 	move.w	(sp)+,d0
 	dbeq	d0,lbC01FC2A
-	jmp	(lbC02AF74-datasegment,a6)
+	jmp	(lbC02AF74-ds,a6)
 
-lbC01FC38	move.l	a2,(lbL02D31C-datasegment,a6)
-	cmpi.b	#1,(lbB02EB56-datasegment,a6)
+lbC01FC38	move.l	a2,(lbL02D31C-ds,a6)
+	cmpi.b	#1,(lbB02EB56-ds,a6)
 	bne.b	lbC01FC5A
 lbC01FC44	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	subq.l	#1,d0
 	bcc.b	lbC01FC60
 	move.l	a2,d0
-	clr.b	(lbB02EB61-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
 	ori.b	#1,ccr
 	bra.b	lbC01FCA4
 
-lbC01FC5A	jsr	(lbC029B18-datasegment,a6)
+lbC01FC5A	jsr	(lbC029B18-ds,a6)
 	bra.b	lbC01FC44
 
 lbC01FC60	move.l	-(a3),d1
@@ -39127,111 +39133,111 @@ lbC01FC60	move.l	-(a3),d1
 	bpl.b	lbC01FC70
 	subi.l	#$10000,d0
 	bcc.b	lbC01FC60
-lbC01FC70	add.l	(datasegment-datasegment,a6),d0
+lbC01FC70	add.l	(ds-ds,a6),d0
 	movea.l	d0,a2
-	movem.l	a2/a3,(lbL02D3AC-datasegment,a6)
-lbC01FC7C	clr.b	(lbB02EB5F-datasegment,a6)
+	movem.l	a2/a3,(lbL02D3AC-ds,a6)
+lbC01FC7C	clr.b	(lbB02EB5F-ds,a6)
 	bsr.w	lbC020CB8
-	clr.b	(lbB02EB63-datasegment,a6)
-	cmpa.l	(lbL02D31C-datasegment,a6),a2
+	clr.b	(lbB02EB63-ds,a6)
+	cmpa.l	(lbL02D31C-ds,a6),a2
 	bcc.b	lbC01FC9A
 	bclr	#7,(a3)
-	movem.l	a2/a3,(lbL02D3AC-datasegment,a6)
+	movem.l	a2/a3,(lbL02D3AC-ds,a6)
 	bra.b	lbC01FC7C
 
-lbC01FC9A	movem.l	(lbL02D3AC-datasegment,a6),a2/a3
+lbC01FC9A	movem.l	(lbL02D3AC-ds,a6),a2/a3
 	andi.b	#$FE,ccr
 lbC01FCA4	rts
 
-lbC01FCA6	st	(lbB02EB61-datasegment,a6)
+lbC01FCA6	st	(lbB02EB61-ds,a6)
 lbC01FCAA	bsr.b	lbC01FC38
 	bcc.b	lbC01FCB6
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF68-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF68-ds,a6)
 
-lbC01FCB6	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FCB6	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01FCBE	bsr.w	lbC01FA7C
 	bne.b	lbC01FCAA
 	bsr.w	lbC01FC38
 	bcc.b	lbC01FCD2
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF68-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF68-ds,a6)
 
-lbC01FCD2	tst.b	(lbB02EB61-datasegment,a6)
+lbC01FCD2	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FD1C
-	move.b	(lbB02EB5F-datasegment,a6),(lbB02EB60-datasegment,a6)
-	cmpi.b	#1,(lbB02EB60-datasegment,a6)
+	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
+	cmpi.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FD1C
 	bsr.w	lbC020BC8
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 	moveq	#0,d1
-	move.b	(lbB02EB60-datasegment,a6),d1
+	move.b	(lbB02EB60-ds,a6),d1
 	subq.w	#1,d1
 lbC01FCF6	cmpi.b	#10,(a0)+
 	bne.b	lbC01FCF6
 	dbra	d1,lbC01FCF6
 lbC01FD00	moveq	#-8,d0
-	jsr	(lbC02A88A-datasegment,a6)
-	subq.b	#1,(lbB02EB60-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
+	subq.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FD1C
 	subq.w	#1,a0
 lbC01FD0E	cmpi.b	#10,-(a0)
 	bne.b	lbC01FD0E
 	addq.w	#1,a0
-	jsr	(print_text_a0-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC01FD00
 
-lbC01FD1C	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FD1C	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01FD24	bsr.w	lbC01FA7C
 	bne.b	lbC01FCAA
 	bsr.w	lbC01FC38
 	bcc.b	lbC01FD38
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF68-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF68-ds,a6)
 
-lbC01FD38	tst.b	(lbB02EB61-datasegment,a6)
+lbC01FD38	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FD7A
-	move.b	(lbB02EB5F-datasegment,a6),(lbB02EB60-datasegment,a6)
+	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
 	bsr.w	lbC020BC8
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 	moveq	#0,d1
-	move.b	(lbB02EB60-datasegment,a6),d1
+	move.b	(lbB02EB60-ds,a6),d1
 	subq.w	#1,d1
 lbC01FD54	cmpi.b	#10,(a0)+
 	bne.b	lbC01FD54
 	dbra	d1,lbC01FD54
 lbC01FD5E	moveq	#-4,d0
-	jsr	(lbC02A88A-datasegment,a6)
-	subq.b	#1,(lbB02EB60-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
+	subq.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FD7A
 	subq.w	#1,a0
 lbC01FD6C	cmpi.b	#10,-(a0)
 	bne.b	lbC01FD6C
 	addq.w	#1,a0
-	jsr	(print_text_a0-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC01FD5E
 
-lbC01FD7A	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FD7A	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01FD82	bsr.w	lbC01FA7C
 	bne.w	lbC01FCAA
 	bsr.w	lbC01FC38
 	bcc.b	lbC01FD98
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF68-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF68-ds,a6)
 
-lbC01FD98	tst.b	(lbB02EB61-datasegment,a6)
+lbC01FD98	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FDE2
-	move.b	(lbB02EB5F-datasegment,a6),(lbB02EB60-datasegment,a6)
+	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
 	bsr.w	lbC020BC8
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 	moveq	#0,d1
-	move.b	(lbB02EB60-datasegment,a6),d1
+	move.b	(lbB02EB60-ds,a6),d1
 	subq.w	#1,d1
 lbC01FDB4	cmpi.b	#10,(a0)+
 	bne.b	lbC01FDB4
@@ -39239,34 +39245,34 @@ lbC01FDB4	cmpi.b	#10,(a0)+
 lbC01FDBE	moveq	#2,d1
 	moveq	#0,d0
 lbC01FDC2	subq.l	#2,d0
-	jsr	(lbC02A88A-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
 	dbra	d1,lbC01FDC2
-	subq.b	#1,(lbB02EB60-datasegment,a6)
+	subq.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FDE2
 	subq.w	#1,a0
 lbC01FDD4	cmpi.b	#10,-(a0)
 	bne.b	lbC01FDD4
 	addq.w	#1,a0
-	jsr	(print_text_a0-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC01FDBE
 
-lbC01FDE2	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FDE2	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01FDEA	bsr.w	lbC01FA7C
 	bne.w	lbC01FCAA
 	bsr.w	lbC01FC38
 	bcc.b	lbC01FE00
-	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF68-datasegment,a6)
+	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF68-ds,a6)
 
-lbC01FE00	tst.b	(lbB02EB61-datasegment,a6)
+lbC01FE00	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FE4A
-	move.b	(lbB02EB5F-datasegment,a6),(lbB02EB60-datasegment,a6)
+	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
 	bsr.w	lbC020BC8
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 	moveq	#0,d1
-	move.b	(lbB02EB60-datasegment,a6),d1
+	move.b	(lbB02EB60-ds,a6),d1
 	subq.w	#1,d1
 lbC01FE1C	cmpi.b	#10,(a0)+
 	bne.b	lbC01FE1C
@@ -39274,22 +39280,22 @@ lbC01FE1C	cmpi.b	#10,(a0)+
 lbC01FE26	moveq	#6,d1
 	moveq	#0,d0
 lbC01FE2A	subq.l	#1,d0
-	jsr	(lbC02A88A-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
 	dbra	d1,lbC01FE2A
-	subq.b	#1,(lbB02EB60-datasegment,a6)
+	subq.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FE4A
 	subq.w	#1,a0
 lbC01FE3C	cmpi.b	#10,-(a0)
 	bne.b	lbC01FE3C
 	addq.w	#1,a0
-	jsr	(print_text_a0-datasegment,a6)
+	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC01FE26
 
-lbC01FE4A	clr.b	(lbB02EB61-datasegment,a6)
-	jmp	(lbC02AF74-datasegment,a6)
+lbC01FE4A	clr.b	(lbB02EB61-ds,a6)
+	jmp	(lbC02AF74-ds,a6)
 
 lbC01FE52	bsr.w	lbC01FF00
-	dw	lbB02B410-datasegment
+	dw	lbB02B410-ds
 	dl	lbC01FBB2
 	dl	lbC01FDEA
 	dl	$360001
@@ -39300,7 +39306,7 @@ lbC01FE52	bsr.w	lbC01FF00
 	dw	0
 
 lbC01FE76	bsr.w	lbC01FF00
-	dw	lbB02B40F-datasegment
+	dw	lbB02B40F-ds
 	dl	lbC01FB54
 	dl	lbC01FD82
 	dl	$360000
@@ -39311,7 +39317,7 @@ lbC01FE76	bsr.w	lbC01FF00
 	dw	0
 
 lbC01FE9A	bsr.b	lbC01FF00
-	dw	lbB02B40E-datasegment
+	dw	lbB02B40E-ds
 	dl	lbC01FAFE
 	dl	lbC01FD24
 	dl	$360000
@@ -39322,7 +39328,7 @@ lbC01FE9A	bsr.b	lbC01FF00
 	dw	0
 
 lbC01FEBC	bsr.b	lbC01FF00
-	dw	lbB02B40D-datasegment
+	dw	lbB02B40D-ds
 	dl	lbC01FAA2
 	dl	lbC01FCBE
 	dl	$360000
@@ -39333,7 +39339,7 @@ lbC01FEBC	bsr.b	lbC01FF00
 	dw	0
 
 lbC01FEDE	bsr.b	lbC01FF00
-	dw	lbB02B40C-datasegment
+	dw	lbB02B40C-ds
 	dl	lbC01FA56
 	dl	lbC01FCAA
 	dl	$360000
@@ -39343,23 +39349,23 @@ lbC01FEDE	bsr.b	lbC01FF00
 	dl	$3A0001
 	dw	0
 
-lbC01FF00	clr.b	(lbB02B40D-datasegment,a6)
-	clr.b	(lbB02B40C-datasegment,a6)
-	clr.b	(lbB02B40E-datasegment,a6)
-	clr.b	(lbB02B40F-datasegment,a6)
-	clr.b	(lbB02B410-datasegment,a6)
+lbC01FF00	clr.b	(lbB02B40D-ds,a6)
+	clr.b	(lbB02B40C-ds,a6)
+	clr.b	(lbB02B40E-ds,a6)
+	clr.b	(lbB02B40F-ds,a6)
+	clr.b	(lbB02B410-ds,a6)
 	movea.l	(sp)+,a1
 	move.w	(a1)+,d0
 	bset	#0,(a6,d0.w)
 	moveq	#10,d0
-	jsr	(getfuncbynum-datasegment,a6)
+	jsr	(getfuncbynum-ds,a6)
 	move.l	(a1)+,(a0)
 	moveq	#9,d0
-	jsr	(getfuncbynum-datasegment,a6)
+	jsr	(getfuncbynum-ds,a6)
 	move.l	(a1)+,(a0)
 	movea.l	a1,a0
-	jsr	(ModifyMenuByList-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(ModifyMenuByList-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC01FF38	andi.l	#$FFF7FDFF,(a3)
 	move.l	(a3),d7
@@ -39413,7 +39419,7 @@ lbC01FFB0	andi.l	#$FFF7FDFF,(a3)
 lbC01FFCA	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC01FFD6
-	jsr	(lbC02A1B4-datasegment,a6)
+	jsr	(lbC02A1B4-ds,a6)
 lbC01FFD6	andi.l	#$FFF7FDFF,(a3)
 	move.l	(a3),d7
 	movem.l	d2-d5/d7/a0/a1,-(sp)
@@ -39427,7 +39433,7 @@ lbC01FFD6	andi.l	#$FFF7FDFF,(a3)
 lbC01FFF0	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC01FFFC
-	jsr	(lbC02A1B4-datasegment,a6)
+	jsr	(lbC02A1B4-ds,a6)
 lbC01FFFC	andi.l	#$FFF7FDFF,(a3)
 	move.l	(a3),d7
 	movem.l	d2-d5/d7/a0/a1,-(sp)
@@ -39451,7 +39457,7 @@ lbC020016	andi.l	#$FFF7FDFF,(a3)
 lbC020030	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC02003C
-	jsr	(lbC02A1B4-datasegment,a6)
+	jsr	(lbC02A1B4-ds,a6)
 lbC02003C	andi.l	#$FFF7FDFF,(a3)
 	move.l	(a3),d7
 	btst	#$1E,d7
@@ -39460,7 +39466,7 @@ lbC02003C	andi.l	#$FFF7FDFF,(a3)
 	moveq	#$43,d2
 	moveq	#$7F,d3
 	addq.l	#1,d3
-lbC020054	move.b	d2,(lbW02EB3A-datasegment,a6)
+lbC020054	move.b	d2,(lbW02EB3A-ds,a6)
 	bset	#8,d3
 	and.l	#$7FFFFD07,d7
 	or.l	d3,d7
@@ -39470,7 +39476,7 @@ lbC020054	move.b	d2,(lbW02EB3A-datasegment,a6)
 	btst	#$19,d7
 	beq.b	lbC0200AA
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#0,d1
 	bsr.w	lbC02777C
 	beq.b	lbC0200DC
@@ -39534,49 +39540,49 @@ lbC020110	btst	#10,d0
 	bra.b	lbC020104
 
 lbC020128	movem.l	(sp)+,d2-d5/d7/a0/a1
-	st	(lbB02EB48-datasegment,a6)
+	st	(lbB02EB48-ds,a6)
 	moveq	#1,d0
 	rts
 
 lbC020134	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#0,d1
 	bsr.w	lbC027684
 	bset	#4,(1,a3)
 	move.l	a4,-(sp)
-	move.b	d2,(lbW02EB3A-datasegment,a6)
+	move.b	d2,(lbW02EB3A-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	cmpi.b	#$43,(lbW02EB3A-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	cmpi.b	#$43,(lbW02EB3A-ds,a6)
 	beq.b	lbC0201AC
-	cmpi.b	#$41,(lbW02EB3A-datasegment,a6)
+	cmpi.b	#$41,(lbW02EB3A-ds,a6)
 	bne.b	lbC020172
 	bsr.w	lbC01E876
 	movea.l	(sp)+,a4
 	bra.w	lbC0200DC
 
-lbC02016C	move.l	(lbL02D208-datasegment,a6),d0
+lbC02016C	move.l	(lbL02D208-ds,a6),d0
 	addq.l	#1,d0
-lbC020172	move.l	d0,(lbL02D208-datasegment,a6)
-	lea	(displayid-datasegment,a6),a4
+lbC020172	move.l	d0,(lbL02D208-ds,a6)
+	lea	(displayid-ds,a6),a4
 	move.b	#$6C,(a4)+
 	move.b	#$62,(a4)+
-	move.b	(lbW02EB3A-datasegment,a6),(a4)+
+	move.b	(lbW02EB3A-ds,a6),(a4)+
 	bsr.w	lbC02253C
 	moveq	#9,d0
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	movea.l	a2,a1
-	suba.l	(datasegment-datasegment,a6),a1
+	suba.l	(ds-ds,a6),a1
 	bsr.w	lbC027A26
 	bne.b	lbC02016C
 	bsr.w	lbC027A80
 	movea.l	(sp)+,a4
 	bra.w	lbC0200DC
 
-lbC0201A6	st	(lbB02EB89-datasegment,a6)
+lbC0201A6	st	(lbB02EB89-ds,a6)
 	bra.b	lbC0201B0
 
-lbC0201AC	clr.b	(lbB02EB89-datasegment,a6)
+lbC0201AC	clr.b	(lbB02EB89-ds,a6)
 lbC0201B0	move.l	a2,d1
 	andi.b	#1,d1
 	bne.b	lbC020206
@@ -39607,20 +39613,20 @@ lbC0201B0	move.l	a2,d1
 	cmpi.w	#$6000,d0
 	beq.b	lbC020218
 lbC020206	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	tst.b	(lbB02EB89-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	tst.b	(lbB02EB89-ds,a6)
 	beq.w	lbC020172
 	moveq	#0,d0
 	rts
 
 lbC020218	move.l	a0,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bcs.b	lbC020206
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bhi.b	lbC020206
 	move.l	d0,d1
 	lsl.l	#2,d1
-	add.l	(workdata_end-datasegment,a6),d1
+	add.l	(workdata_struct-ds,a6),d1
 	movea.l	d1,a1
 	btst	#1,(a1)
 	beq.b	lbC020206
@@ -39631,7 +39637,7 @@ lbC020218	move.l	a0,d0
 	bne.b	lbC020250
 	cmpi.b	#$62,(1,a0)
 	beq.b	lbC020206
-lbC020250	lea	(displayid-datasegment,a6),a1
+lbC020250	lea	(displayid-ds,a6),a1
 	cmpi.b	#$2E,(a0)
 	bne.b	lbC020268
 	cmpi.b	#$2E,(1,a0)
@@ -39641,7 +39647,7 @@ lbC020250	lea	(displayid-datasegment,a6),a1
 	bls.b	lbC020206
 lbC020268	subq.w	#1,d1
 	bls.b	lbC020206
-	tst.b	(lbB02EB89-datasegment,a6)
+	tst.b	(lbB02EB89-ds,a6)
 	beq.b	lbC020276
 	moveq	#1,d0
 	rts
@@ -39650,74 +39656,74 @@ lbC020276	move.b	#$5F,(a1)+
 lbC02027A	move.b	(a0)+,(a1)+
 	dbra	d1,lbC02027A
 	clr.b	(a1)
-	jsr	(lbC028F34-datasegment,a6)
+	jsr	(lbC028F34-ds,a6)
 	movea.l	(sp)+,a4
 	bra.w	lbC0200DC
 
-lbC02028C	tst.b	(lbB02EB41-datasegment,a6)
+lbC02028C	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC020298
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	nomemory
 lbC020298	moveq	#8,d0
-	tst.b	(lbB02EBF6-datasegment,a6)
+	tst.b	(lbB02EBF6-ds,a6)
 	beq.b	lbC0202A2
 	moveq	#9,d0
-lbC0202A2	jsr	(_gettextbynum3-datasegment,a6)
-	seq	(lbB02EB45-datasegment,a6)
+lbC0202A2	jsr	(_gettextbynum3-ds,a6)
+	seq	(lbB02EB45-ds,a6)
 	bne.b	nomemory
-	jmp	(_dummy_st-datasegment,a6)
+	jmp	(term1-ds,a6)
 
-lbC0202B0	tst.b	(lbB02EB41-datasegment,a6)
+lbC0202B0	tst.b	(lbB02EB41-ds,a6)
 	beq.b	nomemory
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	nomemory
 	moveq	#1,d0
 	rts
 
-nomemory	tst.b	(pubscreen_private_flag-datasegment,a6)
+nomemory	tst.b	(pubscreen_private_flag-ds,a6)
 	beq.b	lbC0202EC
-	movea.l	(screenptr-datasegment,a6),a0
+	movea.l	(screenptr-ds,a6),a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOPubScreenStatus,a6)
 	movea.l	(sp)+,a6
 	btst	#0,d0
 	bne.b	lbC0202EC
-	jsr	(lbC02A6F4-datasegment,a6)
+	jsr	(lbC02A6F4-ds,a6)
 	bne.b	nomemory
-	clr.b	(lbB02EBF6-datasegment,a6)
-	jmp	(_dummy_st-datasegment,a6)
+	clr.b	(lbB02EBF6-ds,a6)
+	jmp	(term1-ds,a6)
 
 lbC0202EC	movea.l	a6,a5
-	movea.l	(execbase-datasegment,a5),a4
+	movea.l	(execbase-ds,a5),a4
 	movea.l	a4,a6
-	tst.b	(vblank_inited-datasegment,a5)
+	tst.b	(vblank_inited-ds,a5)
 	beq.b	lbC020304
-	lea	(vblank_struct-datasegment,a5),a1
+	lea	(vblank_struct-ds,a5),a1
 	moveq	#5,d0
 	jsr	(_LVORemIntServer,a6)
-lbC020304	move.l	(lbL02D158-datasegment,a5),d0
+lbC020304	move.l	(lbL02D158-ds,a5),d0
 	beq.b	lbC020314
 	movea.l	d0,a1
-	move.l	(lbL02B4B4-datasegment,a5),d0
+	move.l	(lbL02B4B4-ds,a5),d0
 	jsr	(_LVOFreeMem,a6)
-lbC020314	move.l	(lbL02D14C-datasegment,a5),d0
+lbC020314	move.l	(lbL02D14C-ds,a5),d0
 	beq.b	lbC020324
 	movea.l	d0,a1
-	move.l	(lbL02B4BC-datasegment,a5),d0
+	move.l	(lbL02B4BC-ds,a5),d0
 	jsr	(_LVOFreeMem,a6)
-lbC020324	move.l	(lbL02D1E4-datasegment,a5),d0
+lbC020324	move.l	(lbL02D1E4-ds,a5),d0
 	beq.b	lbC020334
 	movea.l	d0,a1
-	move.l	(lbL02D1E8-datasegment,a5),d0
+	move.l	(lbL02D1E8-ds,a5),d0
 	jsr	(_LVOFreeMem,a6)
-lbC020334	move.l	(lbL02D1F0-datasegment,a5),d0
+lbC020334	move.l	(lbL02D1F0-ds,a5),d0
 	beq.b	lbC020344
 	movea.l	d0,a1
-	move.l	(lbL02D1F4-datasegment,a5),d0
+	move.l	(lbL02D1F4-ds,a5),d0
 	jsr	(_LVOFreeMem,a6)
-lbC020344	movea.l	(lbL02B484-datasegment,a5),a2
+lbC020344	movea.l	(lbL02B484-ds,a5),a2
 lbC020348	cmpa.l	#lbC01C658,a2
 	beq.b	lbC020360
 	move.l	(a2)+,d1
@@ -39728,45 +39734,45 @@ lbC020348	cmpa.l	#lbC01C658,a2
 	jsr	(_LVOFreeMem,a6)
 	bra.b	lbC020348
 
-lbC020360	movea.l	(dosbase-datasegment,a5),a6
-	lea	(lbB02D180-datasegment,a5),a2
+lbC020360	movea.l	(dosbase-ds,a5),a6
+	lea	(lbB02D180-ds,a5),a2
 	moveq	#14,d2
 lbC02036A	move.l	(a2)+,d1
 	beq.b	lbC020372
 	jsr	(_LVOUnLoadSeg,a6)
 lbC020372	dbra	d2,lbC02036A
 	exg	a5,a6
-	jsr	(lbC026C14-datasegment,a6)
+	jsr	(freework-ds,a6)
 	exg	a6,a5
 	moveq	#0,d0
 shutdown	move.l	d0,-(sp)
-	movea.l	(execbase-datasegment,a5),a4
-	move.l	(intbase-datasegment,a5),d0
+	movea.l	(execbase-ds,a5),a4
+	move.l	(intbase-ds,a5),d0
 	beq.b	lbC0203CE
 	movea.l	d0,a6
-	move.l	(window1ptr-datasegment,a5),d2
+	move.l	(window1ptr-ds,a5),d2
 	beq.b	lbC0203BA
 	movea.l	d2,a0
 	jsr	(_LVOClearMenuStrip,a6)
-	lea	(lbL02CE50-datasegment,a5),a0
-	movea.l	(resourceutilbase-datasegment,a5),a1
+	lea	(lbL02CE50-ds,a5),a0
+	movea.l	(resourceutilbase-ds,a5),a1
 	jsr	(-$24,a1)
 	bsr.w	lbC0204DC
 	movea.l	d2,a0
 	jsr	(_LVOCloseWindow,a6)
-	movea.l	(thistask1-datasegment,a5),a0
-	move.l	(saved_pr_window-datasegment,a5),(pr_WindowPtr,a0)
-lbC0203BA	move.l	(screenptr-datasegment,a5),d0
+	movea.l	(thistask1-ds,a5),a0
+	move.l	(saved_pr_window-ds,a5),(pr_WindowPtr,a0)
+lbC0203BA	move.l	(screenptr-ds,a5),d0
 	beq.b	lbC0203C6
 	movea.l	d0,a0
 	jsr	(_LVOCloseScreen,a6)
 lbC0203C6	movea.l	a6,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC0203CE	move.l	(gfxbase-datasegment,a5),d0
+lbC0203CE	move.l	(gfxbase-ds,a5),d0
 	beq.b	lbC020424
 	movea.l	d0,a6
-	lea	(screen_bitmap-datasegment,a5),a3
+	lea	(screen_bitmap-ds,a5),a3
 	movea.l	a3,a2
 	addq.l	#8,a2
 	moveq	#0,d2
@@ -39783,7 +39789,7 @@ lbC0203E6	move.l	(a2)+,d0
 	ext.l	d1
 	jsr	(_LVOFreeRaster,a6)
 lbC0203FC	dbra	d2,lbC0203E6
-	lea	(lbB02CF10-datasegment,a5),a1
+	lea	(lbB02CF10-ds,a5),a1
 	move.l	(8,a1),d0
 	beq.b	lbC02041C
 	movea.l	d0,a0
@@ -39796,106 +39802,106 @@ lbC0203FC	dbra	d2,lbC0203E6
 lbC02041C	movea.l	a6,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC020424	move.l	(lbL02CEE0-datasegment,a5),d0
+lbC020424	move.l	(lbL02CEE0-ds,a5),d0
 	beq.b	lbC020436
 	movea.l	d0,a1
 	moveq	#$64,d0
 	add.l	d0,d0
 	movea.l	a4,a6
 	jsr	(_LVOFreeMem,a6)
-lbC020436	move.l	(lbB02CF38-datasegment,a5),d0
+lbC020436	move.l	(lbB02CF38-ds,a5),d0
 	beq.b	lbC020446
 	movea.l	d0,a1
 	moveq	#$64,d0
 	movea.l	a4,a6
 	jsr	(_LVOFreeMem,a6)
-lbC020446	move.l	(resourcesymsbase-datasegment,a5),d0
+lbC020446	move.l	(resourcesymsbase-ds,a5),d0
 	beq.b	lbC020454
 	movea.l	d0,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC020454	move.l	(resourceutilbase-datasegment,a5),d0
+lbC020454	move.l	(resourceutilbase-ds,a5),d0
 	beq.b	lbC020462
 	movea.l	d0,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC020462	move.l	(aslbase-datasegment,a5),d0
+lbC020462	move.l	(aslbase-ds,a5),d0
 	beq.b	lbC02047E
 	movea.l	d0,a6
-	move.l	(aslfr-datasegment,a5),d0
+	move.l	(aslfr-ds,a5),d0
 	beq.b	lbC020476
 	movea.l	d0,a0
 	jsr	(_LVOFreeAslRequest,a6)
 lbC020476	movea.l	a6,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC02047E	move.l	(gadtoolsbase-datasegment,a5),d0
+lbC02047E	move.l	(gadtoolsbase-ds,a5),d0
 	beq.b	lbC02049A
 	movea.l	d0,a6
-	move.l	(visualinfo-datasegment,a5),d0
+	move.l	(visualinfo-ds,a5),d0
 	beq.b	lbC020492
 	movea.l	d0,a0
 	jsr	(_LVOFreeVisualInfo,a6)
 lbC020492	movea.l	a6,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC02049A	move.l	(mathieeedoubbase-datasegment,a5),d0
+lbC02049A	move.l	(mathieeedoubbase-ds,a5),d0
 	beq.b	lbC0204A8
 	movea.l	d0,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC0204A8	move.l	(fpsupportbase-datasegment,a5),d0
+lbC0204A8	move.l	(fpsupportbase-ds,a5),d0
 	beq.b	lbC0204B6
 	movea.l	d0,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC0204B6	move.l	(dosbase-datasegment,a5),d0
+lbC0204B6	move.l	(dosbase-ds,a5),d0
 	beq.b	lbC0204C4
 	movea.l	d0,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC0204C4	move.l	(wbmsg-datasegment,a5),d2
+lbC0204C4	move.l	(wbmsg-ds,a5),d2
 	beq.b	lbC0204D4
 	jsr	(_LVOForbid,a6)
 	movea.l	d2,a1
 	jsr	(_LVOReplyMsg,a6)
 lbC0204D4	move.l	(sp)+,d0
-	movea.l	(saved_sp-datasegment,a5),sp
+	movea.l	(saved_sp-ds,a5),sp
 	rts
 
 lbC0204DC	movem.l	a3/a5/a6,-(sp)
 	movea.l	a5,a6
-	move.l	(symwindowptr-datasegment,a6),d0
+	move.l	(symwindowptr-ds,a6),d0
 	beq.b	lbC0204F4
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC000B1C).l
-lbC0204F4	move.l	(window2ptr-datasegment,a6),d0
+lbC0204F4	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC020506
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC0016D6).l
-lbC020506	move.l	(window3ptr-datasegment,a6),d0
+lbC020506	move.l	(window3ptr-ds,a6),d0
 	beq.b	lbC020518
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC001D02).l
-lbC020518	move.l	(window4ptr-datasegment,a6),d0
+lbC020518	move.l	(window4ptr-ds,a6),d0
 	beq.b	lbC02052A
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC001D14).l
-lbC02052A	move.l	(window5ptr-datasegment,a6),d0
+lbC02052A	move.l	(window5ptr-ds,a6),d0
 	beq.b	lbC02053C
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC001D26).l
-lbC02053C	move.l	(window6ptr-datasegment,a6),d0
+lbC02053C	move.l	(window6ptr-ds,a6),d0
 	beq.b	lbC02054E
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC002438).l
-lbC02054E	move.l	(window7ptr-datasegment,a6),d0
+lbC02054E	move.l	(window7ptr-ds,a6),d0
 	beq.b	lbC020560
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
@@ -39903,12 +39909,12 @@ lbC02054E	move.l	(window7ptr-datasegment,a6),d0
 lbC020560	movem.l	(sp)+,a3/a5/a6
 	rts
 
-lbC020566	tst.b	(lbB02EB41-datasegment,a6)
+requestfile	tst.b	(lbB02EB41-ds,a6)
 	bne.w	lbC026C74
-	move.l	d0,(lbL02CE70-datasegment,a6)
-	move.l	d1,(lbL02CE2C-datasegment,a6)
-	clr.b	(aslfr_initialfile-datasegment,a6)
-	clr.b	(aslfr_initialdrawer-datasegment,a6)
+	move.l	d0,(requestfile_defname-ds,a6)
+	move.l	d1,(requestfile_buffer-ds,a6)
+	clr.b	(aslfr_initialfile-ds,a6)
+	clr.b	(aslfr_initialdrawer-ds,a6)
 	movea.l	d1,a0
 	move.l	d1,d0
 	tst.b	(a0)
@@ -39925,41 +39931,41 @@ lbC02058C	cmpi.b	#$2F,-(a0)
 	subq.w	#1,a0
 lbC02059E	addq.w	#1,a0
 	move.l	a0,d1
-	lea	(aslfr_initialfile-datasegment,a6),a1
+	lea	(aslfr_initialfile-ds,a6),a1
 lbC0205A6	move.b	(a0)+,(a1)+
 	bne.b	lbC0205A6
 	movea.l	d0,a0
-	lea	(aslfr_initialdrawer-datasegment,a6),a1
+	lea	(aslfr_initialdrawer-ds,a6),a1
 lbC0205B0	cmp.l	a0,d1
 	beq.b	lbC0205B8
 	move.b	(a0)+,(a1)+
 	bra.b	lbC0205B0
 
 lbC0205B8	clr.b	(a1)
-lbC0205BA	tst.b	(lbB02EB41-datasegment,a6)
-	beq.w	lbC02065C
-	tst.b	(lbB02B422-datasegment,a6)
-	bne.w	lbC02065C
-	tst.b	(lbB02EB4B-datasegment,a6)
+lbC0205BA	tst.b	(lbB02EB41-ds,a6)
+	beq.w	requestfile_doreq
+	tst.b	(lbB02B422-ds,a6)
+	bne.w	requestfile_doreq
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	lbC02061A
-	bsr.w	lbC02065C
+	bsr.w	requestfile_doreq
 	bne.b	lbC0205EA
-	movea.l	(lbL02D0FC-datasegment,a6),a1
+	movea.l	(lbL02D0FC-ds,a6),a1
 	move.w	#$7FFF,(a1)+
 	moveq	#2,d0
-	add.l	d0,(lbL02D100-datasegment,a6)
-	add.l	d0,(lbL02D0FC-datasegment,a6)
+	add.l	d0,(lbL02D100-ds,a6)
+	add.l	d0,(lbL02D0FC-ds,a6)
 	rts
 
-lbC0205EA	jsr	(lbC02AEB2-datasegment,a6)
+lbC0205EA	jsr	(lbC02AEB2-ds,a6)
 	addq.l	#1,d0
 	bclr	#0,d0
 	move.l	a0,-(sp)
-	movea.l	(lbL02D0FC-datasegment,a6),a1
+	movea.l	(lbL02D0FC-ds,a6),a1
 	move.w	d0,(a1)+
 	addq.l	#2,d0
-	add.l	d0,(lbL02D100-datasegment,a6)
-	add.l	d0,(lbL02D0FC-datasegment,a6)
+	add.l	d0,(lbL02D100-ds,a6)
+	add.l	d0,(lbL02D0FC-ds,a6)
 	subq.l	#2,d0
 	lsr.l	#1,d0
 	subq.l	#1,d0
@@ -39969,79 +39975,79 @@ lbC02060C	move.w	(a0)+,(a1)+
 	andi.b	#$FB,ccr
 	rts
 
-lbC02061A	movea.l	(lbL02D0FC-datasegment,a6),a0
+lbC02061A	movea.l	(lbL02D0FC-ds,a6),a0
 	move.w	(a0)+,d0
-	move.l	a0,(lbL02D0FC-datasegment,a6)
+	move.l	a0,(lbL02D0FC-ds,a6)
 	cmpi.w	#$7FFF,d0
 	bne.b	lbC020632
-lbC02062A	bsr.b	lbC02065C
+lbC02062A	bsr.b	requestfile_doreq
 	andi.b	#$FB,ccr
 	rts
 
-lbC020632	tst.b	(lbB02B422-datasegment,a6)
+lbC020632	tst.b	(lbB02B422-ds,a6)
 	beq.b	lbC020640
 	adda.l	d0,a0
-	move.l	a0,(lbL02D0FC-datasegment,a6)
+	move.l	a0,(lbL02D0FC-ds,a6)
 	bra.b	lbC02062A
 
 lbC020640	subq.l	#1,d0
-	movea.l	(lbL02CE2C-datasegment,a6),a1
+	movea.l	(requestfile_buffer-ds,a6),a1
 	move.l	a1,d1
 lbC020648	move.b	(a0)+,(a1)+
 	dbra	d0,lbC020648
 	clr.b	(a1)+
-	move.l	a0,(lbL02D0FC-datasegment,a6)
+	move.l	a0,(lbL02D0FC-ds,a6)
 	movea.l	d1,a0
 	andi.b	#$FB,ccr
 	rts
 
-lbC02065C	move.l	a2,-(sp)
+requestfile_doreq	move.l	a2,-(sp)
 	clr.l	-(sp)
 	pea	($40).w
 	move.l	#$80080014,-(sp)
 	pea	(lbC020704,pc)
 	move.l	#$80080007,-(sp)
-	pea	(aslfr_initialfile-datasegment,a6)
+	pea	(aslfr_initialfile-ds,a6)
 	move.l	#$80080008,-(sp)
-	pea	(aslfr_initialdrawer-datasegment,a6)
+	pea	(aslfr_initialdrawer-ds,a6)
 	move.l	#$80080009,-(sp)
-	move.l	(lbL02CE70-datasegment,a6),-(sp)
+	move.l	(requestfile_defname-ds,a6),-(sp)
 	move.l	#$80080001,-(sp)
 	movea.l	sp,a1
-	movea.l	(aslfr-datasegment,a6),a2
+	movea.l	(aslfr-ds,a6),a2
 	movea.l	a2,a0
 	move.l	a6,-(sp)
-	movea.l	(aslbase-datasegment,a6),a6
+	movea.l	(aslbase-ds,a6),a6
 	jsr	(_LVOAslRequest,a6)
 	movea.l	(sp)+,a6
 	lea	($2C,sp),sp
 	movea.l	d0,a0
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC0206B6
 	tst.l	d0
 	beq.b	lbC0206F6
-lbC0206B6	movea.l	(4,a2),a0
-	movea.l	(lbL02CE2C-datasegment,a6),a1
-	cmpi.b	#$2A,(a0)
+lbC0206B6	movea.l	(fr_File,a2),a0
+	movea.l	(requestfile_buffer-ds,a6),a1
+	cmpi.b	#'*',(a0)
 	beq.b	lbC0206EC
-	movea.l	(8,a2),a0
+	movea.l	(fr_Drawer,a2),a0
 lbC0206C8	move.b	(a0)+,(a1)+
 	bne.b	lbC0206C8
 	subq.l	#1,a1
-	cmpa.l	(lbL02CE2C-datasegment,a6),a1
+	cmpa.l	(requestfile_buffer-ds,a6),a1
 	beq.b	lbC0206E8
-	cmpi.b	#$3A,(-1,a1)
+	cmpi.b	#':',(-1,a1)
 	beq.b	lbC0206E8
-	cmpi.b	#$2F,(-1,a1)
+	cmpi.b	#'/',(-1,a1)
 	beq.b	lbC0206E8
-	move.b	#$2F,(a1)+
+	move.b	#'/',(a1)+
 lbC0206E8	movea.l	(4,a2),a0
 lbC0206EC	move.b	(a0)+,(a1)+
 	bne.b	lbC0206EC
-	movea.l	(lbL02CE2C-datasegment,a6),a0
+	movea.l	(requestfile_buffer-ds,a6),a0
 	move.l	a0,d0
 lbC0206F6	bsr.w	lbC027E00
-	jsr	(lbC028CFC-datasegment,a6)
+	jsr	(lbC028CFC-ds,a6)
 	tst.l	d0
 	movea.l	(sp)+,a2
 	rts
@@ -40053,34 +40059,34 @@ lbC020704	move.l	a6,-(sp)
 	movea.l	(12,sp),a0
 	cmpi.l	#4,($14,a0)
 	bne.b	lbC02074A
-	lea	(datasegment).l,a6
-	movea.l	(window1ptr-datasegment,a6),a0
+	lea	(ds).l,a6
+	movea.l	(window1ptr-ds,a6),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_BeginRefresh,a6)
 	movea.l	(sp)+,a6
 	jsr	(lbC028CFC).l
-	movea.l	(window1ptr-datasegment,a6),a0
+	movea.l	(window1ptr-ds,a6),a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_EndRefresh,a6)
 	movea.l	(sp)+,a6
 lbC02074A	move.l	(12,sp),d0
 	movea.l	(sp)+,a6
 	rts
 
-lbC020752	cmpi.b	#1,(lbB02EAD5-datasegment,a6)
+lbC020752	cmpi.b	#1,(lbB02EAD5-ds,a6)
 	bne.b	lbC020762
 lbC02075A	rts
 
 lbC02075C	andi.b	#$FB,ccr
 	rts
 
-lbC020762	tst.b	(lbB02B44B-datasegment,a6)
+lbC020762	tst.b	(lbB02B44B-ds,a6)
 	beq.b	lbC02075C
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#2,d1
 	bsr.w	lbC02777C
 	beq.b	lbC02075A
@@ -40112,21 +40118,21 @@ lbC0207A6	tst.l	d0
 	btst	#$19,d7
 	beq.b	lbC0207BC
 	bsr.w	lbC020B26
-	jsr	(lbC02A0D2-datasegment,a6)
+	jsr	(lbC02A0D2-ds,a6)
 lbC0207BC	movem.l	(sp)+,d0/d1/a0
 	adda.l	d0,a2
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC0207CA
 	suba.l	d0,a2
-lbC0207CA	jsr	(lbC02A3CC-datasegment,a6)
+lbC0207CA	jsr	(lbC02A3CC-ds,a6)
 	tst.w	d1
 	ble.b	lbC0207D6
 	bsr.w	lbC023954
 lbC0207D6	lea	(12,sp),sp
 	bra.w	lbC020C3C
 
-lbC0207DE	clr.b	(lbB02EB4E-datasegment,a6)
-lbC0207E2	move.l	a4,(lbL02D2D0-datasegment,a6)
+lbC0207DE	clr.b	(lbB02EB4E-ds,a6)
+lbC0207E2	move.l	a4,(lbL02D2D0-ds,a6)
 	move.b	#$3B,(a4)+
 	move.b	#$20,(a4)+
 	addq.w	#2,d6
@@ -40137,17 +40143,17 @@ lbC0207E2	move.l	a4,(lbL02D2D0-datasegment,a6)
 	rts
 
 lbC0207FC	bsr.w	lbC020C3C
-	tst.b	(lbB02EB63-datasegment,a6)
+	tst.b	(lbB02EB63-ds,a6)
 	beq.b	lbC02080A
-	movea.l	(lbL02D2D0-datasegment,a6),a4
-lbC02080A	addq.l	#1,(lbL02D23C-datasegment,a6)
-	addq.b	#1,(lbB02EB4E-datasegment,a6)
-	move.b	(lbB02EB4E-datasegment,a6),(lbB02EB4D).l
+	movea.l	(lbL02D2D0-ds,a6),a4
+lbC02080A	addq.l	#1,(lbL02D23C-ds,a6)
+	addq.b	#1,(lbB02EB4E-ds,a6)
+	move.b	(lbB02EB4E-ds,a6),(lbB02EB4D).l
 	bra.b	lbC0207E2
 
 DxAreaEnd.MSG	db	'DxAreaEnd',0
 
-lbC020826	cmpa.l	(datasegment-datasegment,a6),a2
+lbC020826	cmpa.l	(ds-ds,a6),a2
 	beq.b	lbC020842
 	btst	#3,(-2,a3)
 	beq.b	lbC020842
@@ -40156,33 +40162,33 @@ lbC020838	move.b	(a0)+,(a4)+
 	bne.b	lbC020838
 	subq.l	#1,a4
 	bsr.w	lbC020C3C
-lbC020842	tst.b	(lbB02B44D-datasegment,a6)
+lbC020842	tst.b	(lbB02B44D-ds,a6)
 	beq.w	lbC0209CC
-	cmpa.l	(datasegment-datasegment,a6),a2
+	cmpa.l	(ds-ds,a6),a2
 	beq.b	lbC020854
 	bsr.w	lbC020C3C
 lbC020854	move.l	d7,d2
 	andi.l	#$70000000,d2
-	jsr	(lbC02A0D2-datasegment,a6)
+	jsr	(lbC02A0D2-ds,a6)
 	move.l	d2,d0
-	addq.l	#1,(lbL02D294-datasegment,a6)
-	addq.l	#1,(lbL02D22C-datasegment,a6)
+	addq.l	#1,(lbL02D294-ds,a6)
+	addq.l	#1,(lbL02D22C-ds,a6)
 	move.l	#$45444F43,d2
 	cmpi.l	#$10000000,d0
 	beq.b	lbC02089C
-	subq.l	#1,(lbL02D22C-datasegment,a6)
-	addq.l	#1,(lbL02D230-datasegment,a6)
+	subq.l	#1,(lbL02D22C-ds,a6)
+	addq.l	#1,(lbL02D230-ds,a6)
 	move.l	#$41544144,d2
 	cmpi.l	#$20000000,d0
 	beq.b	lbC02089C
-	subq.l	#1,(lbL02D230-datasegment,a6)
-	addq.l	#1,(lbL02D234-datasegment,a6)
+	subq.l	#1,(lbL02D230-ds,a6)
+	addq.l	#1,(lbL02D234-ds,a6)
 	move.l	#$535342,d2
 lbC02089C	lea	(SECTION.MSG,pc),a0
 	bsr.w	lbC023AB8
 	moveq	#$1B,d6
-	jsr	(setspacepostopcode-datasegment,a6)
-	lea	(lbL02E8C8-datasegment,a6),a0
+	jsr	(setspacepostopcode-ds,a6)
+	lea	(work_data_spec_str-ds,a6),a0
 	move.b	(a0),d3
 	clr.b	(a0)+
 lbC0208B2	tst.b	(a0)+
@@ -40196,7 +40202,7 @@ lbC0208B8	subq.l	#1,a0
 	tst.b	(a0)
 	bne.b	lbC0208B8
 	subq.l	#1,a0
-lbC0208CC	lea	(lbL02E8C8-datasegment,a6),a1
+lbC0208CC	lea	(work_data_spec_str-ds,a6),a1
 	move.b	d3,(a1)
 	addq.l	#1,a0
 lbC0208D4	move.b	(a0)+,d0
@@ -40215,7 +40221,7 @@ lbC0208D4	move.b	(a0)+,d0
 	bra.b	lbC0208D4
 
 lbC0208FA	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bsr.w	lbC02253C
 	move.b	#$2C,(a4)+
 	move.b	d2,(a4)+
@@ -40226,10 +40232,10 @@ lbC0208FA	move.l	a2,d0
 	lsr.l	#8,d2
 	beq.b	lbC020918
 	move.b	d2,(a4)+
-lbC020918	move.l	(lbB02D0EC-datasegment,a6),d0
+lbC020918	move.l	(lbB02D0EC-ds,a6),d0
 	tst.w	d0
 	bpl.b	lbC02093A
-	tst.b	(lbB02B44C-datasegment,a6)
+	tst.b	(lbB02B44C-ds,a6)
 	beq.b	lbC02093A
 	move.b	#$2C,(a4)+
 	move.b	#$46,(a4)+
@@ -40238,18 +40244,18 @@ lbC020918	move.l	(lbB02D0EC-datasegment,a6),d0
 	move.b	#$54,(a4)+
 lbC02093A	btst	#14,d0
 	beq.b	lbC02095E
-	tst.b	(lbB02B44C-datasegment,a6)
+	tst.b	(lbB02B44C-ds,a6)
 	beq.b	lbC02095E
-	addq.l	#1,(lbL02D248-datasegment,a6)
+	addq.l	#1,(lbL02D248-ds,a6)
 	move.b	#$2C,(a4)+
 	move.b	#$43,(a4)+
 	move.b	#$48,(a4)+
 	move.b	#$49,(a4)+
 	move.b	#$50,(a4)+
 lbC02095E	bsr.w	lbC020C3C
-	cmpa.l	(lbL02CDEC-datasegment,a6),a2
+	cmpa.l	(lbL02CDEC-ds,a6),a2
 	bne.b	lbC0209CC
-	tst.b	(lbB02EB40-datasegment,a6)
+	tst.b	(lbB02EB40-ds,a6)
 	beq.b	lbC0209CC
 	lea	(DT.MSG0,pc),a0
 	moveq	#2,d0
@@ -40259,27 +40265,27 @@ lbC02095E	bsr.w	lbC020C3C
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
 	moveq	#2,d6
-	tst.b	(lbB02B451-datasegment,a6)
+	tst.b	(lbB02B451-ds,a6)
 	beq.b	lbC020992
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
-lbC020992	jsr	(lbC02A0D2-datasegment,a6)
-	move.b	(EF.MSG-datasegment,a6),(a4)+
-	move.b	(QR.MSG-datasegment,a6),(a4)+
-	move.b	(UW.MSG-datasegment,a6),(a4)+
+lbC020992	jsr	(lbC02A0D2-ds,a6)
+	move.b	(EF.MSG-ds,a6),(a4)+
+	move.b	(QR.MSG-ds,a6),(a4)+
+	move.b	(UW.MSG-ds,a6),(a4)+
 	addq.w	#3,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
-	move.l	(lbL02D098-datasegment,a6),d0
-	add.l	(datasegment-datasegment,a6),d0
+	move.l	(lbL02D098-ds,a6),d0
+	add.l	(ds-ds,a6),d0
 	sub.l	a2,d0
 	bcc.b	lbC0209C4
 	neg.l	d0
 	move.b	#$2D,(-1,a4)
 lbC0209C4	bsr.w	lbC022518
 	bsr.w	lbC020C3C
-lbC0209CC	cmpa.l	(datasegment-datasegment,a6),a2
+lbC0209CC	cmpa.l	(ds-ds,a6),a2
 	bne.b	lbC0209F6
 	lea	(ProgStart.MSG,pc),a0
 	moveq	#9,d0
@@ -40289,57 +40295,57 @@ lbC0209CC	cmpa.l	(datasegment-datasegment,a6),a2
 lbC0209E2	move.b	(a0)+,(a4)+
 	bne.b	lbC0209E2
 	subq.l	#1,a4
-	tst.b	(lbB02B451-datasegment,a6)
+	tst.b	(lbB02B451-ds,a6)
 	beq.b	lbC0209F2
 	move.b	#$3A,(a4)+
 lbC0209F2	bra.w	lbC020C3C
 
 lbC0209F6	rts
 
-lbC0209F8	tst.w	(lbW02B478-datasegment,a6)
+lbC0209F8	tst.w	(lbW02B478-ds,a6)
 	bne.w	lbC020AF6
-	tst.b	(lbB02B46D-datasegment,a6)
+	tst.b	(lbB02B46D-ds,a6)
 	bne.w	lbC020AF6
-	tst.b	(lbB02EAD9-datasegment,a6)
+	tst.b	(lbB02EAD9-ds,a6)
 	beq.b	lbC020A26
-	tst.b	(lbB02B444-datasegment,a6)
+	tst.b	(lbB02B444-ds,a6)
 	bne.b	lbC020A44
-	jsr	(lbC02A0D2-datasegment,a6)
+	jsr	(lbC02A0D2-ds,a6)
 	lea	(bnryonly.MSG,pc),a0
 lbC020A1C	move.b	(a0)+,(a4)+
 	bne.b	lbC020A1C
 	subq.l	#1,a4
 	bsr.w	lbC020C3C
-lbC020A26	tst.b	(lbB02B444-datasegment,a6)
+lbC020A26	tst.b	(lbB02B444-ds,a6)
 	bne.b	lbC020A44
-	tst.b	(lbB02EAD9-datasegment,a6)
+	tst.b	(lbB02EAD9-ds,a6)
 	bne.b	lbC020A44
-	jsr	(lbC02A0D2-datasegment,a6)
+	jsr	(lbC02A0D2-ds,a6)
 	lea	(exeobj.MSG,pc),a0
 lbC020A3A	move.b	(a0)+,(a4)+
 	bne.b	lbC020A3A
 	subq.l	#1,a4
 	bsr.w	lbC020C3C
-lbC020A44	jsr	(lbC02A0D2-datasegment,a6)
+lbC020A44	jsr	(lbC02A0D2-ds,a6)
 	lea	(errfile.MSG,pc),a0
 lbC020A4C	move.b	(a0)+,(a4)+
 	bne.b	lbC020A4C
 	subq.l	#1,a4
 	addq.w	#7,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 lbC020A58	move.b	(a0)+,(a4)+
 	bne.b	lbC020A58
 	subq.l	#1,a4
 	bsr.w	lbC020C3C
-	jsr	(lbC02A0D2-datasegment,a6)
+	jsr	(lbC02A0D2-ds,a6)
 	lea	(objfile.MSG,pc),a0
 lbC020A6A	move.b	(a0)+,(a4)+
 	bne.b	lbC020A6A
 	subq.l	#1,a4
 	addq.w	#7,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$27,(a4)+
-	lea	(lbL02E8C8-datasegment,a6),a0
+	lea	(work_data_spec_str-ds,a6),a0
 lbC020A7E	tst.b	(a0)+
 	bne.b	lbC020A7E
 	subq.l	#1,a0
@@ -40356,7 +40362,7 @@ lbC020A7E	tst.b	(a0)+
 lbC020AA0	move.l	a1,d0
 	addq.l	#1,a0
 lbC020AA4	subq.l	#1,a0
-	cmpa.l	#lbL02E8C8,a0
+	cmpa.l	#work_data_spec_str,a0
 	beq.b	lbC020ABE
 	cmpi.b	#$2F,(-1,a0)
 	beq.b	lbC020ABE
@@ -40367,13 +40373,13 @@ lbC020ABE	cmp.l	a0,d0
 	move.b	(a0)+,(a4)+
 	bra.b	lbC020ABE
 
-lbC020AC6	tst.b	(lbB02B444-datasegment,a6)
+lbC020AC6	tst.b	(lbB02B444-ds,a6)
 	beq.b	lbC020AD4
 	move.b	#$2E,(a4)+
 	move.b	#$6F,(a4)+
 lbC020AD4	move.b	#$27,(a4)+
 	bsr.w	lbC020C3C
-	tst.b	(lbB02B46F-datasegment,a6)
+	tst.b	(lbB02B46F-ds,a6)
 	beq.b	lbC020AF6
 	move.b	#$3B,(a4)+
 	move.b	#$5F,(a4)+
@@ -40382,11 +40388,11 @@ lbC020AD4	move.b	#$27,(a4)+
 	bsr.w	lbC020C3C
 lbC020AF6	rts
 
-lbC020AF8	tst.b	(lbB02B3EE-datasegment,a6)
+lbC020AF8	tst.b	(lbB02B3EE-ds,a6)
 	beq.b	lbC020B26
 	bclr	#4,(1,a3)
 	beq.b	lbC020B26
-	addq.l	#1,(lbW02D24C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#4,(a4)+
 	bsr.b	lbC020B26
 	sne	d0
@@ -40399,15 +40405,15 @@ lbC020AF8	tst.b	(lbB02B3EE-datasegment,a6)
 lbC020B22	subq.l	#1,a4
 	rts
 
-lbC020B26	tst.b	(lbB02B447-datasegment,a6)
+lbC020B26	tst.b	(lbB02B447-ds,a6)
 	beq.b	lbC020B6C
-	addq.l	#1,(lbL02D220-datasegment,a6)
+	addq.l	#1,(lbL02D220-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bsr.w	lbC023364
-	tst.b	(lbB02B3F2-datasegment,a6)
+	tst.b	(lbB02B3F2-ds,a6)
 	bne.b	lbC020B70
-lbC020B40	tst.b	(lbB02B3F3-datasegment,a6)
+lbC020B40	tst.b	(lbB02B3F3-ds,a6)
 	bne.b	lbC020B96
 lbC020B46	btst	#4,(1,a3)
 	beq.b	lbC020BAC
@@ -40415,11 +40421,11 @@ lbC020B4E	add.w	d1,d6
 	subq.w	#1,d1
 lbC020B52	move.b	(a0)+,(a4)+
 	dbra	d1,lbC020B52
-lbC020B58	tst.b	(lbB02B451-datasegment,a6)
+lbC020B58	tst.b	(lbB02B451-ds,a6)
 	bne.b	lbC020BB6
 lbC020B5E	cmpi.b	#$14,d6
 	bcc.b	lbC020BA4
-	tst.b	(lbB02B450-datasegment,a6)
+	tst.b	(lbB02B450-ds,a6)
 	bne.b	lbC020BA4
 	rts
 
@@ -40430,8 +40436,8 @@ lbC020B70	btst	#4,(1,a3)
 	beq.b	lbC020B40
 lbC020B78	cmpi.b	#2,(-1,a4)
 	beq.b	lbC020B46
-	addq.l	#1,(lbW02D24C-datasegment,a6)
-	addq.l	#2,(lbB02D37C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#3,(a4)+
 	bsr.b	lbC020B46
 	move.b	#1,(a4)+
@@ -40440,14 +40446,14 @@ lbC020B78	cmpi.b	#2,(-1,a4)
 
 lbC020B96	btst	#4,(1,a3)
 	bne.b	lbC020B4E
-	addq.l	#1,(lbL02D21C-datasegment,a6)
+	addq.l	#1,(lbL02D21C-ds,a6)
 	bra.b	lbC020B78
 
 lbC020BA4	bsr.w	lbC020C3C
 	moveq	#0,d0
 	rts
 
-lbC020BAC	addq.l	#1,(lbL02D21C-datasegment,a6)
+lbC020BAC	addq.l	#1,(lbL02D21C-ds,a6)
 	bsr.w	lbC023954
 	bra.b	lbC020B58
 
@@ -40455,41 +40461,41 @@ lbC020BB6	move.b	#$3A,(a4)+
 	addq.w	#1,d6
 	bra.b	lbC020B5E
 
-lbC020BBE	clr.b	(lbB02EB48-datasegment,a6)
+lbC020BBE	clr.b	(lbB02EB48-ds,a6)
 	bsr.b	lbC020BC8
 	bra.w	lbC02803A
 
-lbC020BC8	jsr	(saveregs_all-datasegment,a6)
+lbC020BC8	jsr	(saveregs_all-ds,a6)
 	bsr.w	lbC020CC4
-	move.w	(screen_bitmap-datasegment,a6),d0
+	move.w	(screen_bitmap-ds,a6),d0
 	subq.w	#3,d0
-lbC020BD6	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+lbC020BD6	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC020BF2
-	move.w	d0,(lbW02EAD6-datasegment,a6)
+	move.w	d0,(lbW02EAD6-ds,a6)
 	bsr.w	lbC020D16
-	move.w	(lbW02EAD6-datasegment,a6),d0
+	move.w	(lbW02EAD6-ds,a6),d0
 	cmpa.l	#lbL034200,a4
 	dbhi	d0,lbC020BD6
-lbC020BF2	tst.w	(lbW02B478-datasegment,a6)
+lbC020BF2	tst.w	(lbW02B478-ds,a6)
 	beq.b	lbC020BFC
 	move.b	#0,(a4)
 lbC020BFC	andi.b	#$FB,ccr
 	rts
 
-lbC020C02	tst.w	(lbW02B478-datasegment,a6)
+lbC020C02	tst.w	(lbW02B478-ds,a6)
 	beq.b	lbC020C1E
 	move.b	#9,(a4)+
 	moveq	#$14,d6
 	rts
 
-lbC020C10	tst.w	(lbW02B478-datasegment,a6)
+lbC020C10	tst.w	(lbW02B478-ds,a6)
 	beq.b	lbC020C20
 	move.b	#9,(a4)+
 	moveq	#$14,d6
 	rts
 
 lbC020C1E	moveq	#0,d6
-lbC020C20	tst.b	(lbB02EB46-datasegment,a6)
+lbC020C20	tst.b	(lbB02EB46-ds,a6)
 	bne.b	lbC020C2E
 	move.b	#9,(a4)+
 	moveq	#$14,d6
@@ -40503,12 +40509,12 @@ lbC020C2E	move.b	#$20,(a4)+
 
 lbC020C3C	moveq	#0,d6
 	move.b	#10,(a4)+
-	tst.b	(lbB02EBF3-datasegment,a6)
+	tst.b	(lbB02EBF3-ds,a6)
 	bne.b	lbC020C4E
-	addq.b	#1,(lbB02EB5F-datasegment,a6)
+	addq.b	#1,(lbB02EB5F-ds,a6)
 	rts
 
-lbC020C4E	addq.l	#1,(lbW02D228-datasegment,a6)
+lbC020C4E	addq.l	#1,(lbW02D228-ds,a6)
 	rts
 
 DT.MSG0	db	'DT'
@@ -40520,66 +40526,66 @@ errfile.MSG	db	'errfile',0
 	db	'''ram:assem.output''',0
 SECTION.MSG	db	'SECTION',0,0
 
-lbC020C9C	st	(lbB02EB79-datasegment,a6)
-	lea	(lbL02D12C-datasegment,a6),a0
+lbC020C9C	st	(lbB02EB79-ds,a6)
+	lea	(lbL02D12C-ds,a6),a0
 	clr.l	(a0)+
 	clr.l	(a0)+
 	clr.l	(a0)+
 	clr.l	(a0)
 	bsr.b	lbC020CB8
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB79-datasegment,a6)
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB79-ds,a6)
 	rts
 
 lbC020CB8	lea	(stringbuffer).l,a4
-	st	(lbB02EB63-datasegment,a6)
+	st	(lbB02EB63-ds,a6)
 	bra.b	lbC020CC8
 
-lbC020CC4	lea	(lbB031E00-datasegment,a6),a4
-lbC020CC8	clr.b	(lbB02EAD3-datasegment,a6)
-	clr.w	(lbB02EAD0-datasegment,a6)
-	move.b	(lbB02D39B-datasegment,a6),(lbB02D39A).l
+lbC020CC4	lea	(lbB031E00-ds,a6),a4
+lbC020CC8	clr.b	(lbB02EAD3-ds,a6)
+	clr.w	(lbB02EAD0-ds,a6)
+	move.b	(lbB02D39B-ds,a6),(lbB02D39A).l
 	beq.b	lbC020D16
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a3
 	bset	#5,(1,a3)
-	move.l	#lbC020CC4,(lbB02D20C-datasegment,a6)
-	movem.l	a2/a4,(lbL02D210-datasegment,a6)
+	move.l	#lbC020CC4,(lbB02D20C-ds,a6)
+	movem.l	a2/a4,(lbL02D210-ds,a6)
 	move.b	#1,(a4)+
 	bra.b	lbC020D28
 
-lbC020D02	move.l	#lbC020D02,(lbB02D20C-datasegment,a6)
-	movem.l	a2/a4,(lbL02D210-datasegment,a6)
+lbC020D02	move.l	#lbC020D02,(lbB02D20C-ds,a6)
+	movem.l	a2/a4,(lbL02D210-ds,a6)
 	bra.b	lbC020D28
 
 lbC020D12	bra.w	lbC020C3C
 
-lbC020D16	move.l	#lbC020D16,(lbB02D20C-datasegment,a6)
-	movem.l	a2/a4,(lbL02D210-datasegment,a6)
+lbC020D16	move.l	#lbC020D16,(lbB02D20C-ds,a6)
+	movem.l	a2/a4,(lbL02D210-ds,a6)
 	move.b	#1,(a4)+
-lbC020D28	move.l	a2,(lbL02D0F0-datasegment,a6)
-	move.w	(lbB02EAD0-datasegment,a6),(lbW02D398).l
-	clr.l	(lbW02EACE-datasegment,a6)
+lbC020D28	move.l	a2,(lbL02D0F0-ds,a6)
+	move.w	(lbB02EAD0-ds,a6),(lbW02D398).l
+	clr.l	(lbW02EACE-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a3
 	move.l	(a3),d7
 	bpl.b	lbC020D62
 	bclr	#1,d7
 	beq.b	lbC020D62
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC020D12
-	tst.b	(lbB02EAD5-datasegment,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC020D62
 	bclr	#$1F,d7
 	move.l	d7,(a3)
-lbC020D62	move.l	d7,(lbB02D0EC-datasegment,a6)
-	tst.b	(lbL02EBF8-datasegment,a6)
+lbC020D62	move.l	d7,(lbB02D0EC-ds,a6)
+	tst.b	(lbL02EBF8-ds,a6)
 	bne.w	lbC020DFE
 	pea	(lbC020F84,pc)
 	moveq	#0,d6
@@ -40588,7 +40594,7 @@ lbC020D62	move.l	d7,(lbB02D0EC-datasegment,a6)
 	beq.b	lbC020DBE
 	btst	#2,d7
 	beq.b	lbC020DB2
-	cmpa.l	(datasegment-datasegment,a6),a2
+	cmpa.l	(ds-ds,a6),a2
 	beq.b	lbC020D90
 lbC020D8A	bsr.w	lbC020826
 	bra.b	lbC020DB2
@@ -40604,7 +40610,7 @@ lbC020D9C	bsr.w	lbC020AF8
 	bra.b	lbC020DBE
 
 lbC020DA4	move.l	a2,d0
-	sub.l	(lbL02D11C-datasegment,a6),d0
+	sub.l	(workdata_strt-ds,a6),d0
 	bsr.w	lbC02253C
 	addq.w	#6,d6
 	bra.b	lbC020DFE
@@ -40613,34 +40619,34 @@ lbC020DB2	btst	#$17,d7
 	bne.b	lbC020D96
 lbC020DB8	btst	#$19,d7
 	bne.b	lbC020D9C
-lbC020DBE	tst.b	(lbB02B446-datasegment,a6)
+lbC020DBE	tst.b	(lbB02B446-ds,a6)
 	beq.b	lbC020DE2
 	bra.b	lbC020DA4
 
-lbC020DC6	move.w	(lbW02D398-datasegment,a6),d0
+lbC020DC6	move.w	(lbW02D398-ds,a6),d0
 	beq.b	lbC020DDA
 	tst.b	d0
 	bmi.b	lbC020DDA
-	addq.l	#1,(lbL02D28C-datasegment,a6)
-	bset	#0,(lbB02D3A4-datasegment,a6)
+	addq.l	#1,(lbL02D28C-ds,a6)
+	bset	#0,(lbB02D3A4-ds,a6)
 lbC020DDA	jmp	(a0)
 
 lbC020DDC	bsr.w	lbC026B6E
 	bra.b	lbC020E22
 
-lbC020DE2	tst.w	(lbW02B47A-datasegment,a6)
+lbC020DE2	tst.w	(lbW02B47A-ds,a6)
 	beq.b	lbC020DFE
-	move.l	(lbL02D390-datasegment,a6),d0
+	move.l	(lbL02D390-ds,a6),d0
 	and.l	(a3),d0
 	bne.b	lbC020DFE
-	move.l	(lbL02D38C-datasegment,a6),d0
+	move.l	(lbL02D38C-ds,a6),d0
 	and.l	(a3),d0
 	bne.b	lbC020DFE
 	bsr.w	lbC020C02
 	bra.b	lbC020E02
 
-lbC020DFE	jsr	(lbC02A0D2-datasegment,a6)
-lbC020E02	move.b	(lbB02EAD5-datasegment,a6),d0
+lbC020DFE	jsr	(lbC02A0D2-ds,a6)
+lbC020E02	move.b	(lbB02EAD5-ds,a6),d0
 	bne.b	lbC020DDC
 	btst	#$1A,d7
 	bne.b	lbC020DDC
@@ -40667,14 +40673,14 @@ lbC020E44	move.l	d5,d0
 	bne.b	lbC020E44
 	move.l	a0,d0
 	sub.l	#CmpTabRefPlus8,d0
-	movea.l	(lbL02D164-datasegment,a6),a0
+	movea.l	(lbL02D164-ds,a6),a0
 	adda.w	d0,a0
-	move.l	(a0)+,(lbB02EAD0-datasegment,a6)
+	move.l	(a0)+,(lbB02EAD0-ds,a6)
 	movea.l	(a0),a5
 	adda.w	(a5)+,a2
 	adda.w	(a5)+,a3
 	move.w	(a2),d4
-	move.b	(a5)+,(opcode_size-datasegment,a6)
+	move.b	(a5)+,(opcode_size-ds,a6)
 lbC020E6A	move.b	(a5)+,(a4)+
 	bne.b	lbC020E6A
 	subq.l	#1,a4
@@ -40690,7 +40696,7 @@ lbC020E70	move.b	(a5)+,d6
 lbC020E88	moveq	#0,d1
 	move.b	(a5)+,d1
 	ble.b	lbC020EC8
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	a5,-(sp)
 	lea	(lbL00DEFC).l,a0
 	lsl.w	#2,d1
@@ -40706,24 +40712,24 @@ lbC020E88	moveq	#0,d1
 	lsl.w	#2,d0
 	movea.l	(a0,d0.w),a0
 	jsr	(a0)
-lbC020EBE	addq.l	#1,(lbL02D254-datasegment,a6)
+lbC020EBE	addq.l	#1,(lbL02D254-ds,a6)
 	movem.l	(sp)+,d2-d5/a5
 	rts
 
 lbC020EC8	blt.b	lbC020ED2
-	move.l	a4,(lbB02D37C-datasegment,a6)
-	move.w	d6,(lbB02D3AA-datasegment,a6)
-lbC020ED2	addq.l	#1,(lbL02D254-datasegment,a6)
+	move.l	a4,(lbB02D37C-ds,a6)
+	move.w	d6,(lbB02D3AA-ds,a6)
+lbC020ED2	addq.l	#1,(lbL02D254-ds,a6)
 	movem.l	(sp)+,d2-d5/a5
 	rts
 
 lbC020EDC	movem.l	d0/a0/a1/a3,-(sp)
-	movea.l	(lbL02D0F0-datasegment,a6),a0
+	movea.l	(lbL02D0F0-ds,a6),a0
 	movea.l	a0,a3
-	suba.l	(datasegment-datasegment,a6),a3
+	suba.l	(ds-ds,a6),a3
 	adda.l	a3,a3
 	adda.l	a3,a3
-	adda.l	(workdata_end-datasegment,a6),a3
+	adda.l	(workdata_struct-ds,a6),a3
 	move.l	(a3),d0
 	andi.l	#$40000800,d0
 	bne.b	lbC020F1A
@@ -40743,71 +40749,71 @@ lbC020F1A	movem.l	(sp)+,d0/a0/a1/a3
 lbC020F20	move.l	a2,d0
 	btst	#0,d0
 	bne.b	lbC020F34
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bhi.b	lbC020F34
 	lea	(lbC01FFFC,pc),a0
 	bra.b	lbC020F38
 
 lbC020F34	lea	(lbC020016,pc),a0
-lbC020F38	move.l	(lbB02D20C-datasegment,a6),-(sp)
-	movem.l	(lbL02D210-datasegment,a6),a2/a4
+lbC020F38	move.l	(lbB02D20C-ds,a6),-(sp)
+	movem.l	(lbL02D210-ds,a6),a2/a4
 	movea.l	a2,a3
-	suba.l	(datasegment-datasegment,a6),a3
+	suba.l	(ds-ds,a6),a3
 	adda.l	a3,a3
 	adda.l	a3,a3
-	adda.l	(workdata_end-datasegment,a6),a3
+	adda.l	(workdata_struct-ds,a6),a3
 	move.l	(a3),d7
 	jsr	(a0)
 	bset	#2,(2,a3)
 	bset	#1,(3,a3)
 	rts
 
-lbC020F62	move.l	(lbL02D0F0-datasegment,a6),d0
-	sub.l	(datasegment-datasegment,a6),d0
+lbC020F62	move.l	(lbL02D0F0-ds,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bsr.w	lbC01A5CA
 	bra.b	lbC020FC2
 
 lbC020F70	btst	#$19,d7
 	bne.b	lbC020F9E
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC020F9E
-	bset	#1,(lbB02D3A4-datasegment,a6)
+	bset	#1,(lbB02D3A4-ds,a6)
 	bra.b	lbC020F9E
 
-lbC020F84	clr.b	(lbB02D39A-datasegment,a6)
+lbC020F84	clr.b	(lbB02D39A-ds,a6)
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a3
 	move.l	(a3),d7
-	tst.b	(lbB02EAD1-datasegment,a6)
+	tst.b	(lbB02EAD1-ds,a6)
 	bmi.b	lbC020F70
-lbC020F9E	movem.l	(lbB02D0EC-datasegment,a6),d0/d1
-	sub.l	(datasegment-datasegment,a6),d1
+lbC020F9E	movem.l	(lbB02D0EC-ds,a6),d0/d1
+	sub.l	(ds-ds,a6),d1
 	lsl.l	#2,d1
-	movea.l	(workdata_end-datasegment,a6),a0
+	movea.l	(workdata_struct-ds,a6),a0
 	adda.l	d1,a0
 	lsr.l	#2,d1
-	tst.b	(lbB02B454-datasegment,a6)
+	tst.b	(lbB02B454-ds,a6)
 	beq.b	lbC020FBC
 	bsr.w	lbC020EDC
 lbC020FBC	btst	#$16,d0
 	bne.b	lbC020F62
 lbC020FC2	move.b	#10,(a4)+
-	tst.b	(lbB02EBF3-datasegment,a6)
+	tst.b	(lbB02EBF3-ds,a6)
 	beq.b	lbC020FFC
-	addq.w	#1,(lbW02D22A-datasegment,a6)
+	addq.w	#1,(lbW02D22A-ds,a6)
 	bne.b	lbC021000
-	addq.w	#1,(lbW02D228-datasegment,a6)
+	addq.w	#1,(lbW02D228-ds,a6)
 	bra.b	lbC021000
 
-lbC020FD8	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+lbC020FD8	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC020FF4
-	tst.b	(lbB02EAD3-datasegment,a6)
+	tst.b	(lbB02EAD3-ds,a6)
 	bne.b	lbC020FF0
-lbC020FE4	move.w	(lbB02EAD0-datasegment,a6),d0
-	and.w	(lbW02D3A8-datasegment,a6),d0
+lbC020FE4	move.w	(lbB02EAD0-ds,a6),d0
+	and.w	(lbW02D3A8-ds,a6),d0
 	bne.b	lbC020FF8
 	rts
 
@@ -40817,8 +40823,8 @@ lbC020FF4	bra.w	lbC021114
 
 lbC020FF8	bra.w	lbC021150
 
-lbC020FFC	addq.b	#1,(lbB02EB5F-datasegment,a6)
-lbC021000	tst.b	(lbW02EACE-datasegment,a6)
+lbC020FFC	addq.b	#1,(lbB02EB5F-ds,a6)
+lbC021000	tst.b	(lbW02EACE-ds,a6)
 	bne.b	lbC020FD8
 	btst	#2,(-8,a3)
 	bne.b	lbC021042
@@ -40841,25 +40847,25 @@ lbC021038	btst	#$19,d2
 	subq.l	#4,a0
 	bra.b	lbC021066
 
-lbC021042	tst.b	(lbB02EAD5-datasegment,a6)
+lbC021042	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC02100E
 	move.l	a3,d0
-	sub.l	(workdata_end-datasegment,a6),d0
+	sub.l	(workdata_struct-ds,a6),d0
 	cmpi.l	#8,d0
 	bcc.w	lbC020F20
 	bra.b	lbC02100E
 
-lbC02105A	tst.w	(lbB02EAD4-datasegment,a6)
+lbC02105A	tst.w	(lbB02EAD4-ds,a6)
 	bne.b	lbC021038
 	subq.l	#4,a0
 	bra.w	lbC020F20
 
 lbC021066	bset	#7,(a3)
 	movem.l	a0/a1,-(sp)
-	tst.b	(lbB02EAD5-datasegment,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.w	lbC021100
-	movea.l	(lbL02D0F0-datasegment,a6),a5
-	btst	#0,(lbB02D0F3-datasegment,a6)
+	movea.l	(lbL02D0F0-ds,a6),a5
+	btst	#0,(lbB02D0F3-ds,a6)
 	bne.b	lbC021094
 	cmpi.w	#$4E75,(a5)
 	beq.b	lbC021100
@@ -40868,15 +40874,15 @@ lbC021066	bset	#7,(a3)
 	cmpi.w	#$4EFB,(a5)
 	beq.b	lbC021100
 lbC021094	movea.l	a5,a1
-	suba.l	(datasegment-datasegment,a6),a1
+	suba.l	(ds-ds,a6),a1
 	adda.l	a1,a1
 	adda.l	a1,a1
-	adda.l	(workdata_end-datasegment,a6),a1
+	adda.l	(workdata_struct-ds,a6),a1
 	btst	#0,(2,a1)
 	bne.b	lbC021100
 	btst	#8,d2
 	beq.b	lbC021100
-	tst.b	(lbB02EAD4-datasegment,a6)
+	tst.b	(lbB02EAD4-ds,a6)
 	bne.b	lbC021100
 	suba.l	a1,a0
 	addq.l	#8,sp
@@ -40893,13 +40899,13 @@ lbC0210D6	moveq	#$10,d0
 lbC0210D8	andi.l	#$FFFFFF07,(a1)
 	ori.w	#$700,d0
 	or.l	d0,(a1)
-	move.l	(lbB02D20C-datasegment,a6),-(sp)
-	movem.l	(lbL02D210-datasegment,a6),a2/a4
+	move.l	(lbB02D20C-ds,a6),-(sp)
+	movem.l	(lbL02D210-ds,a6),a2/a4
 	movea.l	a2,a3
-	suba.l	(datasegment-datasegment,a6),a3
+	suba.l	(ds-ds,a6),a3
 	adda.l	a3,a3
 	adda.l	a3,a3
-	adda.l	(workdata_end-datasegment,a6),a3
+	adda.l	(workdata_struct-ds,a6),a3
 	move.l	(a3),d7
 	rts
 
@@ -40907,61 +40913,61 @@ lbC021100	movem.l	(sp)+,a0/a1
 	move.l	a3,d0
 	sub.l	a0,d0
 	lsr.l	#2,d0
-	addq.l	#1,(lbL02D244-datasegment,a6)
+	addq.l	#1,(lbL02D244-ds,a6)
 	bsr.b	lbC02117A
 	bra.w	lbC02100E
 
-lbC021114	st	(lbB02EB5A-datasegment,a6)
-	tst.b	(lbB02B44E-datasegment,a6)
+lbC021114	st	(lbB02EB5A-ds,a6)
+	tst.b	(lbB02B44E-ds,a6)
 	beq.b	lbC02116C
 	move.b	#10,(a4)+
 	moveq	#0,d6
 	bsr.w	lbC020C02
-	lea	(endbdlw.MSG-datasegment,a6),a0
+	lea	(endbdlw.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	bsr.w	lbC020C3C
 	moveq	#-1,d0
-	movea.l	(lbL02B4A0-datasegment,a6),a0
+	movea.l	(workdata_struct_end-ds,a6),a0
 	move.l	d0,(a0)
 	rts
 
 lbC021140	bra.w	lbC020FE4
 
-lbC021144	tst.b	(lbB02B3FB-datasegment,a6)
+lbC021144	tst.b	(lbB02B3FB-ds,a6)
 	beq.b	lbC021140
 	bsr.w	lbC026B6E
 	bne.b	lbC021140
 lbC021150	moveq	#0,d6
 	move.b	#10,(a4)+
-	tst.b	(lbB02EBF3-datasegment,a6)
+	tst.b	(lbB02EBF3-ds,a6)
 	bne.b	lbC021162
-	addq.b	#1,(lbB02EB5F-datasegment,a6)
+	addq.b	#1,(lbB02EB5F-ds,a6)
 	rts
 
-lbC021162	addq.l	#1,(lbW02D228-datasegment,a6)
-	addq.l	#1,(lbL02D250-datasegment,a6)
+lbC021162	addq.l	#1,(lbW02D228-ds,a6)
+	addq.l	#1,(lbL02D250-ds,a6)
 	rts
 
 lbC02116C	andi.b	#$FB,ccr
 	rts
 
-lbC021172	st	(lbB02EB48-datasegment,a6)
+lbC021172	st	(lbB02EB48-ds,a6)
 dummy_setflags_d0	cmp.l	d0,d0
 	rts
 
-lbC02117A	tst.b	(lbB02B448-datasegment,a6)
+lbC02117A	tst.b	(lbB02B448-ds,a6)
 	beq.w	lbC02124A
-	move.l	a0,(lbL02D0A4-datasegment,a6)
+	move.l	a0,(lbL02D0A4-ds,a6)
 	pea	(lbC020C3C,pc)
 	btst	#$17,d2
 	beq.b	lbC0211C8
-	tst.b	(lbB02B44B-datasegment,a6)
+	tst.b	(lbB02B44B-ds,a6)
 	beq.b	lbC0211C8
 	movem.l	d0-d7/a0-a3/a5/a6,-(sp)
 	movea.l	a0,a3
-	jsr	(lbC02A3E6-datasegment,a6)
+	jsr	(lbC02A3E6-ds,a6)
 lbC0211A0	move.b	#$3B,(a4)+
 	move.b	#$20,(a4)+
 	bsr.w	lbC023912
@@ -40970,31 +40976,31 @@ lbC0211A0	move.b	#$3B,(a4)+
 	bra.b	lbC0211C4
 
 lbC0211B2	bsr.w	lbC020C3C
-	addq.b	#1,(lbB02EB4E-datasegment,a6)
-	move.b	(lbB02EB4E-datasegment,a6),(lbB02EB4D).l
+	addq.b	#1,(lbB02EB4E-ds,a6)
+	move.b	(lbB02EB4E-ds,a6),(lbB02EB4D).l
 	bra.b	lbC0211A0
 
 lbC0211C4	movem.l	(sp)+,d0-d7/a0-a3/a5/a6
 lbC0211C8	movem.l	d0/a0,-(sp)
 	pea	(lbC02122C,pc)
 	move.l	a0,d0
-	sub.l	(workdata_end-datasegment,a6),d0
+	sub.l	(workdata_struct-ds,a6),d0
 	lsr.l	#2,d0
 	moveq	#0,d1
 	bsr.w	lbC02777C
 	movea.l	d0,a0
 	moveq	#0,d6
 	bsr.w	lbC023954
-	tst.b	(lbB02B451-datasegment,a6)
+	tst.b	(lbB02B451-ds,a6)
 	beq.b	lbC0211F2
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
-lbC0211F2	jsr	(lbC02A0D2-datasegment,a6)
-	move.b	(EF.MSG-datasegment,a6),(a4)+
-	move.b	(QR.MSG-datasegment,a6),(a4)+
-	move.b	(UW.MSG-datasegment,a6),(a4)+
+lbC0211F2	jsr	(lbC02A0D2-ds,a6)
+	move.b	(EF.MSG-ds,a6),(a4)+
+	move.b	(QR.MSG-ds,a6),(a4)+
+	move.b	(UW.MSG-ds,a6),(a4)+
 	addq.w	#3,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2D,(a4)+
 	movem.l	(sp),d0/d1
@@ -41010,37 +41016,37 @@ lbC021222	addi.l	#$30,d0
 lbC02122C	movea.l	(4,sp),a0
 	btst	#6,(1,a0)
 	beq.b	lbC021246
-	move.l	(lbL02D0A4-datasegment,a6),d0
-	sub.l	(workdata_end-datasegment,a6),d0
+	move.l	(lbL02D0A4-ds,a6),d0
+	sub.l	(workdata_struct-ds,a6),d0
 	lsr.l	#2,d0
 	bsr.w	lbC01A5CA
 lbC021246	movem.l	(sp)+,d0/a0
 lbC02124A	rts
 
-lbC02124C	move.b	#$50,(lbB02EBF1-datasegment,a6)
+lbC02124C	move.b	#$50,(lbB02EBF1-ds,a6)
 	bra.b	lbC02125A
 
-lbC021254	move.b	#$58,(lbB02EBF1-datasegment,a6)
+lbC021254	move.b	#$58,(lbB02EBF1-ds,a6)
 lbC02125A	btst	#6,(a3)
 	bne.w	lbC021570
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC021274
-	addq.l	#1,(lbL02D258-datasegment,a6)
-	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC021274	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+	addq.l	#1,(lbL02D258-ds,a6)
+	bset	#2,(lbB02D3A4-ds,a6)
+lbC021274	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC021282
-	addq.l	#1,(lbL02D278-datasegment,a6)
+	addq.l	#1,(lbL02D278-ds,a6)
 	bra.b	lbC021286
 
-lbC021282	addq.l	#1,(lbL02D274-datasegment,a6)
+lbC021282	addq.l	#1,(lbL02D274-ds,a6)
 lbC021286	btst	#2,(a3)
 	beq.b	lbC021298
-	btst	#2,(lbL02D2E8-datasegment,a6)
+	btst	#2,(lbL02D2E8-ds,a6)
 	beq.b	lbC021298
-	subq.l	#1,(lbW02D24C-datasegment,a6)
-lbC021298	st	(lbB02EAD3-datasegment,a6)
-	tst.b	(lbB02B44F-datasegment,a6)
+	subq.l	#1,(lbW02D24C-ds,a6)
+lbC021298	st	(lbB02EAD3-ds,a6)
+	tst.b	(lbB02B44F-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC0212AC
@@ -41049,12 +41055,12 @@ lbC0212AC	tst.b	d0
 	beq.w	lbC021448
 	movea.l	a3,a0
 	adda.w	#$30,a0
-	cmpa.l	(lbL02B4A0-datasegment,a6),a0
+	cmpa.l	(workdata_struct_end-ds,a6),a0
 	bcc.w	lbC021448
 	move.l	(a0),d0
 	andi.l	#$4EC00004,d0
 	bne.w	lbC021448
-	lea	(lbL02D078-datasegment,a6),a0
+	lea	(lbL02D078-ds,a6),a0
 	movea.l	a2,a1
 	move.b	(a1)+,(a0)+
 	move.b	(a1)+,(a0)+
@@ -41103,7 +41109,7 @@ lbC0212AC	tst.b	d0
 	move.l	(a3),d7
 	bsr.w	lbC026B6E
 	lea	(lbC021254,pc),a1
-	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC02134E
 	lea	(lbC02124C,pc),a1
 lbC02134E	cmpa.l	a1,a0
@@ -41114,7 +41120,7 @@ lbC02134E	cmpa.l	a1,a0
 
 lbC02135E	adda.w	#12,a2
 	adda.w	#$30,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.w	lbC021404
 	move.l	(a3),d0
 	andi.l	#$4FC00104,d0
@@ -41131,7 +41137,7 @@ lbC02135E	adda.w	#12,a2
 	move.l	(a3),d7
 	bsr.w	lbC026B6E
 	lea	(lbC021254,pc),a1
-	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC0213B4
 	lea	(lbC02124C,pc),a1
 lbC0213B4	cmpa.l	a1,a0
@@ -41158,7 +41164,7 @@ lbC0213B4	cmpa.l	a1,a0
 	lsl.l	#8,d1
 	move.b	(a2),d1
 	suba.l	#11,a2
-	lea	(lbL02D078-datasegment,a6),a0
+	lea	(lbL02D078-ds,a6),a0
 	cmp.l	(a0)+,d4
 	bne.b	lbC021404
 	cmp.l	(a0)+,d3
@@ -41166,51 +41172,51 @@ lbC0213B4	cmpa.l	a1,a0
 	cmp.l	(a0),d1
 	bne.b	lbC021404
 	addq.l	#1,d2
-	cmp.l	(lbL02B49C-datasegment,a6),d2
+	cmp.l	(lbL02B49C-ds,a6),d2
 	bls.w	lbC02135E
 	subq.l	#1,d2
-lbC021404	move.b	(dl.MSG-datasegment,a6),(a4)+
-	move.b	(cx.MSG-datasegment,a6),(a4)+
-	move.b	(bd.MSG-datasegment,a6),(a4)+
+lbC021404	move.b	(dl.MSG-ds,a6),(a4)+
+	move.b	(cx.MSG-ds,a6),(a4)+
+	move.b	(bd.MSG-ds,a6),(a4)+
 	move.b	#$2E,(a4)+
-	move.b	(xpsc.MSG-datasegment,a6),d0
-	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+	move.b	(xpsc.MSG-ds,a6),d0
+	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC021424
-	move.b	(ps.MSG-datasegment,a6),d0
+	move.b	(ps.MSG-ds,a6),d0
 lbC021424	move.b	d0,(a4)+
 	addq.w	#5,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d2,d0
 	bsr.w	lbC022490
 	move.b	#$2C,(a4)+
-	lea	(lbL02D078-datasegment,a6),a0
-	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+	lea	(lbL02D078-ds,a6),a0
+	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.w	lbC02233A
 	bra.w	lbC02233E
 
-lbC021448	move.b	#$30,(lbB02EAD2-datasegment,a6)
-	move.b	(xpsc.MSG-datasegment,a6),d0
-	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+lbC021448	move.b	#$30,(lbB02EAD2-ds,a6)
+	move.b	(xpsc.MSG-ds,a6),d0
+	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC02145E
-	move.b	(ps.MSG-datasegment,a6),d0
-lbC02145E	jsr	(lbC029FE8-datasegment,a6)
+	move.b	(ps.MSG-ds,a6),d0
+lbC02145E	jsr	(lbC029FE8-ds,a6)
 	moveq	#0,d1
-	move.w	(screen_bitmap-datasegment,a6),d1
+	move.w	(screen_bitmap-ds,a6),d1
 	subi.w	#$1E,d1
 	add.l	a4,d1
-	move.l	d1,(lbL02D2E0-datasegment,a6)
-	tst.b	(lbB02EAD5-datasegment,a6)
+	move.l	d1,(lbL02D2E0-ds,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC02148C
-	tst.b	(lbB02B453-datasegment,a6)
+	tst.b	(lbB02B453-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021488
 	not.b	d1
 lbC021488	tst.b	d1
 	bne.b	lbC021490
-lbC02148C	clr.l	(lbL02D2E0-datasegment,a6)
-lbC021490	clr.l	(lbL02D2E4-datasegment,a6)
-lbC021494	lea	(lbL02D078-datasegment,a6),a0
+lbC02148C	clr.l	(lbL02D2E0-ds,a6)
+lbC021490	clr.l	(lbL02D2E4-ds,a6)
+lbC021494	lea	(lbL02D078-ds,a6),a0
 	move.b	(a2)+,d0
 	lsl.w	#8,d0
 	move.b	(a2)+,d0
@@ -41236,15 +41242,15 @@ lbC021494	lea	(lbL02D078-datasegment,a6),a0
 	move.b	(a2)+,d0
 	move.l	d0,(8,a0)
 	lea	(lbC02233A,pc),a1
-	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC0214DC
 	lea	(lbC02233E,pc),a1
 lbC0214DC	jsr	(a1)
-	jsr	(lbC02A3CC-datasegment,a6)
-	cmpa.l	(lbL02D2E0-datasegment,a6),a4
+	jsr	(lbC02A3CC-ds,a6)
+	cmpa.l	(lbL02D2E0-ds,a6),a4
 	bcc.b	lbC021542
-	move.l	a4,(lbL02D2E4-datasegment,a6)
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	move.l	a4,(lbL02D2E4-ds,a6)
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC021558
 	move.l	(a3),d0
 	andi.l	#$4EC00904,d0
@@ -41261,7 +41267,7 @@ lbC0214DC	jsr	(a1)
 	move.l	(a3),d7
 	bsr.w	lbC026B6E
 	lea	(lbC021254,pc),a1
-	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC021536
 	lea	(lbC02124C,pc),a1
 lbC021536	cmpa.l	a1,a0
@@ -41269,7 +41275,7 @@ lbC021536	cmpa.l	a1,a0
 	move.b	#$2C,(a4)+
 	bra.w	lbC021494
 
-lbC021542	move.l	(lbL02D2E4-datasegment,a6),d0
+lbC021542	move.l	(lbL02D2E4-ds,a6),d0
 	bne.b	lbC02154A
 	rts
 
@@ -41278,14 +41284,14 @@ lbC02154A	movea.l	d0,a4
 	suba.l	#$30,a3
 lbC021558	rts
 
-lbC02155A	move.b	#$50,(lbB02EBF1-datasegment,a6)
+lbC02155A	move.b	#$50,(lbB02EBF1-ds,a6)
 	bra.b	lbC021570
 
 lbC021562	bra.w	lbC022018
 
 lbC021566	bra.w	lbC0218BA
 
-lbC02156A	move.b	#$58,(lbB02EBF1-datasegment,a6)
+lbC02156A	move.b	#$58,(lbB02EBF1-ds,a6)
 lbC021570	btst	#0,($1E,a3)
 	bne.b	lbC021562
 	btst	#1,(12,a3)
@@ -41301,12 +41307,12 @@ lbC021570	btst	#0,($1E,a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC0215B2
-	addq.l	#1,(lbL02D258-datasegment,a6)
-	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC0215B2	move.b	(xpsc.MSG-datasegment,a6),d0
-	cmpi.b	#$58,(lbB02EBF1-datasegment,a6)
+	addq.l	#1,(lbL02D258-ds,a6)
+	bset	#2,(lbB02D3A4-ds,a6)
+lbC0215B2	move.b	(xpsc.MSG-ds,a6),d0
+	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC0215C2
-	move.b	(ps.MSG-datasegment,a6),d0
+	move.b	(ps.MSG-ds,a6),d0
 lbC0215C2	bsr.w	lbC022086
 	moveq	#0,d3
 	lea	($30,a3),a1
@@ -41375,7 +41381,7 @@ lbC02164C	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC021664
-	add.l	d3,(lbL02D238-datasegment,a6)
+	add.l	d3,(lbL02D238-ds,a6)
 lbC021664	lsl.l	#4,d3
 	adda.l	d3,a3
 	tst.b	d1
@@ -41387,16 +41393,16 @@ lbC021670	btst	#6,(a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC02168A
-	addq.l	#1,(lbL02D258-datasegment,a6)
-	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC02168A	addq.l	#1,(lbL02D270-datasegment,a6)
+	addq.l	#1,(lbL02D258-ds,a6)
+	bset	#2,(lbB02D3A4-ds,a6)
+lbC02168A	addq.l	#1,(lbL02D270-ds,a6)
 	btst	#2,(a3)
 	beq.b	lbC0216A0
-	btst	#2,(lbL02D2E8-datasegment,a6)
+	btst	#2,(lbL02D2E8-ds,a6)
 	beq.b	lbC0216A0
-	subq.l	#1,(lbW02D24C-datasegment,a6)
-lbC0216A0	st	(lbB02EAD3-datasegment,a6)
-	tst.b	(lbB02B44F-datasegment,a6)
+	subq.l	#1,(lbW02D24C-ds,a6)
+lbC0216A0	st	(lbB02EAD3-ds,a6)
+	tst.b	(lbB02B44F-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC0216B4
@@ -41405,12 +41411,12 @@ lbC0216B4	tst.b	d0
 	beq.w	lbC0217DE
 	movea.l	a3,a0
 	adda.w	#$20,a0
-	cmpa.l	(lbL02B4A0-datasegment,a6),a0
+	cmpa.l	(workdata_struct_end-ds,a6),a0
 	bcc.w	lbC0217DE
 	move.l	(a0),d0
 	andi.l	#$4EC00004,d0
 	bne.w	lbC0217DE
-	lea	(lbL02D07C-datasegment,a6),a0
+	lea	(lbL02D07C-ds,a6),a0
 	movea.l	a2,a1
 	move.b	(a1)+,(a0)+
 	move.b	(a1)+,(a0)+
@@ -41453,7 +41459,7 @@ lbC0216B4	tst.b	d0
 
 lbC021736	addq.w	#8,a2
 	adda.w	#$20,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC0217B2
 	move.l	(a3),d0
 	andi.l	#$4FC00104,d0
@@ -41486,48 +41492,48 @@ lbC021736	addq.w	#8,a2
 	lsl.l	#8,d3
 	move.b	(a2),d3
 	subq.l	#7,a2
-	lea	(lbL02D07C-datasegment,a6),a0
+	lea	(lbL02D07C-ds,a6),a0
 	cmp.l	(a0)+,d4
 	bne.b	lbC0217B2
 	cmp.l	(a0),d3
 	bne.b	lbC0217B2
 	addq.l	#1,d2
-	cmp.l	(lbL02B49C-datasegment,a6),d2
+	cmp.l	(lbL02B49C-ds,a6),d2
 	bls.b	lbC021736
 	subq.l	#1,d2
-lbC0217B2	move.b	(dl.MSG-datasegment,a6),(a4)+
-	move.b	(cx.MSG-datasegment,a6),(a4)+
-	move.b	(bd.MSG-datasegment,a6),(a4)+
+lbC0217B2	move.b	(dl.MSG-ds,a6),(a4)+
+	move.b	(cx.MSG-ds,a6),(a4)+
+	move.b	(bd.MSG-ds,a6),(a4)+
 	move.b	#$2E,(a4)+
-	move.b	(dl.MSG-datasegment,a6),(a4)+
+	move.b	(dl.MSG-ds,a6),(a4)+
 	addq.w	#5,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d2,d0
 	bsr.w	lbC022490
 	move.b	#$2C,(a4)+
-	lea	(lbL02D07C-datasegment,a6),a0
+	lea	(lbL02D07C-ds,a6),a0
 	bra.w	lbC022336
 
-lbC0217DE	move.b	#$30,(lbB02EAD2-datasegment,a6)
-	move.b	(dl.MSG-datasegment,a6),d0
-	jsr	(lbC029FE8-datasegment,a6)
+lbC0217DE	move.b	#$30,(lbB02EAD2-ds,a6)
+	move.b	(dl.MSG-ds,a6),d0
+	jsr	(lbC029FE8-ds,a6)
 	moveq	#0,d1
-	move.w	(screen_bitmap-datasegment,a6),d1
+	move.w	(screen_bitmap-ds,a6),d1
 	subi.w	#$1E,d1
 	add.l	a4,d1
-	move.l	d1,(lbL02D2E0-datasegment,a6)
-	tst.b	(lbB02EAD5-datasegment,a6)
+	move.l	d1,(lbL02D2E0-ds,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC021816
-	tst.b	(lbB02B453-datasegment,a6)
+	tst.b	(lbB02B453-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021812
 	not.b	d1
 lbC021812	tst.b	d1
 	bne.b	lbC02181A
-lbC021816	clr.l	(lbL02D2E0-datasegment,a6)
-lbC02181A	clr.l	(lbL02D2E4-datasegment,a6)
-lbC02181E	lea	(lbL02D07C-datasegment,a6),a0
+lbC021816	clr.l	(lbL02D2E0-ds,a6)
+lbC02181A	clr.l	(lbL02D2E4-ds,a6)
+lbC02181E	lea	(lbL02D07C-ds,a6),a0
 	move.b	(a2)+,d0
 	lsl.w	#8,d0
 	move.b	(a2)+,d0
@@ -41545,11 +41551,11 @@ lbC02181E	lea	(lbL02D07C-datasegment,a6),a0
 	move.b	(a2)+,d0
 	move.l	d0,(4,a0)
 	bsr.w	lbC022336
-	jsr	(lbC02A3CC-datasegment,a6)
-	cmpa.l	(lbL02D2E0-datasegment,a6),a4
+	jsr	(lbC02A3CC-ds,a6)
+	cmpa.l	(lbL02D2E0-ds,a6),a4
 	bcc.b	lbC02189E
-	move.l	a4,(lbL02D2E4-datasegment,a6)
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	move.l	a4,(lbL02D2E4-ds,a6)
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC0218B0
 	move.l	(a3),d0
 	andi.l	#$4EC00904,d0
@@ -41570,7 +41576,7 @@ lbC02181E	lea	(lbL02D07C-datasegment,a6),a0
 	move.b	#$2C,(a4)+
 	bra.b	lbC02181E
 
-lbC02189E	move.l	(lbL02D2E4-datasegment,a6),d0
+lbC02189E	move.l	(lbL02D2E4-ds,a6),d0
 	bne.b	lbC0218A6
 	rts
 
@@ -41598,9 +41604,9 @@ lbC0218BA	btst	#0,(14,a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC0218FC
-	addq.l	#1,(lbL02D258-datasegment,a6)
-	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC0218FC	move.b	(dl.MSG-datasegment,a6),d0
+	addq.l	#1,(lbL02D258-ds,a6)
+	bset	#2,(lbB02D3A4-ds,a6)
+lbC0218FC	move.b	(dl.MSG-ds,a6),d0
 	bsr.w	lbC022086
 	moveq	#0,d3
 	lea	($20,a3),a1
@@ -41653,37 +41659,37 @@ lbC021968	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC021980
-	add.l	d3,(lbL02D238-datasegment,a6)
+	add.l	d3,(lbL02D238-ds,a6)
 lbC021980	lsl.l	#3,d3
 	adda.l	d3,a3
 	tst.b	d1
 	beq.w	lbC0224C0
 	rts
 
-lbC02198C	move.b	#$53,(lbB02EBF1-datasegment,a6)
+lbC02198C	move.b	#$53,(lbB02EBF1-ds,a6)
 	bra.b	lbC02199A
 
-lbC021994	move.b	#$4C,(lbB02EBF1-datasegment,a6)
+lbC021994	move.b	#$4C,(lbB02EBF1-ds,a6)
 lbC02199A	btst	#6,(a3)
 	bne.w	lbC021C0C
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC0219B4
-	addq.l	#1,(lbL02D258-datasegment,a6)
-	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC0219B4	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+	addq.l	#1,(lbL02D258-ds,a6)
+	bset	#2,(lbB02D3A4-ds,a6)
+lbC0219B4	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC0219C2
-	addq.l	#1,(lbL02D26C-datasegment,a6)
+	addq.l	#1,(lbL02D26C-ds,a6)
 	bra.b	lbC0219C6
 
-lbC0219C2	addq.l	#1,(lbL02D268-datasegment,a6)
+lbC0219C2	addq.l	#1,(lbL02D268-ds,a6)
 lbC0219C6	btst	#2,(a3)
 	beq.b	lbC0219D8
-	btst	#2,(lbL02D2E8-datasegment,a6)
+	btst	#2,(lbL02D2E8-ds,a6)
 	beq.b	lbC0219D8
-	subq.l	#1,(lbW02D24C-datasegment,a6)
-lbC0219D8	st	(lbB02EAD3-datasegment,a6)
-	tst.b	(lbB02B44F-datasegment,a6)
+	subq.l	#1,(lbW02D24C-ds,a6)
+lbC0219D8	st	(lbB02EAD3-ds,a6)
+	tst.b	(lbB02B44F-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC0219EC
@@ -41693,7 +41699,7 @@ lbC0219EC	tst.b	d0
 	movea.l	a3,a0
 	addq.w	#8,a0
 	addq.w	#8,a0
-	cmpa.l	(lbL02B4A0-datasegment,a6),a0
+	cmpa.l	(workdata_struct_end-ds,a6),a0
 	bcc.w	lbC021B14
 	move.l	(a0),d0
 	andi.l	#$4EC00004,d0
@@ -41723,7 +41729,7 @@ lbC0219EC	tst.b	d0
 	move.l	(a3),d7
 	bsr.w	lbC026B6E
 	lea	(lbC021994,pc),a1
-	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC021A50
 	lea	(lbC02198C,pc),a1
 lbC021A50	cmpa.l	a1,a0
@@ -41736,7 +41742,7 @@ lbC021A50	cmpa.l	a1,a0
 lbC021A5E	addq.w	#4,a2
 	addq.w	#8,a3
 	addq.w	#8,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC021AD0
 	move.l	(a3),d0
 	andi.l	#$4FC00104,d0
@@ -41753,7 +41759,7 @@ lbC021A5E	addq.w	#4,a2
 	move.l	(a3),d7
 	bsr.w	lbC026B6E
 	lea	(lbC021994,pc),a1
-	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC021AAE
 	lea	(lbC02198C,pc),a1
 lbC021AAE	cmpa.l	a1,a0
@@ -41769,23 +41775,23 @@ lbC021AAE	cmpa.l	a1,a0
 	cmp.l	d4,d3
 	bne.b	lbC021AD0
 	addq.l	#1,d2
-	cmp.l	(lbL02B49C-datasegment,a6),d2
+	cmp.l	(lbL02B49C-ds,a6),d2
 	bls.b	lbC021A5E
 	subq.l	#1,d2
-lbC021AD0	move.b	(dl.MSG-datasegment,a6),(a4)+
-	move.b	(cx.MSG-datasegment,a6),(a4)+
-	move.b	(bd.MSG-datasegment,a6),(a4)+
+lbC021AD0	move.b	(dl.MSG-ds,a6),(a4)+
+	move.b	(cx.MSG-ds,a6),(a4)+
+	move.b	(bd.MSG-ds,a6),(a4)+
 	move.b	#$2E,(a4)+
-	move.b	(lw.MSG-datasegment,a6),d0
-	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+	move.b	(lw.MSG-ds,a6),d0
+	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC021AF0
-	move.b	(sc.MSG-datasegment,a6),d0
+	move.b	(sc.MSG-ds,a6),d0
 lbC021AF0	move.b	d0,(a4)+
 	addq.w	#5,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d2,d0
 	lsl.l	#2,d2
-	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC021B0C
 	bsr.w	lbC0221FE
 	dl	lbC02232C
@@ -41793,30 +41799,30 @@ lbC021AF0	move.b	d0,(a4)+
 lbC021B0C	bsr.w	lbC0221FE
 	dl	lbC022490
 
-lbC021B14	move.b	#$30,(lbB02EAD2-datasegment,a6)
-	move.b	(lw.MSG-datasegment,a6),d0
-	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+lbC021B14	move.b	#$30,(lbB02EAD2-ds,a6)
+	move.b	(lw.MSG-ds,a6),d0
+	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC021B2A
-	move.b	(sc.MSG-datasegment,a6),d0
-lbC021B2A	jsr	(lbC029FE8-datasegment,a6)
+	move.b	(sc.MSG-ds,a6),d0
+lbC021B2A	jsr	(lbC029FE8-ds,a6)
 	moveq	#0,d1
-	move.w	(screen_bitmap-datasegment,a6),d1
+	move.w	(screen_bitmap-ds,a6),d1
 	subi.w	#$1E,d1
 	add.l	a4,d1
-	move.l	d1,(lbL02D2E0-datasegment,a6)
-	tst.b	(lbB02EAD5-datasegment,a6)
+	move.l	d1,(lbL02D2E0-ds,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC021B58
-	tst.b	(lbB02B453-datasegment,a6)
+	tst.b	(lbB02B453-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021B54
 	not.b	d1
 lbC021B54	tst.b	d1
 	bne.b	lbC021B5C
-lbC021B58	clr.l	(lbL02D2E0-datasegment,a6)
-lbC021B5C	clr.l	(lbL02D2E4-datasegment,a6)
+lbC021B58	clr.l	(lbL02D2E0-ds,a6)
+lbC021B5C	clr.l	(lbL02D2E4-ds,a6)
 lbC021B60	lea	(lbC022292,pc),a0
-	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC021B7E
 	move.b	(a2)+,d0
 	lsl.w	#8,d0
@@ -41827,11 +41833,11 @@ lbC021B60	lea	(lbC022292,pc),a0
 	move.b	(a2)+,d0
 	lea	(lbC02232C,pc),a0
 lbC021B7E	jsr	(a0)
-	jsr	(lbC02A3CC-datasegment,a6)
-	cmpa.l	(lbL02D2E0-datasegment,a6),a4
+	jsr	(lbC02A3CC-ds,a6)
+	cmpa.l	(lbL02D2E0-ds,a6),a4
 	bcc.b	lbC021BE4
-	move.l	a4,(lbL02D2E4-datasegment,a6)
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	move.l	a4,(lbL02D2E4-ds,a6)
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC021BF4
 	move.l	(a3),d0
 	andi.l	#$4EC00904,d0
@@ -41848,7 +41854,7 @@ lbC021B7E	jsr	(a0)
 	move.l	(a3),d7
 	bsr.w	lbC026B6E
 	lea	(lbC021994,pc),a1
-	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC021BD8
 	lea	(lbC02198C,pc),a1
 lbC021BD8	cmpa.l	a1,a0
@@ -41856,7 +41862,7 @@ lbC021BD8	cmpa.l	a1,a0
 	move.b	#$2C,(a4)+
 	bra.w	lbC021B60
 
-lbC021BE4	move.l	(lbL02D2E4-datasegment,a6),d0
+lbC021BE4	move.l	(lbL02D2E4-ds,a6),d0
 	bne.b	lbC021BEC
 	rts
 
@@ -41866,14 +41872,14 @@ lbC021BEC	movea.l	d0,a4
 	subq.l	#8,a3
 lbC021BF4	rts
 
-lbC021BF6	move.b	#$53,(lbB02EBF1-datasegment,a6)
+lbC021BF6	move.b	#$53,(lbB02EBF1-ds,a6)
 	bra.b	lbC021C0C
 
 lbC021BFE	bra.w	lbC022018
 
 lbC021C02	bra.w	lbC021E48
 
-lbC021C06	move.b	#$4C,(lbB02EBF1-datasegment,a6)
+lbC021C06	move.b	#$4C,(lbB02EBF1-ds,a6)
 lbC021C0C	btst	#0,(6,a3)
 	bne.b	lbC021BFE
 	btst	#1,(4,a3)
@@ -41889,12 +41895,12 @@ lbC021C0C	btst	#0,(6,a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC021C4E
-	addq.l	#1,(lbL02D258-datasegment,a6)
-	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC021C4E	move.b	(lw.MSG-datasegment,a6),d0
-	cmpi.b	#$4C,(lbB02EBF1-datasegment,a6)
+	addq.l	#1,(lbL02D258-ds,a6)
+	bset	#2,(lbB02D3A4-ds,a6)
+lbC021C4E	move.b	(lw.MSG-ds,a6),d0
+	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
 	beq.b	lbC021C5E
-	move.b	(sc.MSG-datasegment,a6),d0
+	move.b	(sc.MSG-ds,a6),d0
 lbC021C5E	bsr.w	lbC022086
 	moveq	#0,d3
 	lea	($10,a3),a1
@@ -41932,7 +41938,7 @@ lbC021CA8	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC021CC0
-	add.l	d3,(lbL02D238-datasegment,a6)
+	add.l	d3,(lbL02D238-ds,a6)
 lbC021CC0	lsl.l	#2,d3
 	adda.l	d3,a3
 	tst.b	d1
@@ -41944,11 +41950,11 @@ lbC021CCC	btst	#6,(a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC021CE6
-	addq.l	#1,(lbL02D258-datasegment,a6)
-	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC021CE6	addq.l	#1,(lbL02D264-datasegment,a6)
-	st	(lbB02EAD3-datasegment,a6)
-	tst.b	(lbB02B44F-datasegment,a6)
+	addq.l	#1,(lbL02D258-ds,a6)
+	bset	#2,(lbB02D3A4-ds,a6)
+lbC021CE6	addq.l	#1,(lbL02D264-ds,a6)
+	st	(lbB02EAD3-ds,a6)
+	tst.b	(lbB02B44F-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC021CFE
@@ -41957,7 +41963,7 @@ lbC021CFE	tst.b	d0
 	beq.w	lbC021DB8
 	movea.l	a3,a0
 	addq.l	#8,a0
-	cmpa.l	(lbL02B4A0-datasegment,a6),a0
+	cmpa.l	(workdata_struct_end-ds,a6),a0
 	bcc.w	lbC021DB8
 	move.l	(a0),d0
 	andi.l	#$4EC00004,d0
@@ -41986,7 +41992,7 @@ lbC021CFE	tst.b	d0
 
 lbC021D4E	addq.l	#2,a2
 	addq.l	#8,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC021D92
 	move.l	(a3),d0
 	andi.l	#$4FC00104,d0
@@ -42004,45 +42010,45 @@ lbC021D4E	addq.l	#2,a2
 	cmp.w	d4,d3
 	bne.b	lbC021D92
 	addq.l	#1,d2
-	cmp.l	(lbL02B49C-datasegment,a6),d2
+	cmp.l	(lbL02B49C-ds,a6),d2
 	bls.b	lbC021D4E
 	subq.l	#1,d2
-lbC021D92	move.b	(dl.MSG-datasegment,a6),(a4)+
-	move.b	(cx.MSG-datasegment,a6),(a4)+
-	move.b	(bd.MSG-datasegment,a6),(a4)+
+lbC021D92	move.b	(dl.MSG-ds,a6),(a4)+
+	move.b	(cx.MSG-ds,a6),(a4)+
+	move.b	(bd.MSG-ds,a6),(a4)+
 	move.b	#$2E,(a4)+
-	move.b	(wx.MSG-datasegment,a6),(a4)+
+	move.b	(wx.MSG-ds,a6),(a4)+
 	addq.w	#5,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d2,d0
 	add.l	d2,d2
 	bsr.w	lbC0221FE
 	dl	lbC0224C0
 
-lbC021DB8	move.b	(wx.MSG-datasegment,a6),d0
-	jsr	(lbC029FE8-datasegment,a6)
+lbC021DB8	move.b	(wx.MSG-ds,a6),d0
+	jsr	(lbC029FE8-ds,a6)
 	moveq	#0,d1
-	move.w	(screen_bitmap-datasegment,a6),d1
+	move.w	(screen_bitmap-ds,a6),d1
 	subi.w	#$1E,d1
 	add.l	a4,d1
-	move.l	d1,(lbL02D2E0-datasegment,a6)
-	tst.b	(lbB02EAD5-datasegment,a6)
+	move.l	d1,(lbL02D2E0-ds,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC021DEA
-	tst.b	(lbB02B453-datasegment,a6)
+	tst.b	(lbB02B453-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021DE6
 	not.b	d1
 lbC021DE6	tst.b	d1
 	bne.b	lbC021DEE
-lbC021DEA	clr.l	(lbL02D2E0-datasegment,a6)
-lbC021DEE	clr.l	(lbL02D2E4-datasegment,a6)
+lbC021DEA	clr.l	(lbL02D2E0-ds,a6)
+lbC021DEE	clr.l	(lbL02D2E4-ds,a6)
 lbC021DF2	bsr.w	lbC0222FE
-	jsr	(lbC02A3CC-datasegment,a6)
-	cmpa.l	(lbL02D2E0-datasegment,a6),a4
+	jsr	(lbC02A3CC-ds,a6)
+	cmpa.l	(lbL02D2E0-ds,a6),a4
 	bcc.b	lbC021E34
-	move.l	a4,(lbL02D2E4-datasegment,a6)
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	move.l	a4,(lbL02D2E4-ds,a6)
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC021E42
 	move.l	(a3),d0
 	andi.l	#$4EC00904,d0
@@ -42057,7 +42063,7 @@ lbC021DF2	bsr.w	lbC0222FE
 	move.b	#$2C,(a4)+
 	bra.b	lbC021DF2
 
-lbC021E34	move.l	(lbL02D2E4-datasegment,a6),d0
+lbC021E34	move.l	(lbL02D2E4-ds,a6),d0
 	bne.b	lbC021E3C
 	rts
 
@@ -42075,9 +42081,9 @@ lbC021E48	btst	#0,(6,a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC021E6A
-	addq.l	#1,(lbL02D258-datasegment,a6)
-	bset	#2,(lbB02D3A4-datasegment,a6)
-lbC021E6A	move.b	(wx.MSG-datasegment,a6),d0
+	addq.l	#1,(lbL02D258-ds,a6)
+	bset	#2,(lbB02D3A4-ds,a6)
+lbC021E6A	move.b	(wx.MSG-ds,a6),d0
 	bsr.w	lbC022086
 	moveq	#0,d3
 	lea	(8,a3),a1
@@ -42113,7 +42119,7 @@ lbC021EB4	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC021ECC
-	add.l	d3,(lbL02D238-datasegment,a6)
+	add.l	d3,(lbL02D238-ds,a6)
 lbC021ECC	lsl.l	#2,d3
 	adda.l	d3,a3
 	tst.b	d1
@@ -42122,9 +42128,9 @@ lbC021ECC	lsl.l	#2,d3
 
 lbC021ED8	btst	#6,(a3)
 	bne.w	lbC022018
-	addq.l	#1,(lbL02D260-datasegment,a6)
-	st	(lbB02EAD3-datasegment,a6)
-	tst.b	(lbB02B44F-datasegment,a6)
+	addq.l	#1,(lbL02D260-ds,a6)
+	st	(lbB02EAD3-ds,a6)
+	tst.b	(lbB02B44F-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC021EF8
@@ -42133,7 +42139,7 @@ lbC021EF8	tst.b	d0
 	beq.w	lbC021F98
 	movea.l	a3,a0
 	addq.l	#4,a0
-	cmpa.l	(lbL02B4A0-datasegment,a6),a0
+	cmpa.l	(workdata_struct_end-ds,a6),a0
 	bcc.w	lbC021F98
 	move.l	(a0),d0
 	andi.l	#$4EC00004,d0
@@ -42159,7 +42165,7 @@ lbC021EF8	tst.b	d0
 
 lbC021F44	addq.l	#1,a2
 	addq.l	#4,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC021F74
 	move.l	(a3),d0
 	andi.l	#$4FC00104,d0
@@ -42171,44 +42177,44 @@ lbC021F44	addq.l	#1,a2
 	cmp.b	(a2),d3
 	bne.b	lbC021F74
 	addq.l	#1,d2
-	cmp.l	(lbL02B49C-datasegment,a6),d2
+	cmp.l	(lbL02B49C-ds,a6),d2
 	bls.b	lbC021F44
 	subq.l	#1,d2
-lbC021F74	move.b	(dl.MSG-datasegment,a6),(a4)+
-	move.b	(cx.MSG-datasegment,a6),(a4)+
-	move.b	(bd.MSG-datasegment,a6),(a4)+
+lbC021F74	move.b	(dl.MSG-ds,a6),(a4)+
+	move.b	(cx.MSG-ds,a6),(a4)+
+	move.b	(bd.MSG-ds,a6),(a4)+
 	move.b	#$2E,(a4)+
-	move.b	(bd.MSG-datasegment,a6),(a4)+
+	move.b	(bd.MSG-ds,a6),(a4)+
 	addq.w	#5,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d2,d0
 	bsr.w	lbC0221FE
 	dl	put_line_end
 
-lbC021F98	move.b	(bd.MSG-datasegment,a6),d0
-	jsr	(lbC029FE8-datasegment,a6)
+lbC021F98	move.b	(bd.MSG-ds,a6),d0
+	jsr	(lbC029FE8-ds,a6)
 	moveq	#0,d1
-	move.w	(screen_bitmap-datasegment,a6),d1
+	move.w	(screen_bitmap-ds,a6),d1
 	subi.l	#$1E,d1
 	add.l	a4,d1
-	move.l	d1,(lbL02D2E0-datasegment,a6)
-	tst.b	(lbB02EAD5-datasegment,a6)
+	move.l	d1,(lbL02D2E0-ds,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC021FCC
-	tst.b	(lbB02B453-datasegment,a6)
+	tst.b	(lbB02B453-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021FC8
 	not.b	d1
 lbC021FC8	tst.b	d1
 	bne.b	lbC021FD0
-lbC021FCC	clr.l	(lbL02D2E0-datasegment,a6)
-lbC021FD0	clr.l	(lbL02D2E4-datasegment,a6)
+lbC021FCC	clr.l	(lbL02D2E0-ds,a6)
+lbC021FD0	clr.l	(lbL02D2E4-ds,a6)
 lbC021FD4	bsr.w	lbC022318
-	jsr	(lbC02A3CC-datasegment,a6)
-	cmpa.l	(lbL02D2E0-datasegment,a6),a4
+	jsr	(lbC02A3CC-ds,a6)
+	cmpa.l	(lbL02D2E0-ds,a6),a4
 	bcc.b	lbC02200A
-	move.l	a4,(lbL02D2E4-datasegment,a6)
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	move.l	a4,(lbL02D2E4-ds,a6)
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC022016
 	move.l	(a3),d0
 	andi.l	#$4EC00904,d0
@@ -42220,14 +42226,14 @@ lbC021FD4	bsr.w	lbC022318
 	move.b	#$2C,(a4)+
 	bra.b	lbC021FD4
 
-lbC02200A	move.l	(lbL02D2E4-datasegment,a6),d0
+lbC02200A	move.l	(lbL02D2E4-ds,a6),d0
 	beq.b	lbC022016
 	movea.l	d0,a4
 	subq.l	#1,a2
 	subq.l	#4,a3
 lbC022016	rts
 
-lbC022018	move.b	(bd.MSG-datasegment,a6),d0
+lbC022018	move.b	(bd.MSG-ds,a6),d0
 	bsr.b	lbC022086
 	moveq	#0,d3
 	lea	(4,a3),a1
@@ -42264,39 +42270,39 @@ lbC022064	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC02207A
-	add.l	d3,(lbL02D238-datasegment,a6)
+	add.l	d3,(lbL02D238-ds,a6)
 lbC02207A	lsl.l	#2,d3
 	adda.l	d3,a3
 	tst.b	d1
 	beq.w	lbC0224C0
 	rts
 
-lbC022086	st	(lbW02EACE-datasegment,a6)
-	addq.l	#1,(lbL02D27C-datasegment,a6)
-	move.b	(dl.MSG-datasegment,a6),(a4)+
-	move.b	(x.MSG-datasegment,a6),(a4)+
+lbC022086	st	(lbW02EACE-ds,a6)
+	addq.l	#1,(lbL02D27C-ds,a6)
+	move.b	(dl.MSG-ds,a6),(a4)+
+	move.b	(x.MSG-ds,a6),(a4)+
 	btst	#3,(2,a3)
 	bne.b	lbC0220A4
-	move.b	(sc.MSG-datasegment,a6),(-1,a4)
+	move.b	(sc.MSG-ds,a6),(-1,a4)
 lbC0220A4	move.b	#$2E,(a4)+
 	move.b	d0,(a4)+
 	addq.w	#4,d6
-	jmp	(setspacepostopcode-datasegment,a6)
+	jmp	(setspacepostopcode-ds,a6)
 
-lbC0220B0	move.l	(lbB02D0EC-datasegment,a6),d1
+lbC0220B0	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$12,d1
 	bne.b	lbC0220BC
 lbC0220BA	rts
 
 lbC0220BC	tst.l	d0
 	beq.b	lbC0220BA
-	clr.b	(lbB02EB68-datasegment,a6)
-	move.l	a4,(lbL02D200-datasegment,a6)
-	move.l	d0,(lbL02D204-datasegment,a6)
+	clr.b	(lbB02EB68-ds,a6)
+	move.l	a4,(lbL02D200-ds,a6)
+	move.l	d0,(lbL02D204-ds,a6)
 	tst.b	d0
 	bne.b	lbC0220D8
 	move.b	#$28,(a4)+
-	st	(lbB02EB68-datasegment,a6)
+	st	(lbB02EB68-ds,a6)
 lbC0220D8	movem.w	d2-d4,-(sp)
 	move.b	#$27,(a4)+
 	moveq	#0,d1
@@ -42324,7 +42330,7 @@ lbC022112	cmpi.l	#$FFFFFF,d0
 	dbra	d4,lbC022112
 lbC022120	rol.l	#8,d0
 	move.b	d0,d1
-	move.b	(lbL02A8A4-datasegment,a6,d1.w),(a4)+
+	move.b	(lbL02A8A4-ds,a6,d1.w),(a4)+
 	beq.b	lbC022154
 	cmpi.b	#$27,(-1,a4)
 	bne.b	lbC02213C
@@ -42334,17 +42340,17 @@ lbC02213C	subq.w	#1,d4
 	bcs.b	lbC0221B8
 	rol.l	#8,d0
 	move.b	d0,d1
-	move.b	(lbL02A8A4-datasegment,a6,d1.w),(a4)+
+	move.b	(lbL02A8A4-ds,a6,d1.w),(a4)+
 	beq.b	lbC022154
 	cmpi.b	#$27,(-1,a4)
 	beq.b	lbC02216E
 	bra.b	lbC022178
 
-lbC022154	move.l	(lbB02D0EC-datasegment,a6),d1
+lbC022154	move.l	(lbB02D0EC-ds,a6),d1
 	bclr	#$12,d1
-	move.l	d1,(lbB02D0EC-datasegment,a6)
-	movea.l	(lbL02D200-datasegment,a6),a4
-	move.l	(lbL02D204-datasegment,a6),d0
+	move.l	d1,(lbB02D0EC-ds,a6)
+	movea.l	(lbL02D200-ds,a6),a4
+	move.l	(lbL02D204-ds,a6),d0
 	movem.w	(sp)+,d2-d4
 	rts
 
@@ -42354,7 +42360,7 @@ lbC022178	subq.w	#1,d4
 	bcs.b	lbC0221B8
 	rol.l	#8,d0
 	move.b	d0,d1
-	move.b	(lbL02A8A4-datasegment,a6,d1.w),(a4)+
+	move.b	(lbL02A8A4-ds,a6,d1.w),(a4)+
 	beq.b	lbC022154
 	cmpi.b	#$27,(-1,a4)
 	bne.b	lbC022198
@@ -42364,7 +42370,7 @@ lbC022198	subq.w	#1,d4
 	bcs.b	lbC0221B8
 	rol.l	#8,d0
 	move.b	d0,d1
-	move.b	(lbL02A8A4-datasegment,a6,d1.w),(a4)+
+	move.b	(lbL02A8A4-ds,a6,d1.w),(a4)+
 	beq.b	lbC022154
 	cmpi.b	#$27,(-1,a4)
 	bne.b	lbC0221B8
@@ -42385,10 +42391,10 @@ lbC0221B8	move.b	#$27,(a4)+
 	move.b	#$34,-(a4)
 	move.b	#$32,-(a4)
 	addq.l	#2,a4
-lbC0221E8	tst.b	(lbB02EB68-datasegment,a6)
+lbC0221E8	tst.b	(lbB02EB68-ds,a6)
 	beq.b	lbC0221F2
 	move.b	#$29,(a4)+
-lbC0221F2	addq.l	#1,(lbL02D284-datasegment,a6)
+lbC0221F2	addq.l	#1,(lbL02D284-ds,a6)
 	movem.w	(sp)+,d2-d4
 	addq.l	#4,sp
 	rts
@@ -42448,9 +42454,9 @@ lbC02226C	addq.l	#4,a2
 	lea	($10,a3),a3
 	rts
 
-lbC022274	tst.b	(lbB02B3EA-datasegment,a6)
+lbC022274	tst.b	(lbB02B3EA-ds,a6)
 	beq.b	lbC022298
-	addq.l	#1,(lbW02D24C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#2,(a4)+
 	bsr.b	lbC022298
 	move.b	#1,(a4)+
@@ -42464,7 +42470,7 @@ lbC022292	btst	#2,(a3)
 	bne.b	lbC022274
 lbC022298	btst	#0,(a3)
 	bne.b	lbC02228A
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	bne.b	lbC02228A
 lbC0222A4	move.b	(a2)+,d0
 	lsl.w	#8,d0
@@ -42477,25 +42483,25 @@ lbC0222A4	move.b	(a2)+,d0
 	addq.w	#8,a3
 	addq.w	#8,a3
 	bne.w	lbC022808
-	tst.b	(lbB02B457-datasegment,a6)
+	tst.b	(lbB02B457-ds,a6)
 	beq.w	lbC022490
 	move.l	d0,d1
-	sub.l	(datasegment-datasegment,a6),d1
+	sub.l	(ds-ds,a6),d1
 	addq.l	#4,d1
 lbC0222CE	beq.w	put_adr_d0
 	addq.l	#4,d1
 	beq.b	lbC0222CE
-	move.l	(lbL02D1DC-datasegment,a6),d1
+	move.l	(workdata_strt_plus1-ds,a6),d1
 	subq.l	#1,d1
 	bcs.w	lbC022490
 	cmp.l	d1,d0
 	bcs.w	lbC022490
-	add.l	(lbB02B4A8-datasegment,a6),d1
+	add.l	(workdata_length-ds,a6),d1
 	cmp.l	d1,d0
 	bcc.w	lbC022490
-	sub.l	(lbB02B4A8-datasegment,a6),d1
+	sub.l	(workdata_length-ds,a6),d1
 	sub.l	d1,d0
-	add.l	(datasegment-datasegment,a6),d0
+	add.l	(ds-ds,a6),d0
 	bra.w	put_adr_d0
 
 lbC0222FE	bsr.w	lbC0234EE
@@ -42520,7 +42526,7 @@ lbC022318	moveq	#0,d0
 lbC022324	move.b	(-1,a2),d0
 	bra.w	put_line_end
 
-lbC02232C	lea	(lbL02D080-datasegment,a6),a0
+lbC02232C	lea	(lbL02D080-ds,a6),a0
 	move.l	d0,(a0)
 	moveq	#0,d0
 	bra.b	lbC022340
@@ -42535,23 +42541,23 @@ lbC02233E	moveq	#3,d0
 lbC022340	movem.l	d2-d4/a2,-(sp)
 	movea.l	a0,a2
 	move.l	d0,d2
-	move.l	(fpsupportbase-datasegment,a6),d4
+	move.l	(fpsupportbase-ds,a6),d4
 	bne.b	lbC022364
 	lea	(fpsupportlibr.MSG,pc),a1
 	move.l	#$10001,d0
-	jsr	(openlibjmp-datasegment,a6)
-	move.l	d0,(fpsupportbase-datasegment,a6)
+	jsr	(_openlib-ds,a6)
+	move.l	d0,(fpsupportbase-ds,a6)
 	beq.b	lbC0223A6
 	move.l	d0,d4
-lbC022364	move.l	(mathieeedoubbase-datasegment,a6),d3
+lbC022364	move.l	(mathieeedoubbase-ds,a6),d3
 	bne.b	lbC022382
 	lea	(mathieeedoubb.MSG,pc),a1
 	moveq	#0,d0
 	move.l	a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOOpenLibrary,a6)
 	movea.l	(sp)+,a6
-	move.l	d0,(mathieeedoubbase-datasegment,a6)
+	move.l	d0,(mathieeedoubbase-ds,a6)
 	move.l	d0,d3
 lbC022382	movea.l	a2,a0
 	move.l	d2,d0
@@ -42582,7 +42588,7 @@ mathieeedoubb.MSG	db	'mathieeedoubbas.library',0
 fpsupportlibr.MSG	db	'fpsupport.library',0
 
 lbC0223E2	movem.l	a1/a2,-(sp)
-	lea	(_RawDoFmt_args-datasegment,a6),a1
+	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	(a0)+,(a1)+
 	move.l	(a0)+,(a1)+
 	move.l	(a0),(a1)
@@ -42592,7 +42598,7 @@ lbC0223E2	movem.l	a1/a2,-(sp)
 lx08lx08lx.MSG	db	'$%08lx,$%08lx,$%08lx',0,0
 
 lbC02240E	movem.l	a1/a2,-(sp)
-	lea	(_RawDoFmt_args-datasegment,a6),a1
+	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	(a0)+,(a1)+
 	move.l	(a0),(a1)
 	lea	(lbC022422,pc),a0
@@ -42610,19 +42616,19 @@ lbC022430	move.l	(a0),d0
 lbC02243A	tst.l	(a0)
 	bne.b	lbC02245A
 	move.l	(4,a0),d0
-	cmp.l	(lbL02CDF0-datasegment,a6),d0
+	cmp.l	(lbL02CDF0-ds,a6),d0
 	bcs.w	lbC022542
-	move.l	(lbB02D0EC-datasegment,a6),d1
+	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$10,d1
 	bne.w	lbC022542
 	bra.w	lbC022518
 
 lbC02245A	movem.l	a1/a2,-(sp)
-	lea	(_RawDoFmt_args-datasegment,a6),a1
+	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	(a0)+,(a1)+
 	move.l	(a0),(a1)
 	lea	(lx08lx.MSG,pc),a0
-	tst.b	(lbB02B452-datasegment,a6)
+	tst.b	(lbB02B452-ds,a6)
 	beq.b	lbC022474
 	lea	(lx08lx.MSG0,pc),a0
 lbC022474	bra.w	lbC022566
@@ -42631,64 +42637,64 @@ lx08lx.MSG	db	'$%-lx%08lx',0
 lx08lx.MSG0	db	'$%08lx%08lx',0,0
 
 lbC022490	moveq	#6,d1
-	and.b	(lbB02D0ED-datasegment,a6),d1
+	and.b	(lbB02D0ED-ds,a6),d1
 	beq.b	lbC0224AA
 	bsr.w	lbC0220B0
-	move.l	(lbB02D0EC-datasegment,a6),d1
+	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$11,d1
 	beq.b	lbC0224AE
 	bra.w	lbC0225A0
 
-lbC0224AA	move.l	(lbB02D0EC-datasegment,a6),d1
-lbC0224AE	cmp.l	(lbL02CDF0-datasegment,a6),d0
+lbC0224AA	move.l	(lbB02D0EC-ds,a6),d1
+lbC0224AE	cmp.l	(lbL02CDF0-ds,a6),d0
 	bcs.w	lbC022542
 	btst	#$10,d1
 	bne.w	lbC022542
 	bra.b	lbC022518
 
 lbC0224C0	moveq	#6,d1
-	and.b	(lbB02D0ED-datasegment,a6),d1
+	and.b	(lbB02D0ED-ds,a6),d1
 	beq.b	lbC0224DA
 	bsr.w	lbC0220B0
-	move.l	(lbB02D0EC-datasegment,a6),d1
+	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$11,d1
 	bne.w	lbC0225B8
 	bra.b	lbC0224DE
 
-lbC0224DA	move.l	(lbB02D0EC-datasegment,a6),d1
-lbC0224DE	cmp.l	(lbL02CDF0-datasegment,a6),d0
+lbC0224DA	move.l	(lbB02D0EC-ds,a6),d1
+lbC0224DE	cmp.l	(lbL02CDF0-ds,a6),d0
 	bcs.b	lbC022542
 	btst	#$10,d1
 	bne.b	lbC022542
 	bra.b	lbC022524
 
 put_line_end	moveq	#6,d1
-	and.b	(lbB02D0ED-datasegment,a6),d1
+	and.b	(lbB02D0ED-ds,a6),d1
 	beq.b	lbC022506
 	bsr.w	lbC0220B0
-	move.l	(lbB02D0EC-datasegment,a6),d1
+	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$11,d1
 	bne.w	lbC0225D4
 	bra.b	lbC02250A
 
-lbC022506	move.l	(lbB02D0EC-datasegment,a6),d1
-lbC02250A	cmp.l	(lbL02CDF0-datasegment,a6),d0
+lbC022506	move.l	(lbB02D0EC-ds,a6),d1
+lbC02250A	cmp.l	(lbL02CDF0-ds,a6),d0
 	bcs.b	lbC022542
 	btst	#$10,d1
 	bne.b	lbC022542
 	bra.b	lbC022530
 
-lbC022518	tst.b	(lbB02B452-datasegment,a6)
+lbC022518	tst.b	(lbB02B452-ds,a6)
 	beq.b	lbC02255A
 	lea	(lx8.MSG,pc),a0
 	bra.b	lbC02255E
 
-lbC022524	tst.b	(lbB02B452-datasegment,a6)
+lbC022524	tst.b	(lbB02B452-ds,a6)
 	beq.b	lbC02255A
 	lea	(lx4.MSG,pc),a0
 	bra.b	lbC02255E
 
-lbC022530	tst.b	(lbB02B452-datasegment,a6)
+lbC022530	tst.b	(lbB02B452-ds,a6)
 	beq.b	lbC02255A
 	lea	(lx2.MSG,pc),a0
 	bra.b	lbC02255E
@@ -42708,8 +42714,8 @@ lbC022554	lea	(ld.MSG,pc),a0
 
 lbC02255A	lea	(lx.MSG1,pc),a0
 lbC02255E	movem.l	a1/a2,-(sp)
-	move.l	d0,(_RawDoFmt_args-datasegment,a6)
-lbC022566	lea	(lbL02D79C-datasegment,a6),a2
+	move.l	d0,(_RawDoFmt_args-ds,a6)
+lbC022566	lea	(lbL02D79C-ds,a6),a2
 	bsr.w	_RawDoFmt
 lbC02256E	move.b	(a2)+,(a4)+
 	tst.b	(a2)
@@ -42770,16 +42776,16 @@ lbC022802	movem.l	(sp)+,d0-d7/a0-a3/a5/a6
 
 lbC022808	movem.l	d0-d7/a0-a3/a5/a6,-(sp)
 	pea	(lbC022802,pc)
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcs.b	lbC02282E
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcs.w	lbC0228B0
 lbC02281E	btst	#2,(-$10,a3)
 	beq.b	lbC022856
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bra.w	lbC0229A2
 
-lbC02282E	move.l	(datasegment-datasegment,a6),d1
+lbC02282E	move.l	(ds-ds,a6),d1
 	sub.l	d0,d1
 	subq.l	#4,d1
 	beq.b	lbC022856
@@ -42787,7 +42793,7 @@ lbC02282E	move.l	(datasegment-datasegment,a6),d1
 	bne.b	lbC02281E
 	bra.b	lbC022856
 
-lbC02283E	lea	(lbL02D12C-datasegment,a6),a0
+lbC02283E	lea	(lbL02D12C-ds,a6),a0
 	tst.l	(a0)+
 	beq.b	lbC022852
 	tst.l	(a0)+
@@ -42800,7 +42806,7 @@ lbC022852	move.l	d0,-(a0)
 lbC022854	bra.b	lbC0228B6
 
 lbC022856	moveq	#$34,d2
-	move.l	(datasegment-datasegment,a6),d1
+	move.l	(ds-ds,a6),d1
 	subq.l	#4,d1
 	cmp.l	d1,d0
 	beq.b	lbC02286A
@@ -42817,39 +42823,39 @@ lbC02286E	move.b	(a0)+,(a4)+
 	rts
 
 lbC02287C	move.l	a2,d1
-	sub.l	(datasegment-datasegment,a6),d1
+	sub.l	(ds-ds,a6),d1
 	lsl.l	#2,d1
-	movea.l	(workdata_end-datasegment,a6),a0
+	movea.l	(workdata_struct-ds,a6),a0
 	btst	#2,(-4,a0,d1.l)
 	beq.w	lbC022490
-	clr.b	(lbB02D39A-datasegment,a6)
+	clr.b	(lbB02D39A-ds,a6)
 	bra.b	lbC0228B0
 
 lbC022898	bra.w	lbC022A4C
 
 put_adr_d0	movem.l	d0-d7/a0-a3/a5/a6,-(sp)
 	pea	(lbC022802,pc)
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcs.b	lbC022856
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcc.b	lbC022856
-lbC0228B0	tst.b	(lbB02EB79-datasegment,a6)
+lbC0228B0	tst.b	(lbB02EB79-ds,a6)
 	bne.b	lbC02283E
-lbC0228B6	move.l	d0,(lbL02D088-datasegment,a6)
-	sub.l	(datasegment-datasegment,a6),d0
+lbC0228B6	move.l	d0,(lbL02D088-ds,a6)
+	sub.l	(ds-ds,a6),d0
 	move.l	d0,d2
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a0
-	move.l	a0,(lbL02D08C-datasegment,a6)
-	tst.b	(lbB02D39A-datasegment,a6)
+	move.l	a0,(lbL02D08C-ds,a6)
+	tst.b	(lbB02D39A-ds,a6)
 	bne.b	lbC022898
 lbC0228D2	move.l	d2,d0
 	move.l	d2,d1
 	lsl.l	#2,d1
-	add.l	(workdata_end-datasegment,a6),d1
+	add.l	(workdata_struct-ds,a6),d1
 	movea.l	d1,a0
-	cmpi.b	#$43,(lbB02EAD2-datasegment,a6)
+	cmpi.b	#$43,(lbB02EAD2-ds,a6)
 	bne.b	lbC02295A
 	tst.b	(3,a0)
 	bpl.b	lbC02294E
@@ -42858,43 +42864,43 @@ lbC0228EC	btst	#1,(a0)
 	btst	#4,(1,a0)
 	beq.b	lbC02292C
 	bsr.w	lbC023364
-	tst.b	(lbB02B3F2-datasegment,a6)
+	tst.b	(lbB02B3F2-ds,a6)
 	bne.b	lbC022910
 lbC022906	subq.w	#1,d1
 lbC022908	move.b	(a0)+,(a4)+
 	dbra	d1,lbC022908
 	rts
 
-lbC022910	addq.l	#1,(lbW02D24C-datasegment,a6)
+lbC022910	addq.l	#1,(lbW02D24C-ds,a6)
 	cmpi.b	#$FF,(-1,a4)
 	beq.b	lbC022906
-	addq.l	#2,(lbB02D37C-datasegment,a6)
+	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#3,(a4)+
 	bsr.b	lbC022906
 	move.b	#1,(a4)+
 	rts
 
-lbC02292C	tst.b	(lbB02B3F3-datasegment,a6)
+lbC02292C	tst.b	(lbB02B3F3-ds,a6)
 	beq.b	lbC022976
-	addq.l	#1,(lbW02D24C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
 	cmpi.b	#2,(-1,a4)
 	beq.b	lbC022976
-	addq.l	#2,(lbB02D37C-datasegment,a6)
+	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#3,(a4)+
 	bsr.b	lbC022976
 	move.b	#1,(a4)+
 	rts
 
-lbC02294E	addq.l	#1,(lbL02D298-datasegment,a6)
-	bset	#3,(lbB02D3A4-datasegment,a6)
+lbC02294E	addq.l	#1,(lbL02D298-ds,a6)
+	bset	#3,(lbB02D3A4-ds,a6)
 	bra.b	lbC0228EC
 
-lbC02295A	cmpi.b	#$30,(lbB02EAD2-datasegment,a6)
+lbC02295A	cmpi.b	#$30,(lbB02EAD2-ds,a6)
 	beq.b	lbC0228EC
 	tst.b	(3,a0)
 	bpl.b	lbC0228EC
-	addq.l	#1,(lbL02D298-datasegment,a6)
-	bset	#4,(lbB02D3A4-datasegment,a6)
+	addq.l	#1,(lbL02D298-ds,a6)
+	bset	#4,(lbB02D3A4-ds,a6)
 	bra.w	lbC0228EC
 
 lbC022976	moveq	#0,d1
@@ -42913,8 +42919,8 @@ lbC02299A	move.b	(a0)+,(a4)+
 	subq.l	#1,a4
 	rts
 
-lbC0229A2	addq.l	#1,(lbL02D218-datasegment,a6)
-	bset	#5,(lbB02D3A4-datasegment,a6)
+lbC0229A2	addq.l	#1,(lbL02D218-ds,a6)
+	bset	#5,(lbB02D3A4-ds,a6)
 	move.b	#$53,(a4)+
 	move.b	#$54,(a4)+
 	move.b	#$41,(a4)+
@@ -42968,14 +42974,14 @@ lbC022A4C	move.l	(a0),d1
 	beq.b	lbC022A8A
 	btst	#8,d1
 	beq.b	lbC022A90
-	cmpi.b	#$30,(lbB02EAD2-datasegment,a6)
+	cmpi.b	#$30,(lbB02EAD2-ds,a6)
 	beq.b	lbC022A7A
 	btst	#9,d1
 	bne.b	lbC022A6E
 	btst	#$13,d1
 	beq.b	lbC022A90
-lbC022A6E	move.b	(lbB02EAD2-datasegment,a6),d1
-	move.b	d1,(lbW02EB3A-datasegment,a6)
+lbC022A6E	move.b	(lbB02EAD2-ds,a6),d1
+	move.b	d1,(lbW02EB3A-ds,a6)
 	bra.w	lbC022DE4
 
 lbC022A7A	btst	#9,d1
@@ -42986,7 +42992,7 @@ lbC022A7A	btst	#9,d1
 
 lbC022A8A	bset	#$14,d1
 	move.l	d1,(a0)
-lbC022A90	tst.b	(lbL02EAD8-datasegment,a6)
+lbC022A90	tst.b	(loadbinaryfile-ds,a6)
 	bne.b	lbC022AAC
 	tst.l	d2
 	bne.b	lbC022AAC
@@ -43047,11 +43053,11 @@ lbC022AAC	btst	#8,d1
 	moveq	#$3F,d1
 	bra.b	lbC022B64
 
-lbC022B50	move.b	(lbB02EAD2-datasegment,a6),d1
-lbC022B54	move.b	d1,(lbW02EB3A-datasegment,a6)
+lbC022B50	move.b	(lbB02EAD2-ds,a6),d1
+lbC022B54	move.b	d1,(lbW02EB3A-ds,a6)
 	tst.l	d2
 	bne.b	lbC022B6C
-	tst.b	(lbL02EAD8-datasegment,a6)
+	tst.b	(loadbinaryfile-ds,a6)
 	bne.b	lbC022B6C
 	moveq	#$43,d1
 lbC022B64	bra.w	lbC022DE4
@@ -43070,7 +43076,7 @@ lbC022B6C	cmpi.b	#$30,d1
 	andi.l	#$10000004,d0
 	cmpi.l	#$10000004,d0
 	beq.b	lbC022B68
-	movea.l	(lbL02D088-datasegment,a6),a0
+	movea.l	(lbL02D088-ds,a6),a0
 	moveq	#$41,d1
 	move.b	(a0),d0
 	cmpi.b	#$9B,d0
@@ -43082,9 +43088,9 @@ lbC022BAA	moveq	#0,d0
 	ble.b	lbC022BEA
 	add.l	a0,d0
 	addq.l	#1,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	move.l	a0,-(sp)
 	movea.l	d0,a0
 	btst	#1,(a0)
@@ -43118,10 +43124,10 @@ lbC022BEA	moveq	#$43,d1
 	beq.b	lbC022C26
 	cmpi.w	#$4E75,(2,a0)
 	bne.b	lbC022C3E
-lbC022C26	movea.l	(lbL02D088-datasegment,a6),a0
+lbC022C26	movea.l	(lbL02D088-ds,a6),a0
 	tst.w	(a0)
 	bne.w	lbC022DE0
-	movea.l	(lbL02D08C-datasegment,a6),a0
+	movea.l	(lbL02D08C-ds,a6),a0
 	bset	#1,(2,a0)
 	bra.w	lbC022DE0
 
@@ -43144,7 +43150,7 @@ lbC022C5C	move.b	(a0)+,d0
 lbC022C66	moveq	#$41,d1
 	bra.w	lbC022DE0
 
-lbC022C6C	movea.l	(datasegment-datasegment,a6),a0
+lbC022C6C	movea.l	(ds-ds,a6),a0
 	adda.l	d2,a0
 	move.l	a0,d0
 	moveq	#$42,d1
@@ -43182,9 +43188,9 @@ lbC022CAE	move.b	(a0),d0
 	cmpi.b	#$7E,d0
 	bhi.w	lbC022DE0
 lbC022CEE	move.l	a0,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a5
 	tst.l	(a0)
 	beq.b	lbC022D72
@@ -43222,7 +43228,7 @@ lbC022D44	addq.b	#2,d0
 lbC022D62	lsr.l	#2,d0
 	bra.b	lbC022D02
 
-lbC022D66	movea.l	(lbL02D088-datasegment,a6),a0
+lbC022D66	movea.l	(lbL02D088-ds,a6),a0
 	tst.w	(a0)+
 	bne.b	lbC022D70
 	moveq	#$57,d1
@@ -43233,7 +43239,7 @@ lbC022D72	moveq	#$57,d1
 	bne.b	lbC022DA8
 	move.l	d2,d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a0
 	move.l	(4,a0),d0
 	andi.l	#$BC00104,d0
@@ -43250,13 +43256,13 @@ lbC022DA8	btst	#0,d2
 	moveq	#$57,d1
 	move.l	d2,d0
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a0
 	move.l	(4,a0),d0
 	andi.l	#$BC00104,d0
 	beq.b	lbC022DE0
 lbC022DC6	move.l	d2,d0
-	add.l	(datasegment-datasegment,a6),d0
+	add.l	(ds-ds,a6),d0
 	movea.l	d0,a0
 	moveq	#$42,d1
 	move.b	(a0)+,d0
@@ -43294,7 +43300,7 @@ lbC022E26	cmpi.b	#$57,d1
 	move.l	(4,a0),d0
 	andi.l	#$3C00104,d0
 	bne.b	lbC022E06
-lbC022E3A	move.l	(lbL02B4A0-datasegment,a6),d0
+lbC022E3A	move.l	(workdata_struct_end-ds,a6),d0
 	sub.l	a0,d0
 	cmpi.l	#5,d0
 	bls.b	lbC022E06
@@ -43311,7 +43317,7 @@ lbC022E60	ori.l	#$170,(a0)
 lbC022E6A	cmpi.b	#$4C,d1
 	bne.w	lbC022F62
 	moveq	#$42,d1
-	move.l	(lbL02B4A0-datasegment,a6),d0
+	move.l	(workdata_struct_end-ds,a6),d0
 	sub.l	a0,d0
 	cmpi.l	#13,d0
 	bls.b	lbC022E06
@@ -43329,14 +43335,14 @@ lbC022EAC	moveq	#$4C,d1
 	and.l	d0,(a0)
 	btst	#6,(a0)
 	bne.w	lbC022F4C
-	move.l	a0,(lbL02D0B8-datasegment,a6)
+	move.l	a0,(lbL02D0B8-ds,a6)
 	ori.l	#$130,(a0)+
 	move.l	#$80000000,d0
 	or.l	d0,(a0)+
 	or.l	d0,(a0)+
 	or.l	d0,(a0)+
 	movea.l	d2,a0
-	adda.l	(datasegment-datasegment,a6),a0
+	adda.l	(ds-ds,a6),a0
 	cmpi.b	#3,(a0)
 	bne.w	lbC023246
 	cmpi.b	#$40,(1,a0)
@@ -43351,7 +43357,7 @@ lbC022EAC	moveq	#$4C,d1
 	bls.w	lbC023246
 	cmpi.b	#$7A,(3,a0)
 	bhi.w	lbC023246
-	movea.l	(lbL02D0B8-datasegment,a6),a0
+	movea.l	(lbL02D0B8-ds,a6),a0
 	move.l	#$7FFFFF07,d0
 	and.l	d0,(a0)+
 	and.l	d0,(a0)+
@@ -43382,7 +43388,7 @@ lbC022F62	cmpi.b	#$53,d1
 	move.l	(12,a0),d0
 	andi.l	#$3C00104,d0
 	bne.w	lbC022E06
-lbC022F94	move.l	(lbL02B4A0-datasegment,a6),d0
+lbC022F94	move.l	(workdata_struct_end-ds,a6),d0
 	sub.l	a0,d0
 	cmpi.l	#13,d0
 	bls.w	lbC022E06
@@ -43421,7 +43427,7 @@ lbC022FCA	cmpi.b	#$44,d1
 	move.l	($1C,a0),d0
 	andi.l	#$3C00104,d0
 	bne.w	lbC022E06
-lbC023036	move.l	(lbL02B4A0-datasegment,a6),d0
+lbC023036	move.l	(workdata_struct_end-ds,a6),d0
 	sub.l	a0,d0
 	cmpi.l	#$19,d0
 	bls.w	lbC022E06
@@ -43472,7 +43478,7 @@ lbC02306C	cmpi.b	#$58,d1
 	move.l	($2C,a0),d0
 	andi.l	#$3C00104,d0
 	bne.w	lbC022E06
-lbC023110	move.l	(lbL02B4A0-datasegment,a6),d0
+lbC023110	move.l	(workdata_struct_end-ds,a6),d0
 	sub.l	a0,d0
 	cmpi.l	#$25,d0
 	bls.w	lbC022E06
@@ -43523,7 +43529,7 @@ lbC023146	cmpi.b	#$50,d1
 	move.l	($2C,a0),d0
 	andi.l	#$3C00104,d0
 	bne.w	lbC022E06
-lbC0231EA	move.l	(lbL02B4A0-datasegment,a6),d0
+lbC0231EA	move.l	(workdata_struct_end-ds,a6),d0
 	sub.l	a0,d0
 	cmpi.l	#$25,d0
 	bls.w	lbC022E06
@@ -43543,7 +43549,7 @@ BWL0.MSG	db	'BWL0'
 lbC023220	cmpi.b	#$5A,d1
 	bne.b	lbC023234
 	moveq	#0,d1
-	move.b	(opcode_size-datasegment,a6),d1
+	move.b	(opcode_size-ds,a6),d1
 	move.b	(BWL0.MSG,pc,d1.w),d1
 	bra.w	lbC022B54
 
@@ -43552,34 +43558,34 @@ lbC023234	cmpi.b	#$43,d1
 lbC02323A	andi.l	#$7FFFFF07,(a0)
 	ori.l	#$180,(a0)
 lbC023246	move.l	a4,-(sp)
-	move.b	d1,(lbW02EB3A-datasegment,a6)
+	move.b	d1,(lbW02EB3A-ds,a6)
 	moveq	#0,d1
 	move.l	d2,d0
 	bsr.w	lbC02777C
 	bne.b	lbC0232BC
-	cmpi.b	#$41,(lbW02EB3A-datasegment,a6)
+	cmpi.b	#$41,(lbW02EB3A-ds,a6)
 	beq.b	lbC0232BC
 	move.l	d2,d0
 	btst	#0,d0
 	beq.b	lbC023292
-	cmpi.b	#$43,(lbW02EB3A-datasegment,a6)
+	cmpi.b	#$43,(lbW02EB3A-ds,a6)
 	bne.b	lbC023292
-	tst.b	(lbB02EB67-datasegment,a6)
+	tst.b	(lbB02EB67-ds,a6)
 	bne.b	lbC023292
-	clr.b	(lbB02D39B-datasegment,a6)
-	st	(lbB02EB7B-datasegment,a6)
-	jsr	(lbC02A1B4-datasegment,a6)
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	clr.b	(lbB02D39B-ds,a6)
+	st	(lbB02EB7B-ds,a6)
+	jsr	(lbC02A1B4-ds,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	movea.l	(sp)+,a4
 	bra.w	lbC0228D2
 
-lbC02328C	move.l	(lbL02D208-datasegment,a6),d0
+lbC02328C	move.l	(lbL02D208-ds,a6),d0
 	addq.l	#1,d0
-lbC023292	move.l	d0,(lbL02D208-datasegment,a6)
-	lea	(displayid-datasegment,a6),a4
+lbC023292	move.l	d0,(lbL02D208-ds,a6)
+	lea	(displayid-ds,a6),a4
 	move.b	#$6C,(a4)+
 	move.b	#$62,(a4)+
-	move.b	(lbW02EB3A-datasegment,a6),(a4)+
+	move.b	(lbW02EB3A-ds,a6),(a4)+
 	bsr.w	lbC02253C
 	moveq	#9,d0
 	movea.l	a4,a0
@@ -43590,9 +43596,9 @@ lbC023292	move.l	d0,(lbL02D208-datasegment,a6)
 	bsr.w	lbC027A80
 lbC0232BC	movea.l	(sp)+,a4
 	movem.l	d2/a1-a3,-(sp)
-	movem.l	(lbL02D088-datasegment,a6),a2/a3
+	movem.l	(lbL02D088-ds,a6),a2/a3
 	move.l	(a3),d7
-	move.b	(lbW02EB3A-datasegment,a6),d1
+	move.b	(lbW02EB3A-ds,a6),d1
 	cmpi.b	#$43,d1
 	bne.b	lbC0232DA
 	bsr.w	lbC02003C
@@ -43635,7 +43641,7 @@ lbC023326	cmpi.b	#$50,d1
 	bra.b	lbC023336
 
 lbC023332	bsr.w	lbC020016
-lbC023336	cmpi.b	#$30,(lbB02EAD2-datasegment,a6)
+lbC023336	cmpi.b	#$30,(lbB02EAD2-ds,a6)
 	bne.b	lbC023344
 	bset	#1,(2,a3)
 lbC023344	movem.l	(sp)+,d2/a1-a3
@@ -43654,10 +43660,10 @@ lbC02336E	eor.b	d2,d1
 	dbra	d3,lbC02336E
 	eor.b	d2,d1
 	rol.b	#1,d1
-	lea	(lbL02FA00-datasegment,a6),a0
+	lea	(lbL02FA00-ds,a6),a0
 	lsl.w	#2,d1
 	move.l	(a0,d1.w),d2
-	movea.l	(lbL02D14C-datasegment,a6),a0
+	movea.l	(lbL02D14C-ds,a6),a0
 	cmp.l	(8,a0,d2.l),d0
 	beq.b	lbC02339A
 lbC023390	move.l	(a0,d2.l),d2
@@ -43667,7 +43673,7 @@ lbC02339A	move.l	(4,a0,d2.l),d0
 	moveq	#0,d1
 	move.b	d0,d1
 	lsr.l	#8,d0
-	movea.l	(lbL02D158-datasegment,a6),a0
+	movea.l	(lbL02D158-ds,a6),a0
 	adda.l	d0,a0
 	movem.l	(sp)+,d2/d3
 	rts
@@ -43703,43 +43709,43 @@ lbC0233F0	movea.l	a2,a0
 
 lbC0233FC	movem.l	d0/a2,-(sp)
 	addq.l	#1,a2
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	beq.b	lbC023430
-	subq.b	#1,(lbB02EB3D-datasegment,a6)
+	subq.b	#1,(lbB02EB3D-ds,a6)
 	beq.b	lbC023414
-	tst.l	(lbB02D118-datasegment,a6)
+	tst.l	(lbB02D118-ds,a6)
 	bne.b	lbC023430
-lbC023414	move.l	a2,(lbB02D118-datasegment,a6)
-	move.l	#$FFFFFFFF,(lbL02D2F8-datasegment,a6)
+lbC023414	move.l	a2,(lbB02D118-ds,a6)
+	move.l	#$FFFFFFFF,(lbL02D2F8-ds,a6)
 	moveq	#0,d0
 	move.b	(a2),d0
 	ext.w	d0
 	ext.l	d0
-	move.l	d0,(lbB02D120-datasegment,a6)
-	st	(lbB02EB4F-datasegment,a6)
+	move.l	d0,(lbB02D120-ds,a6)
+	st	(lbB02EB4F-ds,a6)
 lbC023430	bra.w	lbC02353A
 
 lbC023434	movem.l	d0/a2,-(sp)
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	beq.b	lbC023460
-	subq.b	#1,(lbB02EB3D-datasegment,a6)
+	subq.b	#1,(lbB02EB3D-ds,a6)
 	beq.b	lbC02344A
-	tst.l	(lbB02D118-datasegment,a6)
+	tst.l	(lbB02D118-ds,a6)
 	bne.b	lbC023460
-lbC02344A	move.l	a2,(lbB02D118-datasegment,a6)
-	move.l	d0,(lbB02D120-datasegment,a6)
-	move.b	#1,(lbB02EB4F-datasegment,a6)
-	move.l	#$FFFFFFFF,(lbL02D2F8-datasegment,a6)
+lbC02344A	move.l	a2,(lbB02D118-ds,a6)
+	move.l	d0,(lbB02D120-ds,a6)
+	move.b	#1,(lbB02EB4F-ds,a6)
+	move.l	#$FFFFFFFF,(lbL02D2F8-ds,a6)
 lbC023460	bra.w	lbC02353A
 
 lbC023464	movem.l	d0/a2,-(sp)
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	beq.b	lbC0234A0
-	subq.b	#1,(lbB02EB3D-datasegment,a6)
+	subq.b	#1,(lbB02EB3D-ds,a6)
 	beq.b	lbC02347A
-	tst.l	(lbB02D118-datasegment,a6)
+	tst.l	(lbB02D118-ds,a6)
 	bne.b	lbC0234A0
-lbC02347A	move.l	a2,(lbB02D118-datasegment,a6)
+lbC02347A	move.l	a2,(lbB02D118-ds,a6)
 	move.b	(a2)+,d0
 	lsl.w	#8,d0
 	move.b	(a2)+,d0
@@ -43748,61 +43754,61 @@ lbC02347A	move.l	a2,(lbB02D118-datasegment,a6)
 	lsl.l	#8,d0
 	move.b	(a2),d0
 	subq.l	#3,a2
-	move.l	d0,(lbB02D120-datasegment,a6)
-	move.b	#1,(lbB02EB4F-datasegment,a6)
-	move.l	#$FFFFFFFF,(lbL02D2F8-datasegment,a6)
+	move.l	d0,(lbB02D120-ds,a6)
+	move.b	#1,(lbB02EB4F-ds,a6)
+	move.l	#$FFFFFFFF,(lbL02D2F8-ds,a6)
 lbC0234A0	bra.w	lbC02353A
 
 lbC0234A4	ext.w	d0
 	ext.l	d0
-	st	(lbB02EB6F-datasegment,a6)
+	st	(lbB02EB6F-ds,a6)
 	bra.b	lbC0234B2
 
-lbC0234AE	clr.b	(lbB02EB6F-datasegment,a6)
+lbC0234AE	clr.b	(lbB02EB6F-ds,a6)
 lbC0234B2	movem.l	d0/a2,-(sp)
 	subq.l	#1,a2
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	beq.b	lbC02353A
-	subq.b	#1,(lbB02EB3D-datasegment,a6)
+	subq.b	#1,(lbB02EB3D-ds,a6)
 	beq.b	lbC0234CA
-	tst.l	(lbB02D118-datasegment,a6)
+	tst.l	(lbB02D118-ds,a6)
 	bne.b	lbC02353A
-lbC0234CA	move.l	a2,(lbB02D118-datasegment,a6)
-	move.l	d0,(lbB02D120-datasegment,a6)
-	st	(lbB02EB4F-datasegment,a6)
-	move.l	#$FF,(lbL02D2F8-datasegment,a6)
-	tst.b	(lbB02EB6F-datasegment,a6)
+lbC0234CA	move.l	a2,(lbB02D118-ds,a6)
+	move.l	d0,(lbB02D120-ds,a6)
+	st	(lbB02EB4F-ds,a6)
+	move.l	#$FF,(lbL02D2F8-ds,a6)
+	tst.b	(lbB02EB6F-ds,a6)
 	beq.b	lbC02353A
-	move.l	#$FFFFFFFF,(lbL02D2F8-datasegment,a6)
+	move.l	#$FFFFFFFF,(lbL02D2F8-ds,a6)
 	bra.b	lbC02353A
 
-lbC0234EE	clr.b	(lbB02EB6F-datasegment,a6)
+lbC0234EE	clr.b	(lbB02EB6F-ds,a6)
 	bra.b	lbC0234F8
 
-lbC0234F4	st	(lbB02EB6F-datasegment,a6)
+lbC0234F4	st	(lbB02EB6F-ds,a6)
 lbC0234F8	movem.l	d0/a2,-(sp)
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	beq.b	lbC02353A
-	subq.b	#1,(lbB02EB3D-datasegment,a6)
+	subq.b	#1,(lbB02EB3D-ds,a6)
 	beq.b	lbC02350E
-	tst.l	(lbB02D118-datasegment,a6)
+	tst.l	(lbB02D118-ds,a6)
 	bne.b	lbC02353A
-lbC02350E	move.l	a2,(lbB02D118-datasegment,a6)
+lbC02350E	move.l	a2,(lbB02D118-ds,a6)
 	moveq	#0,d0
-	tst.b	(lbB02EBF2-datasegment,a6)
+	tst.b	(lbB02EBF2-ds,a6)
 	bne.b	lbC02352A
 	move.b	(a2),d0
 	lsl.w	#8,d0
 	move.b	(1,a2),d0
-	tst.b	(lbB02EB6F-datasegment,a6)
+	tst.b	(lbB02EB6F-ds,a6)
 	beq.b	lbC02352A
 	ext.l	d0
-lbC02352A	move.l	d0,(lbB02D120-datasegment,a6)
-	clr.b	(lbB02EB4F-datasegment,a6)
-	move.l	#$FFFF,(lbL02D2F8-datasegment,a6)
+lbC02352A	move.l	d0,(lbB02D120-ds,a6)
+	clr.b	(lbB02EB4F-ds,a6)
+	move.l	#$FFFF,(lbL02D2F8-ds,a6)
 lbC02353A	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	movea.l	(workdata_end-datasegment,a6),a3
+	sub.l	(ds-ds,a6),d0
+	movea.l	(workdata_struct-ds,a6),a3
 	lsl.l	#2,d0
 	adda.l	d0,a3
 	btst	#0,(a3)
@@ -43810,22 +43816,22 @@ lbC02353A	move.l	a2,d0
 	moveq	#0,d0
 	movem.l	(sp)+,d0/a2
 	movea.l	a2,a3
-	suba.l	(datasegment-datasegment,a6),a3
+	suba.l	(ds-ds,a6),a3
 	adda.l	a3,a3
 	adda.l	a3,a3
-	adda.l	(workdata_end-datasegment,a6),a3
+	adda.l	(workdata_struct-ds,a6),a3
 	rts
 
 lbC023564	movem.l	d1-d7/a0/a1,-(sp)
-	tst.b	(lbB02B449-datasegment,a6)
+	tst.b	(lbB02B449-ds,a6)
 	beq.b	lbC0235CE
-	tst.b	(lbB02EAD5-datasegment,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bhi.b	lbC0235CE
-	addq.l	#1,(lbW02D224-datasegment,a6)
-	tst.b	(lbB02B3F1-datasegment,a6)
+	addq.l	#1,(lbW02D224-ds,a6)
+	tst.b	(lbB02B3F1-ds,a6)
 	beq.b	lbC0235AE
-	addq.l	#1,(lbW02D24C-datasegment,a6)
-	addq.l	#2,(lbB02D37C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#4,(a4)+
 	bsr.w	lbC02390E
 	moveq	#-1,d0
@@ -43833,10 +43839,10 @@ lbC023564	movem.l	d1-d7/a0/a1,-(sp)
 	tst.l	d0
 	movem.l	(sp)+,d0/a2
 	movea.l	a2,a3
-	suba.l	(datasegment-datasegment,a6),a3
+	suba.l	(ds-ds,a6),a3
 	adda.l	a3,a3
 	adda.l	a3,a3
-	adda.l	(workdata_end-datasegment,a6),a3
+	adda.l	(workdata_struct-ds,a6),a3
 	move.b	#1,(a4)+
 	rts
 
@@ -43846,10 +43852,10 @@ lbC0235AE	bsr.w	lbC02390E
 lbC0235B8	tst.l	d0
 	movem.l	(sp)+,d0/a2
 	movea.l	a2,a3
-	suba.l	(datasegment-datasegment,a6),a3
+	suba.l	(ds-ds,a6),a3
 	adda.l	a3,a3
 	adda.l	a3,a3
-	adda.l	(workdata_end-datasegment,a6),a3
+	adda.l	(workdata_struct-ds,a6),a3
 	rts
 
 lbC0235CE	moveq	#0,d0
@@ -43870,23 +43876,23 @@ lbC0235E8	btst	#6,(a3)
 	lea	(lbL02370A,pc),a0
 	tst.b	(a0,d0.w)
 	beq.w	lbC021ED8
-	st	(lbB02EAD3-datasegment,a6)
-	move.b	(bd.MSG-datasegment,a6),d0
-	jsr	(lbC029FE8-datasegment,a6)
+	st	(lbB02EAD3-ds,a6)
+	move.b	(bd.MSG-ds,a6),d0
+	jsr	(lbC029FE8-ds,a6)
 	moveq	#0,d0
 	movem.l	d2-d5,-(sp)
-	addq.l	#1,(lbL02D25C-datasegment,a6)
+	addq.l	#1,(lbL02D25C-ds,a6)
 	move.b	(a2)+,d0
 	move.b	#$27,(a4)+
 	move.b	d0,(a4)+
-	move.w	(screen_bitmap-datasegment,a6),d5
+	move.w	(screen_bitmap-ds,a6),d5
 	subq.w	#6,d5
 	addq.w	#2,d6
 	move.l	d6,d7
 	cmpi.b	#$27,d0
 	beq.b	lbC0235E4
 lbC02362E	addq.l	#4,a3
-	tst.b	(lbB02EAD5-datasegment,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC0235D6
 	move.l	#$80000000,d3
 	move.l	#$CE000104,d4
@@ -43910,7 +43916,7 @@ lbC023664	move.b	#$27,(a4)+
 	addq.w	#1,d6
 lbC02366A	sub.l	d6,d7
 	subq.l	#1,d7
-	sub.l	d7,(lbL02D280-datasegment,a6)
+	sub.l	d7,(lbL02D280-ds,a6)
 	movem.l	(sp)+,d2-d5
 	rts
 
@@ -44108,21 +44114,21 @@ lbC02390E	moveq	#1,d1
 
 lbC023912	moveq	#2,d1
 lbC023914	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 lbC02391A	movem.l	d2/a0/a1,-(sp)
-	move.b	d1,(lbB02EB55-datasegment,a6)
+	move.b	d1,(lbB02EB55-ds,a6)
 	bsr.w	lbC02777C
 	beq.b	lbC02396A
 	movea.l	d0,a0
 	cmpi.b	#$3B,(a0)
 	bne.b	lbC023958
-	cmpi.b	#2,(lbB02EB55-datasegment,a6)
+	cmpi.b	#2,(lbB02EB55-ds,a6)
 	bne.b	lbC023958
 	moveq	#0,d6
 	subq.l	#2,a4
 	subq.l	#1,d1
 	bne.b	lbC02394E
-	tst.w	(lbW02B478-datasegment,a6)
+	tst.w	(lbW02B478-ds,a6)
 	beq.b	lbC02394A
 	move.b	#$20,(a4)+
 lbC02394A	bra.w	lbC023A2C
@@ -44147,7 +44153,7 @@ lbC023970	tst.b	d0
 	beq.w	lbC023A2C
 	cmpi.b	#$1B,d0
 	bne.b	lbC0239EA
-	tst.b	(lbB02B449-datasegment,a6)
+	tst.b	(lbB02B449-ds,a6)
 	beq.b	lbC0239EA
 	subq.b	#1,d1
 	beq.w	lbC023A2C
@@ -44156,14 +44162,14 @@ lbC023970	tst.b	d0
 	subi.b	#$30,d2
 	subq.b	#1,d1
 	beq.w	lbC023A2C
-	movem.l	d1/a0/a1,(lbL02D2A8-datasegment,a6)
+	movem.l	d1/a0/a1,(lbL02D2A8-ds,a6)
 	movea.l	a0,a1
 lbC02399E	cmpi.b	#$1B,(a1)+
 	dbeq	d1,lbC02399E
 	bne.w	lbC023A2C
 	clr.b	-(a1)
 	move.l	a1,-(sp)
-	jsr	(atoi-datasegment,a6)
+	jsr	(atoi-ds,a6)
 	movea.l	(sp)+,a1
 	bne.b	lbC0239BC
 	move.b	#$1B,(a1)
@@ -44171,7 +44177,7 @@ lbC02399E	cmpi.b	#$1B,(a1)+
 
 lbC0239BC	move.b	#$1B,(a1)
 	move.l	d2,d1
-	jsr	(lbC02777C-datasegment,a6)
+	jsr	(lbC02777C-ds,a6)
 	beq.b	lbC023A2C
 	movea.l	d0,a0
 	bra.b	lbC0239D0
@@ -44179,7 +44185,7 @@ lbC0239BC	move.b	#$1B,(a1)
 lbC0239CC	move.b	(a0)+,(a4)+
 	addq.w	#1,d6
 lbC0239D0	dbra	d1,lbC0239CC
-	movem.l	(lbL02D2A8-datasegment,a6),d1/a0/a1
+	movem.l	(lbL02D2A8-ds,a6),d1/a0/a1
 lbC0239DA	cmpi.b	#$1B,(a0)+
 	dbeq	d1,lbC0239DA
 	subq.b	#1,d1
@@ -44203,11 +44209,11 @@ lbC0239F6	cmpi.b	#9,d0
 lbC023A0C	cmpi.b	#$1D,d6
 	bhi.b	lbC023A1C
 	move.l	d1,-(sp)
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	(sp)+,d1
 	bra.b	lbC023A26
 
-lbC023A1C	jsr	(lbC02A13C-datasegment,a6)
+lbC023A1C	jsr	(lbC02A13C-ds,a6)
 	bra.b	lbC023A26
 
 lbC023A22	move.b	d0,(a4)+
@@ -44258,10 +44264,10 @@ lbC023AB8	move.b	(a0)+,(a4)+
 	rts
 
 lbC023AC0	move.b	#'#',(a4)+
-lbC023AC4	clr.b	(lbB02EB6F-datasegment,a6)
+lbC023AC4	clr.b	(lbB02EB6F-ds,a6)
 	tst.b	(a2)
 	bne.b	lbC023AF6
-lbC023ACC	tst.b	(lbB02EB3D-datasegment,a6)
+lbC023ACC	tst.b	(lbB02EB3D-ds,a6)
 	bne.b	lbC023B08
 lbC023AD2	btst	#0,(a3)
 	bne.b	lbC023B3C
@@ -44284,37 +44290,37 @@ lbC023AF6	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC023ACC
 
-lbC023B08	subq.b	#1,(lbB02EB3D-datasegment,a6)
+lbC023B08	subq.b	#1,(lbB02EB3D-ds,a6)
 	beq.b	lbC023B14
-	tst.l	(lbB02D118-datasegment,a6)
+	tst.l	(lbB02D118-ds,a6)
 	bne.b	lbC023AD2
-lbC023B14	move.l	a2,(lbB02D118-datasegment,a6)
+lbC023B14	move.l	a2,(lbB02D118-ds,a6)
 	moveq	#0,d0
 	move.w	(a2),d0
-	move.l	d0,(lbB02D120-datasegment,a6)
-	st	(lbB02EB4F-datasegment,a6)
-	move.l	#$FF,(lbL02D2F8-datasegment,a6)
-	tst.b	(lbB02EB6F-datasegment,a6)
+	move.l	d0,(lbB02D120-ds,a6)
+	st	(lbB02EB4F-ds,a6)
+	move.l	#$FF,(lbL02D2F8-ds,a6)
+	tst.b	(lbB02EB6F-ds,a6)
 	beq.b	lbC023AD2
-	move.l	#$FFFFFFFF,(lbL02D2F8-datasegment,a6)
+	move.l	#$FFFFFFFF,(lbL02D2F8-ds,a6)
 	bra.b	lbC023AD2
 
 lbC023B3C	bsr.b	lbC023B40
 	bra.b	lbC023AE4
 
 lbC023B40	movem.l	d1-d7/a0/a1,-(sp)
-	tst.b	(lbB02B449-datasegment,a6)
+	tst.b	(lbB02B449-ds,a6)
 	beq.b	lbC023B84
-	tst.b	(lbB02EAD5-datasegment,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bhi.b	lbC023B84
-	addq.l	#1,(lbW02D224-datasegment,a6)
-	tst.b	(lbB02B3F1-datasegment,a6)
+	addq.l	#1,(lbW02D224-ds,a6)
+	tst.b	(lbB02B3F1-ds,a6)
 	beq.b	lbC023B76
-	addq.l	#1,(lbW02D24C-datasegment,a6)
-	addq.l	#2,(lbB02D37C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#4,(a4)+
 	bsr.w	lbC02390E
 	movem.l	(sp)+,d1-d7/a0/a1
@@ -44333,7 +44339,7 @@ lbC023B84	moveq	#0,d0
 	bra.b	lbC023B80
 
 lbC023B8C	move.b	#$23,(a4)+
-	clr.b	(lbB02EB6F-datasegment,a6)
+	clr.b	(lbB02EB6F-ds,a6)
 	move.w	(a2),d0
 	cmpi.w	#7,d0
 	bls.w	lbC023ACC
@@ -44388,7 +44394,7 @@ lbC023C12	rts
 	MC68020
 extract_ea_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
-lbC023C1C	jmp	([lbL00E11C,pc,d0.w*4])
+	jmp	([lbL00E11C,pc,d0.w*4])
 	MC68000
 
 extract_ea_68000	move.l	d5,d0
@@ -44430,13 +44436,13 @@ set4q	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC023CA0	move.b	#$2D,(a4)+
 	move.l	d3,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44446,11 +44452,11 @@ lbC023CA0	move.b	#$2D,(a4)+
 
 lbC023CB8	btst	#0,(-4,a3)
 	bne.b	lbC023CDA
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	bne.b	lbC023CDA
 setanind	move.l	d3,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44458,26 +44464,26 @@ setanind	move.l	d3,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC023CDA	btst	#1,(lbB02EAD0-datasegment,a6)
+lbC023CDA	btst	#1,(lbB02EAD0-ds,a6)
 	bne.b	setanind
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	beq.b	lbC023CEC
 	move.b	#'(',(a4)+
 lbC023CEC	subq.l	#4,a3
 	subq.w	#1,a2
-	st	(lbB02EBF2-datasegment,a6)
+	st	(lbB02EBF2-ds,a6)
 	bsr.w	lbC0234F4
-	clr.b	(lbB02EBF2-datasegment,a6)
+	clr.b	(lbB02EBF2-ds,a6)
 	addq.w	#1,a2
 	addq.l	#4,a3
 	move.b	#$28,d0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	beq.b	lbC023D0E
 	move.b	#$2C,d0
 lbC023D0E	move.b	d0,(a4)+
 	move.l	d3,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44491,7 +44497,7 @@ lbC023D24	bsr.w	lbC0234F4
 	move.b	#$2C,(a4)+
 	move.w	d3,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44501,38 +44507,38 @@ lbC023D24	bsr.w	lbC0234F4
 lbC023D46	move.b	#'(',(a4)+
 	btst	#0,(a3)
 	bne.b	lbC023D24
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	bne.b	lbC023D24
 lbC023D56	moveq	#0,d0
 	move.w	(a2)+,d0
 	addq.l	#8,a3
-	cmp.b	(lbB02EB6B-datasegment,a6),d3
+	cmp.b	(lbB02EB6B-ds,a6),d3
 	bne.w	lbC023DEC
-	tst.b	(lbB02EB40-datasegment,a6)
+	tst.b	(lbB02EB40-ds,a6)
 	beq.w	lbC023DEC
-	btst	#5,(lbW02D0EE-datasegment,a6)
+	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC023DEC
-	move.l	(lbL02D0F0-datasegment,a6),d1
-	sub.l	(datasegment-datasegment,a6),d1
-	cmp.l	(lbL02B4C8-datasegment,a6),d1
+	move.l	(lbL02D0F0-ds,a6),d1
+	sub.l	(ds-ds,a6),d1
+	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC023DEC
-	cmp.l	(lbL02B4CC-datasegment,a6),d1
+	cmp.l	(lbL02B4CC-ds,a6),d1
 	bcc.b	lbC023DEC
 	tst.w	d0
 	bmi.b	lbC023DE6
-	tst.b	(lbB02EB6D-datasegment,a6)
+	tst.b	(lbB02EB6D-ds,a6)
 	bne.b	lbC023DEC
 lbC023D92	ext.l	d0
-	add.l	(lbL02D098-datasegment,a6),d0
+	add.l	(lbL02D098-ds,a6),d0
 	bmi.b	lbC023DEC
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bcc.b	lbC023DEC
-	btst	#0,(lbB02EAD1-datasegment,a6)
+	btst	#0,(lbB02EAD1-ds,a6)
 	bne.b	lbC023DDE
-lbC023DA8	add.l	(datasegment-datasegment,a6),d0
+lbC023DA8	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-datasegment,a6)
-	tst.b	(flag_DT_enabled-datasegment,a6)
+	addq.l	#1,(lbL02D288-ds,a6)
+	tst.b	(flag_DT_enabled-ds,a6)
 	beq.b	lbC023DD8
 	move.b	#'-',(a4)+
 	move.b	#'D',(a4)+
@@ -44540,18 +44546,18 @@ lbC023DA8	add.l	(datasegment-datasegment,a6),d0
 	move.b	#',',(a4)+
 	move.w	d3,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 lbC023DD8	move.b	#')',(a4)+
 	rts
 
-lbC023DDE	tst.b	(lbB02B42E-datasegment,a6)
+lbC023DDE	tst.b	(lbB02B42E-ds,a6)
 	bne.b	lbC023DEC
 	bra.b	lbC023DA8
 
-lbC023DE6	tst.b	(lbB02EB6C-datasegment,a6)
+lbC023DE6	tst.b	(lbB02EB6C-ds,a6)
 	beq.b	lbC023D92
 lbC023DEC	moveq	#0,d0
 	move.w	(-2,a2),d0
@@ -44560,11 +44566,11 @@ lbC023DEC	moveq	#0,d0
 	neg.w	d0
 	cmpi.b	#6,d3
 	bne.b	lbC023E0E
-	btst	#0,(lbB02EAD0-datasegment,a6)
+	btst	#0,(lbB02EAD0-ds,a6)
 	beq.b	lbC023E0E
-	bset	#7,(lbB02D3A4-datasegment,a6)
+	bset	#7,(lbB02D3A4-ds,a6)
 lbC023E0E	bsr.w	lbC0224DA
-	lea	(A0A1A2A3A4A5A.MSG1-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG1-ds,a6),a0
 	move.l	d3,d0
 	lsl.w	#2,d0
 	adda.w	d0,a0
@@ -44580,7 +44586,7 @@ lbC023E26	bsr.w	lbC0234F4
 	addq.l	#8,a3
 	move.w	d3,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44590,38 +44596,38 @@ lbC023E26	bsr.w	lbC0234F4
 
 lbC023E44	btst	#0,(a3)
 	bne.b	lbC023E26
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	bne.b	lbC023E26
 lbC023E50	moveq	#0,d0
 	move.w	(a2)+,d0
 	addq.l	#8,a3
-	cmp.b	(lbB02EB6B-datasegment,a6),d3
+	cmp.b	(lbB02EB6B-ds,a6),d3
 	bne.w	lbC023EE6
-	tst.b	(lbB02EB40-datasegment,a6)
+	tst.b	(lbB02EB40-ds,a6)
 	beq.w	lbC023EE6
-	btst	#5,(lbW02D0EE-datasegment,a6)
+	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC023EE6
-	move.l	(lbL02D0F0-datasegment,a6),d1
-	sub.l	(datasegment-datasegment,a6),d1
-	cmp.l	(lbL02B4C8-datasegment,a6),d1
+	move.l	(lbL02D0F0-ds,a6),d1
+	sub.l	(ds-ds,a6),d1
+	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC023EE6
-	cmp.l	(lbL02B4CC-datasegment,a6),d1
+	cmp.l	(lbL02B4CC-ds,a6),d1
 	bcc.b	lbC023EE6
 	tst.w	d0
 	bmi.b	lbC023EE0
-	tst.b	(lbB02EB6D-datasegment,a6)
+	tst.b	(lbB02EB6D-ds,a6)
 	bne.b	lbC023EE6
 lbC023E8C	ext.l	d0
-	add.l	(lbL02D098-datasegment,a6),d0
+	add.l	(lbL02D098-ds,a6),d0
 	bmi.b	lbC023EE6
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bcc.b	lbC023EE6
-	btst	#0,(lbB02EAD1-datasegment,a6)
+	btst	#0,(lbB02EAD1-ds,a6)
 	bne.b	lbC023ED8
-lbC023EA2	add.l	(datasegment-datasegment,a6),d0
+lbC023EA2	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-datasegment,a6)
-	tst.b	(flag_DT_enabled-datasegment,a6)
+	addq.l	#1,(lbL02D288-ds,a6)
+	tst.b	(flag_DT_enabled-ds,a6)
 	beq.b	lbC023ED6
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
@@ -44629,18 +44635,18 @@ lbC023EA2	add.l	(datasegment-datasegment,a6),d0
 	move.b	#$28,(a4)+
 	move.w	d3,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	#$29,(a4)+
 lbC023ED6	rts
 
-lbC023ED8	tst.b	(lbB02B42E-datasegment,a6)
+lbC023ED8	tst.b	(lbB02B42E-ds,a6)
 	bne.b	lbC023EE6
 	bra.b	lbC023EA2
 
-lbC023EE0	tst.b	(lbB02EB6C-datasegment,a6)
+lbC023EE0	tst.b	(lbB02EB6C-ds,a6)
 	beq.b	lbC023E8C
 lbC023EE6	moveq	#0,d0
 	move.w	(-2,a2),d0
@@ -44649,11 +44655,11 @@ lbC023EE6	moveq	#0,d0
 	neg.w	d0
 	cmpi.b	#6,d3
 	bne.b	lbC023F08
-	btst	#0,(lbB02EAD0-datasegment,a6)
+	btst	#0,(lbB02EAD0-ds,a6)
 	beq.b	lbC023F08
-	bset	#7,(lbB02D3A4-datasegment,a6)
+	bset	#7,(lbB02D3A4-ds,a6)
 lbC023F08	bsr.w	lbC0224DA
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	move.l	d3,d0
 	lsl.w	#2,d0
 	adda.w	d0,a0
@@ -44670,45 +44676,45 @@ lbC023F20	moveq	#0,d0
 	addq.l	#2,a2
 	addq.l	#8,a3
 	bne.w	lbC023FC4
-	cmp.b	(lbB02EB6B-datasegment,a6),d3
+	cmp.b	(lbB02EB6B-ds,a6),d3
 	bne.b	lbC023FB8
 	moveq	#0,d0
 	move.b	(-1,a2),d0
-	tst.b	(lbB02EB40-datasegment,a6)
+	tst.b	(lbB02EB40-ds,a6)
 	beq.b	lbC023FB8
-	btst	#5,(lbW02D0EE-datasegment,a6)
+	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC023FB8
-	move.l	(lbL02D0F0-datasegment,a6),d1
-	sub.l	(datasegment-datasegment,a6),d1
-	cmp.l	(lbL02B4C8-datasegment,a6),d1
+	move.l	(lbL02D0F0-ds,a6),d1
+	sub.l	(ds-ds,a6),d1
+	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC023FB8
-	cmp.l	(lbL02B4CC-datasegment,a6),d1
+	cmp.l	(lbL02B4CC-ds,a6),d1
 	bcc.b	lbC023FB8
 	tst.b	d0
 	bpl.b	lbC023F70
-	tst.b	(lbB02EB6C-datasegment,a6)
+	tst.b	(lbB02EB6C-ds,a6)
 	beq.b	lbC023F76
 	bra.b	lbC023FB8
 
-lbC023F70	tst.b	(lbB02EB6D-datasegment,a6)
+lbC023F70	tst.b	(lbB02EB6D-ds,a6)
 	bne.b	lbC023FB8
 lbC023F76	ext.w	d0
 	ext.l	d0
-	add.l	(lbL02D098-datasegment,a6),d0
+	add.l	(lbL02D098-ds,a6),d0
 	bmi.b	lbC023FB8
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bcc.b	lbC023FB8
-	btst	#0,(lbB02EAD1-datasegment,a6)
+	btst	#0,(lbB02EAD1-ds,a6)
 	bne.b	lbC023FA8
-lbC023F8E	add.l	(datasegment-datasegment,a6),d0
+lbC023F8E	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-datasegment,a6)
+	addq.l	#1,(lbL02D288-ds,a6)
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
 	bra.b	lbC023FC4
 
-lbC023FA8	tst.b	(lbB02B42E-datasegment,a6)
+lbC023FA8	tst.b	(lbB02B42E-ds,a6)
 	bne.b	lbC023FB8
 	bra.b	lbC023F8E
 
@@ -44722,7 +44728,7 @@ lbC023FB8	moveq	#0,d0
 lbC023FC0	bsr.w	put_line_end
 lbC023FC4	move.l	d3,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG2-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG2-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44733,7 +44739,7 @@ lbC023FC4	move.l	d3,d0
 	andi.w	#$F800,d0
 	lsr.w	#8,d0
 	lsr.w	#1,d0
-	lea	(D0WD0LD1WD1LD.MSG-datasegment,a6),a0
+	lea	(D0WD0LD1WD1LD.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44754,45 +44760,45 @@ lbC024004	move.b	#$28,(a4)+
 	addq.l	#2,a2
 	addq.l	#8,a3
 	bne.w	lbC0240C6
-	cmp.b	(lbB02EB6B-datasegment,a6),d3
+	cmp.b	(lbB02EB6B-ds,a6),d3
 	bne.w	lbC0240BA
 	moveq	#0,d0
 	move.b	(-1,a2),d0
-	tst.b	(lbB02EB40-datasegment,a6)
+	tst.b	(lbB02EB40-ds,a6)
 	beq.w	lbC0240BA
-	btst	#5,(lbW02D0EE-datasegment,a6)
+	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC0240BA
-	move.l	(lbL02D0F0-datasegment,a6),d1
-	sub.l	(datasegment-datasegment,a6),d1
-	cmp.l	(lbL02B4C8-datasegment,a6),d1
+	move.l	(lbL02D0F0-ds,a6),d1
+	sub.l	(ds-ds,a6),d1
+	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC0240BA
-	cmp.l	(lbL02B4CC-datasegment,a6),d1
+	cmp.l	(lbL02B4CC-ds,a6),d1
 	bcc.b	lbC0240BA
 	tst.b	d0
 	bpl.b	lbC02405C
-	tst.b	(lbB02EB6C-datasegment,a6)
+	tst.b	(lbB02EB6C-ds,a6)
 	beq.b	lbC024062
 	bra.b	lbC0240BA
 
-lbC02405C	tst.b	(lbB02EB6D-datasegment,a6)
+lbC02405C	tst.b	(lbB02EB6D-ds,a6)
 	bne.b	lbC0240BA
 lbC024062	ext.w	d0
 	ext.l	d0
-	add.l	(lbL02D098-datasegment,a6),d0
+	add.l	(lbL02D098-ds,a6),d0
 	bmi.b	lbC0240BA
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bcc.b	lbC0240BA
-	btst	#0,(lbB02EAD1-datasegment,a6)
+	btst	#0,(lbB02EAD1-ds,a6)
 	bne.b	lbC024094
-lbC02407A	add.l	(datasegment-datasegment,a6),d0
+lbC02407A	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-datasegment,a6)
+	addq.l	#1,(lbL02D288-ds,a6)
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
 	bra.b	lbC0240C6
 
-lbC024094	tst.b	(lbB02B42E-datasegment,a6)
+lbC024094	tst.b	(lbB02B42E-ds,a6)
 	bne.b	lbC0240BA
 	bra.b	lbC02407A
 
@@ -44803,7 +44809,7 @@ lbC02409C	beq.b	lbC0240A6
 
 lbC0240A6	move.w	d3,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44816,7 +44822,7 @@ lbC0240BA	moveq	#0,d0
 lbC0240C2	bsr.w	put_line_end
 lbC0240C6	move.l	d3,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG3-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG3-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44827,7 +44833,7 @@ lbC0240D8	moveq	#0,d0
 	andi.w	#$F800,d0
 	lsr.w	#8,d0
 	lsr.w	#1,d0
-	lea	(D0WD0LD1WD1LD.MSG-datasegment,a6),a0
+	lea	(D0WD0LD1WD1LD.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44837,7 +44843,7 @@ lbC0240D8	moveq	#0,d0
 	andi.l	#$600,d0
 	lsr.w	#8,d0
 	beq.b	lbC024108
-	lea	(Scale.MSG-datasegment,a6),a0
+	lea	(Scale.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44872,58 +44878,58 @@ lbC02414C	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC02415E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.w	lbC0242D6
 
 lbC024172	bsr.w	lbC0234F4
 	addq.l	#2,a2
 	addq.l	#8,a3
 	bne.w	lbC0242D6
-	cmp.b	(lbB02EB6B-datasegment,a6),d3
+	cmp.b	(lbB02EB6B-ds,a6),d3
 	bne.b	lbC0241F6
 	tst.b	d4
 	bmi.b	lbC0241F6
-	tst.b	(lbB02EB40-datasegment,a6)
+	tst.b	(lbB02EB40-ds,a6)
 	beq.b	lbC0241F6
-	btst	#5,(lbW02D0EE-datasegment,a6)
+	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC0241F6
-	move.l	(lbL02D0F0-datasegment,a6),d1
-	sub.l	(datasegment-datasegment,a6),d1
-	cmp.l	(lbL02B4C8-datasegment,a6),d1
+	move.l	(lbL02D0F0-ds,a6),d1
+	sub.l	(ds-ds,a6),d1
+	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC0241F6
-	cmp.l	(lbL02B4CC-datasegment,a6),d1
+	cmp.l	(lbL02B4CC-ds,a6),d1
 	bcc.b	lbC0241F6
 	move.w	(-2,a2),d0
 	bpl.b	lbC0241B8
-	tst.b	(lbB02EB6C-datasegment,a6)
+	tst.b	(lbB02EB6C-ds,a6)
 	beq.b	lbC0241BE
 	bra.b	lbC0241F6
 
-lbC0241B8	tst.b	(lbB02EB6D-datasegment,a6)
+lbC0241B8	tst.b	(lbB02EB6D-ds,a6)
 	bne.b	lbC0241F6
 lbC0241BE	ext.l	d0
-	add.l	(lbL02D098-datasegment,a6),d0
+	add.l	(lbL02D098-ds,a6),d0
 	bmi.b	lbC0241F6
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bcc.b	lbC0241F6
-	btst	#0,(lbB02EAD1-datasegment,a6)
+	btst	#0,(lbB02EAD1-ds,a6)
 	bne.b	lbC0241F0
-lbC0241D4	add.l	(datasegment-datasegment,a6),d0
+lbC0241D4	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-datasegment,a6)
+	addq.l	#1,(lbL02D288-ds,a6)
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
 	bra.w	lbC0242D6
 
-lbC0241F0	tst.b	(lbB02B42E-datasegment,a6)
+lbC0241F0	tst.b	(lbB02B42E-ds,a6)
 	beq.b	lbC0241D4
 lbC0241F6	move.w	(-2,a2),d0
 	bpl.b	lbC024202
@@ -44938,48 +44944,48 @@ lbC02420A	bsr.w	lbC023464
 	bne.w	lbC0242D6
 	tst.b	d4
 	bmi.w	lbC0242BE
-	tst.b	(lbB02EB40-datasegment,a6)
+	tst.b	(lbB02EB40-ds,a6)
 	beq.w	lbC0242BE
-	btst	#5,(lbW02D0EE-datasegment,a6)
+	btst	#5,(lbW02D0EE-ds,a6)
 	bne.w	lbC0242BE
-	cmp.b	(lbB02EB6B-datasegment,a6),d3
+	cmp.b	(lbB02EB6B-ds,a6),d3
 	bne.w	lbC0242BE
-	move.l	(lbL02D0F0-datasegment,a6),d1
-	sub.l	(datasegment-datasegment,a6),d1
-	cmp.l	(lbL02B4C8-datasegment,a6),d1
+	move.l	(lbL02D0F0-ds,a6),d1
+	sub.l	(ds-ds,a6),d1
+	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC0242BE
-	cmp.l	(lbL02B4CC-datasegment,a6),d1
+	cmp.l	(lbL02B4CC-ds,a6),d1
 	bcc.b	lbC0242BE
 	subq.l	#4,a2
 	move.l	(a2)+,d0
 	bpl.b	lbC02425A
-	tst.b	(lbB02EB6C-datasegment,a6)
+	tst.b	(lbB02EB6C-ds,a6)
 	beq.b	lbC024260
 	bra.b	lbC0242BE
 
-lbC02425A	tst.b	(lbB02EB6D-datasegment,a6)
+lbC02425A	tst.b	(lbB02EB6D-ds,a6)
 	bne.b	lbC0242BE
-lbC024260	add.l	(lbL02D098-datasegment,a6),d0
+lbC024260	add.l	(lbL02D098-ds,a6),d0
 	bmi.b	lbC0242BE
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bcc.b	lbC0242BE
-	btst	#0,(lbB02EAD1-datasegment,a6)
+	btst	#0,(lbB02EAD1-ds,a6)
 	bne.b	lbC02428E
-lbC024274	add.l	(datasegment-datasegment,a6),d0
+lbC024274	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-datasegment,a6)
+	addq.l	#1,(lbL02D288-ds,a6)
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
 	bra.b	lbC0242D6
 
-lbC02428E	tst.b	(lbB02B42E-datasegment,a6)
+lbC02428E	tst.b	(lbB02B42E-ds,a6)
 	beq.b	lbC0242BE
 	bra.b	lbC024274
 
-lbC024296	btst	#2,(lbL02D2E8-datasegment,a6)
+lbC024296	btst	#2,(lbL02D2E8-ds,a6)
 	beq.b	lbC0242B4
-	addq.l	#1,(lbW02D24C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#2,(a4)+
 	move.l	(-4,a2),d0
 	bsr.w	put_adr_d0
@@ -45006,7 +45012,7 @@ lbC0242DA	tst.b	d4
 
 lbC0242E6	move.w	d3,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45039,7 +45045,7 @@ lbC02433C	andi.l	#$600,d0
 	bra.w	set4q
 
 lbC024348	lsl.w	#2,d0
-	lea	(D0WD0LD1WD1LD.MSG-datasegment,a6),a0
+	lea	(D0WD0LD1WD1LD.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45049,7 +45055,7 @@ lbC024348	lsl.w	#2,d0
 	andi.l	#$600,d0
 	lsr.w	#8,d0
 	beq.b	lbC02436E
-	lea	(Scale.MSG-datasegment,a6),a0
+	lea	(Scale.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45181,24 +45187,24 @@ lbC0244C0	addq.w	#2,a2
 	rts
 
 lbC0244C6	bsr.b	lbC02449E
-	tst.b	(lbB02B470-datasegment,a6)
+	tst.b	(lbB02B470-ds,a6)
 	beq.b	lbC0244D6
 	move.b	#$2E,(a4)+
-	move.b	(WL.MSG-datasegment,a6),(a4)+
+	move.b	(WL.MSG-ds,a6),(a4)+
 lbC0244D6	rts
 
 lbC0244D8	move.b	#$28,(a4)+
 	bsr.b	lbC02449E
 	move.b	#$29,(a4)+
-	tst.b	(lbB02B470-datasegment,a6)
+	tst.b	(lbB02B470-ds,a6)
 	beq.b	lbC0244F0
 	move.b	#$2E,(a4)+
-	move.b	(WL.MSG-datasegment,a6),(a4)+
+	move.b	(WL.MSG-ds,a6),(a4)+
 lbC0244F0	rts
 
-lbC0244F2	tst.b	(lbB02B472-datasegment,a6)
+lbC0244F2	tst.b	(lbB02B472-ds,a6)
 	beq.b	lbC024514
-	tst.b	(lbB02EAD5-datasegment,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC024514
 	btst	#2,(a3)
 	bne.b	lbC024514
@@ -45207,15 +45213,15 @@ lbC0244F2	tst.b	(lbB02B472-datasegment,a6)
 	cmpi.l	#$FFFF8000,(a2)
 	bge.b	lbC0244D8
 lbC024514	bsr.w	lbC022292
-	tst.b	(lbB02B471-datasegment,a6)
+	tst.b	(lbB02B471-ds,a6)
 	beq.b	lbC024526
 	move.b	#$2E,(a4)+
-	move.b	(L.MSG-datasegment,a6),(a4)+
+	move.b	(L.MSG-ds,a6),(a4)+
 lbC024526	rts
 
-lbC024528	tst.b	(lbB02B472-datasegment,a6)
+lbC024528	tst.b	(lbB02B472-ds,a6)
 	beq.b	lbC02454A
-	tst.b	(lbB02EAD5-datasegment,a6)
+	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC02454A
 	btst	#2,(a3)
 	bne.b	lbC02454A
@@ -45226,29 +45232,29 @@ lbC024528	tst.b	(lbB02B472-datasegment,a6)
 lbC02454A	move.b	#$28,(a4)+
 	bsr.w	lbC022292
 	move.b	#$29,(a4)+
-	tst.b	(lbB02B471-datasegment,a6)
+	tst.b	(lbB02B471-ds,a6)
 	bne.b	lbC02455E
 	rts
 
 lbC02455E	move.b	#$2E,(a4)+
-	move.b	(L.MSG-datasegment,a6),(a4)+
+	move.b	(L.MSG-ds,a6),(a4)+
 	rts
 
 lbC024568	move.b	#$23,(a4)+
 	moveq	#0,d0
-	move.b	(opcode_size-datasegment,a6),d0
+	move.b	(opcode_size-ds,a6),d0
 	lsl.w	#2,d0
 	lea	(lbL00E2CC).l,a0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
 lbC024580	move.b	#$23,(a4)+
-	move.b	#$30,(lbB02EAD2-datasegment,a6)
+	move.b	#$30,(lbB02EAD2-ds,a6)
 lbC02458A	bra.w	lbC022292
 
 lbC02458E	move.b	#$28,(a4)+
 	bsr.w	put_adr_word
-	lea	(PC.MSG2-datasegment,a6),a0
+	lea	(PC.MSG2-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45256,7 +45262,7 @@ lbC02458E	move.b	#$28,(a4)+
 	rts
 
 lbC0245A4	bsr.w	put_adr_word
-	lea	(PC.MSG3-datasegment,a6),a0
+	lea	(PC.MSG3-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45272,7 +45278,7 @@ lbC0245B6	move.b	#$28,(a4)+
 	ext.l	d0
 	add.l	a0,d0
 	bsr.w	put_adr_d0
-	lea	(PC.MSG-datasegment,a6),a0
+	lea	(PC.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45282,7 +45288,7 @@ lbC0245B6	move.b	#$28,(a4)+
 	andi.w	#$F800,d0
 	lsr.w	#8,d0
 	lsr.w	#1,d0
-	lea	(D0WD0LD1WD1LD.MSG-datasegment,a6),a0
+	lea	(D0WD0LD1WD1LD.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45292,7 +45298,7 @@ lbC0245B6	move.b	#$28,(a4)+
 	andi.l	#$600,d0
 	lsr.w	#8,d0
 	beq.b	lbC02460C
-	lea	(Scale.MSG-datasegment,a6),a0
+	lea	(Scale.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45309,7 +45315,7 @@ lbC024616	btst	#8,d4
 	ext.l	d0
 	add.l	a0,d0
 	bsr.w	put_adr_d0
-	lea	(PC.MSG0-datasegment,a6),a0
+	lea	(PC.MSG0-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45319,7 +45325,7 @@ lbC024616	btst	#8,d4
 	andi.w	#$F800,d0
 	lsr.w	#8,d0
 	lsr.w	#1,d0
-	lea	(D0WD0LD1WD1LD.MSG-datasegment,a6),a0
+	lea	(D0WD0LD1WD1LD.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45362,14 +45368,14 @@ lbC0246AA	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC0246BC	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC0246D8
 
 lbC0246CE	bsr.w	lbC0262D6
@@ -45379,9 +45385,9 @@ lbC0246D4	bsr.w	lbC026252
 lbC0246D8	move.b	#$2C,(a4)+
 lbC0246DC	tst.b	d4
 	bpl.b	lbC0246E4
-	move.b	(ZP.MSG-datasegment,a6),(a4)+
-lbC0246E4	move.b	(PC.MSG1-datasegment,a6),(a4)+
-	move.b	(CA.MSG-datasegment,a6),(a4)+
+	move.b	(ZP.MSG-ds,a6),(a4)+
+lbC0246E4	move.b	(PC.MSG1-ds,a6),(a4)+
+	move.b	(CA.MSG-ds,a6),(a4)+
 	move.b	#$2C,(a4)+
 	bra.w	lbC0242F8
 
@@ -45401,7 +45407,7 @@ set_dn_f000	moveq	#0,d0
 	andi.w	#$F000,d0
 	lsr.w	#8,d0
 	lsr.w	#3,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45412,7 +45418,7 @@ set_dn_7000	moveq	#0,d0
 	andi.w	#$7000,d0
 	lsr.w	#8,d0
 	lsr.w	#3,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45429,13 +45435,13 @@ lbC02473A	moveq	#0,d1
 	bne.b	lbC024754
 	cmp.b	d0,d1
 	beq.b	lbC024764
-lbC024754	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC024754	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	#$3A,(a4)+
-lbC024764	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC024764	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d1,d1
 	adda.w	d1,a0
 	move.b	(a0)+,(a4)+
@@ -45449,7 +45455,7 @@ lbC024772	btst	#$17,d5
 lbC02477E	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45474,7 +45480,7 @@ lbC0247B6	bsr.w	lbC0224C0
 	andi.l	#$70000,d0
 	swap	d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45488,7 +45494,7 @@ lbC0247DA	btst	#$17,d5
 lbC0247E6	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45511,7 +45517,7 @@ lbC02481A	bsr.w	lbC0224C0
 	andi.l	#$70000,d0
 	swap	d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45541,7 +45547,7 @@ lbC02485C	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC02487E	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC02487E	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.w	d3,d0
 	add.w	d0,d0
 	adda.w	d0,a0
@@ -45549,11 +45555,11 @@ lbC02487E	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC02488E	tst.b	(opcode_size-datasegment,a6)
+lbC02488E	tst.b	(opcode_size-ds,a6)
 	beq.b	lbC0248A4
 	move.w	d3,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45563,12 +45569,12 @@ lbC0248A4	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC0248B6	move.w	d3,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45576,7 +45582,7 @@ lbC0248B6	move.w	d3,d0
 
 lbC0248C6	move.l	d3,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45605,7 +45611,7 @@ extract_dn_68020	bfextu	d5{4:3},d0
 extract_dn_68000	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45706,14 +45712,14 @@ lbC024A30	move.w	(a2),d0
 	moveq	#7,d0
 	and.l	d5,d0
 	add.w	d0,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	#$3A,(a4)+
 	moveq	#7,d0
 	and.b	(1,a2),d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -45722,7 +45728,7 @@ lbC024A30	move.w	(a2),d0
 	move.l	d5,d0
 	andi.l	#$1C0,d0
 	lsr.w	#5,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45730,7 +45736,7 @@ lbC024A30	move.w	(a2),d0
 	move.w	(a2),d0
 	andi.w	#$1C0,d0
 	lsr.w	#5,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45740,7 +45746,7 @@ lbC024A30	move.w	(a2),d0
 	andi.w	#$F000,d0
 	moveq	#10,d1
 	lsr.w	d1,d0
-	lea	(D0D1D2D3D4D5D.MSG0-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45750,7 +45756,7 @@ lbC024A30	move.w	(a2),d0
 	move.w	#$F0,d0
 	and.b	(a2),d0
 	lsr.b	#2,d0
-	lea	(D0D1D2D3D4D5D.MSG0-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45766,13 +45772,13 @@ lbC024ACC	addq.l	#2,a2
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC024AE2	moveq	#7,d0
 	and.l	d5,d0
 	add.w	d0,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45780,7 +45786,7 @@ lbC024AE2	moveq	#7,d0
 	move.l	d5,d0
 	andi.l	#$1C0,d0
 	lsr.w	#5,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45918,7 +45924,7 @@ extract_an_68020	bfextu	d5{4:3},d0
 extract_an_68000	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45927,7 +45933,7 @@ extract_an_68000	move.l	d5,d0
 lbC024CA0	moveq	#7,d0
 	and.l	d5,d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45936,7 +45942,7 @@ lbC024CA0	moveq	#7,d0
 lbC024CB2	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -45947,7 +45953,7 @@ lbC024CCA	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45973,7 +45979,7 @@ lbC024D12	rts
 
 lbC024D14	move.w	(a2)+,d2
 	bne.b	lbC024D1E
-	bset	#0,(lbB02D3A4-datasegment,a6)
+	bset	#0,(lbB02D3A4-ds,a6)
 lbC024D1E	addq.l	#8,a3
 	move.l	d5,d0
 	andi.l	#$380000,d0
@@ -46011,7 +46017,7 @@ lbC024D70	tst.b	d2
 	add.w	d1,d1
 	lea	(lbW00CBF4).l,a0
 	adda.w	(a0,d1.w),a0
-	move.b	(DUSP.MSG-datasegment,a6),d0
+	move.b	(DUSP.MSG-ds,a6),d0
 lbC024D88	move.b	(a0)+,(a4)+
 	bgt.b	lbC024D88
 	beq.b	lbC024D9E
@@ -46033,7 +46039,7 @@ lbC024D9E	subq.l	#1,a4
 lbC024DAC	lea	(lbW00CBF4).l,a0
 	add.w	d1,d1
 	adda.w	(a0,d1.w),a0
-	move.b	(ADUSPUSPMMUMM.MSG-datasegment,a6),d0
+	move.b	(ADUSPUSPMMUMM.MSG-ds,a6),d0
 lbC024DBC	move.b	(a0)+,(a4)+
 	bgt.b	lbC024DBC
 	beq.b	lbC024DC8
@@ -46065,7 +46071,7 @@ lbC024DFC	ror.w	#8,d2
 
 lbC024E02	move.w	(a2)+,d2
 	bne.b	lbC024E0C
-	bset	#0,(lbB02D3A4-datasegment,a6)
+	bset	#0,(lbB02D3A4-ds,a6)
 lbC024E0C	addq.l	#8,a3
 	move.l	d5,d0
 	andi.l	#$380000,d0
@@ -46103,7 +46109,7 @@ lbC024E5E	tst.b	d2
 	add.w	d1,d1
 	lea	(lbW00CBF4).l,a0
 	adda.w	(a0,d1.w),a0
-	move.b	(DUSP.MSG-datasegment,a6),d0
+	move.b	(DUSP.MSG-ds,a6),d0
 lbC024E76	move.b	(a0)+,(a4)+
 	bgt.b	lbC024E76
 	beq.b	lbC024E8C
@@ -46125,7 +46131,7 @@ lbC024E8C	subq.l	#1,a4
 lbC024E9A	lea	(lbW00CBF4).l,a0
 	add.w	d1,d1
 	adda.w	(a0,d1.w),a0
-	move.b	(ADUSPUSPMMUMM.MSG-datasegment,a6),d0
+	move.b	(ADUSPUSPMMUMM.MSG-ds,a6),d0
 lbC024EAA	move.b	(a0)+,(a4)+
 	bgt.b	lbC024EAA
 	beq.b	lbC024EB6
@@ -46193,13 +46199,13 @@ lbC024F5E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC024F70	moveq	#7,d0
 	and.l	d5,d0
 	add.w	d0,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	lsr.w	#1,d0
 	move.b	(a0)+,(a4)+
@@ -46211,7 +46217,7 @@ lbC024F70	moveq	#7,d0
 	lsr.w	#4,d1
 	cmp.b	d0,d1
 	beq.b	lbC024F5E
-lbC024F96	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC024F96	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d1,d1
 	adda.w	d1,a0
 	move.b	(a0)+,(a4)+
@@ -46221,14 +46227,14 @@ lbC024F96	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
 lbC024FA4	btst	#$13,d5
 	bne.b	lbC024FBC
 	bsr.w	lbC024CCA
-	lea	(USP.MSG0-datasegment,a6),a0
+	lea	(USP.MSG0-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024FBC	lea	(USP.MSG1-datasegment,a6),a0
+lbC024FBC	lea	(USP.MSG1-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46243,7 +46249,7 @@ lbC024FD8	move.l	d5,d0
 	andi.l	#$F000,d0
 	lsr.w	#8,d0
 	lsr.w	#3,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46271,25 +46277,25 @@ lbC02501E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
-lbW025030	dw	SFC.MSG-datasegment
-	dw	DFC.MSG-datasegment
-	dw	CACR.MSG-datasegment
-	dw	TC.MSG-datasegment
-	dw	ITT0.MSG-datasegment
-	dw	ITT1.MSG-datasegment
-	dw	DTT0.MSG-datasegment
-	dw	DTT1.MSG-datasegment
-	dw	USP.MSG-datasegment
-	dw	VBR.MSG-datasegment
-	dw	CAAR.MSG-datasegment
-	dw	MSP.MSG-datasegment
-	dw	ISP.MSG-datasegment
-	dw	MMUSR.MSG-datasegment
-	dw	URP.MSG-datasegment
-	dw	SRP.MSG-datasegment
+lbW025030	dw	SFC.MSG-ds
+	dw	DFC.MSG-ds
+	dw	CACR.MSG-ds
+	dw	TC.MSG-ds
+	dw	ITT0.MSG-ds
+	dw	ITT1.MSG-ds
+	dw	DTT0.MSG-ds
+	dw	DTT1.MSG-ds
+	dw	USP.MSG-ds
+	dw	VBR.MSG-ds
+	dw	CAAR.MSG-ds
+	dw	MSP.MSG-ds
+	dw	ISP.MSG-ds
+	dw	MMUSR.MSG-ds
+	dw	URP.MSG-ds
+	dw	SRP.MSG-ds
 
 lbC025050	move.b	#$23,(a4)+
 	move.b	(-1,a2),d0
@@ -46309,7 +46315,7 @@ lbC025072	btst	#$13,d5
 	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -46318,7 +46324,7 @@ lbC025072	btst	#$13,d5
 	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46329,7 +46335,7 @@ lbC0250A8	move.b	#$2D,(a4)+
 	andi.l	#$70000,d0
 	swap	d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46341,7 +46347,7 @@ lbC0250A8	move.b	#$2D,(a4)+
 	rol.l	#7,d0
 	lsl.w	#2,d0
 	move.b	#$2D,(a4)+
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46400,7 +46406,7 @@ _extract_dn_680002	bsr.w	extract_dn_68000
 lbC025172	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	lsl.w	#2,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -46412,7 +46418,7 @@ lbC025172	move.l	d5,d0
 	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#7,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	lsl.w	#2,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -46431,23 +46437,23 @@ lbC0251B4	move.l	d5,d0
 	add.w	d1,d1
 	btst	#$13,d5
 	bne.b	lbC0251EA
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	#$2C,(a4)+
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d1,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0251EA	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+lbC0251EA	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	#$2C,(a4)+
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d1,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46460,12 +46466,12 @@ lbC025204	move.l	d5,d0
 	andi.l	#$70000,d1
 	swap	d1
 	add.w	d1,d1
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	#$2C,(a4)+
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d1,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46503,13 +46509,13 @@ lbC025284	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	and.w	#7,d0
 	bra.b	lbC0252A0
 
 lbC02529A	cmp.b	#7,d0
 	bhi.b	lbC025284
-lbC0252A0	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC0252A0	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -46532,7 +46538,7 @@ lbC0252CE	moveq	#$20,d0
 
 lbC0252D2	cmp.b	#7,d0
 	bhi.b	lbC0252EA
-lbC0252D8	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC0252D8	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -46544,7 +46550,7 @@ lbC0252EA	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	and.w	#7,d0
 	bra.b	lbC0252D8
 
@@ -46566,7 +46572,7 @@ lbC025322	move.l	d5,d0
 	beq.b	lbC025384
 	cmpi.b	#3,d0
 	beq.b	lbC025396
-	lea	(TC.MSG-datasegment,a6),a0
+	lea	(TC.MSG-ds,a6),a0
 lbC02533A	btst	#9,d5
 	bne.b	lbC02538A
 	move.l	a0,-(sp)
@@ -46595,10 +46601,10 @@ lbC025370	subq.l	#4,a4
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
-lbC025384	lea	(ascii.MSG6-datasegment,a6),a0
+lbC025384	lea	(ascii.MSG6-ds,a6),a0
 	bra.b	lbC02533A
 
 lbC02538A	bsr.b	lbC02534C
@@ -46610,22 +46616,22 @@ lbC025396	btst	#9,d5
 	bne.b	lbC0253B8
 	move.w	(a2),d4
 	bsr.w	lbC023C68
-	lea	(MMU.MSG-datasegment,a6),a0
+	lea	(MMU.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	lea	(SRP.MSG0-datasegment,a6),a0
+	lea	(SRP.MSG0-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0253B8	lea	(MMUS.MSG-datasegment,a6),a0
+lbC0253B8	lea	(MMUS.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	lea	(R.MSG-datasegment,a6),a0
+	lea	(R.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.w	(a2),d4
@@ -46652,10 +46658,10 @@ lbC025408	jsr	(a0)
 	bsr.b	lbC025418
 	bra.b	lbC025466
 
-lbC025412	lea	(VAL.MSG-datasegment,a6),a0
+lbC025412	lea	(VAL.MSG-ds,a6),a0
 	bra.b	lbC025428
 
-lbC025418	lea	(TC.MSG0-datasegment,a6),a0
+lbC025418	lea	(TC.MSG0-ds,a6),a0
 	move.l	d5,d0
 	andi.l	#$1C00,d0
 	lsr.w	#8,d0
@@ -46703,10 +46709,10 @@ lbC02547E	bsr.b	lbC02548C
 
 lbC02548C	move.l	d5,d0
 	andi.l	#$1C00,d0
-	lea	(BAD.MSG-datasegment,a6),a0
+	lea	(BAD.MSG-ds,a6),a0
 	cmpi.w	#$1000,d0
 	beq.b	lbC0254A8
-	lea	(BAC.MSG-datasegment,a6),a0
+	lea	(BAC.MSG-ds,a6),a0
 	cmpi.w	#$1400,d0
 	bne.b	lbC0254BC
 lbC0254A8	move.b	(a0)+,(a4)+
@@ -46720,10 +46726,10 @@ lbC0254A8	move.b	(a0)+,(a4)+
 	rts
 
 lbC0254BC	move.l	d5,d0
-	lea	(PSR.MSG-datasegment,a6),a0
+	lea	(PSR.MSG-ds,a6),a0
 	andi.l	#$1C00,d0
 	beq.b	lbC0254D6
-	lea	(PCSR.MSG-datasegment,a6),a0
+	lea	(PCSR.MSG-ds,a6),a0
 	cmpi.w	#$400,d0
 	bne.w	set4q
 lbC0254D6	move.b	(a0)+,(a4)+
@@ -46731,10 +46737,10 @@ lbC0254D6	move.b	(a0)+,(a4)+
 	subq.l	#1,a4
 	rts
 
-lbC0254DE	bset	#0,(lbB02D3A5-datasegment,a6)
+lbC0254DE	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
-lbC0254E6	jsr	(setspacepostopcode-datasegment,a6)
+lbC0254E6	jsr	(setspacepostopcode-ds,a6)
 	move.l	d5,d3
 	swap	d3
 	andi.w	#7,d3
@@ -46778,7 +46784,7 @@ lbC025542	cmpi.w	#$10,d1
 
 lbC025550	bsr.b	lbC025566
 	move.b	#$2C,(a4)+
-lbC025556	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+lbC025556	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d3,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46786,24 +46792,24 @@ lbC025556	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC025566	tst.b	(lbB02B455-datasegment,a6)
+lbC025566	tst.b	(lbB02B455-ds,a6)
 	beq.b	lbC025570
 	move.b	#$28,(a4)+
 lbC025570	bsr.w	lbC022292
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	beq.b	lbC02557E
 	move.b	#$29,(a4)+
-lbC02557E	tst.b	(lbB02B471-datasegment,a6)
+lbC02557E	tst.b	(lbB02B471-ds,a6)
 	beq.b	lbC02558C
 	move.b	#$2E,(a4)+
-	move.b	(L.MSG-datasegment,a6),(a4)+
+	move.b	(L.MSG-ds,a6),(a4)+
 lbC02558C	rts
 
 lbC02558E	move.l	d5,d0
 	swap	d0
 	andi.w	#7,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46816,7 +46822,7 @@ lbC0255AA	move.l	d5,d0
 	swap	d0
 	andi.w	#$C0,d0
 	lsr.w	#5,d0
-	lea	(NCDCICBC.MSG-datasegment,a6),a0
+	lea	(NCDCICBC.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46832,7 +46838,7 @@ lbC0255CE	move.b	#$2C,(a4)+
 	swap	d0
 	andi.w	#7,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -46841,19 +46847,19 @@ lbC0255CE	move.b	#$2C,(a4)+
 	addq.w	#4,d6
 	rts
 
-lbC0255EE	jsr	(setspacepostopcode-datasegment,a6)
+lbC0255EE	jsr	(setspacepostopcode-ds,a6)
 lbC0255F2	lea	(MC68040.MSG,pc),a0
 	bra.b	lbC025614
 
-lbC0255F8	jsr	(setspacepostopcode-datasegment,a6)
+lbC0255F8	jsr	(setspacepostopcode-ds,a6)
 	lea	(MC68030.MSG,pc),a0
 	bra.b	lbC025614
 
-lbC025602	jsr	(setspacepostopcode-datasegment,a6)
+lbC025602	jsr	(setspacepostopcode-ds,a6)
 lbC025606	lea	(MC68851.MSG,pc),a0
 	bra.b	lbC025614
 
-lbC02560C	jsr	(setspacepostopcode-datasegment,a6)
+lbC02560C	jsr	(setspacepostopcode-ds,a6)
 lbC025610	lea	(MC68851MC6803.MSG,pc),a0
 lbC025614	move.b	#9,(a4)+
 	move.b	#$3B,(a4)+
@@ -46870,10 +46876,10 @@ MC68851MC6803.MSG	db	'MC68851/MC68030',0
 lbC02564C	move.b	#$2E,(a4)+
 	btst	#14,d5
 	bne.b	lbC025676
-	move.b	(XEFM.MSG-datasegment,a6),(a4)+
-	move.b	#$58,(lbB02EAD2-datasegment,a6)
+	move.b	(XEFM.MSG-ds,a6),(a4)+
+	move.b	#$58,(lbB02EAD2-ds,a6)
 	addq.w	#2,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	bsr.b	lbC0256D6
 	move.w	d5,d0
 	andi.w	#$A07F,d0
@@ -46885,12 +46891,12 @@ lbC025676	move.l	d5,d0
 	andi.w	#$1C00,d0
 	lsr.w	#8,d0
 	lsr.w	#2,d0
-	lea	(LSXPWDBLSXPWD.MSG0-datasegment,a6),a0
+	lea	(LSXPWDBLSXPWD.MSG0-ds,a6),a0
 	move.b	(a0,d0.w),(a4)+
-	lea	(LSXPWDB.MSG-datasegment,a6),a0
-	move.b	(a0,d0.w),(lbB02EAD2-datasegment,a6)
+	lea	(LSXPWDB.MSG-ds,a6),a0
+	move.b	(a0,d0.w),(lbB02EAD2-ds,a6)
 	addq.w	#2,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 lbC025698	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
@@ -46899,7 +46905,7 @@ lbC025698	move.l	d5,d0
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E64C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC0256C0
 	lea	(lbL00E66C).l,a0
 lbC0256C0	movea.l	(a0,d0.w),a0
@@ -46915,7 +46921,7 @@ lbC0256D6	move.l	d5,d0
 	lsr.w	#8,d0
 	lsr.w	#2,d0
 	addi.b	#$30,d0
-	lea	(FP.MSG-datasegment,a6),a0
+	lea	(FP.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d0,(a4)+
@@ -46926,7 +46932,7 @@ lbC0256F0	move.l	d5,d0
 	lsr.w	#7,d0
 	addi.b	#$30,d0
 	move.b	#$2C,(a4)+
-	lea	(FP.MSG-datasegment,a6),a0
+	lea	(FP.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d0,(a4)+
@@ -46963,20 +46969,20 @@ lbC02574C	move.b	#$23,(a4)+
 	bra.w	lbC02232C
 
 lbC025756	move.b	#$23,(a4)+
-	lea	(lbL02D07C-datasegment,a6),a0
+	lea	(lbL02D07C-ds,a6),a0
 	move.l	(a2)+,(a0)
 	move.l	(a2)+,(4,a0)
 	bra.w	lbC022336
 
 lbC025768	move.b	#$23,(a4)+
-	lea	(lbL02D078-datasegment,a6),a0
+	lea	(lbL02D078-ds,a6),a0
 	move.l	(a2)+,(a0)
 	move.l	(a2)+,(4,a0)
 	move.l	(a2)+,(8,a0)
 	bra.w	lbC02233A
 
 lbC02577E	move.b	#$23,(a4)+
-	lea	(lbL02D078-datasegment,a6),a0
+	lea	(lbL02D078-ds,a6),a0
 	move.l	(a2)+,(a0)
 	move.l	(a2)+,(4,a0)
 	move.l	(a2)+,(8,a0)
@@ -46987,17 +46993,17 @@ lbC025794	move.b	#$2E,(a4)+
 	andi.w	#$1C00,d0
 	lsr.w	#8,d0
 	lsr.w	#2,d0
-	lea	(LSXPWDBP.MSG0-datasegment,a6),a0
+	lea	(LSXPWDBP.MSG0-ds,a6),a0
 	move.b	(a0,d0.w),(a4)+
-	lea	(LSXPWDBP.MSG-datasegment,a6),a0
-	move.b	(a0,d0.w),(lbB02EAD2-datasegment,a6)
+	lea	(LSXPWDBP.MSG-ds,a6),a0
+	move.b	(a0,d0.w),(lbB02EAD2-ds,a6)
 	addq.w	#2,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d5,d0
 	andi.w	#$380,d0
 	lsr.w	#7,d0
 	addi.b	#$30,d0
-	lea	(FP.MSG-datasegment,a6),a0
+	lea	(FP.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d0,(a4)+
@@ -47010,7 +47016,7 @@ lbC025794	move.b	#$2E,(a4)+
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E34C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC0257FC
 	lea	(lbL00E36C).l,a0
 lbC0257FC	movea.l	(a0,d0.w),a0
@@ -47025,7 +47031,7 @@ lbC0257FC	movea.l	(a0,d0.w),a0
 	bne.b	lbC02584A
 	move.b	#$7B,(a4)+
 	lsr.w	#3,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
@@ -47055,12 +47061,12 @@ lbC02585E	btst	#10,d5
 lbC025866	beq.b	lbC025870
 	subq.w	#1,d0
 	beq.b	lbC025870
-	move.b	(M.MSG-datasegment,a6),(a4)+
-lbC025870	lea	(L.MSG0-datasegment,a6),a0
+	move.b	(M.MSG-ds,a6),(a4)+
+lbC025870	lea	(L.MSG0-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
-	move.b	#$4C,(lbB02EAD2-datasegment,a6)
-	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	#$4C,(lbB02EAD2-ds,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	btst	#13,d5
 	beq.b	lbC0258FA
 	bsr.w	lbC025988
@@ -47075,7 +47081,7 @@ lbC025870	lea	(L.MSG0-datasegment,a6),a0
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E34C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC0258BE
 	lea	(lbL00E36C).l,a0
 lbC0258BE	cmpi.w	#$1000,d1
@@ -47083,13 +47089,13 @@ lbC0258BE	cmpi.w	#$1000,d1
 	cmpi.w	#$800,d1
 	beq.b	lbC0258F4
 	lea	(lbL00E3CC).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC0258DC
 	lea	(lbL00E3EC).l,a0
 lbC0258DC	cmpi.w	#$400,d1
 	beq.b	lbC0258F4
 	lea	(lbL00E40C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC0258F4
 	lea	(lbL00E42C).l,a0
 lbC0258F4	movea.l	(a0,d0.w),a0
@@ -47116,7 +47122,7 @@ lbC0258FA	move.w	d5,d1
 	bra.b	lbC025984
 
 lbC025936	lea	(lbL00E48C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC025948
 	lea	(lbL00E4AC).l,a0
 lbC025948	cmpi.w	#$1000,d1
@@ -47124,31 +47130,31 @@ lbC025948	cmpi.w	#$1000,d1
 	cmpi.w	#$800,d1
 	beq.b	lbC02597E
 	lea	(lbL00E44C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC025966
 	lea	(lbL00E46C).l,a0
 lbC025966	cmpi.w	#$400,d1
 	beq.b	lbC02597E
 	lea	(lbL00E60C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC02597E
 	lea	(lbL00E62C).l,a0
 lbC02597E	movea.l	(a0,d0.w),a0
 	jsr	(a0)
 lbC025984	move.b	#$2C,(a4)+
-lbC025988	lea	(FPCR.MSG-datasegment,a6),a0
+lbC025988	lea	(FPCR.MSG-ds,a6),a0
 	btst	#12,d5
 	beq.b	lbC02599C
 lbC025992	move.b	(a0)+,(a4)+
 	bne.b	lbC025992
 	move.b	#$2F,(-1,a4)
-lbC02599C	lea	(FPSR.MSG-datasegment,a6),a0
+lbC02599C	lea	(FPSR.MSG-ds,a6),a0
 	btst	#11,d5
 	beq.b	lbC0259B0
 lbC0259A6	move.b	(a0)+,(a4)+
 	bne.b	lbC0259A6
 	move.b	#$2F,(-1,a4)
-lbC0259B0	lea	(FPIAR.MSG-datasegment,a6),a0
+lbC0259B0	lea	(FPIAR.MSG-ds,a6),a0
 	btst	#10,d5
 	beq.b	lbC0259C0
 lbC0259BA	move.b	(a0)+,(a4)+
@@ -47159,7 +47165,7 @@ lbC0259C0	cmpi.b	#$2F,(-1,a4)
 	clr.b	-(a4)
 lbC0259CA	rts
 
-lbC0259CC	jsr	(setspacepostopcode-datasegment,a6)
+lbC0259CC	jsr	(setspacepostopcode-ds,a6)
 	move.b	#'#',(a4)+
 	move.l	d5,d0
 	andi.l	#$7F,d0
@@ -47169,7 +47175,7 @@ lbC0259CC	jsr	(setspacepostopcode-datasegment,a6)
 	andi.w	#$380,d0
 	lsr.w	#7,d0
 	addi.b	#'0',d0
-	lea	(FP.MSG-datasegment,a6),a0
+	lea	(FP.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d0,(a4)+
@@ -47274,7 +47280,7 @@ E1024.MSG	db	'1E1024',0
 E2048.MSG	db	'1E2048',0
 E4096.MSG	db	'1E4096',0,0
 
-lbC025AE0	jsr	(setspacepostopcode-datasegment,a6)
+lbC025AE0	jsr	(setspacepostopcode-ds,a6)
 	btst	#13,d5
 	beq.b	lbC025B4A
 	btst	#12,d5
@@ -47291,7 +47297,7 @@ lbC025AFA	move.b	#$2C,(a4)+
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E54C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC025B26
 	lea	(lbL00E56C).l,a0
 lbC025B26	movea.l	(a0,d0.w),a0
@@ -47300,7 +47306,7 @@ lbC025B26	movea.l	(a0,d0.w),a0
 lbC025B2C	moveq	#0,d0
 	move.b	d5,d0
 	lsr.w	#3,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
@@ -47319,7 +47325,7 @@ lbC025B4A	move.l	d5,d0
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E50C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC025B72
 	lea	(lbL00E52C).l,a0
 lbC025B72	movea.l	(a0,d0.w),a0
@@ -47331,7 +47337,7 @@ lbC025B72	movea.l	(a0,d0.w),a0
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC025B94	btst	#11,d5
@@ -47341,7 +47347,7 @@ lbC025B94	btst	#11,d5
 lbC025B9C	moveq	#0,d0
 	move.b	d5,d0
 	lsr.w	#3,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
@@ -47352,7 +47358,7 @@ lbC025BAE	moveq	#0,d1
 	move.b	d5,d0
 lbC025BB4	btst	d2,d0
 	beq.b	lbC025BCA
-	lea	(FP.MSG-datasegment,a6),a0
+	lea	(FP.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d1,(a4)
@@ -47369,7 +47375,7 @@ lbC025BDA	moveq	#0,d1
 	move.b	d5,d0
 lbC025BDE	btst	d1,d0
 	beq.b	lbC025BF4
-	lea	(FP.MSG-datasegment,a6),a0
+	lea	(FP.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d1,(a4)
@@ -47396,7 +47402,7 @@ lbC025C06	move.l	d5,d2
 	bcs.b	lbC025C42
 	cmpi.w	#4,d3
 	bhi.b	lbC025C42
-	lea	(TRAP.MSG-datasegment,a6),a0
+	lea	(TRAP.MSG-ds,a6),a0
 	move.b	(a0)+,(-1,a4)
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -47407,7 +47413,7 @@ lbC025C06	move.l	d5,d2
 lbC025C42	move.l	d5,d0
 	andi.w	#$1F,d0
 	lsl.w	#2,d0
-	lea	(F.MSG-datasegment,a6),a0
+	lea	(F.MSG-ds,a6),a0
 	adda.w	d0,a0
 	moveq	#3,d1
 lbC025C52	move.b	(a0)+,d0
@@ -47415,9 +47421,9 @@ lbC025C52	move.b	(a0)+,d0
 	move.b	d0,(a4)+
 	addq.w	#1,d6
 	dbra	d1,lbC025C52
-lbC025C5E	jsr	(setspacepostopcode-datasegment,a6)
+lbC025C5E	jsr	(setspacepostopcode-ds,a6)
 	lea	(lbL00E34C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC025C74
 	lea	(lbL00E36C).l,a0
 lbC025C74	move.l	d2,d0
@@ -47431,12 +47437,12 @@ lbC025C7C	move.b	#$2E,(a4)+
 	andi.w	#$1C00,d0
 	lsr.w	#8,d0
 	lsr.w	#2,d0
-	lea	(LSXPWDBLSXPWD.MSG0-datasegment,a6),a0
+	lea	(LSXPWDBLSXPWD.MSG0-ds,a6),a0
 	move.b	(a0,d0.w),(a4)+
-	lea	(LSXPWDB.MSG-datasegment,a6),a0
-	move.b	(a0,d0.w),(lbB02EAD2-datasegment,a6)
+	lea	(LSXPWDB.MSG-ds,a6),a0
+	move.b	(a0,d0.w),(lbB02EAD2-ds,a6)
 	addq.w	#2,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
@@ -47445,22 +47451,22 @@ lbC025C7C	move.b	#$2E,(a4)+
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E64C).l,a0
-	tst.b	(lbB02B455-datasegment,a6)
+	tst.b	(lbB02B455-ds,a6)
 	bne.b	lbC025CD0
 	lea	(lbL00E66C).l,a0
 lbC025CD0	movea.l	(a0,d0.w),a0
 	jsr	(a0)
 	bra.b	lbC025CE6
 
-lbC025CD8	move.b	(XEFM.MSG-datasegment,a6),(a4)+
+lbC025CD8	move.b	(XEFM.MSG-ds,a6),(a4)+
 	addq.w	#2,d6
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	bsr.w	lbC0256D6
 lbC025CE6	move.b	#$2C,(a4)+
 	move.l	d5,d0
 	andi.w	#7,d0
 	addi.b	#$30,d0
-	lea	(FP.MSG-datasegment,a6),a0
+	lea	(FP.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d0,(a4)+
@@ -47469,7 +47475,7 @@ lbC025CE6	move.b	#$2C,(a4)+
 	andi.w	#$380,d0
 	lsr.w	#7,d0
 	addi.b	#$30,d0
-	lea	(FP.MSG-datasegment,a6),a0
+	lea	(FP.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	d0,(a4)+
@@ -47478,7 +47484,7 @@ lbC025CE6	move.b	#$2C,(a4)+
 lbC025D1A	move.l	d5,d0
 	andi.w	#$1F,d0
 	lsl.w	#2,d0
-	lea	(F.MSG-datasegment,a6),a0
+	lea	(F.MSG-ds,a6),a0
 	adda.w	d0,a0
 	moveq	#3,d1
 lbC025D2A	move.b	(a0)+,d0
@@ -47496,9 +47502,9 @@ lbC025D36	move.l	d5,d3
 lbC025D46	cmpi.w	#2,d3
 	bne.b	lbC025D6C
 	move.b	#$2E,(a4)+
-	move.b	(WFD.MSG-datasegment,a6),(a4)+
-	move.b	#$57,(lbB02EAD2-datasegment,a6)
-	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	(WFD.MSG-ds,a6),(a4)+
+	move.b	#$57,(lbB02EAD2-ds,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$23,(a4)+
 	moveq	#0,d0
 	move.l	d4,d0
@@ -47508,9 +47514,9 @@ lbC025D46	cmpi.w	#2,d3
 lbC025D6C	cmpi.w	#3,d3
 	bne.b	lbC025D8E
 	move.b	#$2E,(a4)+
-	move.b	(LPA.MSG-datasegment,a6),(a4)+
-	move.b	#$4C,(lbB02EAD2-datasegment,a6)
-	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	(LPA.MSG-ds,a6),(a4)+
+	move.b	#$4C,(lbB02EAD2-ds,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$23,(a4)+
 	move.l	(a2)+,d0
 	bra.w	lbC022490
@@ -47519,25 +47525,25 @@ lbC025D8E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
-lbC025DA0	move.b	(WFD.MSG-datasegment,a6),(a4)+
+lbC025DA0	move.b	(WFD.MSG-ds,a6),(a4)+
 	btst	#9,d5
 	beq.b	lbC025DB0
-	move.b	(RS.MSG-datasegment,a6),(-1,a4)
-lbC025DB0	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	(RS.MSG-ds,a6),(-1,a4)
+lbC025DB0	jsr	(setspacepostopcode-ds,a6)
 	moveq	#$1F,d0
 	and.l	d5,d0
 	bclr	#4,d0
 	bne.b	lbC025DE8
 	bra.b	lbC025DD4
 
-lbC025DC0	move.b	(WFD.MSG-datasegment,a6),(a4)+
+lbC025DC0	move.b	(WFD.MSG-ds,a6),(a4)+
 	btst	#9,d5
 	beq.b	lbC025DD0
-	move.b	(RS.MSG-datasegment,a6),(-1,a4)
-lbC025DD0	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	(RS.MSG-ds,a6),(-1,a4)
+lbC025DD0	jsr	(setspacepostopcode-ds,a6)
 lbC025DD4	moveq	#7,d0
 	and.l	d5,d0
 	moveq	#$18,d1
@@ -47556,21 +47562,21 @@ lbC025DF2	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC025E32
 
 lbC025E04	lea	(SD.MSG,pc),a0
 	move.b	(a0,d0.w),(a4)+
 	beq.b	lbC025E18
-lbC025E0E	move.b	(FC.MSG-datasegment,a6),(a4)+
-	move.b	(CFP.MSG-datasegment,a6),(a4)+
+lbC025E0E	move.b	(FC.MSG-ds,a6),(a4)+
+	move.b	(CFP.MSG-ds,a6),(a4)+
 	bra.b	lbC025E32
 
 lbC025E18	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC025E0E
 
-lbC025E26	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC025E26	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -47597,21 +47603,21 @@ lbC025E5A	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC025E9A
 
 lbC025E6C	lea	(SD.MSG,pc),a0
 	move.b	(a0,d0.w),(a4)+
 	beq.b	lbC025E80
-lbC025E76	move.b	(FC.MSG-datasegment,a6),(a4)+
-	move.b	(CFP.MSG-datasegment,a6),(a4)+
+lbC025E76	move.b	(FC.MSG-ds,a6),(a4)+
+	move.b	(CFP.MSG-ds,a6),(a4)+
 	bra.b	lbC025E9A
 
 lbC025E80	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC025E76
 
-lbC025E8E	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC025E8E	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -47640,7 +47646,7 @@ lbC025ED8	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 lbC025EE8	bra.w	lbC025610
 
 lbC025EEC	moveq	#$1F,d0
@@ -47652,8 +47658,8 @@ lbC025EEC	moveq	#$1F,d0
 	lea	(SD.MSG,pc),a0
 	move.b	(a0,d0.w),(a4)+
 	beq.b	lbC025F1A
-lbC025F06	move.b	(FC.MSG-datasegment,a6),(a4)+
-	move.b	(CFP.MSG-datasegment,a6),(a4)+
+lbC025F06	move.b	(FC.MSG-ds,a6),(a4)+
+	move.b	(CFP.MSG-ds,a6),(a4)+
 	bra.b	lbC025F34
 
 lbC025F10	move.b	#$23,(a4)+
@@ -47661,10 +47667,10 @@ lbC025F10	move.b	#$23,(a4)+
 	bra.b	lbC025F34
 
 lbC025F1A	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC025F06
 
-lbC025F28	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC025F28	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -47693,7 +47699,7 @@ lbC025F72	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 lbC025F82	bra.w	lbC025610
 
 lbC025F86	moveq	#$1F,d0
@@ -47724,21 +47730,21 @@ lbC025FC0	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC026000
 
 lbC025FD2	lea	(SD.MSG,pc),a0
 	move.b	(a0,d0.w),(a4)+
 	beq.b	lbC025FE6
-lbC025FDC	move.b	(FC.MSG-datasegment,a6),(a4)+
-	move.b	(CFP.MSG-datasegment,a6),(a4)+
+lbC025FDC	move.b	(FC.MSG-ds,a6),(a4)+
+	move.b	(CFP.MSG-ds,a6),(a4)+
 	bra.b	lbC026000
 
 lbC025FE6	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.b	lbC025FDC
 
-lbC025FF4	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC025FF4	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -47773,7 +47779,7 @@ lbC02603E	move.l	d5,d0
 	beq.b	lbC026060
 	move.b	#$2C,(a4)+
 	add.w	d0,d0
-	lea	(A0A1A2A3A4A5A.MSG-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -47783,8 +47789,8 @@ lbC026060	tst.b	d0
 _set4q	bne.w	set4q
 	rts
 
-lbC026068	addq.l	#1,(lbL02D290-datasegment,a6)
-	st	(lbL02EB36-datasegment,a6)
+lbC026068	addq.l	#1,(lbL02D290-ds,a6)
+	st	(lbL02EB36-ds,a6)
 	bra.w	lbC0222FE
 
 	MC68020
@@ -47815,8 +47821,8 @@ lbC0260A6	move.b	#'#',(a4)+
 	beq.w	put_line_end
 	rts
 
-lbC0260BC	jsr	(setspacepostopcode-datasegment,a6)
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC0260BC	jsr	(setspacepostopcode-ds,a6)
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.l	d5,d0
 	swap	d0
 	andi.w	#15,d0
@@ -47830,11 +47836,11 @@ lbC0260D6	move.l	d5,d0
 	swap	d0
 	andi.w	#$18,d0
 	lsr.w	#3,d0
-	lea	(LPA.MSG0-datasegment,a6),a0
+	lea	(LPA.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,d2
 	move.b	d2,(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	cmpi.b	#$3F,d2
 	bne.b	lbC026108
 	move.b	#$3F,(a4)
@@ -47842,14 +47848,14 @@ lbC0260D6	move.l	d5,d0
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
 	addq.w	#4,d6
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC026108	move.l	d5,d0
 	swap	d0
 	andi.w	#$C0,d0
 	lsr.w	#5,d0
-	lea	(NCDCICBC.MSG-datasegment,a6),a0
+	lea	(NCDCICBC.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -47865,7 +47871,7 @@ lbC02612C	move.b	#$2C,(a4)+
 	swap	d0
 	andi.w	#7,d0
 	lsl.w	#2,d0
-	lea	(A0A1A2A3A4A5A.MSG0-datasegment,a6),a0
+	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -47874,9 +47880,9 @@ lbC02612C	move.b	#$2C,(a4)+
 	addq.w	#5,d6
 	rts
 
-lbC02614C	tst.b	(lbB02B3EA-datasegment,a6)
+lbC02614C	tst.b	(lbB02B3EA-ds,a6)
 	beq.b	lbC026178
-	addq.l	#1,(lbW02D24C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#2,(a4)+
 	bsr.b	lbC026178
 	move.b	#1,(a4)+
@@ -47893,19 +47899,19 @@ lbC026178	bsr.w	lbC023464
 	movea.l	a2,a0
 	adda.l	(a0),a0
 	move.l	a0,d0
-	cmpa.l	(datasegment-datasegment,a6),a0
+	cmpa.l	(ds-ds,a6),a0
 	bcs.b	lbC02619C
-	cmpa.l	(lbL02A8A0-datasegment,a6),a0
+	cmpa.l	(workdata_end-ds,a6),a0
 	bcc.b	lbC02619C
 	bsr.w	put_adr_d0
 lbC026194	addq.l	#4,a2
 	lea	($10,a3),a3
 	rts
 
-lbC02619C	bset	#3,(lbB02D3A5-datasegment,a6)
+lbC02619C	bset	#3,(lbB02D3A5-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
-	sub.l	(lbL02D0F0-datasegment,a6),d0
+	sub.l	(lbL02D0F0-ds,a6),d0
 	lea	($10,a3),a3
 	move.l	(a2)+,d1
 	bgt.b	lbC0261C0
@@ -47923,7 +47929,7 @@ lbC0261C8	addq.l	#2,a2
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC0261DE	bsr.w	lbC0234EE
@@ -47936,30 +47942,30 @@ lbC0261EA	btst	#0,(1,a2)
 	bne.b	lbC0261C8
 put_adr_word	btst	#0,(a3)
 	bne.b	lbC0261DE
-	tst.b	(lbB02EB3D-datasegment,a6)
+	tst.b	(lbB02EB3D-ds,a6)
 	bne.b	lbC0261DE
 lbC0261FE	movea.l	a2,a0
 	adda.w	(a0),a0
 	move.l	a0,d0
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcs.b	lbC02621A
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcc.b	lbC026228
 lbC026210	bsr.w	put_adr_d0
 	addq.l	#2,a2
 	addq.l	#8,a3
 	rts
 
-lbC02621A	move.l	(datasegment-datasegment,a6),d1
+lbC02621A	move.l	(ds-ds,a6),d1
 	sub.l	a0,d1
 	subq.l	#4,d1
 	beq.b	lbC026210
 	subq.l	#4,d1
 	beq.b	lbC026210
-lbC026228	bset	#3,(lbB02D3A5-datasegment,a6)
+lbC026228	bset	#3,(lbB02D3A5-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
-	sub.l	(lbL02D0F0-datasegment,a6),d0
+	sub.l	(lbL02D0F0-ds,a6),d0
 	addq.l	#8,a3
 	move.w	(a2)+,d1
 	bgt.b	lbC02624A
@@ -47987,27 +47993,27 @@ lbC026274	bra.w	lbC022490
 
 lbC026278	adda.l	(a2),a0
 	move.l	a0,d0
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcs.b	lbC0262AA
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcc.b	lbC0262AA
 	bsr.w	put_adr_d0
 lbC02628C	addq.l	#4,a2
 	lea	($10,a3),a3
 	rts
 
-lbC026294	tst.b	(lbB02B3EA-datasegment,a6)
+lbC026294	tst.b	(lbB02B3EA-ds,a6)
 	beq.b	lbC026258
-	addq.l	#1,(lbW02D24C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#2,(a4)+
 	bsr.b	lbC026258
 	move.b	#1,(a4)+
 	rts
 
-lbC0262AA	bset	#3,(lbB02D3A5-datasegment,a6)
+lbC0262AA	bset	#3,(lbB02D3A5-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
-	sub.l	(lbL02D0F0-datasegment,a6),d0
+	sub.l	(lbL02D0F0-ds,a6),d0
 	lea	($10,a3),a3
 	move.l	(a2)+,d1
 	bgt.b	lbC0262CE
@@ -48033,9 +48039,9 @@ lbC0262D6	bsr.w	lbC0234EE
 
 lbC0262F2	adda.w	(a2),a0
 	move.l	a0,d0
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcs.b	lbC026312
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcc.b	lbC026312
 	bsr.w	put_adr_d0
 	bra.b	lbC02630C
@@ -48045,10 +48051,10 @@ lbC02630C	addq.l	#2,a2
 	addq.l	#8,a3
 lbC026310	rts
 
-lbC026312	bset	#3,(lbB02D3A5-datasegment,a6)
+lbC026312	bset	#3,(lbB02D3A5-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
-	sub.l	(lbL02D0F0-datasegment,a6),d0
+	sub.l	(lbL02D0F0-ds,a6),d0
 	tst.w	(a2)
 	bgt.b	lbC026308
 	beq.b	lbC026334
@@ -48062,9 +48068,9 @@ lbC026334	subq.l	#1,a4
 lbC026338	move.l	d5,d0
 	andi.l	#$6000000,d0
 	rol.l	#7,d0
-	move.b	d0,(opcode_size-datasegment,a6)
+	move.b	d0,(opcode_size-ds,a6)
 	addq.w	#2,d6
-	lea	(dotB.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -48076,16 +48082,16 @@ lbC026338	move.l	d5,d0
 set2qbefore	subq.l	#2,a4
 set2q	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC02636A	moveq	#0,d0
 	btst	#$16,d5
 	sne	d0
 	neg.b	d0
-	move.b	d0,(opcode_size-datasegment,a6)
+	move.b	d0,(opcode_size-ds,a6)
 	addq.w	#2,d6
-	lea	(dotWL.MSG0-datasegment,a6),a0
+	lea	(dotWL.MSG0-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -48096,9 +48102,9 @@ lbC02638A	rts
 
 	MC68020
 extract_size_68020	bfextu	d5{8:2},d0
-	move.b	d0,(opcode_size-datasegment.l,a6)
+	move.b	d0,(opcode_size-ds.l,a6)
 	addq.w	#2,d6
-	move.w	(dotB.MSG-datasegment.l,a6,d0.w*2),(a4)+
+	move.w	(dotB.MSG-ds.l,a6,d0.w*2),(a4)+
 	beq.b	set2qbefore
 	rts
 	MC68000
@@ -48107,9 +48113,9 @@ extract_size_68000	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
-	move.b	d0,(opcode_size-datasegment,a6)
+	move.b	d0,(opcode_size-ds,a6)
 	addq.w	#2,d6
-	lea	(dotB.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -48125,9 +48131,9 @@ lbC0263D6	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
-	move.b	d0,(opcode_size-datasegment,a6)
+	move.b	d0,(opcode_size-ds,a6)
 	addq.w	#2,d6
-	lea	(dotB.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -48136,7 +48142,7 @@ lbC0263D6	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0263FC	tst.b	(lbB02EAD5-datasegment,a6)
+lbC0263FC	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC0263D6
 	subq.l	#8,a3
 	subq.l	#2,a2
@@ -48148,16 +48154,16 @@ lbC0263FC	tst.b	(lbB02EAD5-datasegment,a6)
 	move.l	d0,(a3)
 	movem.l	(sp)+,d2-d5/a5
 	addq.l	#4,sp
-	movea.l	(lbL02D214-datasegment,a6),a4
+	movea.l	(lbL02D214-ds,a6),a4
 	move.l	(a3),d7
-	move.l	(lbB02D20C-datasegment,a6),-(sp)
+	move.l	(lbB02D20C-ds,a6),-(sp)
 	rts
 
 lbC02642A	move.l	d5,d0
 	andi.l	#$10000000,d0
 	rol.l	#4,d0
-	move.b	d0,(opcode_size-datasegment,a6)
-	lea	(dotWL.MSG0-datasegment,a6),a0
+	move.b	d0,(opcode_size-ds,a6)
+	lea	(dotWL.MSG0-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	tst.b	(a0)
@@ -48173,22 +48179,22 @@ lbC026450	move.l	d5,d0
 	andi.l	#$800000,d0
 	swap	d0
 	lsr.w	#6,d0
-	lea	(L.MSG0-datasegment,a6),a0
+	lea	(L.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	lsr.b	#1,d0
 	lea	(lbW02644E,pc),a0
-	move.b	(a0,d0.w),(opcode_size-datasegment,a6)
+	move.b	(a0,d0.w),(opcode_size-ds,a6)
 	addq.w	#2,d6
 	rts
 
 lbC026476	btst	#$17,d5
 	beq.w	set2q
-	lea	(W.MSG0-datasegment,a6),a0
+	lea	(W.MSG0-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	move.b	#1,(opcode_size-datasegment,a6)
+	move.b	#1,(opcode_size-ds,a6)
 	addq.w	#2,d6
 	rts
 
@@ -48196,7 +48202,7 @@ lbC026490	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
-	lea	(ascii.MSG5-datasegment,a6),a0
+	lea	(ascii.MSG5-ds,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.b	lbC0264AC
@@ -48204,7 +48210,7 @@ lbC026490	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0264AC	move.b	(TU.MSG-datasegment,a6),(a4)+
+lbC0264AC	move.b	(TU.MSG-ds,a6),(a4)+
 	subq.w	#1,d6
 	rts
 
@@ -48212,7 +48218,7 @@ lbC0264B4	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
-	lea	(T.MSG-datasegment,a6),a0
+	lea	(T.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -48234,18 +48240,18 @@ lbC0264D4	bsr.b	lbC0264B4
 
 lbC0264EE	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 lbC0264FA	rts
 
-lbC0264FC	move.b	(W.MSG0-datasegment,a6),(a4)+
-	move.b	(WNOP.MSG-datasegment,a6),(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+lbC0264FC	move.b	(W.MSG0-ds,a6),(a4)+
+	move.b	(WNOP.MSG-ds,a6),(a4)+
+	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$23,(a4)+
 	bra.w	lbC0222FE
 
-lbC026510	move.b	(L.MSG0-datasegment,a6),(a4)+
-	move.b	(L.MSG1-datasegment,a6),(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+lbC026510	move.b	(L.MSG0-ds,a6),(a4)+
+	move.b	(L.MSG1-ds,a6),(a4)+
+	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$23,(a4)+
 	bra.w	lbC022292
 
@@ -48258,21 +48264,21 @@ extract_cc_68020	bfextu	d5{4:4},d0
 	beq.b	extract_cc_w
 	cmpi.b	#$FF,d1
 	beq.w	extract_cc_l
-	move.b	(B.MSG-datasegment.l,a6),(a4)+
+	move.b	(B.MSG-ds.l,a6),(a4)+
 	bsr.w	setspacepostopcode
 	extb.l	d1
 	btst	#0,d1	;odd address?
 	bne.w	set4q
 	add.l	a0,d1
 	move.l	d1,d0
-	cmp2.l	(workdata_strt_cmp2-datasegment.l,a6),d0
+	cmp2.l	(workdata_strt_cmp2-ds.l,a6),d0
 	bcs.b	extract_cc_boundsfailed
 	bsr.w	put_adr_d0
 	rts
 	MC68000
 
 extract_cc_boundsfailed
-	bset	#3,(lbB02D3A5-datasegment,a6)
+	bset	#3,(lbB02D3A5-ds,a6)
 	move.b	#'*',(a4)+
 	move.b	#'+',(a4)+
 	moveq	#0,d0
@@ -48290,36 +48296,36 @@ lbC026594	btst	#0,d0
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.w	put_line_end
 
-extract_cc_w	move.b	(WFD.MSG-datasegment,a6),(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+extract_cc_w	move.b	(WFD.MSG-ds,a6),(a4)+
+	jsr	(setspacepostopcode-ds,a6)
 	btst	#0,(1,a2)
 	beq.w	put_adr_word
 	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.w	put_adr_word
 
-extract_cc_l	move.b	(LPA.MSG-datasegment,a6),(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+extract_cc_l	move.b	(LPA.MSG-ds,a6),(a4)+
+	jsr	(setspacepostopcode-ds,a6)
 	btst	#0,(3,a2)
 	beq.w	put_adr_long
 	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.w	put_adr_long
 
 extract_cc_68000	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
-	lea	(RASRHILS.MSG-datasegment,a6),a0
+	lea	(RASRHILS.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -48329,17 +48335,17 @@ extract_cc_68000	move.l	d5,d0
 	beq.b	extract_cc_w
 	cmpi.b	#$FF,d1
 	beq.b	extract_cc_l
-	move.b	(B.MSG-datasegment,a6),(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	(B.MSG-ds,a6),(a4)+
+	jsr	(setspacepostopcode-ds,a6)
 	ext.w	d1
 	ext.l	d1
 	btst	#0,d1
 	bne.w	set4q
 	add.l	a0,d1
 	move.l	d1,d0
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcs.w	extract_cc_boundsfailed
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcc.w	extract_cc_boundsfailed
 	bsr.w	put_adr_d0
 	rts
@@ -48348,7 +48354,7 @@ lbC026652	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
-	lea	(RASRHILS.MSG-datasegment,a6),a0
+	lea	(RASRHILS.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -48357,22 +48363,22 @@ lbC026652	move.l	d5,d0
 	beq.b	lbC0266E0
 	addq.w	#2,d6
 	move.b	#$2E,(a4)+
-	move.b	(ST.MSG-datasegment,a6),(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	(ST.MSG-ds,a6),(a4)+
+	jsr	(setspacepostopcode-ds,a6)
 	ext.w	d1
 	ext.l	d1
 	btst	#0,d1
 	bne.w	set4q
 	add.l	a0,d1
 	move.l	d1,d0
-	cmp.l	(datasegment-datasegment,a6),d0
+	cmp.l	(ds-ds,a6),d0
 	bcs.b	lbC0266A0
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcc.b	lbC0266A0
 	bsr.w	put_adr_d0
 	rts
 
-lbC0266A0	bset	#3,(lbB02D3A5-datasegment,a6)
+lbC0266A0	bset	#3,(lbB02D3A5-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
 	moveq	#0,d0
@@ -48390,22 +48396,22 @@ lbC0266C4	btst	#0,d0
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.w	put_line_end
 
-lbC0266E0	tst.b	(lbL02EB80-datasegment,a6)
+lbC0266E0	tst.b	(lbL02EB80-ds,a6)
 	bne.b	lbC0266F0
 	addq.w	#2,d6
 	move.b	#$2E,(a4)+
-	move.b	(LPA.MSG-datasegment,a6),(a4)+
-lbC0266F0	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	(LPA.MSG-ds,a6),(a4)+
+lbC0266F0	jsr	(setspacepostopcode-ds,a6)
 	btst	#0,(1,a2)
 	beq.w	put_adr_word
 	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	bra.w	put_adr_word
 
 lbC026712	move.l	d5,d0
@@ -48417,7 +48423,7 @@ lbC026712	move.l	d5,d0
 	bne.b	lbC026728
 	tst.w	d5
 	beq.b	lbC026760
-lbC026728	lea	(F.MSG-datasegment,a6),a0
+lbC026728	lea	(F.MSG-ds,a6),a0
 	adda.w	d0,a0
 	moveq	#3,d1
 lbC026730	move.b	(a0)+,d0
@@ -48429,15 +48435,15 @@ lbC02673C	addq.w	#2,d6
 	move.b	#$2E,(a4)+
 	btst	#$16,d5
 	bne.b	lbC026754
-	move.b	(WFD.MSG-datasegment,a6),(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+	move.b	(WFD.MSG-ds,a6),(a4)+
+	jsr	(setspacepostopcode-ds,a6)
 	bra.w	put_adr_word
 
-lbC026754	move.b	(LPA.MSG-datasegment,a6),(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+lbC026754	move.b	(LPA.MSG-ds,a6),(a4)+
+	jsr	(setspacepostopcode-ds,a6)
 	bra.w	put_adr_long
 
-lbC026760	lea	(NOP.MSG-datasegment,a6),a0
+lbC026760	lea	(NOP.MSG-ds,a6),a0
 	move.b	(a0)+,(-1,a4)
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
@@ -48449,7 +48455,7 @@ lbC026760	lea	(NOP.MSG-datasegment,a6),a0
 lbC026774	move.l	d5,d0
 	andi.w	#$1F,d0
 	lsl.w	#2,d0
-	lea	(F.MSG-datasegment,a6),a0
+	lea	(F.MSG-ds,a6),a0
 	adda.w	d0,a0
 	moveq	#3,d1
 lbC026784	move.b	(a0)+,d0
@@ -48457,11 +48463,11 @@ lbC026784	move.b	(a0)+,d0
 	move.b	d0,(a4)+
 	addq.w	#1,d6
 	dbra	d1,lbC026784
-lbC026790	jsr	(setspacepostopcode-datasegment,a6)
+lbC026790	jsr	(setspacepostopcode-ds,a6)
 	move.l	d5,d0
 	swap	d0
 	andi.w	#7,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -48473,9 +48479,9 @@ lbC0267B0	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
-	move.b	d0,(opcode_size-datasegment,a6)
+	move.b	d0,(opcode_size-ds,a6)
 	add.w	d0,d0
-	lea	(dotB.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-ds,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.w	set2q
@@ -48489,9 +48495,9 @@ lbC0267D6	move.l	d5,d0
 	swap	d0
 	lsr.w	#8,d0
 	addq.b	#1,d0
-	move.b	d0,(opcode_size-datasegment,a6)
+	move.b	d0,(opcode_size-ds,a6)
 	add.w	d0,d0
-	lea	(dotB.MSG-datasegment,a6),a0
+	lea	(dotB.MSG-ds,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.w	set2q
@@ -48504,7 +48510,7 @@ lbC0267FE	btst	#8,d5
 	beq.b	lbC026814
 	btst	#9,d5
 	bne.b	lbC026840
-	lea	(FD.MSG-datasegment,a6),a0
+	lea	(FD.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	addq.w	#2,d6
@@ -48521,12 +48527,12 @@ lbL02682A	dl	lbC02683A
 	dl	lbC02684E
 	dl	lbC026864
 
-lbC02683A	move.b	(LPA.MSG-datasegment,a6),(a4)+
+lbC02683A	move.b	(LPA.MSG-ds,a6),(a4)+
 	rts
 
 lbC026840	subq.w	#1,d6
 lbC026842	move.b	#$3F,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC02684E	move.l	d5,d0
@@ -48534,10 +48540,10 @@ lbC02684E	move.l	d5,d0
 	beq.b	lbC02683A
 	btst	#12,d0
 	bne.b	lbC026842
-	move.b	(QR.MSG-datasegment,a6),(a4)+
+	move.b	(QR.MSG-ds,a6),(a4)+
 	rts
 
-lbC026864	move.b	(WFD.MSG-datasegment,a6),(a4)+
+lbC026864	move.b	(WFD.MSG-ds,a6),(a4)+
 	rts
 
 lbC02686A	move.b	#$2E,(a4)+
@@ -48554,10 +48560,10 @@ lbL026880	dl	lbC026890
 	dl	lbC0268EA
 
 lbC026890	move.b	#$3F,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
-lbC02689C	move.b	(QR.MSG-datasegment,a6),(a4)+
+lbC02689C	move.b	(QR.MSG-ds,a6),(a4)+
 	moveq	#4,d1
 	move.l	d5,d0
 	andi.l	#$1C00,d0
@@ -48567,40 +48573,40 @@ lbC02689C	move.b	(QR.MSG-datasegment,a6),(a4)+
 	btst	d0,#14
 	MC68000
 	bne.b	lbC0268F0
-	move.b	(LPA.MSG-datasegment,a6),(-1,a4)
+	move.b	(LPA.MSG-ds,a6),(-1,a4)
 	moveq	#2,d1
 	tst.b	d0
 	beq.b	lbC0268F0
-	move.b	(WFD.MSG-datasegment,a6),(-1,a4)
+	move.b	(WFD.MSG-ds,a6),(-1,a4)
 	moveq	#1,d1
 	cmpi.b	#7,d0
 	beq.b	lbC0268F0
-	move.b	(B.MSG-datasegment,a6),(-1,a4)
+	move.b	(B.MSG-ds,a6),(-1,a4)
 	moveq	#0,d1
 	MC68020		;BASM bug
 	btst	d0,#$70
 	MC68000
 	bne.b	lbC0268F0
 	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
-lbC0268EA	move.b	(WFD.MSG-datasegment,a6),(a4)+
+lbC0268EA	move.b	(WFD.MSG-ds,a6),(a4)+
 	moveq	#1,d1
-lbC0268F0	move.b	d1,(opcode_size-datasegment,a6)
+lbC0268F0	move.b	d1,(opcode_size-ds,a6)
 	rts
 
-lbC0268F6	move.b	(RS.MSG-datasegment,a6),(a4)+
+lbC0268F6	move.b	(RS.MSG-ds,a6),(a4)+
 	btst	#1,(3,a2)
 	bne.b	lbC026908
-	move.b	(WFD.MSG-datasegment,a6),(-1,a4)
+	move.b	(WFD.MSG-ds,a6),(-1,a4)
 lbC026908	rts
 
 lbC02690A	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC02691C	move.l	d5,d0
@@ -48609,23 +48615,23 @@ lbC02691C	move.l	d5,d0
 	lsr.w	#6,d0
 	cmp.b	#3,d0
 	beq.b	lbC02690A
-lbC02692E	move.b	(RS.MSG-datasegment,a6),d0
+lbC02692E	move.b	(RS.MSG-ds,a6),d0
 	btst	#$18,d5
 	beq.b	lbC02693C
-	move.b	(LPA.MSG-datasegment,a6),d0
+	move.b	(LPA.MSG-ds,a6),d0
 lbC02693C	move.b	d0,(a4)+
 	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
 	add.w	d0,d0
-	lea	(B.MSG0-datasegment,a6),a0
+	lea	(B.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.b	lbC0269A0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d5,d2
 	andi.l	#$70000,d2
 	swap	d2
@@ -48644,20 +48650,20 @@ lbC026988	bsr.w	put_line_end
 lbC02698C	move.b	#$2C,(a4)+
 	move.w	d2,d0
 	add.w	d0,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0269A0	lea	(W.MSG-datasegment,a6),a0
+lbC0269A0	lea	(W.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.w	(a2),d4
 	bra.w	lbC024B0C
 
-lbC0269B2	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC0269B2	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -48665,7 +48671,7 @@ lbC0269B2	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
 	move.b	#$2C,(a4)+
 	move.w	d2,d0
 	add.w	d0,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -48677,23 +48683,23 @@ lbC0269D2	move.l	d5,d0
 	lsr.w	#6,d0
 	cmp.b	#3,d0
 	beq.w	lbC02690A
-lbC0269E6	move.b	(RS.MSG-datasegment,a6),d0
+lbC0269E6	move.b	(RS.MSG-ds,a6),d0
 	btst	#$18,d5
 	beq.b	lbC0269F4
-	move.b	(LPA.MSG-datasegment,a6),d0
+	move.b	(LPA.MSG-ds,a6),d0
 lbC0269F4	move.b	d0,(a4)+
 	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
 	add.w	d0,d0
-	lea	(B.MSG0-datasegment,a6),a0
+	lea	(B.MSG0-ds,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.b	lbC026A58
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.l	d5,d2
 	andi.l	#$70000,d2
 	swap	d2
@@ -48712,20 +48718,20 @@ lbC026A40	bsr.w	put_line_end
 lbC026A44	move.b	#$2C,(a4)+
 	move.w	d2,d0
 	add.w	d0,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC026A58	lea	(W.MSG-datasegment,a6),a0
+lbC026A58	lea	(W.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	jsr	(setspacepostopcode-datasegment,a6)
+	jsr	(setspacepostopcode-ds,a6)
 	move.w	(a2),d4
 	bra.w	lbC024B2E
 
-lbC026A6A	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+lbC026A6A	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -48733,7 +48739,7 @@ lbC026A6A	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
 	move.b	#$2C,(a4)+
 	move.w	d2,d0
 	add.w	d0,d0
-	lea	(D0D1D2D3D4D5D.MSG-datasegment,a6),a0
+	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -48744,9 +48750,9 @@ lbC026A8A	move.l	d5,d0
 	cmpi.w	#$10,d0
 	bcs.b	lbC026A9E
 	moveq	#$10,d0
-	bset	#0,(lbB02D3A4-datasegment,a6)
+	bset	#0,(lbB02D3A4-ds,a6)
 lbC026A9E	add.w	d0,d0
-	lea	(BSBCLSLCSSSCA.MSG-datasegment,a6),a0
+	lea	(BSBCLSLCSSSCA.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -48759,10 +48765,10 @@ lbC026AAC	bsr.b	lbC026A8A
 	cmpi.w	#4,d0
 	beq.b	lbC026AD0
 	move.b	#$2E,(a4)+
-	move.b	(WFD.MSG-datasegment,a6),(a4)+
+	move.b	(WFD.MSG-ds,a6),(a4)+
 	cmpi.w	#2,d0
 	beq.b	lbC026AD0
-	move.b	(LPA.MSG-datasegment,a6),(-1,a4)
+	move.b	(LPA.MSG-ds,a6),(-1,a4)
 lbC026AD0	rts
 
 lbC026AD2	move.l	d5,d0
@@ -48771,8 +48777,8 @@ lbC026AD2	move.l	d5,d0
 	cmpi.w	#$10,d0
 	bcs.b	lbC026AE8
 	moveq	#$10,d0
-	bset	#0,(lbB02D3A4-datasegment,a6)
-lbC026AE8	lea	(BSBCLSLCSSSCA.MSG-datasegment,a6),a0
+	bset	#0,(lbB02D3A4-ds,a6)
+lbC026AE8	lea	(BSBCLSLCSSSCA.MSG-ds,a6),a0
 	add.w	d0,d0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
@@ -48787,7 +48793,7 @@ lbC026AFE	moveq	#0,d0
 	sne	d0
 lbC026B06	neg.b	d0
 	add.w	d0,d0
-	lea	(W.MSG-datasegment,a6),a0
+	lea	(W.MSG-ds,a6),a0
 	adda.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -48799,7 +48805,7 @@ lbC026B18	move.l	d5,d0
 	rol.l	#7,d0
 	addq.w	#2,d6
 	add.w	d0,d0
-	lea	(lbW02AD36-datasegment,a6),a0
+	lea	(lbW02AD36-ds,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.b	lbC026B36
@@ -48809,7 +48815,7 @@ lbC026B18	move.l	d5,d0
 
 lbC026B36	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-datasegment,a6)
+	bset	#0,(lbB02D3A5-ds,a6)
 	rts
 
 lbC026B44	btst	#10,d5
@@ -48822,15 +48828,15 @@ lbC026B44	btst	#10,d5
 	and.l	d5,d1
 	cmp.b	d0,d1
 	beq.b	lbC026B64
-	move.b	(LPA.MSG-datasegment,a6),(a4)+
+	move.b	(LPA.MSG-ds,a6),(a4)+
 	addq.w	#1,d6
-lbC026B64	lea	(L.MSG2-datasegment,a6),a0
+lbC026B64	lea	(L.MSG2-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
 lbC026B6E	moveq	#0,d0
-	move.b	(lbB02EAD5-datasegment,a6),d0
+	move.b	(lbB02EAD5-ds,a6),d0
 	bne.b	lbC026B9C
 	btst	#$1A,d7
 	bne.b	lbC026B94
@@ -48887,40 +48893,40 @@ lbC026BCE	lea	(lbC022018,pc),a0
 	moveq	#0,d0
 lbC026C12	rts
 
-lbC026C14	bsr.w	saveregs_all
-	move.l	(lbB02B4A8-datasegment,a6),d0
-	movea.l	(datasegment-datasegment,a6),a1
-	clr.l	(lbB02B4A8-datasegment,a6)
-	tst.b	(lbB02EB47-datasegment,a6)
+freework	bsr.w	saveregs_all
+	move.l	(workdata_length-ds,a6),d0
+	movea.l	(ds-ds,a6),a1
+	clr.l	(workdata_length-ds,a6)
+	tst.b	(lbB02EB47-ds,a6)
 	bne.b	lbC026C2E
 	bsr.w	_FreeMem
-lbC026C2E	move.l	(lbL02B4AC-datasegment,a6),d0
+lbC026C2E	move.l	(workdata_struct_sz-ds,a6),d0
 	beq.b	lbC026C44
-	movea.l	(workdata_end-datasegment,a6),a1
-	clr.l	(lbL02B4AC-datasegment,a6)
+	movea.l	(workdata_struct-ds,a6),a1
+	clr.l	(workdata_struct_sz-ds,a6)
 	addq.l	#8,d0
 	addq.l	#8,d0
 	bsr.w	_FreeMem
 lbC026C44	bsr.w	saveregs_all
-	move.l	(lbL02B4A4-datasegment,a6),d0
-	movea.l	(lbL02D0B8-datasegment,a6),a1
-	clr.l	(lbL02B4A4-datasegment,a6)
+	move.l	(lbL02B4A4-ds,a6),d0
+	movea.l	(lbL02D0B8-ds,a6),a1
+	clr.l	(lbL02B4A4-ds,a6)
 	bsr.w	_FreeMem
-	movea.l	(lbL02D144-datasegment,a6),a1
-	move.l	(lbL02D0F8-datasegment,a6),d0
-	clr.l	(lbL02D0F8-datasegment,a6)
+	movea.l	(lbL02D144-ds,a6),a1
+	move.l	(lbL02D0F8-ds,a6),d0
+	clr.l	(lbL02D0F8-ds,a6)
 	bsr.w	_FreeMem
 	bra.w	lbC0273CA
 
-lbC026C6C	lea	(displayid-datasegment,a6),a0
+lbC026C6C	lea	(displayid-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
-lbC026C74	move.l	d0,(lbL02D1D4-datasegment,a6)
+lbC026C74	move.l	d0,(lbL02D1D4-ds,a6)
 	move.w	#$F0,d0
 	bra.b	_savecommonregs
 
-lbC026C7E	move.l	d0,(lbL02D1D4-datasegment,a6)
-	lea	(displayid-datasegment,a6),a0
+lbC026C7E	move.l	d0,(lbL02D1D4-ds,a6)
+	lea	(displayid-ds,a6),a0
 	moveq	#$3F,d0
 lbC026C88	clr.l	(a0)+
 	dbra	d0,lbC026C88
@@ -48928,42 +48934,42 @@ lbC026C88	clr.l	(a0)+
 _savecommonregs	bsr.w	saveregs_nod0d1a0a1
 	lea	(win1_gg1_StringInfo,pc),a0
 	move.w	d0,(10,a0)
-	move.l	d1,(lbL02D1D8-datasegment,a6)
-	tst.b	(lbB02EB41-datasegment,a6)
+	move.l	d1,(lbL02D1D8-ds,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	beq.w	lbC026D94
-	tst.b	(lbB02EBEF-datasegment,a6)
+	tst.b	(lbB02EBEF-ds,a6)
 	bne.w	lbC026D94
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.w	lbC026D32
-	tst.b	(lbB02EB4A-datasegment,a6)
+	tst.b	(lbB02EB4A-ds,a6)
 	bne.w	lbC026D32
 	bsr.w	lbC026D94
 	bcc.b	lbC026CCA
-	bra.w	_dummy_st
+	bra.w	term1
 
 lbC026CCA	bne.b	lbC026CF8
-	movea.l	(lbL02D0FC-datasegment,a6),a1
+	movea.l	(lbL02D0FC-ds,a6),a1
 	move.w	#$7FFF,(a1)+
 	moveq	#2,d0
-	add.l	d0,(lbL02D100-datasegment,a6)
-	add.l	d0,(lbL02D0FC-datasegment,a6)
-	lea	(displayid-datasegment,a6),a0
-	movea.l	(lbL02D1D8-datasegment,a6),a1
+	add.l	d0,(lbL02D100-ds,a6)
+	add.l	d0,(lbL02D0FC-ds,a6)
+	lea	(displayid-ds,a6),a0
+	movea.l	(lbL02D1D8-ds,a6),a1
 	bsr.w	lbC027222
 lbC026CEA	move.b	(a0)+,(a1)+
 	bne.b	lbC026CEA
-	move.w	(lbW02EAC8-datasegment,a6),d0
+	move.w	(lbW02EAC8-ds,a6),d0
 	cmpi.w	#$7FFE,d0
 	rts
 
-lbC026CF8	jsr	(lbC02AEB2-datasegment,a6)
+lbC026CF8	jsr	(lbC02AEB2-ds,a6)
 	addq.l	#2,d0
 	bclr	#0,d0
 	move.l	a0,-(sp)
-	movea.l	(lbL02D0FC-datasegment,a6),a1
+	movea.l	(lbL02D0FC-ds,a6),a1
 	move.w	d0,(a1)+
 	addq.l	#2,d0
-	add.l	d0,(lbL02D100-datasegment,a6)
+	add.l	d0,(lbL02D100-ds,a6)
 	lsr.l	#1,d0
 	subq.l	#2,d0
 lbC026D14	move.w	(a0)+,(a1)+
@@ -48971,50 +48977,50 @@ lbC026D14	move.w	(a0)+,(a1)+
 	tst.w	(-2,a1)
 	bne.b	lbC026D24
 	st	(-1,a1)
-lbC026D24	move.l	a1,(lbL02D0FC-datasegment,a6)
+lbC026D24	move.l	a1,(lbL02D0FC-ds,a6)
 	movea.l	(sp)+,a0
 	bsr.w	lbC027222
 	bra.w	lbC02116C
 
 lbC026D32	movea.l	d1,a1
-	movea.l	(lbL02D0FC-datasegment,a6),a0
+	movea.l	(lbL02D0FC-ds,a6),a0
 	moveq	#0,d0
 	move.w	(a0)+,d0
-	move.l	a0,(lbL02D0FC-datasegment,a6)
+	move.l	a0,(lbL02D0FC-ds,a6)
 	cmpi.w	#$7FFF,d0
 	bne.b	lbC026D68
-lbC026D46	move.l	(lbL02D1D4-datasegment,a6),d0
-	move.l	(lbL02D1D8-datasegment,a6),d1
+lbC026D46	move.l	(lbL02D1D4-ds,a6),d0
+	move.l	(lbL02D1D8-ds,a6),d1
 	bsr.b	lbC026D94
 	bcc.b	lbC026D5C
-	move.w	(lbW02EAC8-datasegment,a6),d0
+	move.w	(lbW02EAC8-ds,a6),d0
 	cmpi.w	#$7FFE,d0
 	rts
 
 lbC026D5C	bne.b	lbC026D66
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	cmp.w	d0,d0
 lbC026D66	rts
 
-lbC026D68	tst.b	(lbB02B422-datasegment,a6)
+lbC026D68	tst.b	(lbB02B422-ds,a6)
 	beq.b	lbC026D76
 	adda.l	d0,a0
-	move.l	a0,(lbL02D0FC-datasegment,a6)
+	move.l	a0,(lbL02D0FC-ds,a6)
 	bra.b	lbC026D46
 
 lbC026D76	subq.l	#1,d0
-	movea.l	(lbL02D1D8-datasegment,a6),a1
+	movea.l	(lbL02D1D8-ds,a6),a1
 lbC026D7C	move.b	(a0)+,(a1)+
 	dbra	d0,lbC026D7C
-	move.l	a0,(lbL02D0FC-datasegment,a6)
+	move.l	a0,(lbL02D0FC-ds,a6)
 	clr.b	(a1)+
-	movea.l	(lbL02D1D8-datasegment,a6),a0
+	movea.l	(lbL02D1D8-ds,a6),a0
 	bsr.w	lbC027222
 	bra.w	lbC02116C
 
-lbC026D94	tst.l	(window2ptr-datasegment,a6)
+lbC026D94	tst.l	(window2ptr-ds,a6)
 	beq.b	lbC026DC8
-	move.w	(lbB02EACC-datasegment,a6),d0
+	move.w	(lbB02EACC-ds,a6),d0
 	cmpi.w	#$4D,d0
 	beq.b	lbC026DBC
 	cmpi.w	#$677,d0
@@ -49025,19 +49031,19 @@ lbC026D94	tst.l	(window2ptr-datasegment,a6)
 	beq.b	lbC026DBC
 	cmpi.w	#$354,d0
 	bne.b	lbC026DC8
-lbC026DBC	movea.l	(lbL02D1D8-datasegment,a6),a0
+lbC026DBC	movea.l	(lbL02D1D8-ds,a6),a0
 	moveq	#1,d1
 	andi.b	#$1A,ccr
 	rts
 
 lbC026DC8	movem.l	d2/d3/a2/a3,-(sp)
-	movem.l	a2/a3,(lbL02D070-datasegment,a6)
+	movem.l	a2/a3,(lbL02D070-ds,a6)
 	bsr.w	lbC029E04
 	bsr.w	_SetPointerAll
 	lea	(win1_gg1_StringInfo,pc),a2
 	movea.l	d1,a1
 	move.l	d1,-(sp)
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	bsr.w	lbC027004
 	bsr.w	lbC02AEB2
 	move.l	a0,(a2)
@@ -49046,7 +49052,7 @@ lbC026DC8	movem.l	d2/d3/a2/a3,-(sp)
 	lea	(win1_gg2,pc),a2
 	movea.l	($1A,a2),a1
 	moveq	#1,d0
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	_gettextbynum
 	moveq	#5,d0
 _gettextbynum	bsr.w	gettextbynum
@@ -49061,7 +49067,7 @@ _gettextbynum	bsr.w	gettextbynum
 	lea	(win1_gg3,pc),a2
 	movea.l	($1A,a2),a1
 	moveq	#3,d0
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	_gettextbynum0
 	moveq	#4,d0
 _gettextbynum0	bsr.w	gettextbynum
@@ -49074,10 +49080,10 @@ _gettextbynum0	bsr.w	gettextbynum
 	move.w	d1,(4,a1)
 	move.l	a0,(12,a1)
 	lea	(nw_win1,pc),a0
-	move.l	(lbL02D1D4-datasegment,a6),(nw_Title,a0)
-	move.l	(screenptr-datasegment,a6),(nw_Screen,a0)
+	move.l	(lbL02D1D4-ds,a6),(nw_Title,a0)
+	move.l	(screenptr-ds,a6),(nw_Screen,a0)
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOOpenWindow,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -49095,7 +49101,7 @@ lbC026E8A	movea.l	d0,a3
 	moveq	#0,d3
 lbC026E90	movea.l	($56,a3),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_GetIMsg,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -49103,14 +49109,14 @@ lbC026E90	movea.l	($56,a3),a0
 	tst.w	d3
 	bne.w	lbC026F32
 	movea.l	($56,a3),a0
-	jsr	(_WaitPort-datasegment,a6)
+	jsr	(_WaitPort-ds,a6)
 	bra.b	lbC026E90
 
 lbC026EB4	movea.l	d0,a1
 	move.l	($14,a1),d2
 	movea.l	($1C,a1),a2
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_ReplyIMsg,a6)
 	movea.l	(sp)+,a6
 	cmpi.l	#$40,d2
@@ -49130,18 +49136,18 @@ lbC026EEA	cmpi.l	#$2000000,d2
 	bne.b	lbC026E90
 	bsr.w	lbC028CFC
 	movem.l	a2/a3,-(sp)
-	movem.l	(lbL02D070-datasegment,a6),a2/a3
+	movem.l	(lbL02D070-ds,a6),a2/a3
 	bsr.w	lbC027E00
 	movem.l	(sp)+,a2/a3
 	bra.b	lbC026E90
 
 lbC026F0A	moveq	#10,d1
-	jsr	(dosdelay-datasegment,a6)
+	jsr	(dosdelay-ds,a6)
 	lea	(win1_gg1,pc),a0
 	movea.l	a3,a1
 	suba.l	a2,a2
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOActivateGadget,a6)
 	movea.l	(sp)+,a6
 	rts
@@ -49160,26 +49166,26 @@ lbC026F32	lea	(nw_win1,pc),a0
 	move.w	(6,a3),(2,a0)
 	movea.l	a3,a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOCloseWindow,a6)
 	movea.l	(sp)+,a6
 	bsr.w	lbC029E98
 	bsr.w	_ClearPointerAll
-	st	(lbB02EB45-datasegment,a6)
+	st	(lbB02EB45-ds,a6)
 	tst.w	d3
 	bpl.b	lbC026F6E
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	addq.w	#4,sp
 	movem.l	(sp)+,d2/d3/a2/a3
 	bra.w	lbC021172
 
-lbC026F6E	lea	(displayid-datasegment,a6),a0
+lbC026F6E	lea	(displayid-ds,a6),a0
 	movea.l	a0,a1
 	bsr.b	lbC026F92
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC026F80
 	bsr.w	lbC027222
-lbC026F80	movea.l	(lbL02D1D8-datasegment,a6),a1
+lbC026F80	movea.l	(lbL02D1D8-ds,a6),a1
 lbC026F84	move.b	(a0)+,(a1)+
 	bne.b	lbC026F84
 	movea.l	(sp)+,a0
@@ -49421,13 +49427,13 @@ lbC027222	movem.l	a0/a1,-(sp)
 lbC027246	cmpi.b	#$4D,d2
 	bhi.b	lbC027274
 	movea.l	a0,a1
-	lea	(lbL02C1D4-datasegment,a6),a0
+	lea	(lbL02C1D4-ds,a6),a0
 	cmpi.b	#$1B,d2
 	beq.b	lbC027266
 	subi.b	#$41,d2
 	bcs.b	lbC027274
 	lsl.l	#8,d2
-	lea	(lbL02B4D4-datasegment,a6),a0
+	lea	(lbL02B4D4-ds,a6),a0
 	adda.l	d2,a0
 lbC027266	move.b	(a0)+,(a1)+
 	bne.b	lbC027266
@@ -49439,10 +49445,10 @@ lbC027274	cmp.b	d0,d0
 	movem.l	(sp)+,a0/a1
 	rts
 
-lbC02727C	tst.b	(lbB02EB82-datasegment,a6)
+lbC02727C	tst.b	(lbB02EB82-ds,a6)
 	bne.w	lbC027398
 	movem.l	d0-d4/a0/a1,-(sp)
-	lea	(lbL02E8C8-datasegment,a6),a0
+	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d3
 lbC02728E	tst.b	(a0)+
 	bne.b	lbC02728E
@@ -49475,7 +49481,7 @@ lbC0272B2	move.b	(a0)+,(a1)+
 	bne.b	lbC0272DA
 	clr.b	(-3,a1)
 lbC0272DA	movea.l	d3,a0
-	lea	(lbB031E00-datasegment,a6),a1
+	lea	(lbB031E00-ds,a6),a1
 lbC0272E0	cmp.l	a0,d4
 	beq.b	lbC0272E8
 	move.b	(a0)+,(a1)+
@@ -49483,54 +49489,54 @@ lbC0272E0	cmp.l	a0,d4
 lbC0272E8	clr.b	(a1)
 	lea	(stringbuffer).l,a0
 	clr.b	(a0)
-	lea	(lbL02DFC8-datasegment,a6),a1
-	tst.b	(lbB02B439-datasegment,a6)
+	lea	(lbL02DFC8-ds,a6),a1
+	tst.b	(lbB02B439-ds,a6)
 	bne.b	lbC02730A
-	lea	(lbL02E0C8-datasegment,a6),a0
-	tst.b	(lbB02B43A-datasegment,a6)
+	lea	(lbL02E0C8-ds,a6),a0
+	tst.b	(lbB02B43A-ds,a6)
 	bne.b	lbC02730A
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 lbC02730A	bsr.w	lbC02739E
 	lea	(stringbuffer).l,a0
-	lea	(lbL02E5C8-datasegment,a6),a1
-	tst.b	(lbB02B43F-datasegment,a6)
+	lea	(lbL02E5C8-ds,a6),a1
+	tst.b	(lbB02B43F-ds,a6)
 	bne.b	lbC02732C
-	lea	(lbL02E6C8-datasegment,a6),a0
-	tst.b	(lbB02B440-datasegment,a6)
+	lea	(lbL02E6C8-ds,a6),a0
+	tst.b	(lbB02B440-ds,a6)
 	bne.b	lbC02732C
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 lbC02732C	bsr.b	lbC02739E
 	lea	(stringbuffer).l,a0
-	lea	(lbL02E1C8-datasegment,a6),a1
-	tst.b	(lbB02B43C-datasegment,a6)
+	lea	(lbL02E1C8-ds,a6),a1
+	tst.b	(lbB02B43C-ds,a6)
 	bne.b	lbC02734C
-	lea	(lbL02E2C8-datasegment,a6),a0
-	tst.b	(lbB02B43D-datasegment,a6)
+	lea	(lbL02E2C8-ds,a6),a0
+	tst.b	(lbB02B43D-ds,a6)
 	bne.b	lbC02734C
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 lbC02734C	bsr.b	lbC02739E
 	move.b	#$2E,(a1)+
 	move.b	#$61,(a1)+
 	move.b	#$73,(a1)+
 	move.b	#$6D,(a1)+
 	clr.b	(a1)
-	lea	(lbL02E3C8-datasegment,a6),a1
-	tst.b	(lbB02EB85-datasegment,a6)
+	lea	(lbL02E3C8-ds,a6),a1
+	tst.b	(lbB02EB85-ds,a6)
 	bne.b	lbC027380
 	lea	(stringbuffer).l,a0
-	tst.b	(lbB02B3E3-datasegment,a6)
+	tst.b	(lbB02B3E3-ds,a6)
 	bne.b	lbC027384
-	lea	(lbL02E4C8-datasegment,a6),a0
-	tst.b	(lbB02B3E4-datasegment,a6)
+	lea	(lbL02E4C8-ds,a6),a0
+	tst.b	(lbB02B3E4-ds,a6)
 	bne.b	lbC027384
-lbC027380	lea	(lbB031E00-datasegment,a6),a0
+lbC027380	lea	(lbB031E00-ds,a6),a0
 lbC027384	bsr.b	lbC02739E
 	move.b	#$2E,(a1)+
 	move.b	#$72,(a1)+
 	move.b	#$73,(a1)+
 	clr.b	(a1)
 	movem.l	(sp)+,d0-d4/a0/a1
-lbC027398	st	(lbB02EB82-datasegment,a6)
+lbC027398	st	(lbB02EB82-ds,a6)
 	rts
 
 lbC02739E	tst.b	(a0)
@@ -49550,114 +49556,114 @@ lbC0273C2	move.b	(a0)+,(a1)+
 	rts
 
 lbC0273CA	move.l	d0,-(sp)
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	clr.l	(lbB02D0E0-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	clr.l	(lbB02D0E0-ds,a6)
 	bsr.w	dosclose
 	move.l	(sp)+,d0
 	rts
 
-lbC0273DC	movea.l	(lbL02B4B0-datasegment,a6),a0
+lbC0273DC	movea.l	(lbL02B4B0-ds,a6),a0
 	cmpa.l	#lbL02C4D4,a0
 	beq.b	_clear_ccr
 	movea.l	-(a0),a1
-	cmpa.l	(datasegment-datasegment,a6),a1
+	cmpa.l	(ds-ds,a6),a1
 	bcs.b	_clear_ccr
-	cmpa.l	(lbL02A8A0-datasegment,a6),a1
+	cmpa.l	(workdata_end-ds,a6),a1
 	bcc.b	_clear_ccr
 	move.l	a2,(a0)
 	movea.l	a1,a2
 	bra.b	lbC02744E
 
-lbC0273FC	movea.l	(lbL02B4B0-datasegment,a6),a0
+lbC0273FC	movea.l	(lbL02B4B0-ds,a6),a0
 	move.l	a2,(a0)+
-	move.l	a0,(lbL02B4B0-datasegment,a6)
+	move.l	a0,(lbL02B4B0-ds,a6)
 	cmpi.l	#$FFFFFFFF,(a0)
 	beq.b	lbC027410
 	rts
 
-lbC027410	lea	(lbL02C4D4-datasegment,a6),a1
+lbC027410	lea	(lbL02C4D4-ds,a6),a1
 	movea.l	a1,a0
 	lea	($100,a0),a0
-	move.l	a0,(lbL02B4B0-datasegment,a6)
+	move.l	a0,(lbL02B4B0-ds,a6)
 	move.l	#$400,d0
 	bsr.w	_CopyMemQuick
 	andi.b	#$FB,ccr
 	rts
 
-lbC02742E	movea.l	(lbL02B4B0-datasegment,a6),a0
+lbC02742E	movea.l	(lbL02B4B0-ds,a6),a0
 	cmpa.l	#lbL02C4D4,a0
 	beq.b	_clear_ccr
 	movea.l	-(a0),a1
-	move.l	a0,(lbL02B4B0-datasegment,a6)
-	cmpa.l	(datasegment-datasegment,a6),a1
+	move.l	a0,(lbL02B4B0-ds,a6)
+	cmpa.l	(ds-ds,a6),a1
 	bcs.b	_clear_ccr
-	cmpa.l	(lbL02A8A0-datasegment,a6),a1
+	cmpa.l	(workdata_end-ds,a6),a1
 	bcc.b	_clear_ccr
 	movea.l	a1,a2
 lbC02744E	bsr.w	lbC02A3CC
 	bra.w	lbC02AF74
 
 _clear_ccr	bsr.w	clear_ccr
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	cmp.w	d0,d0
 	rts
 
-lbC027464	movem.l	a2/a3,(lbL02D2C8-datasegment,a6)
+lbC027464	movem.l	a2/a3,(lbL02D2C8-ds,a6)
 	bsr.w	lbC027534
 	moveq	#0,d0
-	move.b	(lbB02EB56-datasegment,a6),d0
-	lea	(lbL02D12C-datasegment,a6),a0
-	lea	(workdata_strt_cmp2-datasegment,a6),a1
+	move.b	(lbB02EB56-ds,a6),d0
+	lea	(lbL02D12C-ds,a6),a0
+	lea	(workdata_strt_cmp2-ds,a6),a1
 	lsl.w	#2,d0
 	movea.l	(-4,a0,d0.w),a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC02748C
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC02744E
 lbC02748C	movea.l	(a0)+,a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC027498
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC02744E
 lbC027498	movea.l	(a0)+,a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC0274A4
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC02744E
 lbC0274A4	movea.l	(a0)+,a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC0274B0
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC02744E
 lbC0274B0	movea.l	(a0),a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC0274BC
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC02744E
 lbC0274BC	moveq	#1,d1
-lbC0274BE	movem.l	(lbL02D2C8-datasegment,a6),a2/a3
-	jsr	(lbC029B18-datasegment,a6)
-	clr.l	(lbB02D118-datasegment,a6)
-	move.b	d1,(lbB02EB3D-datasegment,a6)
+lbC0274BE	movem.l	(lbL02D2C8-ds,a6),a2/a3
+	jsr	(lbC029B18-ds,a6)
+	clr.l	(lbB02D118-ds,a6)
+	move.b	d1,(lbB02EB3D-ds,a6)
 	bsr.w	lbC020CB8
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB3D-datasegment,a6)
-	move.l	(lbB02D118-datasegment,a6),d0
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB3D-ds,a6)
+	move.l	(lbB02D118-ds,a6),d0
 	beq.b	lbC02752C
 	moveq	#1,d1
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bsr.w	lbC02777C
 	beq.b	lbC02752C
 	move.l	a4,-(sp)
-	lea	(displayid-datasegment,a6),a4
+	lea	(displayid-ds,a6),a4
 	movea.l	d0,a0
 	bsr.w	lbC023954
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	move.l	a4,d2
 	sub.l	a0,d2
 	movea.l	(sp)+,a4
 	beq.b	lbC02752C
-lbC027506	lea	(displayid-datasegment,a6),a0
+lbC027506	lea	(displayid-ds,a6),a0
 	move.l	d2,d0
 	moveq	#0,d1
 	bsr.w	lbC027906
@@ -49666,10 +49672,10 @@ lbC027506	lea	(displayid-datasegment,a6),a0
 	bne.b	lbC027506
 	bra.b	lbC02752C
 
-lbC02751A	add.l	(datasegment-datasegment,a6),d0
+lbC02751A	add.l	(ds-ds,a6),d0
 	bcs.b	lbC02752C
 	movea.l	d0,a2
-	cmp.l	(lbL02A8A0-datasegment,a6),d0
+	cmp.l	(workdata_end-ds,a6),d0
 	bcc.b	lbC02752C
 	bra.w	lbC02744E
 
@@ -49680,40 +49686,40 @@ lbC027534	bsr.w	lbC0273FC
 	bsr.w	lbC020C9C
 	rts
 
-lbC02753E	movem.l	a2/a3,(lbL02D2C8-datasegment,a6)
+lbC02753E	movem.l	a2/a3,(lbL02D2C8-ds,a6)
 	bsr.b	lbC027534
-	lea	(lbL02D130-datasegment,a6),a0
-	lea	(workdata_strt_cmp2-datasegment,a6),a1
+	lea	(lbL02D130-ds,a6),a0
+	lea	(workdata_strt_cmp2-ds,a6),a1
 	movea.l	(a0)+,a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC02755C
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.w	lbC02744E
 lbC02755C	movea.l	(a0)+,a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC02756A
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.w	lbC02744E
 lbC02756A	movea.l	(a0),a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC027578
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.w	lbC02744E
 lbC027578	subq.l	#8,a0
 	movea.l	-(a0),a2
 	cmpa.l	(a1),a2
 	bcs.b	lbC027588
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.w	lbC02744E
 lbC027588	moveq	#2,d1
 	bne.w	lbC0274BE
 lbC02758E	move.w	#$2713,d0
-	jsr	(gettextbynum-datasegment,a6)
-	jsr	(lbC026C6C-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	jsr	(lbC026C6C-ds,a6)
 	bne.b	lbC02759E
 	rts
 
-lbC02759E	jsr	(lbC02AEB2-datasegment,a6)
+lbC02759E	jsr	(lbC02AEB2-ds,a6)
 lbC0275A2	movem.l	d0-d7/a0-a5,-(sp)
 	movea.l	d0,a0
 	move.l	d1,d0
@@ -49721,10 +49727,10 @@ lbC0275A2	movem.l	d0-d7/a0-a5,-(sp)
 	bsr.w	lbC027906
 	beq.w	lbC02767E
 	moveq	#4,d1
-	move.l	(lbL02D378-datasegment,a6),d7
+	move.l	(lbL02D378-ds,a6),d7
 	movea.l	d0,a1
 	bsr.w	lbC027DC2
-	lea	(lbL02F600-datasegment,a6),a0
+	lea	(lbL02F600-ds,a6),a0
 	moveq	#0,d2
 	move.b	d1,d2
 	lsl.l	#8,d2
@@ -49734,8 +49740,8 @@ lbC0275A2	movem.l	d0-d7/a0-a5,-(sp)
 	lea	($400,a0),a0
 	adda.l	d3,a0
 	move.l	(a0),d1
-	beq.w	_dummy
-	movea.l	(lbL02D14C-datasegment,a6),a3
+	beq.w	cceq
+	movea.l	(lbL02D14C-ds,a6),a3
 	cmp.l	(8,a3,d1.l),d0
 	bne.b	lbC0275F4
 	cmp.l	(4,a3,d1.l),d7
@@ -49761,7 +49767,7 @@ lbC027614	move.l	(4,a3,d1.l),d6
 	move.l	d7,(a3,d1.l)
 	move.l	d7,(4,a3,d1.l)
 	move.l	d7,(8,a3,d1.l)
-	movea.l	(lbL02D158-datasegment,a6),a5
+	movea.l	(lbL02D158-ds,a6),a5
 	move.b	d6,d0
 	move.l	d6,d4
 	lsr.l	#8,d4
@@ -49792,13 +49798,13 @@ lbC027668	move.l	d7,(a3,d1.l)
 lbC027674	clr.b	(a5)+
 	subq.b	#1,d6
 	bne.b	lbC027674
-	addq.l	#1,(lbL02D318-datasegment,a6)
+	addq.l	#1,(lbL02D318-ds,a6)
 lbC02767E	movem.l	(sp)+,d0-d7/a0-a5
 	rts
 
 lbC027684	bsr.w	saveregs_all
 	lsl.l	#2,d0
-	movea.l	(workdata_end-datasegment,a6),a3
+	movea.l	(workdata_struct-ds,a6),a3
 	adda.l	d0,a3
 	lsr.l	#2,d0
 	move.l	(a3),d7
@@ -49819,7 +49825,7 @@ lbC0276BA	move.l	d7,(a3)
 	moveq	#-1,d7
 	movea.l	d0,a1
 	bsr.w	lbC027DC2
-	lea	(lbL02F600-datasegment,a6),a0
+	lea	(lbL02F600-ds,a6),a0
 	moveq	#0,d2
 	move.b	d1,d2
 	lsl.l	#8,d2
@@ -49830,7 +49836,7 @@ lbC0276BA	move.l	d7,(a3)
 	adda.l	d3,a0
 	move.l	(a0),d1
 	beq.w	dummy_setflags_d0
-	movea.l	(lbL02D14C-datasegment,a6),a3
+	movea.l	(lbL02D14C-ds,a6),a3
 	cmp.l	(8,a3,d1.l),d0
 	bne.b	lbC0276F2
 	move.l	(a3,d1.l),d6
@@ -49851,7 +49857,7 @@ lbC02770E	move.l	(4,a3,d1.l),d6
 	move.l	d7,(a3,d1.l)
 	move.l	d7,(4,a3,d1.l)
 	move.l	d7,(8,a3,d1.l)
-	movea.l	(lbL02D158-datasegment,a6),a5
+	movea.l	(lbL02D158-ds,a6),a5
 	move.b	d6,d0
 	move.l	d6,d4
 	lsr.l	#8,d4
@@ -49882,8 +49888,8 @@ lbC027762	move.l	d7,(a3,d1.l)
 lbC02776E	clr.b	(a5)+
 	subq.b	#1,d6
 	bne.b	lbC02776E
-	addq.l	#1,(lbL02D318-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	addq.l	#1,(lbL02D318-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC02777C	movem.l	d2-d4/a0,-(sp)
 	move.l	d0,d2
@@ -49899,31 +49905,31 @@ lbC027786	eor.b	d2,d3
 	lsl.w	#8,d4
 	add.l	d4,d4
 	add.l	d3,d4
-	lea	(lbL02FA00-datasegment,a6),a0
+	lea	(lbL02FA00-ds,a6),a0
 	lsl.l	#2,d4
 	move.l	(a0,d4.l),d2
 	beq.b	lbC0277DA
-	movea.l	(lbL02D14C-datasegment,a6),a0
+	movea.l	(lbL02D14C-ds,a6),a0
 lbC0277AC	cmp.l	(8,a0,d2.l),d0
 	beq.b	lbC0277BA
 lbC0277B2	move.l	(a0,d2.l),d2
 	bne.b	lbC0277AC
 	bra.b	lbC0277DA
 
-lbC0277BA	tst.b	(lbB02EB4D-datasegment,a6)
+lbC0277BA	tst.b	(lbB02EB4D-ds,a6)
 	bne.b	lbC0277D4
 	moveq	#0,d1
 	move.l	(4,a0,d2.l),d0
 	move.b	d0,d1
 	lsr.l	#8,d0
-	add.l	(lbL02D158-datasegment,a6),d0
+	add.l	(lbL02D158-ds,a6),d0
 	movem.l	(sp)+,d2-d4/a0
 	rts
 
-lbC0277D4	subq.b	#1,(lbB02EB4D-datasegment,a6)
+lbC0277D4	subq.b	#1,(lbB02EB4D-ds,a6)
 	bra.b	lbC0277B2
 
-lbC0277DA	clr.b	(lbB02EB4D-datasegment,a6)
+lbC0277DA	clr.b	(lbB02EB4D-ds,a6)
 	move.l	#ascii.MSG1,d0
 	moveq	#2,d1
 	cmp.w	d1,d1
@@ -49933,18 +49939,18 @@ lbC0277DA	clr.b	(lbB02EB4D-datasegment,a6)
 ascii.MSG1	db	'??',0,0
 
 lbC0277F2	movem.l	d1-d6/a1/a3-a5,-(sp)
-	move.l	(lbB02B4A8-datasegment,a6),d5
+	move.l	(workdata_length-ds,a6),d5
 lbC0277FA	addq.l	#4,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC02786E
 	tst.w	(a3)
 	bmi.b	lbC0277FA
 	move.l	a3,d6
-	sub.l	(workdata_end-datasegment,a6),d6
+	sub.l	(workdata_struct-ds,a6),d6
 	lsr.l	#2,d6
 	lsl.w	#8,d1
 	lsl.l	#3,d1
-	lea	(lbL02F600-datasegment,a6),a1
+	lea	(lbL02F600-ds,a6),a1
 	adda.l	d1,a1
 	move.l	d0,d4
 	move.l	a0,d2
@@ -49959,8 +49965,8 @@ lbC027826	dbra	d4,lbC027820
 	lsl.l	#2,d3
 	move.l	(a1,d3.l),d3
 	beq.b	lbC02786E
-	movea.l	(lbL02D14C-datasegment,a6),a3
-	movea.l	(lbL02D158-datasegment,a6),a4
+	movea.l	(lbL02D14C-ds,a6),a3
+	movea.l	(lbL02D158-ds,a6),a4
 lbC02783C	move.l	(8,a3,d3.l),d4
 	cmp.b	d4,d0
 	bne.b	lbC027868
@@ -49979,7 +49985,7 @@ lbC027850	cmpm.b	(a1)+,(a5)+
 	move.l	(4,a3,d3.l),d5
 lbC027868	move.l	(a3,d3.l),d3
 	bne.b	lbC02783C
-lbC02786E	cmp.l	(lbB02B4A8-datasegment,a6),d5
+lbC02786E	cmp.l	(workdata_length-ds,a6),d5
 	bne.b	lbC02787A
 	movem.l	(sp)+,d1-d6/a1/a3-a5
 	rts
@@ -49992,11 +49998,11 @@ lbC02787A	move.l	d5,d0
 lbC027884	movem.l	d1-d6/a1/a3-a5,-(sp)
 	moveq	#0,d5
 	move.l	a3,d6
-	sub.l	(workdata_end-datasegment,a6),d6
+	sub.l	(workdata_struct-ds,a6),d6
 	lsr.l	#2,d6
 	lsl.w	#8,d1
 	lsl.l	#3,d1
-	lea	(lbL02F600-datasegment,a6),a1
+	lea	(lbL02F600-ds,a6),a1
 	adda.l	d1,a1
 	move.l	d0,d4
 	move.l	a0,d2
@@ -50011,8 +50017,8 @@ lbC0278AA	dbra	d4,lbC0278A4
 	lsl.l	#2,d3
 	move.l	(a1,d3.l),d3
 	beq.b	lbC0278F2
-	movea.l	(lbL02D14C-datasegment,a6),a3
-	movea.l	(lbL02D158-datasegment,a6),a4
+	movea.l	(lbL02D14C-ds,a6),a3
+	movea.l	(lbL02D158-ds,a6),a4
 lbC0278C0	move.l	(8,a3,d3.l),d4
 	cmp.b	d4,d0
 	bne.b	lbC0278EC
@@ -50044,7 +50050,7 @@ lbC0278FC	move.l	d5,d0
 lbC027906	movem.l	d1-d4/a1/a3-a5,-(sp)
 	lsl.w	#8,d1
 	lsl.l	#3,d1
-	lea	(lbL02F600-datasegment,a6),a1
+	lea	(lbL02F600-ds,a6),a1
 	adda.l	d1,a1
 	move.l	d0,d4
 	move.l	a0,d2
@@ -50059,8 +50065,8 @@ lbC027922	dbra	d4,lbC02791C
 	lsl.l	#2,d3
 	move.l	(a1,d3.l),d3
 	beq.b	lbC02796C
-	movea.l	(lbL02D14C-datasegment,a6),a3
-	movea.l	(lbL02D158-datasegment,a6),a4
+	movea.l	(lbL02D14C-ds,a6),a3
+	movea.l	(lbL02D158-ds,a6),a4
 lbC027938	move.l	(8,a3,d3.l),d4
 	cmp.b	d4,d0
 	bne.b	lbC027966
@@ -50073,7 +50079,7 @@ lbC02794C	cmpm.b	(a1)+,(a5)+
 	dbne	d1,lbC02794C
 	bne.b	lbC027966
 	move.l	(4,a3,d3.l),d0
-	move.l	(8,a3,d3.l),(lbL02D378-datasegment,a6)
+	move.l	(8,a3,d3.l),(lbL02D378-ds,a6)
 	movem.l	(sp)+,d1-d4/a1/a3-a5
 	moveq	#1,d1
 	rts
@@ -50083,15 +50089,15 @@ lbC027966	move.l	(a3,d3.l),d3
 lbC02796C	movem.l	(sp)+,d1-d4/a1/a3-a5
 	rts
 
-lbC027972	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
-	st	(lbB02EB48-datasegment,a6)
+lbC027972	move.w	#$7FFE,(lbW02EAC8-ds,a6)
+	st	(lbB02EB48-ds,a6)
 	ori.b	#4,ccr
 	rts
 
 _savecommonregs0	bsr.w	saveregs_nod0d1a0a1
 	move.l	a1,d3
 	lsl.l	#2,d3
-	movea.l	(workdata_end-datasegment,a6),a3
+	movea.l	(workdata_struct-ds,a6),a3
 	adda.l	d3,a3
 	bsr.w	lbC027DAA
 	moveq	#0,d3
@@ -50100,7 +50106,7 @@ _savecommonregs0	bsr.w	saveregs_nod0d1a0a1
 	move.b	d1,d3
 	bsr.w	lbC027C5C
 	beq.w	dummy_setflags_d0
-	lea	(lbL02F600-datasegment,a6),a0
+	lea	(lbL02F600-ds,a6),a0
 	lsl.l	#8,d3
 	lsl.l	#3,d3
 	adda.l	d3,a0
@@ -50141,7 +50147,7 @@ lbC0279FA	subq.b	#1,d5
 lbC027A08	andi.b	#$FB,ccr
 	rts
 
-lbC027A0E	movea.l	(lbL02D158-datasegment,a6),a0
+lbC027A0E	movea.l	(lbL02D158-ds,a6),a0
 	move.l	d1,d0
 	lsr.l	#8,d1
 	andi.w	#$FF,d1
@@ -50162,16 +50168,16 @@ lbC027A32	move.b	(a0)+,d1
 	eor.b	d1,d3
 	rol.b	#1,d3
 lbC027A38	dbra	d4,lbC027A32
-	lea	(lbL02F600-datasegment,a6),a0
+	lea	(lbL02F600-ds,a6),a0
 	lsl.l	#2,d3
 	move.l	(a0,d3.l),d3
 	beq.b	lbC027A70
-	movea.l	(lbL02D14C-datasegment,a6),a2
+	movea.l	(lbL02D14C-ds,a6),a2
 lbC027A4C	move.l	(8,a2,d3.l),d4
 	cmp.b	d4,d0
 	bne.b	lbC027A6A
 	lsr.l	#8,d4
-	movea.l	(lbL02D158-datasegment,a6),a1
+	movea.l	(lbL02D158-ds,a6),a1
 	adda.l	d4,a1
 	move.l	d0,d1
 	movea.l	d2,a0
@@ -50198,7 +50204,7 @@ lbC027A90	move.b	(a0)+,d0
 	eor.b	d0,d2
 	rol.b	#1,d2
 	dbra	d3,lbC027A90
-	lea	(lbL02F600-datasegment,a6),a0
+	lea	(lbL02F600-ds,a6),a0
 	lsl.w	#2,d2
 	adda.w	d2,a0
 	move.l	a1,d0
@@ -50211,14 +50217,14 @@ lbC027AB0	eor.b	d2,d3
 	rol.b	#1,d3
 	rol.l	#6,d2
 	dbra	d4,lbC027AB0
-	lea	(lbL02FA00-datasegment,a6),a0
+	lea	(lbL02FA00-ds,a6),a0
 	lsl.l	#2,d3
 	adda.l	d3,a0
 	exg	d0,d1
 	bsr.b	lbC027AFC
 	adda.l	a1,a1
 	adda.l	a1,a1
-	adda.l	(workdata_end-datasegment,a6),a1
+	adda.l	(workdata_struct-ds,a6),a1
 	moveq	#2,d1
 	or.b	(a1),d1
 	bclr	#7,d1
@@ -50227,7 +50233,7 @@ lbC027AB0	eor.b	d2,d3
 lbC027ADA	movem.l	(sp)+,d2-d4
 	rts
 
-lbC027AE0	movea.l	(lbL02D158-datasegment,a6),a0
+lbC027AE0	movea.l	(lbL02D158-ds,a6),a0
 	move.l	d1,d0
 	lsr.l	#8,d1
 	andi.w	#$FF,d1
@@ -50240,8 +50246,8 @@ lbC027AF2	dbra	d1,lbC027AF0
 	rts
 
 lbC027AFC	movem.l	d0-d6/a0-a4,-(sp)
-	lea	(lbL02D148-datasegment,a6),a2
-	movea.l	(lbL02D14C-datasegment,a6),a3
+	lea	(lbL02D148-ds,a6),a2
+	movea.l	(lbL02D14C-ds,a6),a3
 	move.l	(a0),d3
 	move.l	d3,d2
 	beq.b	lbC027B16
@@ -50270,8 +50276,8 @@ lbC027B32	adda.l	d4,a3
 	rts
 
 lbC027B42	movem.l	d0-d6/a0-a4,-(sp)
-	lea	(lbL02D148-datasegment,a6),a2
-	movea.l	(lbL02D14C-datasegment,a6),a3
+	lea	(lbL02D148-ds,a6),a2
+	movea.l	(lbL02D14C-ds,a6),a3
 	move.l	(a0),d3
 	move.l	d3,d2
 	beq.b	lbC027B5C
@@ -50279,7 +50285,7 @@ lbC027B54	move.l	d2,d3
 	move.l	(a3,d2.l),d2
 	bne.b	lbC027B54
 lbC027B5C	move.l	(a2),d4
-	move.l	(lbL02B4BC-datasegment,a6),d5
+	move.l	(lbL02B4BC-ds,a6),d5
 	moveq	#$18,d6
 	sub.l	d6,d5
 	moveq	#-1,d6
@@ -50306,19 +50312,19 @@ lbC027B84	adda.l	d4,a3
 
 lbC027B94	tst.b	d2
 	bne.b	lbC027BAC
-	cmpi.l	#$64,(lbL02D318-datasegment,a6)
+	cmpi.l	#$64,(lbL02D318-ds,a6)
 	bcs.b	lbC027BB0
-	clr.l	(lbL02D318-datasegment,a6)
+	clr.l	(lbL02D318-ds,a6)
 	moveq	#1,d2
 	moveq	#0,d4
 	bra.b	lbC027B68
 
-lbC027BAC	clr.l	(lbL02D318-datasegment,a6)
+lbC027BAC	clr.l	(lbL02D318-ds,a6)
 lbC027BB0	move.l	a4,-(sp)
 	move.w	#$2721,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	addi.l	#$6018,d5
 	cmpi.l	#$1800C,d5
@@ -50327,8 +50333,8 @@ lbC027BB0	move.l	a4,-(sp)
 lbC027BD6	move.l	d5,d0
 	bsr.w	_AllocMemClear
 	beq.b	__Permit
-	move.l	d5,(lbL02B4C4-datasegment,a6)
-	move.l	d0,(lbL02D150-datasegment,a6)
+	move.l	d5,(lbL02B4C4-ds,a6)
+	move.l	d0,(lbL02D150-ds,a6)
 	movea.l	d0,a4
 	movea.l	d0,a1
 	lsr.l	#2,d5
@@ -50338,39 +50344,39 @@ lbC027BF0	move.l	d0,(a4)+
 	dbra	d5,lbC027BF0
 	subi.l	#$10000,d5
 	bpl.b	lbC027BF0
-	move.l	(lbL02B4BC-datasegment,a6),d0
-	movea.l	(lbL02D14C-datasegment,a6),a0
+	move.l	(lbL02B4BC-ds,a6),d0
+	movea.l	(lbL02D14C-ds,a6),a0
 	movem.l	d0/a0,-(sp)
 	bsr.w	_CopyMemQuick
 	movem.l	(sp)+,d0/a1
 	bsr.w	_FreeMem
-	movea.l	(lbL02D150-datasegment,a6),a3
-	move.l	a3,(lbL02D14C-datasegment,a6)
-	move.l	(lbL02B4C4-datasegment,a6),(lbL02B4BC).l
+	movea.l	(lbL02D150-ds,a6),a3
+	move.l	a3,(lbL02D14C-ds,a6)
+	move.l	(lbL02B4C4-ds,a6),(lbL02B4BC).l
 	movem.l	(sp)+,d0-d6/a0-a4
 	bra.w	lbC027B42
 
 __Permit	bsr.w	_Permit
 	movem.l	(sp)+,d0-d6/a0-a4
 lbC027C36	movem.l	d0/d1/a4,-(sp)
-	clr.b	(lbB02EB41-datasegment,a6)
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	clr.b	(lbB02EB41-ds,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	move.w	#$275D,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	moveq	#$3C,d1
 	movem.l	(sp)+,d0/d1/a4
-	bra.w	_dummy
+	bra.w	cceq
 
 lbC027C5C	movem.l	d0/d2-d6/a0-a2,-(sp)
 	moveq	#0,d1
 	move.b	d0,d1
-	cmp.l	(lbL02B4C0-datasegment,a6),d1
+	cmp.l	(lbL02B4C0-ds,a6),d1
 	bls.w	lbC027D74
 	movem.l	d0-d3/a0-a3,-(sp)
-	movea.l	(lbL02D160-datasegment,a6),a0
-	move.l	(lbL02D154-datasegment,a6),d2
+	movea.l	(lbL02D160-ds,a6),a0
+	move.l	(lbL02D154-ds,a6),d2
 lbC027C78	cmp.l	a0,d2
 	bls.b	lbC027CBE
 	tst.b	(a0)+
@@ -50384,10 +50390,10 @@ lbC027C86	cmp.l	a0,d2
 	bne.b	lbC027C78
 	subq.b	#1,d1
 	bne.b	lbC027C86
-	move.l	a0,(lbL02D160-datasegment,a6)
+	move.l	a0,(lbL02D160-ds,a6)
 	movem.l	(sp)+,d0-d3/a0-a3
 	movea.l	d4,a1
-	move.l	(lbL02D158-datasegment,a6),d0
+	move.l	(lbL02D158-ds,a6),d0
 	sub.l	d0,d4
 	rol.l	#8,d4
 	add.l	d1,d4
@@ -50405,65 +50411,65 @@ lbC027CB6	move.l	d4,d1
 lbC027CBE	movem.l	(sp)+,d0-d3/a0-a3
 	move.l	a4,-(sp)
 	move.w	#$2723,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	movem.l	d1/a0,-(sp)
-	move.l	(lbL02D154-datasegment,a6),d2
-	move.l	(lbL02D158-datasegment,a6),d3
+	move.l	(lbL02D154-ds,a6),d2
+	move.l	(lbL02D158-ds,a6),d3
 	sub.l	d3,d2
-	move.l	(lbL02B4B4-datasegment,a6),d0
+	move.l	(lbL02B4B4-ds,a6),d0
 	add.l	d0,d0
-	move.l	d0,(lbL02B4B8-datasegment,a6)
+	move.l	d0,(lbL02B4B8-ds,a6)
 	move.l	d0,d5
 	bsr.w	_AllocMemClear
 	movea.l	d0,a1
 	movea.l	d0,a2
-	move.l	d0,(lbL02D15C-datasegment,a6)
+	move.l	d0,(lbL02D15C-ds,a6)
 	bne.b	lbC027D2E
 	bsr.w	_Forbid
 	bsr.w	_AvailMemLargest
 	subi.l	#$A000,d0
 	bls.w	__Permit0
-	cmp.l	(lbL02B4B4-datasegment,a6),d0
+	cmp.l	(lbL02B4B4-ds,a6),d0
 	bls.w	__Permit0
-	move.l	d0,(lbL02B4B8-datasegment,a6)
+	move.l	d0,(lbL02B4B8-ds,a6)
 	move.l	d0,d5
 	bsr.w	_AllocMemClear
 	bsr.w	_Permit
 	movea.l	d0,a1
 	movea.l	d0,a2
-	move.l	d0,(lbL02D15C-datasegment,a6)
+	move.l	d0,(lbL02D15C-ds,a6)
 	beq.b	lbC027D9E
 lbC027D2E	movea.l	d3,a0
 	move.l	d5,d0
-	sub.l	(lbL02B4B4-datasegment,a6),d0
-	add.l	d0,(lbL02B4C0-datasegment,a6)
+	sub.l	(lbL02B4B4-ds,a6),d0
+	add.l	d0,(lbL02B4C0-ds,a6)
 	movem.l	d0/a0,-(sp)
 	bsr.w	_CopyMemQuick
 	movem.l	(sp)+,d0/a1
 	bsr.w	_FreeMem
 	adda.l	d2,a2
-	move.l	a2,(lbL02D154-datasegment,a6)
-	move.l	(lbL02B4B8-datasegment,a6),(lbL02B4B4).l
-	move.l	(lbL02D15C-datasegment,a6),(lbL02D158).l
-	move.l	(lbL02D15C-datasegment,a6),(lbL02D160).l
+	move.l	a2,(lbL02D154-ds,a6)
+	move.l	(lbL02B4B8-ds,a6),(lbL02B4B4).l
+	move.l	(lbL02D15C-ds,a6),(lbL02D158).l
+	move.l	(lbL02D15C-ds,a6),(lbL02D160).l
 	movem.l	(sp)+,d1/a0
 	movem.l	(sp)+,d0/d2-d6/a0-a2
 	bra.w	lbC027C5C
 
-lbC027D74	sub.l	d1,(lbL02B4C0-datasegment,a6)
-	move.l	(lbL02D154-datasegment,a6),d4
+lbC027D74	sub.l	d1,(lbL02B4C0-ds,a6)
+	move.l	(lbL02D154-ds,a6),d4
 	movea.l	d4,a1
-	move.l	(lbL02D158-datasegment,a6),d0
+	move.l	(lbL02D158-ds,a6),d0
 	sub.l	d0,d4
 	rol.l	#8,d4
 	move.b	d1,d4
 lbC027D88	move.b	(a0)+,(a1)+
 	subq.l	#1,d1
 	bne.b	lbC027D88
-	move.l	a1,(lbL02D154-datasegment,a6)
+	move.l	a1,(lbL02D154-ds,a6)
 	move.l	d4,d1
 	movem.l	(sp)+,d0/d2-d6/a0-a2
 	rts
@@ -50502,42 +50508,42 @@ lbC027DDE	bsr.w	saveregs_all
 	moveq	#1,d0
 	rts
 
-lbC027DEC	tst.b	(lbB02B45F-datasegment,a6)
+lbC027DEC	tst.b	(lbB02B45F-ds,a6)
 	beq.b	lbC027E00
-	cmpi.b	#$1E,(vblank_counter-datasegment,a6)
+	cmpi.b	#$1E,(vblank_counter-ds,a6)
 	bgt.b	lbC027DFC
 	rts
 
-lbC027DFC	clr.b	(vblank_counter-datasegment,a6)
+lbC027DFC	clr.b	(vblank_counter-ds,a6)
 lbC027E00	move.l	a0,-(sp)
-	movea.l	(window_flags_lw_ptr-datasegment,a6),a0
+	movea.l	(window_flags_lw_ptr-ds,a6),a0
 	tst.b	(a0)
 	movea.l	(sp)+,a0
 	bpl.b	lbC027E0E
 	rts
 
 lbC027E0E	movem.l	d0-d3/a0-a4/a6,-(sp)
-	tst.b	(lbB02B400-datasegment,a6)
+	tst.b	(lbB02B400-ds,a6)
 	beq.b	lbC027E2E
-	tst.b	(lbB02EB4B-datasegment,a6)
+	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC027E3E
-	lea	(lbL02E8C8-datasegment,a6),a4
-	tst.b	(lbB02EB4A-datasegment,a6)
+	lea	(work_data_spec_str-ds,a6),a4
+	tst.b	(lbB02EB4A-ds,a6)
 	beq.b	lbC027E7A
-	lea	(lbL02D680-datasegment,a6),a4
+	lea	(lbL02D680-ds,a6),a4
 	bra.b	lbC027E7A
 
 lbC027E2E	lea	(lbL02F580,pc),a4
-	tst.b	(lbB02B403-datasegment,a6)
+	tst.b	(lbB02B403-ds,a6)
 	bne.b	lbC027E7A
-	tst.b	(lbB02B402-datasegment,a6)
+	tst.b	(lbB02B402-ds,a6)
 	beq.b	lbC027E44
-lbC027E3E	lea	(lbL02C1D4-datasegment,a6),a4
+lbC027E3E	lea	(lbL02C1D4-ds,a6),a4
 	bra.b	lbC027E7A
 
 lbC027E44	move.l	(a3),d1
-	lea	(SBDCRFLSFEPIL.MSG-datasegment,a6),a0
-	lea	(screen_pubname-datasegment,a6),a4
+	lea	(SBDCRFLSFEPIL.MSG-ds,a6),a0
+	lea	(screen_pubname-ds,a6),a4
 	move.l	a4,-(sp)
 lbC027E50	move.b	(a0)+,d0
 	beq.b	lbC027E78
@@ -50563,15 +50569,15 @@ lbC027E78	movea.l	(sp)+,a4
 lbC027E7A	bra.b	lbC027ECC
 
 lbC027E7C	move.l	a0,-(sp)
-	movea.l	(window_flags_lw_ptr-datasegment,a6),a0
+	movea.l	(window_flags_lw_ptr-ds,a6),a0
 	tst.b	(a0)
 	movea.l	(sp)+,a0
 	bmi.b	lbC027E9E
-	tst.b	(lbB02B45C-datasegment,a6)
+	tst.b	(lbB02B45C-ds,a6)
 	beq.b	lbC027E9C
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC027EA0
-	tst.b	(lbB02B417-datasegment,a6)
+	tst.b	(lbB02B417-ds,a6)
 	beq.b	lbC027EA0
 	bra.b	lbC027E9E
 
@@ -50580,18 +50586,18 @@ lbC027E9E	rts
 
 lbC027EA0	cmpa.l	#0,a4
 	beq.w	lbC027E00
-	st	(lbB02EB48-datasegment,a6)
-	st	(lbB02EB45-datasegment,a6)
-	tst.b	(lbB02B45D-datasegment,a6)
+	st	(lbB02EB48-ds,a6)
+	st	(lbB02EB45-ds,a6)
+	tst.b	(lbB02B45D-ds,a6)
 	beq.b	lbC027EC8
-	tst.b	(lbB02B417-datasegment,a6)
+	tst.b	(lbB02B417-ds,a6)
 	beq.b	lbC027EC4
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	bne.b	lbC027EC8
 lbC027EC4	pea	(lbC027DDE,pc)
 lbC027EC8	movem.l	d0-d3/a0-a4/a6,-(sp)
-lbC027ECC	lea	(lbL02D79C-datasegment,a6),a0
-	lea	(lbL02D7A8-datasegment,a6),a1
+lbC027ECC	lea	(lbL02D79C-ds,a6),a0
+	lea	(lbL02D7A8-ds,a6),a1
 	move.l	#$20202020,d0
 	move.l	d0,(a0)+
 	clr.b	(a0)
@@ -50599,14 +50605,14 @@ lbC027ECC	lea	(lbL02D79C-datasegment,a6),a0
 	move.l	d0,(a1)+
 	move.w	d0,(a1)+
 	clr.b	(a1)
-	cmpa.l	(datasegment-datasegment,a6),a2
+	cmpa.l	(ds-ds,a6),a2
 	bcs.w	lbC027F86
-	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.w	lbC027F86
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	(lbB02B4A8-datasegment,a6),d1
-	lea	(_RawDoFmt_args-datasegment,a6),a1
+	sub.l	(ds-ds,a6),d0
+	move.l	(workdata_length-ds,a6),d1
+	lea	(_RawDoFmt_args-ds,a6),a1
 lbC027F04	tst.l	d1
 	beq.b	lbC027F26
 	cmpi.l	#$FFFF,d0
@@ -50626,56 +50632,56 @@ lbC027F28	move.w	d0,(a1)+
 	move.w	#$25,(a1)
 	lea	(dc.MSG,pc),a0
 	move.l	a2,-(sp)
-	lea	(lbL02D79C-datasegment,a6),a2
+	lea	(lbL02D79C-ds,a6),a2
 	bsr.w	_RawDoFmt
 	movea.l	(sp)+,a2
 	lea	(lbB028039,pc),a0
 	move.l	a2,d0
-	tst.b	(lbB02B3FE-datasegment,a6)
+	tst.b	(lbB02B3FE-ds,a6)
 	bne.b	lbC027F5A
-	move.l	(lbL02D1DC-datasegment,a6),d1
+	move.l	(workdata_strt_plus1-ds,a6),d1
 	beq.b	lbC027F66
 	subq.l	#1,d1
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	add.l	d1,d0
 	bra.b	lbC027F66
 
-lbC027F5A	sub.l	(lbL02D11C-datasegment,a6),d0
+lbC027F5A	sub.l	(workdata_strt-ds,a6),d0
 	bpl.b	lbC027F66
 	neg.l	d0
 	lea	(ascii.MSG3,pc),a0
-lbC027F66	lea	(_RawDoFmt_args-datasegment,a6),a1
+lbC027F66	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	a0,(a1)+
 	move.l	d0,(a1)
 	lea	(s06lx.MSG,pc),a0
 	cmpi.l	#$FFFFFF,d0
 	bls.b	lbC027F7E
 	lea	(s08lx.MSG,pc),a0
-lbC027F7E	lea	(lbL02D7A8-datasegment,a6),a2
+lbC027F7E	lea	(lbL02D7A8-ds,a6),a2
 	bsr.w	_RawDoFmt
-lbC027F86	lea	(_RawDoFmt_args-datasegment,a6),a1
-	lea	(lbL02D79C-datasegment,a6),a0
+lbC027F86	lea	(_RawDoFmt_args-ds,a6),a1
+	lea	(lbL02D79C-ds,a6),a0
 	move.l	a0,(a1)+
-	lea	(lbL02D7A8-datasegment,a6),a0
+	lea	(lbL02D7A8-ds,a6),a0
 	move.l	a0,(a1)+
 	moveq	#$20,d0
-	tst.b	(lbB02EB4A-datasegment,a6)
+	tst.b	(lbB02EB4A-ds,a6)
 	bne.b	lbC027FA4
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC027FA6
 lbC027FA4	moveq	#$2A,d0
 lbC027FA6	move.w	d0,(a1)+
 	move.l	a4,(a1)
 	lea	(s1010sc4646s.MSG,pc),a0
-	lea	(lbL02D430-datasegment,a6),a2
+	lea	(lbL02D430-ds,a6),a2
 	bsr.w	_RawDoFmt
-	clr.b	(lbB02EB45-datasegment,a6)
-	move.l	(lbL02CEDC-datasegment,a6),d2
-	move.l	(lbL02CEE0-datasegment,a6),d3
+	clr.b	(lbB02EB45-ds,a6)
+	move.l	(lbL02CEDC-ds,a6),d2
+	move.l	(lbL02CEE0-ds,a6),d3
 	moveq	#0,d0
 	moveq	#7,d1
 	movea.l	d2,a1
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOMove,a6)
 	lea	(ReSource.MSG0,pc),a0
 	bsr.w	lbC02AEB2
@@ -50701,28 +50707,28 @@ ascii.MSG3	db	'-'
 lbB028039	db	0
 
 lbC02803A	move.l	a0,-(sp)
-	movea.l	(window_flags_lw_ptr-datasegment,a6),a0
+	movea.l	(window_flags_lw_ptr-ds,a6),a0
 	tst.b	(a0)
 	movea.l	(sp)+,a0
 	bpl.b	lbC028048
 	rts
 
-lbC028048	tst.b	(lbB02EB78-datasegment,a6)
+lbC028048	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC028052
 	bsr.w	lbC027E00
 lbC028052	movem.l	d0-d6/a0-a4,-(sp)
-	lea	(lbB031E00-datasegment,a6),a0
+	lea	(lbB031E00-ds,a6),a0
 	bra.b	lbC028060
 
 print_text_a0	movem.l	d0-d6/a0-a4,-(sp)
-lbC028060	clr.b	(lbB02EB6A-datasegment,a6)
-	lea	(lbB02CF10-datasegment,a6),a2
+lbC028060	clr.b	(lbB02EB6A-ds,a6)
+	lea	(lbB02CF10-ds,a6),a2
 	moveq	#0,d5
 	move.w	(a2),d5
 	movea.l	(8,a2),a2
-	adda.l	(lbL02CF3E-datasegment,a6),a2
+	adda.l	(lbL02CF3E-ds,a6),a2
 	move.l	a2,d6
-	movea.l	(lbL02B48C-datasegment,a6),a4
+	movea.l	(lbL02B48C-ds,a6),a4
 lbC02807A	moveq	#0,d0
 	move.b	(a0)+,d0
 	cmpi.b	#$20,d0
@@ -50743,7 +50749,7 @@ lbC02808E	move.b	(a3)+,(a2)
 	cmpi.b	#10,(a0)+
 	beq.b	lbC0280FA
 	subq.w	#1,a0
-	tst.b	(lbB02B404-datasegment,a6)
+	tst.b	(lbB02B404-ds,a6)
 	bne.b	lbC0280FA
 lbC0280B0	move.b	(a0)+,d0
 	beq.w	lbC02816A
@@ -50755,16 +50761,16 @@ lbC0280BE	cmpi.b	#9,d0
 	beq.w	lbC02812E
 	cmpi.b	#10,d0
 	beq.b	lbC0280FA
-	movea.l	(lbL02B490-datasegment,a6),a4
+	movea.l	(lbL02B490-ds,a6),a4
 	cmpi.b	#3,d0
 	beq.b	lbC02807A
-	movea.l	(lbL02B494-datasegment,a6),a4
+	movea.l	(lbL02B494-ds,a6),a4
 	cmpi.b	#4,d0
 	beq.b	lbC02807A
-	movea.l	(lbL02B498-datasegment,a6),a4
+	movea.l	(lbL02B498-ds,a6),a4
 	cmpi.b	#2,d0
 	beq.b	lbC02807A
-	movea.l	(lbL02B48C-datasegment,a6),a4
+	movea.l	(lbL02B48C-ds,a6),a4
 	cmpi.b	#1,d0
 	beq.b	lbC02807A
 	tst.b	d0
@@ -50788,10 +50794,10 @@ lbC02810A	dbra	d1,lbC028108
 	move.l	d5,d6
 	lsl.l	#3,d6
 	adda.l	d6,a2
-	cmpa.l	(lbL02CF46-datasegment,a6),a2
+	cmpa.l	(lbL02CF46-ds,a6),a2
 	bhi.b	lbC02818E
 	move.l	a2,d6
-	addq.b	#1,(lbB02EB6A-datasegment,a6)
+	addq.b	#1,(lbB02EB6A-ds,a6)
 	bra.w	lbC02807A
 
 lbC02812E	move.l	a2,d3
@@ -50803,7 +50809,7 @@ lbC02812E	move.l	a2,d3
 	moveq	#$1C,d2
 	cmp.l	d2,d0
 	bcs.b	lbC02814C
-	move.l	(lbW02B474-datasegment,a6),d2
+	move.l	(lbW02B474-ds,a6),d2
 	cmp.l	d2,d0
 	bcs.b	lbC02814C
 	move.l	d0,d2
@@ -50827,8 +50833,8 @@ lbC02816A	move.l	a2,d0
 	clr.b	(a2)+
 	bra.b	lbC02816A
 
-lbC028178	movea.l	(lbL02CF46-datasegment,a6),a0
-	adda.w	(displaywidth_rounddown-datasegment,a6),a0
+lbC028178	movea.l	(lbL02CF46-ds,a6),a0
+	adda.w	(displaywidth_rounddown-ds,a6),a0
 	moveq	#0,d0
 	moveq	#0,d1
 	bra.b	lbC02818A
@@ -50837,11 +50843,11 @@ lbC028186	movem.l	d0/d1,-(a0)
 lbC02818A	cmpa.l	a0,a2
 	bcs.b	lbC028186
 lbC02818E	moveq	#0,d0
-	jsr	(lbC02A88A-datasegment,a6)
+	jsr	(lbC02A88A-ds,a6)
 	movem.l	(sp)+,d0-d6/a0-a4
 	rts
 
-lbC02819A	move.l	a2,(lbL02D094-datasegment,a6)
+lbC02819A	move.l	a2,(lbL02D094-ds,a6)
 	bsr.w	lbC0273FC
 	bsr.w	lbC02AEDE
 	bsr.w	_SetPointerAll
@@ -50849,20 +50855,20 @@ lbC02819A	move.l	a2,(lbL02D094-datasegment,a6)
 
 lbC0281AC	move.l	a4,-(sp)
 	move.w	#$271F,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
 	bsr.w	_SetPointerAll
 	jsr	(lbC01FA52).l
-lbC0281C8	tst.b	(lbB02EB78-datasegment,a6)
+lbC0281C8	tst.b	(lbB02EB78-ds,a6)
 	beq.b	lbC0281FE
 lbC0281CE	move.l	a2,-(sp)
 	bsr.w	lbC020C9C
 	cmpa.l	(sp)+,a2
 	beq.b	lbC0281F0
-	move.l	(lbL02D094-datasegment,a6),d0
-	lea	(lbL02D12C-datasegment,a6),a0
+	move.l	(lbL02D094-ds,a6),d0
+	lea	(lbL02D12C-ds,a6),a0
 	cmp.l	(a0)+,d0
 	beq.b	lbC02821C
 	cmp.l	(a0)+,d0
@@ -50871,51 +50877,51 @@ lbC0281CE	move.l	a2,-(sp)
 	beq.b	lbC02821C
 	cmp.l	(a0),d0
 	beq.b	lbC02821C
-lbC0281F0	jsr	(lbC02A4BE-datasegment,a6)
+lbC0281F0	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC028204
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	lbC028210
 
 lbC0281FE	bsr.w	lbC027DEC
 	bra.b	lbC0281CE
 
-lbC028204	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+lbC028204	cmpa.l	(workdata_end-ds,a6),a2
 	bcs.b	lbC0281C8
-	movem.l	(datasegment-datasegment,a6),a2/a3
+	movem.l	(ds-ds,a6),a2/a3
 lbC028210	bsr.w	lbC02742E
 	bsr.w	lbC0273FC
 	bra.w	lbC02AF68
 
-lbC02821C	movea.l	(lbL02D0F0-datasegment,a6),a2
+lbC02821C	movea.l	(lbL02D0F0-ds,a6),a2
 	bsr.w	lbC02A3CC
 	bra.w	lbC02AF74
 
 _savecommonregs2	bsr.w	saveregs_nod0d1a0a1
 	bsr.w	lbC0273FC
-	lea	(lbL02D8C8-datasegment,a6),a0
+	lea	(lbL02D8C8-ds,a6),a0
 	move.l	a0,d1
 	move.w	#$2762,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	bsr.w	lbC026C74
-	beq.w	_dummy
-	jmp	(lbC02A422-datasegment,a6)
+	beq.w	cceq
+	jmp	(lbC02A422-ds,a6)
 
 _savecommonregs1	bsr.w	saveregs_nod0d1a0a1
 	bsr.w	lbC0273FC
 	bra.b	lbC028268
 
-lbC028254	tst.l	(window2ptr-datasegment,a6)
+lbC028254	tst.l	(window2ptr-ds,a6)
 	beq.b	__DisplayBeep
 	jsr	(lbC0016AE).l
-	bra.w	_dummy
+	bra.w	cceq
 
 __DisplayBeep	bsr.w	_DisplayBeep
-lbC028268	lea	(lbB02D9C8-datasegment,a6),a0
+lbC028268	lea	(lbB02D9C8-ds,a6),a0
 	move.l	a0,d1
 	move.w	#$2762,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	bsr.w	lbC026C74
-	beq.w	_dummy
+	beq.w	cceq
 	movea.l	a0,a2
 lbC028280	tst.b	(a0)+
 	bne.b	lbC028280
@@ -50923,123 +50929,123 @@ lbC028280	tst.b	(a0)+
 	move.b	#$3F,(a0)+
 	clr.b	(a0)
 	move.l	a2,d1
-	lea	(lbL02DAC8-datasegment,a6),a0
+	lea	(lbL02DAC8-ds,a6),a0
 	move.l	a0,d2
 	move.l	#$100,d3
 	move.l	a6,-(sp)
-	movea.l	(dosbase-datasegment,a6),a6
+	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOParsePattern,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
 	bmi.b	lbC028254
 	move.l	a2,d1
-	lea	(lbL02DBC8-datasegment,a6),a0
+	lea	(lbL02DBC8-ds,a6),a0
 	move.l	a0,d2
 	move.l	a6,-(sp)
-	movea.l	(dosbase-datasegment,a6),a6
+	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOParsePatternNoCase,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
 	bmi.b	lbC028254
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC0282CA	st	(lbB02EB44-datasegment,a6)
+lbC0282CA	st	(lbB02EB44-ds,a6)
 	bra.b	lbC0282D4
 
-lbC0282D0	clr.b	(lbB02EB44-datasegment,a6)
-lbC0282D4	clr.b	(lbB02EB3C-datasegment,a6)
+lbC0282D0	clr.b	(lbB02EB44-ds,a6)
+lbC0282D4	clr.b	(lbB02EB3C-ds,a6)
 	bra.b	lbC0282FC
 
-lbC0282DA	st	(lbB02EB44-datasegment,a6)
+lbC0282DA	st	(lbB02EB44-ds,a6)
 	bra.b	lbC0282E4
 
-lbC0282E0	clr.b	(lbB02EB44-datasegment,a6)
-lbC0282E4	move.b	#$FF,(lbB02EB3C-datasegment,a6)
+lbC0282E0	clr.b	(lbB02EB44-ds,a6)
+lbC0282E4	move.b	#$FF,(lbB02EB3C-ds,a6)
 	bra.b	lbC0282FC
 
-lbC0282EC	st	(lbB02EB44-datasegment,a6)
+lbC0282EC	st	(lbB02EB44-ds,a6)
 	bra.b	lbC0282F6
 
-lbC0282F2	clr.b	(lbB02EB44-datasegment,a6)
-lbC0282F6	move.b	#1,(lbB02EB3C-datasegment,a6)
-lbC0282FC	clr.l	(lbL02D0A8-datasegment,a6)
-	clr.l	(lbL02D0AC-datasegment,a6)
-	cmpi.b	#1,(lbB02EB3C-datasegment,a6)
+lbC0282F2	clr.b	(lbB02EB44-ds,a6)
+lbC0282F6	move.b	#1,(lbB02EB3C-ds,a6)
+lbC0282FC	clr.l	(lbL02D0A8-ds,a6)
+	clr.l	(lbL02D0AC-ds,a6)
+	cmpi.b	#1,(lbB02EB3C-ds,a6)
 	bne.b	lbC028322
-	tst.b	(lbB02B415-datasegment,a6)
+	tst.b	(lbB02B415-ds,a6)
 	beq.b	lbC02831C
-	jsr	(lbC02AEDE-datasegment,a6)
+	jsr	(lbC02AEDE-ds,a6)
 	jsr	(lbC001674).l
-lbC02831C	move.l	a2,(lbL02D0A8-datasegment,a6)
+lbC02831C	move.l	a2,(lbL02D0A8-ds,a6)
 	bra.b	lbC028348
 
-lbC028322	cmpi.b	#$FF,(lbB02EB3C-datasegment,a6)
+lbC028322	cmpi.b	#$FF,(lbB02EB3C-ds,a6)
 	bne.b	lbC028340
-	tst.b	(lbB02B416-datasegment,a6)
+	tst.b	(lbB02B416-ds,a6)
 	beq.b	lbC02833A
-	jsr	(lbC02AEC0-datasegment,a6)
+	jsr	(lbC02AEC0-ds,a6)
 	jsr	(lbC001674).l
-lbC02833A	move.l	a2,(lbL02D0AC-datasegment,a6)
+lbC02833A	move.l	a2,(lbL02D0AC-ds,a6)
 	bra.b	lbC028348
 
-lbC028340	move.l	a2,(lbL02D0A8-datasegment,a6)
-	move.l	a2,(lbL02D0AC-datasegment,a6)
+lbC028340	move.l	a2,(lbL02D0A8-ds,a6)
+	move.l	a2,(lbL02D0AC-ds,a6)
 lbC028348	bsr.w	lbC028480
 	move.l	a2,-(sp)
-	move.b	(lbB02EB46-datasegment,a6),-(sp)
-	clr.b	(lbB02EB46-datasegment,a6)
-	st	(lbL02D128-datasegment,a6)
-	jsr	(lbC029A66-datasegment,a6)
-lbC02835E	not.b	(lbB02EB3B-datasegment,a6)
+	move.b	(lbB02EB46-ds,a6),-(sp)
+	clr.b	(lbB02EB46-ds,a6)
+	st	(lbL02D128-ds,a6)
+	jsr	(lbC029A66-ds,a6)
+lbC02835E	not.b	(lbB02EB3B-ds,a6)
 	beq.b	lbC0283A2
-	move.l	(lbL02D0A8-datasegment,a6),d0
+	move.l	(lbL02D0A8-ds,a6),d0
 	beq.b	lbC028384
 	movea.l	d0,a2
 	bsr.w	lbC02A3CC
 	jsr	(lbC01FA52).l
 	beq.b	lbC02837E
-	move.l	a2,(lbL02D0A8-datasegment,a6)
+	move.l	a2,(lbL02D0A8-ds,a6)
 	bra.b	lbC0283DE
 
 lbC02837E	suba.l	a2,a2
-	move.l	a2,(lbL02D0A8-datasegment,a6)
-lbC028384	move.l	(lbL02D0AC-datasegment,a6),d0
+	move.l	a2,(lbL02D0A8-ds,a6)
+lbC028384	move.l	(lbL02D0AC-ds,a6),d0
 	beq.w	lbC028458
 	movea.l	d0,a2
 	bsr.w	lbC02A3CC
 	jsr	(lbC01FCA6).l
 	beq.w	lbC028458
-	move.l	a2,(lbL02D0AC-datasegment,a6)
+	move.l	a2,(lbL02D0AC-ds,a6)
 	bra.b	lbC0283DE
 
-lbC0283A2	move.l	(lbL02D0AC-datasegment,a6),d0
+lbC0283A2	move.l	(lbL02D0AC-ds,a6),d0
 	beq.b	lbC0283C2
 	movea.l	d0,a2
 	bsr.w	lbC02A3CC
 	jsr	(lbC01FCA6).l
 	beq.b	lbC0283BC
-	move.l	a2,(lbL02D0AC-datasegment,a6)
+	move.l	a2,(lbL02D0AC-ds,a6)
 	bra.b	lbC0283DE
 
 lbC0283BC	suba.l	a2,a2
-	move.l	a2,(lbL02D0AC-datasegment,a6)
-lbC0283C2	move.l	(lbL02D0A8-datasegment,a6),d0
+	move.l	a2,(lbL02D0AC-ds,a6)
+lbC0283C2	move.l	(lbL02D0A8-ds,a6),d0
 	beq.w	lbC028458
 	movea.l	d0,a2
 	bsr.w	lbC02A3CC
 	jsr	(lbC01FA52).l
 	beq.w	lbC028458
-	move.l	a2,(lbL02D0A8-datasegment,a6)
-lbC0283DE	lea	(lbB031E00-datasegment,a6),a4
-	jsr	(lbC02A4BE-datasegment,a6)
+	move.l	a2,(lbL02D0A8-ds,a6)
+lbC0283DE	lea	(lbB031E00-ds,a6),a4
+	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC0283F6
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	lbC028458
 
 lbC0283F0	bsr.w	lbC027DEC
 	bra.b	lbC0283FC
 
-lbC0283F6	tst.b	(lbB02EB78-datasegment,a6)
+lbC0283F6	tst.b	(lbB02EB78-ds,a6)
 	beq.b	lbC0283F0
 lbC0283FC	move.l	a2,-(sp)
 	bsr.w	lbC020D16
@@ -51047,19 +51053,19 @@ lbC0283FC	move.l	a2,-(sp)
 	clr.b	(a4)
 	clr.b	-(a4)
 	move.l	a4,d2
-	lea	(lbL02D8C8-datasegment,a6),a0
-	tst.b	(lbB02EB44-datasegment,a6)
+	lea	(lbL02D8C8-ds,a6),a0
+	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC028422
-	lea	(lbL02DAC8-datasegment,a6),a0
-	tst.b	(case_sensitive_flag-datasegment,a6)
+	lea	(lbL02DAC8-ds,a6),a0
+	tst.b	(case_sensitive_flag-ds,a6)
 	bne.b	lbC028422
-	lea	(lbL02DBC8-datasegment,a6),a0
+	lea	(lbL02DBC8-ds,a6),a0
 lbC028422	tst.b	(a0)
 	beq.b	lbC028458
-	lea	(lbB031E00-datasegment,a6),a1
+	lea	(lbB031E00-ds,a6),a1
 lbC02842A	cmp.l	a1,d2
 	beq.w	lbC02835E
-	tst.b	(lbB02EB44-datasegment,a6)
+	tst.b	(lbB02EB44-ds,a6)
 	beq.b	__MatchPattern
 	bsr.w	_cmpstr
 	bra.b	lbC028440
@@ -51068,42 +51074,42 @@ __MatchPattern	bsr.w	_MatchPattern
 lbC028440	addq.l	#1,a1
 	beq.b	lbC02842A
 	movea.l	d3,a2
-	move.b	(sp)+,(lbB02EB46-datasegment,a6)
+	move.b	(sp)+,(lbB02EB46-ds,a6)
 	addq.w	#4,sp
 	bsr.w	lbC02A3CC
-	jsr	(lbC029A9E-datasegment,a6)
+	jsr	(lbC029A9E-ds,a6)
 	bra.w	lbC02AF74
 
 lbC028458	bsr.w	lbC02A4A6
-	move.b	(sp)+,(lbB02EB46-datasegment,a6)
+	move.b	(sp)+,(lbB02EB46-ds,a6)
 	movea.l	(sp)+,a2
 	bsr.w	lbC02A3C6
-	jsr	(lbC029A9E-datasegment,a6)
+	jsr	(lbC029A9E-ds,a6)
 	rts
 
 lbC02846C	movem.l	a2/a4,-(sp)
-	lea	(lbL02DCC8-datasegment,a6),a0
+	lea	(lbL02DCC8-ds,a6),a0
 	bra.b	lbC028492
 
 lbC028476	movem.l	a2/a4,-(sp)
-	lea	(lbL02D8C8-datasegment,a6),a0
+	lea	(lbL02D8C8-ds,a6),a0
 	bra.b	lbC028492
 
 lbC028480	movem.l	a2/a4,-(sp)
-	lea	(lbL02D8C8-datasegment,a6),a0
-	tst.b	(lbB02EB44-datasegment,a6)
+	lea	(lbL02D8C8-ds,a6),a0
+	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC028492
-	lea	(lbB02D9C8-datasegment,a6),a0
-lbC028492	lea	(_RawDoFmt_args-datasegment,a6),a1
+	lea	(lbB02D9C8-ds,a6),a0
+lbC028492	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	a0,(a1)
 	move.w	#$2755,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 	suba.w	#$3C,sp
 	movea.l	sp,a2
-	jsr	(_RawDoFmt-datasegment,a6)
+	jsr	(_RawDoFmt-ds,a6)
 	movea.l	a2,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	adda.w	#$3C,sp
 	bsr.w	_SetPointerAll
 	movem.l	(sp)+,a2/a4
@@ -51119,9 +51125,9 @@ __SetPointerAll	bsr.w	_SetPointerAll
 	andi.l	#$F8,d0
 	suba.l	d6,a3
 lbC0284D8	adda.l	d6,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC028508
-	cmpa.l	(workdata_end-datasegment,a6),a3
+	cmpa.l	(workdata_struct-ds,a6),a3
 	bcs.b	lbC028508
 	move.l	(a3),d1
 	bmi.b	lbC0284D8
@@ -51141,71 +51147,71 @@ lbC028508	bsr.w	lbC02A4A6
 	subq.l	#4,d6
 	beq.b	lbC028506
 	bsr.w	lbC02AEDE
-	bra.w	_dummy
+	bra.w	cceq
 
 lbC028520	movem.l	(sp)+,a2/a3
-	clr.b	(lbB02D39A-datasegment,a6)
+	clr.b	(lbB02D39A-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
 lbC02852E	bsr.w	_SetPointerAll
 	movem.l	a2/a3,-(sp)
-	movea.l	(datasegment-datasegment,a6),a2
-	movea.l	(workdata_end-datasegment,a6),a3
-	move.b	#$30,(lbB02EAD2-datasegment,a6)
+	movea.l	(ds-ds,a6),a2
+	movea.l	(workdata_struct-ds,a6),a3
+	move.b	#$30,(lbB02EAD2-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$272A,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 	movea.l	(sp)+,a4
-lbC028556	jsr	(lbC02A4BE-datasegment,a6)
+lbC028556	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC028564
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	lbC028520
 
 lbC028564	move.l	(a3),d7
 	addq.l	#8,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 lbC02856C	bcc.b	lbC028520
 	btst	#$1A,d7
 	bne.b	lbC0285A4
 	move.l	(a3),d7
 	addq.l	#8,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC02856C
 	btst	#$1A,d7
 	bne.b	lbC0285A4
 	move.l	(a3),d7
 	addq.l	#8,a3
-lbC028588	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+lbC028588	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC02856C
 	btst	#$1A,d7
 	bne.b	lbC0285A4
 	move.l	(a3),d7
 	addq.l	#8,a3
-	cmpa.l	(lbL02B4A0-datasegment,a6),a3
+	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.b	lbC02856C
 	btst	#$1A,d7
 	beq.b	lbC028556
-lbC0285A4	move.b	#$30,(lbB02EAD2-datasegment,a6)
+lbC0285A4	move.b	#$30,(lbB02EAD2-ds,a6)
 	subq.l	#8,a3
 	move.l	a3,d0
-	sub.l	(workdata_end-datasegment,a6),d0
+	sub.l	(workdata_struct-ds,a6),d0
 	lsr.l	#2,d0
-	add.l	(datasegment-datasegment,a6),d0
+	add.l	(ds-ds,a6),d0
 	movea.l	d0,a2
-	tst.b	(lbB02EB78-datasegment,a6)
+	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC0285C4
 	bsr.w	lbC027DEC
 lbC0285C4	move.l	(a2),d0
 	movea.l	d0,a1
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bcs.w	lbC0286B8
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bhi.w	lbC0286B8
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a0
 	move.l	(a0),d0
 	move.w	a1,d1
@@ -51213,7 +51219,7 @@ lbC0285C4	move.l	(a2),d0
 	bne.b	lbC02863A
 	btst	#2,(a0)
 	beq.b	lbC0285F8
-	move.b	#$4C,(lbB02EAD2-datasegment,a6)
+	move.b	#$4C,(lbB02EAD2-ds,a6)
 	bra.b	lbC02863A
 
 lbC0285F8	move.l	(a1),d1
@@ -51231,41 +51237,41 @@ lbC0285F8	move.l	(a1),d1
 	btst	#2,(8,a0)
 	beq.b	lbC02863A
 	lea	(8,a0),a1
-	cmpa.l	(lbL02B4A0-datasegment,a6),a1
+	cmpa.l	(workdata_struct_end-ds,a6),a1
 	bcc.b	lbC02863A
-lbC028634	move.b	#$43,(lbB02EAD2-datasegment,a6)
+lbC028634	move.b	#$43,(lbB02EAD2-ds,a6)
 lbC02863A	or.l	#$FFF7FCFF,d0
-	move.l	d0,(lbL02D2DC-datasegment,a6)
+	move.l	d0,(lbL02D2DC-ds,a6)
 	move.l	(a2),d0
 	cmpi.w	#$4EF9,(-2,a2)
 	beq.b	lbC028656
 	cmpi.w	#$4EB9,(-2,a2)
 	bne.b	lbC02865C
-lbC028656	move.b	#$43,(lbB02EAD2-datasegment,a6)
+lbC028656	move.b	#$43,(lbB02EAD2-ds,a6)
 lbC02865C	move.l	(a0),d1
 	btst	#8,d1
 	beq.b	lbC02866C
 	btst	#9,d1
 	beq.w	lbC028588
-lbC02866C	lea	(lbB031E00-datasegment,a6),a4
-	move.w	#$FFFF,(lbB02D39A-datasegment,a6)
+lbC02866C	lea	(lbB031E00-ds,a6),a4
+	move.w	#$FFFF,(lbB02D39A-ds,a6)
 	bsr.w	put_adr_d0
-	clr.w	(lbB02D39A-datasegment,a6)
+	clr.w	(lbB02D39A-ds,a6)
 	move.l	(a2),d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bcs.b	lbC0286B8
-	cmp.l	(lbB02B4A8-datasegment,a6),d0
+	cmp.l	(workdata_length-ds,a6),d0
 	bcc.b	lbC0286B8
 	lsl.l	#2,d0
-	add.l	(workdata_end-datasegment,a6),d0
+	add.l	(workdata_struct-ds,a6),d0
 	movea.l	d0,a0
 	move.l	(a0),d0
 	bset	#8,d0
-	cmpi.b	#$30,(lbB02EAD2-datasegment,a6)
+	cmpi.b	#$30,(lbB02EAD2-ds,a6)
 	bne.b	lbC0286AA
 	bset	#$13,d0
 	bset	#9,d0
-lbC0286AA	move.l	(lbL02D2DC-datasegment,a6),d1
+lbC0286AA	move.l	(lbL02D2DC-ds,a6),d1
 	btst	#8,d1
 	beq.b	lbC0286B6
 	and.l	d1,d0
@@ -51275,23 +51281,23 @@ lbC0286B8	addq.l	#8,a3
 	addq.l	#4,a2
 	bra.w	lbC028556
 
-lbC0286C2	jsr	(_SetPointerAll-datasegment,a6)
+lbC0286C2	jsr	(_SetPointerAll-ds,a6)
 	lea	(data1).l,a5
 	moveq	#$59,d0
-	lea	(data1_copied-datasegment,a6),a1
+	lea	(data1_copied-ds,a6),a1
 lbC0286D2	move.b	(a5)+,(a1)+
 	dbra	d0,lbC0286D2
 	move.w	#$1F47,d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
-	clr.l	(lbL02EAFE-datasegment,a6)
-	clr.l	(lbL02CE1C-datasegment,a6)
-	clr.l	(lbL02CE10-datasegment,a6)
-	clr.l	(lbL02CE04-datasegment,a6)
-	st	(lbB02EAEB-datasegment,a6)
-	clr.l	(lbL02CE00-datasegment,a6)
-	clr.b	(lbL02CE20-datasegment,a6)
-	clr.b	(lbB02EB53-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
+	clr.l	(lbL02EAFE-ds,a6)
+	clr.l	(lbL02CE1C-ds,a6)
+	clr.l	(lbL02CE10-ds,a6)
+	clr.l	(lbL02CE04-ds,a6)
+	st	(lbB02EAEB-ds,a6)
+	clr.l	(lbL02CE00-ds,a6)
+	clr.b	(lbL02CE20-ds,a6)
+	clr.b	(lbB02EB53-ds,a6)
 	moveq	#$20,d0
 	or.b	(a0)+,d0
 	cmpi.b	#$64,d0
@@ -51311,17 +51317,17 @@ lbC0286D2	move.b	(a5)+,(a1)+
 	beq.b	lbC028738
 	cmpi.b	#$2C,(a0)
 	bne.b	lbC028746
-lbC028738	move.b	d0,(lbB02EB52-datasegment,a6)
+lbC028738	move.b	d0,(lbB02EB52-ds,a6)
 	bsr.b	lbC028760
 	beq.b	lbC028746
-	move.l	a0,(lbL02CE18-datasegment,a6)
+	move.l	a0,(lbL02CE18-ds,a6)
 	bra.b	lbC02874C
 
 lbC028746	addq.l	#4,sp
-	bra.w	lbC02A436
+	bra.w	term2
 
 lbC02874C	move.b	(a0)+,d0
-	beq.w	_dummy
+	beq.w	cceq
 	cmpi.b	#$2C,d0
 	beq.b	lbC02875E
 	cmpi.b	#$20,d0
@@ -51340,68 +51346,68 @@ _savecommonregs3	bsr.w	saveregs_nod0d1a0a1
 	jsr	(lbC014DB2).l
 	bra.b	lbC02878C
 
-lbC028780	move.l	(datasegment-datasegment,a6),(lbL02D13C-datasegment,a6)
-	move.l	(lbL02A8A0-datasegment,a6),(lbL02D140-datasegment,a6)
+lbC028780	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
+	move.l	(workdata_end-ds,a6),(lbL02D140-ds,a6)
 lbC02878C	move.w	#$2714,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	bsr.w	lbC026C6C
 	bne.b	lbC02879E
-	bra.w	lbC02A436
+	bra.w	term2
 
 lbC02879E	bsr.w	lbC0286C2
 	beq.b	lbC0287A8
-	move.l	a0,(lbL02CE10-datasegment,a6)
-lbC0287A8	movea.l	(lbL02CE18-datasegment,a6),a0
+	move.l	a0,(lbL02CE10-ds,a6)
+lbC0287A8	movea.l	(lbL02CE18-ds,a6),a0
 	bsr.w	atoi
-	beq.w	lbC02A436
-	move.b	d0,(lbL02CE20-datasegment,a6)
-	move.l	(lbL02CE10-datasegment,a6),d0
+	beq.w	term2
+	move.b	d0,(lbL02CE20-ds,a6)
+	move.l	(lbL02CE10-ds,a6),d0
 	beq.b	lbC0287D0
 	movea.l	d0,a0
 	bsr.w	atoi
-	beq.w	lbC02A436
+	beq.w	term2
 	lsl.l	#8,d0
 	add.l	d0,d0
-	move.l	d0,(lbL02CE04-datasegment,a6)
-lbC0287D0	move.l	(lbL02D140-datasegment,a6),d0
-	sub.l	(lbL02D13C-datasegment,a6),d0
-	bcs.w	lbC02A436
+	move.l	d0,(lbL02CE04-ds,a6)
+lbC0287D0	move.l	(lbL02D140-ds,a6),d0
+	sub.l	(lbL02D13C-ds,a6),d0
+	bcs.w	term2
 	andi.l	#$FFFFFE00,d0
-	beq.w	lbC02A436
-	move.l	d0,(lbL02EB22-datasegment,a6)
+	beq.w	term2
+	move.l	d0,(lbL02EB22-ds,a6)
 	moveq	#0,d0
-	move.b	(lbL02CE20-datasegment,a6),d0
+	move.b	(lbL02CE20-ds,a6),d0
 	mulu.w	#$2C00,d0
-	add.l	(lbL02CE04-datasegment,a6),d0
+	add.l	(lbL02CE04-ds,a6),d0
 	cmpi.l	#$DC000,d0
-	bhi.w	lbC02A436
-	move.l	d0,(lbL02EB2A-datasegment,a6)
+	bhi.w	term2
+	move.l	d0,(lbL02EB2A-ds,a6)
 	moveq	#-1,d0
 	bsr.w	lbC02AD92
 	beq.w	lbC0288EA
-	move.b	d0,(lbB02EAEB-datasegment,a6)
-	lea	(trackdiskdevi.MSG-datasegment,a6),a0
-	lea	(lbL02EAFE-datasegment,a6),a1
+	move.b	d0,(lbB02EAEB-ds,a6)
+	lea	(trackdiskdevi.MSG-ds,a6),a0
+	lea	(lbL02EAFE-ds,a6),a1
 	moveq	#0,d0
-	move.b	(lbB02EB52-datasegment,a6),d0
+	move.b	(lbB02EB52-ds,a6),d0
 	moveq	#0,d1
 	bsr.w	_OpenDevice
 	tst.l	d0
-	bne.w	lbC02A436
-	movea.l	(lbL02D13C-datasegment,a6),a5
-	move.l	(lbL02EB22-datasegment,a6),d5
-	move.l	(lbL02D140-datasegment,a6),d0
-	sub.l	(lbL02D13C-datasegment,a6),d0
+	bne.w	term2
+	movea.l	(lbL02D13C-ds,a6),a5
+	move.l	(lbL02EB22-ds,a6),d5
+	move.l	(lbL02D140-ds,a6),d0
+	sub.l	(lbL02D13C-ds,a6),d0
 	cmp.l	d0,d5
 	bls.b	lbC028844
 	move.l	d0,d5
 lbC028844	move.l	#$2C00,d0
 	move.l	#$10002,d1
 	bsr.w	lbC02AD6C
-	move.l	d0,(lbL02EB26-datasegment,a6)
+	move.l	d0,(lbL02EB26-ds,a6)
 	beq.w	lbC0288EA
-	move.w	#9,(lbW02EB1A-datasegment,a6)
-	move.l	#1,(lbL02EB22-datasegment,a6)
+	move.w	#9,(lbW02EB1A-ds,a6)
+	move.l	#1,(lbL02EB22-ds,a6)
 	bsr.w	_DoIO
 lbC02886E	move.l	#$2C00,d0
 	tst.l	d5
@@ -51410,43 +51416,43 @@ lbC02886E	move.l	#$2C00,d0
 	bcc.b	lbC028880
 	add.l	d5,d0
 	moveq	#0,d5
-lbC028880	move.l	d0,(lbL02EB22-datasegment,a6)
-	move.l	(lbL02EB1E-datasegment,a6),d1
-	add.l	d1,(lbL02EB2A-datasegment,a6)
-	move.w	#3,(lbW02EB1A-datasegment,a6)
-	lea	(lbL02EAFE-datasegment,a6),a1
-	movea.l	(lbL02EB26-datasegment,a6),a0
+lbC028880	move.l	d0,(lbL02EB22-ds,a6)
+	move.l	(lbL02EB1E-ds,a6),d1
+	add.l	d1,(lbL02EB2A-ds,a6)
+	move.w	#3,(lbW02EB1A-ds,a6)
+	lea	(lbL02EAFE-ds,a6),a1
+	movea.l	(lbL02EB26-ds,a6),a0
 	subq.l	#1,d0
 lbC02889C	move.b	(a5)+,(a0)+
 	dbra	d0,lbC02889C
-	move.l	(lbL02EB22-datasegment,a6),-(sp)
+	move.l	(lbL02EB22-ds,a6),-(sp)
 	bsr.w	_DoIO
 	move.l	(sp)+,d1
 	moveq	#0,d0
-	move.b	(lbB02EB1D-datasegment,a6),d0
+	move.b	(lbB02EB1D-ds,a6),d0
 	beq.b	lbC0288CA
 lbC0288B4	bsr.b	lbC0288F0
 	move.l	a4,-(sp)
-	movea.l	(lbB02D124-datasegment,a6),a4
+	movea.l	(error_text-ds,a6),a4
 	bsr.w	lbC027E7C
 	movea.l	(sp)+,a4
 	moveq	#$3C,d1
 	bsr.w	dosdelay
 	bra.b	lbC0288EA
 
-lbC0288CA	cmp.l	(lbL02EB1E-datasegment,a6),d1
+lbC0288CA	cmp.l	(lbL02EB1E-ds,a6),d1
 	bne.b	lbC0288B4
-	movea.l	(lbL02EB26-datasegment,a6),a0
+	movea.l	(lbL02EB26-ds,a6),a0
 	bra.b	lbC02886E
 
-lbC0288D6	move.w	#9,(lbW02EB1A-datasegment,a6)
-	clr.l	(lbL02EB22-datasegment,a6)
+lbC0288D6	move.w	#9,(lbW02EB1A-ds,a6)
+	clr.l	(lbL02EB22-ds,a6)
 	bsr.w	_DoIO
 	bsr.b	lbC028952
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC0288EA	bsr.b	lbC02892C
-	bra.w	lbC02A436
+	bra.w	term2
 
 lbC0288F0	lea	(lbL02890C,pc),a0
 lbC0288F4	move.w	(a0)+,d1
@@ -51457,8 +51463,8 @@ lbC0288F4	move.w	(a0)+,d1
 	bra.b	lbC0288F4
 
 lbC028900	move.w	(a0),d0
-	jsr	(gettextbynum-datasegment,a6)
-	move.l	d0,(lbB02D124-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(error_text-ds,a6)
 	rts
 
 lbL02890C	dl	$1D1F48
@@ -51470,57 +51476,57 @@ lbL02890C	dl	$1D1F48
 	dl	$201F4E
 	dl	$1F4F
 
-lbC02892C	move.w	#9,(lbW02EB1A-datasegment,a6)
-	lea	(lbL02EAFE-datasegment,a6),a1
+lbC02892C	move.w	#9,(lbW02EB1A-ds,a6)
+	lea	(lbL02EAFE-ds,a6),a1
 	tst.l	(a1)
 	beq.b	lbC028952
-	tst.b	(lbB02EAEB-datasegment,a6)
+	tst.b	(lbB02EAEB-ds,a6)
 	bmi.b	lbC028952
-	clr.l	(lbL02EB22-datasegment,a6)
+	clr.l	(lbL02EB22-ds,a6)
 	bsr.w	_DoIO
-	tst.b	(lbB02EB69-datasegment,a6)
+	tst.b	(lbB02EB69-ds,a6)
 	beq.b	lbC028952
-	jsr	(lbC026C14-datasegment,a6)
-lbC028952	lea	(lbL02EAFE-datasegment,a6),a1
+	jsr	(freework-ds,a6)
+lbC028952	lea	(lbL02EAFE-ds,a6),a1
 	tst.l	(a1)
 	beq.b	lbC02895E
 	bsr.w	_CloseDevice
 lbC02895E	moveq	#0,d0
-	move.b	(lbB02EAEB-datasegment,a6),d0
+	move.b	(lbB02EAEB-ds,a6),d0
 	bmi.b	lbC02896A
 	bsr.w	_FreeSignal
-lbC02896A	move.l	(lbL02EB26-datasegment,a6),d0
+lbC02896A	move.l	(lbL02EB26-ds,a6),d0
 	beq.b	lbC028980
-	clr.l	(lbL02EB26-datasegment,a6)
+	clr.l	(lbL02EB26-ds,a6)
 	movea.l	d0,a1
 	move.l	#$2C00,d0
 	bsr.w	_FreeMem
 lbC028980	rts
 
 lbC028982	movem.l	a2-a5,-(sp)
-	movem.l	a2/a3,(lbL02D070-datasegment,a6)
-	clr.l	(lbB02D17C-datasegment,a6)
-	jsr	(__ClearMenuStrip-datasegment,a6)
+	movem.l	a2/a3,(lbL02D070-ds,a6)
+	clr.l	(lbB02D17C-ds,a6)
+	jsr	(__ClearMenuStrip-ds,a6)
 	beq.b	lbC0289A0
 	bsr.w	DropIMsgAll
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
-lbC0289A0	jsr	(__ClearMenuStrip-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
+lbC0289A0	jsr	(__ClearMenuStrip-ds,a6)
 	bsr.w	_ClearPointerAll
-	tst.b	(lbB02EB7A-datasegment,a6)
+	tst.b	(lbB02EB7A-ds,a6)
 	bne.b	lbC0289C0
 	movem.l	a2/a3,-(sp)
-	movem.l	(lbL02D070-datasegment,a6),a2/a3
+	movem.l	(lbL02D070-ds,a6),a2/a3
 	bsr.w	lbC027E00
 	movem.l	(sp)+,a2/a3
 lbC0289C0	move.l	#$100,d2
-	move.w	(lbW02CFB2-datasegment,a6),d3
+	move.w	(lbW02CFB2-ds,a6),d3
 	cmpi.w	#$FFFF,d3
 	bne.w	lbC028AA6
-	movea.l	(userport-datasegment,a6),a0
-	jsr	(_WaitPort-datasegment,a6)
-lbC0289DA	movea.l	(userport-datasegment,a6),a0
+	movea.l	(userport-ds,a6),a0
+	jsr	(_WaitPort-ds,a6)
+lbC0289DA	movea.l	(userport-ds,a6),a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_GetIMsg,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
@@ -51538,7 +51544,7 @@ lbC0289DA	movea.l	(userport-datasegment,a6),a0
 	btst	#$19,d3
 	beq.w	lbC028A6C
 	movem.l	d6/a1/a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOForbid,a6)
 	movea.l	($56,a3),a0
 	move.l	($14,a0),d6
@@ -51565,46 +51571,46 @@ lbC028A2E	movea.l	d6,a1
 lbC028A64	jsr	(_LVOPermit,a6)
 	movem.l	(sp)+,d6/a1/a6
 lbC028A6C	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_ReplyIMsg,a6)
 	movea.l	(sp)+,a6
 	cmpi.l	#4,d2
 	bne.b	lbC028AA6
 	movea.l	a3,a0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_BeginRefresh,a6)
 	movea.l	(sp)+,a6
 	bsr.w	lbC028CFC
 	movea.l	a3,a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
-	movea.l	(gadtoolsbase-datasegment,a6),a6
+	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_EndRefresh,a6)
 	movea.l	(sp)+,a6
 	bra.w	lbC0289DA
 
 lbC028AA6	cmpi.l	#$100,d2
-	seq	(lbB02EBF4-datasegment,a6)
+	seq	(lbB02EBF4-ds,a6)
 	bne.b	lbC028AFA
 	cmpi.w	#$FFFF,d3
 	beq.w	lbC0289DA
 	moveq	#0,d0
 	move.w	d3,d0
-	movea.l	(menustrip-datasegment,a6),a0
+	movea.l	(menustrip-ds,a6),a0
 	move.l	a6,-(sp)
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOItemAddress,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
 	beq.w	lbC0289DA
 	movea.l	d0,a0
-	move.w	($20,a0),(lbW02CFB2-datasegment,a6)
+	move.w	($20,a0),(lbW02CFB2-ds,a6)
 	btst	#$13,d3
-	sne	(lbW02EB7E-datasegment,a6)
-	st	(lbB02EB48-datasegment,a6)
+	sne	(lbW02EB7E-ds,a6)
+	st	(lbB02EB48-ds,a6)
 	btst	#0,(12,a0)
-	sne	(lbB02EBF5-datasegment,a6)
+	sne	(lbB02EBF5-ds,a6)
 	move.w	($22,a0),d0
 	bra.w	lbC028C7C
 
@@ -51642,33 +51648,33 @@ lbC028B4A	moveq	#8,d2
 	addi.l	#$1A0,d0
 lbC028B56	add.l	d0,d0
 	lea	(lbL034500).l,a0
-	move.l	d0,(lbB02D17C-datasegment,a6)
+	move.l	d0,(lbB02D17C-ds,a6)
 	adda.l	d0,a0
 	moveq	#0,d0
 	move.w	(a0),d0
 	bclr	#15,d0
 	cmpi.w	#$16F,d0
 	bne.b	lbC028B7C
-	tst.w	(lbB02EACA-datasegment,a6)
+	tst.w	(lbB02EACA-ds,a6)
 	beq.b	lbC028B7C
-	move.w	(lbB02EACA-datasegment,a6),d0
-lbC028B7C	move.w	d0,(lbB02EACC-datasegment,a6)
-	jsr	(getfuncbynum-datasegment,a6)
+	move.w	(lbB02EACA-ds,a6),d0
+lbC028B7C	move.w	d0,(lbB02EACC-ds,a6)
+	jsr	(getfuncbynum-ds,a6)
 	cmpa.l	#default_func,a0
 	beq.b	lbC028B92
 	jsr	(lbC01BFD0).l
 lbC028B92	movem.l	d1-d7/a0-a5,-(sp)
-	movem.l	(lbL02D070-datasegment,a6),a2/a3
-	jsr	(lbC027E00-datasegment,a6)
+	movem.l	(lbL02D070-ds,a6),a2/a3
+	jsr	(lbC027E00-ds,a6)
 	movem.l	(sp)+,d1-d7/a0-a5
 	move.l	(6,a0),d0
 	movea.l	(a0),a0
 	movem.l	(sp)+,a2-a5
 	move.l	a2,d1
-	sub.l	(datasegment-datasegment,a6),d1
+	sub.l	(ds-ds,a6),d1
 	lsl.l	#2,d1
 	movea.l	d1,a3
-	adda.l	(workdata_end-datasegment,a6),a3
+	adda.l	(workdata_struct-ds,a6),a3
 	move.l	(a3),d7
 	rts
 
@@ -51714,7 +51720,7 @@ lbC028BEA	move.l	($28,a2),d0
 
 lbC028C3C	jsr	(a0)
 	bne.w	lbC0289DA
-lbC028C42	lea	(_dummy_st,pc),a0
+lbC028C42	lea	(term1,pc),a0
 	bra.w	lbC028CC0
 
 lbC028C4A	cmpi.l	#$200,d2
@@ -51726,28 +51732,28 @@ lbC028C4A	cmpi.l	#$200,d2
 
 lbC028C60	cmpi.l	#$40000,d2
 	bne.w	lbC0289DA
-	cmpa.l	(window2ptr-datasegment,a6),a3
+	cmpa.l	(window2ptr-ds,a6),a3
 	bne.w	lbC0289DA
 	jsr	(lbC0016AE).l
 	bra.w	lbC0289DA
 
-lbC028C7C	move.w	d0,(lbB02EACC-datasegment,a6)
+lbC028C7C	move.w	d0,(lbB02EACC-ds,a6)
 	cmpi.w	#$16F,d0
 	bne.b	lbC028C96
-	tst.w	(lbB02EACA-datasegment,a6)
+	tst.w	(lbB02EACA-ds,a6)
 	beq.b	lbC028C9E
-	move.w	(lbB02EACA-datasegment,a6),d0
-	move.w	d0,(lbB02EACC-datasegment,a6)
+	move.w	(lbB02EACA-ds,a6),d0
+	move.w	d0,(lbB02EACC-ds,a6)
 	bra.b	lbC028C9E
 
 lbC028C96	bclr	#15,d0
-	move.w	d0,(lbB02EACA-datasegment,a6)
+	move.w	d0,(lbB02EACA-ds,a6)
 lbC028C9E	jsr	(lbC01BFD0).l
 	movem.l	d0-d7/a0-a5,-(sp)
-	movem.l	(lbL02D070-datasegment,a6),a2/a3
-	jsr	(lbC027E00-datasegment,a6)
+	movem.l	(lbL02D070-ds,a6),a2/a3
+	jsr	(lbC027E00-ds,a6)
 	movem.l	(sp)+,d0-d7/a0-a5
-	jsr	(getfuncbynum-datasegment,a6)
+	jsr	(getfuncbynum-ds,a6)
 	move.l	(6,a0),d0
 	movea.l	(a0),a0
 lbC028CC0	movem.l	(sp)+,a2-a5
@@ -51755,10 +51761,10 @@ lbC028CC0	movem.l	(sp)+,a2-a5
 
 DropIMsgAll	movem.l	a2/a5/a6,-(sp)
 	movea.l	a6,a5
-	movea.l	(execbase-datasegment,a5),a6
+	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOForbid,a6)
-	movea.l	(userport-datasegment,a5),a2
-	movea.l	(gadtoolsbase-datasegment,a5),a6
+	movea.l	(userport-ds,a5),a2
+	movea.l	(gadtoolsbase-ds,a5),a6
 lbC028CDC	movea.l	a2,a0
 	jsr	(_LVOGT_GetIMsg,a6)
 	tst.l	d0
@@ -51767,17 +51773,17 @@ lbC028CDC	movea.l	a2,a0
 	jsr	(_LVOGT_ReplyIMsg,a6)
 	bra.b	lbC028CDC
 
-lbC028CEE	movea.l	(execbase-datasegment,a5),a6
+lbC028CEE	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOPermit,a6)
 	movem.l	(sp)+,a2/a5/a6
 	rts
 
 lbC028CFC	movem.l	d0-d6/a0/a1/a6,-(sp)
-	lea	(lbB02CF10-datasegment,a6),a0
+	lea	(lbB02CF10-ds,a6),a0
 	moveq	#0,d0
 	moveq	#12,d1
-	movea.l	(window1ptr-datasegment,a6),a1
-	movea.l	($32,a1),a1
+	movea.l	(window1ptr-ds,a6),a1
+	movea.l	(wd_RPort,a1),a1
 	moveq	#0,d2
 	moveq	#12,d3
 	moveq	#0,d4
@@ -51787,7 +51793,7 @@ lbC028CFC	movem.l	d0-d6/a0/a1/a6,-(sp)
 	move.w	(2,a0),d5
 	subi.w	#$24,d5
 	move.w	#$CA,d6
-	movea.l	(gfxbase-datasegment,a6),a6
+	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOBltBitMapRastPort,a6)
 	movem.l	(sp)+,d0-d6/a0/a1/a6
 	rts
@@ -51800,7 +51806,7 @@ lbC028D3E	move.l	#Macros2.MSG,d1
 
 lbC028D46	move.l	#Macros1.MSG,d1
 lbC028D4C	move.w	#$2741,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 lbC028D54	bra.w	lbC026C7E
 
 lbC028D58	bsr.b	lbC028D6C
@@ -51819,7 +51825,7 @@ lbC028D68	bsr.b	lbC028D6C
 	dw	$103
 
 lbC028D6C	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	movea.l	(sp)+,a0
 	bsr.w	saveregs_nod0d1a0a1
 	moveq	#0,d1
@@ -51830,52 +51836,52 @@ lbC028D6C	move.l	a2,d0
 lbC028D86	cmpi.b	#2,d1
 	bcc.b	lbC028DA4
 	bsr.w	lbC02777C
-	beq.w	lbC02A436
+	beq.w	term2
 	movea.l	d0,a0
-	lea	(lbL02C1D4-datasegment,a6),a4
+	lea	(lbL02C1D4-ds,a6),a4
 	bsr.w	lbC023954
 	clr.b	(a4)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC028DA4	bne.b	lbC028DB2
-	move.b	(lbB02EB56-datasegment,a6),(lbB02EB4D).l
-	subq.b	#1,(lbB02EB4D-datasegment,a6)
+	move.b	(lbB02EB56-ds,a6),(lbB02EB4D).l
+	subq.b	#1,(lbB02EB4D-ds,a6)
 lbC028DB2	bsr.w	lbC02777C
-	beq.w	lbC02A436
+	beq.w	term2
 	movea.l	d0,a0
-	lea	(lbL02C1D4-datasegment,a6),a4
+	lea	(lbL02C1D4-ds,a6),a4
 lbC028DC0	move.b	(a0)+,(a4)+
 	subq.w	#1,d1
 	bgt.b	lbC028DC0
 	clr.b	(a4)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC028DCC	lsr.w	#8,d1
 	bne.b	lbC028DD4
-	move.b	(lbB02EB56-datasegment,a6),d1
-lbC028DD4	clr.l	(lbB02D118-datasegment,a6)
-	move.b	d1,(lbB02EB3D-datasegment,a6)
-	jsr	(lbC02A87E-datasegment,a6)
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB3D-datasegment,a6)
-	move.l	(lbB02D118-datasegment,a6),d0
-	beq.w	lbC02A436
+	move.b	(lbB02EB56-ds,a6),d1
+lbC028DD4	clr.l	(lbB02D118-ds,a6)
+	move.b	d1,(lbB02EB3D-ds,a6)
+	jsr	(lbC02A87E-ds,a6)
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB3D-ds,a6)
+	move.l	(lbB02D118-ds,a6),d0
+	beq.w	term2
 	movea.l	d0,a2
 	bsr.w	lbC02A3CC
 	moveq	#1,d1
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bra.b	lbC028D86
 
 lbC028DFE	move.w	#$2715,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	bsr.w	lbC026C6C
-	beq.w	lbC02A436
-	lea	(lbL02C1D4-datasegment,a6),a1
+	beq.w	term2
+	lea	(lbL02C1D4-ds,a6),a1
 	moveq	#0,d0
 	tst.b	(a0)
-	beq.w	lbC02A436
+	beq.w	term2
 	tst.b	(a1)
-	beq.w	lbC02A436
+	beq.w	term2
 lbC028E20	tst.b	(a0)
 	beq.b	lbC028E3C
 	tst.b	(a1)
@@ -51887,33 +51893,33 @@ lbC028E20	tst.b	(a0)
 	cmpi.b	#$3F,(-1,a0)
 	beq.b	lbC028E20
 	subq.l	#1,a1
-lbC028E3C	lea	(lbL02C1D4-datasegment,a6),a0
+lbC028E3C	lea	(lbL02C1D4-ds,a6),a0
 lbC028E40	move.b	(a1)+,(a0)+
 	bne.b	lbC028E40
-lbC028E44	jmp	(lbC02A422-datasegment,a6)
+lbC028E44	jmp	(lbC02A422-ds,a6)
 
 lbC028E48	addq.l	#1,a0
 	move.b	(a0),d0
-	beq.w	lbC02A436
+	beq.w	term2
 lbC028E50	tst.b	(a1)
 	beq.b	lbC028E44
 	cmp.b	(a1)+,d0
 	bne.b	lbC028E50
 	bra.b	lbC028E3C
 
-lbC028E5A	lea	(lbL02C1D4-datasegment,a6),a0
+lbC028E5A	lea	(lbL02C1D4-ds,a6),a0
 	tst.b	(a0)
-	beq.w	lbC02A436
+	beq.w	term2
 	bsr.w	lbC02AEB2
 	adda.l	d0,a0
 	move.l	a0,-(sp)
 	move.w	#$2715,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	bsr.w	lbC026C6C
 	movea.l	(sp)+,a1
-	beq.w	lbC02A436
+	beq.w	term2
 	tst.b	(a0)
-	beq.w	lbC02A436
+	beq.w	term2
 	bsr.w	lbC02AEB2
 	adda.l	d0,a0
 lbC028E8A	move.b	(a0),d0
@@ -51930,26 +51936,26 @@ lbC028E98	cmpa.l	#lbL02C1D4,a1
 
 lbC028EA6	addq.l	#1,a1
 lbC028EA8	clr.b	(a1)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC028EAE	lea	(lbL02C1D4-datasegment,a6),a0
+lbC028EAE	lea	(lbL02C1D4-ds,a6),a0
 	bsr.w	lbC02AEB2
 	movem.l	d0/a0,-(sp)
 	move.w	#$2716,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	bsr.w	lbC026C6C
 	movem.l	(sp)+,d1/a1
 	rts
 
 lbC028ECC	bsr.b	lbC028EAE
-	beq.w	lbC02A436
+	beq.w	term2
 	bsr.w	lbC02AEB2
 	move.l	d0,d2
 	beq.w	lbC02A42A
 	add.b	d1,d2
-	bcs.w	lbC02A436
+	bcs.w	term2
 	cmpi.b	#$F0,d2
-	bhi.w	lbC02A436
+	bhi.w	term2
 	adda.l	d1,a1
 	movea.l	a1,a5
 	adda.l	d0,a5
@@ -51957,91 +51963,91 @@ lbC028ECC	bsr.b	lbC028EAE
 lbC028EF2	move.b	-(a1),-(a5)
 	subq.b	#1,d1
 	bne.b	lbC028EF2
-	lea	(lbL02C1D4-datasegment,a6),a1
+	lea	(lbL02C1D4-ds,a6),a1
 lbC028EFC	move.b	(a0)+,(a1)+
 	subq.b	#1,d0
 	bne.b	lbC028EFC
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC028F06	bsr.b	lbC028EAE
-	beq.w	lbC02A436
+	beq.w	term2
 	tst.b	(a0)
-	beq.w	lbC02A436
+	beq.w	term2
 	bsr.w	lbC02AEB2
 	move.l	d0,d2
 	add.b	d1,d2
-	bcs.w	lbC02A436
+	bcs.w	term2
 	cmpi.b	#$F0,d2
-	bhi.w	lbC02A436
+	bhi.w	term2
 	adda.l	d1,a1
 lbC028F28	move.b	(a0)+,(a1)+
 	subq.b	#1,d0
 	bne.b	lbC028F28
 	clr.b	(a1)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC028F34	bsr.w	saveregs_all
-	lea	(displayid-datasegment,a6),a0
+	lea	(displayid-ds,a6),a0
 	bra.b	lbC028F46
 
 lbC028F3E	bsr.w	saveregs_all
-	lea	(lbL02C1D4-datasegment,a6),a0
-lbC028F46	clr.l	(lbL02D16C-datasegment,a6)
+	lea	(lbL02C1D4-ds,a6),a0
+lbC028F46	clr.l	(lbL02D16C-ds,a6)
 	tst.b	(a0)
 	beq.b	lbC028F7E
 	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	movea.l	d0,a1
 	moveq	#0,d1
 	bsr.w	lbC027684
 	bsr.w	lbC02AEB2
-	move.l	d0,(lbL02D354-datasegment,a6)
+	move.l	d0,(lbL02D354-ds,a6)
 	bsr.w	lbC027A26
 	beq.b	lbC028F8C
 	cmpi.b	#$2E,(a0)
 	beq.b	lbC028F8C
 	cmpi.b	#$24,(-1,a0,d0.w)
 	beq.b	lbC028F8C
-lbC028F78	move.l	(lbL02D354-datasegment,a6),d0
+lbC028F78	move.l	(lbL02D354-ds,a6),d0
 	bsr.b	lbC028FA0
-lbC028F7E	beq.w	lbC02A436
+lbC028F7E	beq.w	term2
 	bsr.w	lbC02AEB2
 	bsr.w	lbC027A26
 	bne.b	lbC028F78
 lbC028F8C	move.l	a0,-(sp)
 	bsr.w	lbC027A80
 	movea.l	(sp)+,a0
-	move.l	(lbL02D354-datasegment,a6),d2
+	move.l	(lbL02D354-ds,a6),d2
 	clr.b	(a0,d2.w)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC028FA0	cmpi.b	#$EF,d0
-	bhi.w	lbC02A436
+	bhi.w	term2
 	movem.l	d0-d3/d6/a0-a4,-(sp)
 	lea	(a0,d0.w),a4
-	move.l	a4,(lbL02D170-datasegment,a6)
-	move.l	(lbL02D16C-datasegment,a6),d0
-	addq.l	#1,(lbL02D16C-datasegment,a6)
+	move.l	a4,(lbL02D170-ds,a6)
+	move.l	(lbL02D16C-ds,a6),d0
+	addq.l	#1,(lbL02D16C-ds,a6)
 	bsr.w	lbC022542
 	clr.b	(a4)
 	movem.l	(sp)+,d0-d3/d6/a0-a4
 	andi.b	#$FB,ccr
 	rts
 
-lbC028FCC	lea	(lbL02D8C8-datasegment,a6),a0
-	tst.b	(lbB02EB44-datasegment,a6)
+lbC028FCC	lea	(lbL02D8C8-ds,a6),a0
+	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC028FDA
-	lea	(lbB02D9C8-datasegment,a6),a0
-lbC028FDA	lea	(lbL02C1D4-datasegment,a6),a1
+	lea	(lbB02D9C8-ds,a6),a0
+lbC028FDA	lea	(lbL02C1D4-ds,a6),a1
 	moveq	#-1,d0
 lbC028FE0	move.b	(a0)+,(a1)+
 	dbeq	d0,lbC028FE0
 	cmpi.w	#$FFFE,d0
-	beq.w	lbC02A436
+	beq.w	term2
 	bra.w	lbC02A42A
 
 lbC028FF2	bsr.b	lbC029010
-	dl	lbL02E8C8
+	dl	work_data_spec_str
 
 lbC028FF8	bsr.b	lbC029010
 	dl	path_keytable
@@ -52055,14 +52061,14 @@ lbC029004	bsr.b	lbC029010
 lbC02900A	bsr.b	lbC029010
 	dl	path_macros
 
-lbC029010	lea	(lbL02C1D4-datasegment,a6),a1
+lbC029010	lea	(lbL02C1D4-ds,a6),a1
 	movea.l	(sp)+,a0
 	movea.l	(a0),a0
 lbC029018	move.b	(a0)+,(a1)+
 	bne.b	lbC029018
 	bra.w	lbC02A42A
 
-lbC029020	lea	(lbL02BFD4-datasegment,a6),a0
+lbC029020	lea	(lbL02BFD4-ds,a6),a0
 	tst.b	(a0)
 	beq.b	lbC02904A
 	move.l	a0,d0
@@ -52083,13 +52089,13 @@ lbC029046	bsr.b	lbC029076
 lbC029048	bsr.b	lbC029076
 lbC02904A	bsr.b	lbC029076
 lbC02904C	bsr.b	lbC029076
-lbC02904E	lea	(lbL02C1D4-datasegment,a6),a0
+lbC02904E	lea	(lbL02C1D4-ds,a6),a0
 	bsr.w	atoi
-	beq.w	lbC02A436
-lbC02905A	tst.b	(lbB02B428-datasegment,a6)
+	beq.w	term2
+lbC02905A	tst.b	(lbB02B428-ds,a6)
 	bne.b	lbC029070
 	andi.l	#$FFFF,d0
-	tst.b	(lbB02B427-datasegment,a6)
+	tst.b	(lbB02B427-ds,a6)
 	bne.b	lbC029070
 	andi.w	#$FF,d0
 lbC029070	andi.b	#$FB,ccr
@@ -52100,10 +52106,10 @@ lbC029076	move.l	(sp)+,d1
 	lsl.l	#7,d1
 	addi.l	#lbL02B4D4,d1
 	move.w	#$273F,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 lbC02908E	bsr.w	lbC026C74
-	st	(lbB02EB45-datasegment,a6)
-	st	(lbB02EB48-datasegment,a6)
+	st	(lbB02EB45-ds,a6)
+	st	(lbB02EB48-ds,a6)
 	rts
 
 lbC02909C	move.w	#$272F,d0
@@ -52296,21 +52302,21 @@ lbC029238	move.w	#$2733,d0
 lbC02924C	rts
 
 lbC02924E	bsr.w	lbC02904E
-	beq.w	lbC02A436
+	beq.w	term2
 	not.l	d1
 	bsr.w	lbC02905A
 	bra.w	lbC0293C2
 
 lbC029260	bsr.w	lbC02904E
-	beq.w	lbC02A436
+	beq.w	term2
 	neg.l	d1
 	bsr.w	lbC02905A
 	bra.w	lbC0293C2
 
 lbC029272	bsr.w	lbC02904E
-	beq.w	lbC02A436
+	beq.w	term2
 	move.l	d1,(a3)
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC029280	bsr.b	lbC029292
 lbC029282	bsr.b	lbC029292
@@ -52321,7 +52327,7 @@ lbC02928A	bsr.b	lbC029292
 lbC02928C	bsr.b	lbC029292
 lbC02928E	bsr.b	lbC029292
 lbC029290	nop
-lbC029292	jsr	(lbC02AFC0-datasegment,a6)
+lbC029292	jsr	(lbC02AFC0-ds,a6)
 	lea	(lbC029290,pc),a0
 	suba.l	(sp)+,a0
 	move.l	a0,d1
@@ -52329,14 +52335,14 @@ lbC029292	jsr	(lbC02AFC0-datasegment,a6)
 	bra.b	lbC0292C4
 
 lbC0292A2	bsr.w	lbC02904E
-	beq.w	lbC02A436
+	beq.w	term2
 	bclr	#7,d1
-	sne	(lbB02EB6C-datasegment,a6)
+	sne	(lbB02EB6C-ds,a6)
 	bclr	#6,d1
-	sne	(lbB02EB6D-datasegment,a6)
+	sne	(lbB02EB6D-ds,a6)
 	cmpi.l	#7,d1
-	bhi.w	lbC02A436
-lbC0292C4	move.b	d1,(lbB02EB6B-datasegment,a6)
+	bhi.w	term2
+lbC0292C4	move.b	d1,(lbB02EB6B-ds,a6)
 	addi.b	#$30,d1
 	move.b	d1,(conversions.MSG).l
 	move.w	#$277,d0
@@ -52347,12 +52353,12 @@ lbC0292C4	move.b	d1,(lbB02EB6B-datasegment,a6)
 	movea.l	(a1),a1
 	movea.l	($12,a1),a1
 	moveq	#0,d0
-	move.b	(lbB02EB6B-datasegment,a6),d0
+	move.b	(lbB02EB6B-ds,a6),d0
 	add.w	d0,d0
 	move.w	(lbW0292FE,pc,d0.w),d0
 	bsr.w	gettextbynum
 	bsr.w	lbC02A600
-lbC0292FA	jmp	(lbC02A422-datasegment,a6)
+lbC0292FA	jmp	(lbC02A422-ds,a6)
 
 lbW0292FE	dw	$841
 	dw	$842
@@ -52366,11 +52372,11 @@ xxA.MSG	db	'(xx,A'
 conversions.MSG	db	'4) conversions',0
 
 lbC029322	bsr.w	lbC02904E
-	beq.w	lbC02A436
+	beq.w	term2
 	moveq	#0,d6
-	tst.b	(lbB02B428-datasegment,a6)
+	tst.b	(lbB02B428-ds,a6)
 	bne.b	lbC02933C
-	tst.b	(lbB02B427-datasegment,a6)
+	tst.b	(lbB02B427-ds,a6)
 	bne.b	lbC029340
 	addq.b	#1,d1
 	bra.b	lbC029342
@@ -52385,11 +52391,11 @@ lbC029348	bsr.w	lbC02905A
 	bra.b	lbC0293C2
 
 lbC02934E	bsr.w	lbC02904E
-	beq.w	lbC02A436
+	beq.w	term2
 	moveq	#0,d6
-	tst.b	(lbB02B428-datasegment,a6)
+	tst.b	(lbB02B428-ds,a6)
 	bne.b	lbC029368
-	tst.b	(lbB02B427-datasegment,a6)
+	tst.b	(lbB02B427-ds,a6)
 	bne.b	lbC02936C
 	subq.b	#1,d1
 	bra.b	lbC02936E
@@ -52405,21 +52411,21 @@ lbC029374	bsr.w	lbC02905A
 
 _gettextbynum2	bsr.w	gettextbynum
 	bsr.w	lbC02ADBC
-	beq.w	lbC02A436
+	beq.w	term2
 	move.l	d1,d2
-	lea	(lbL02C1D4-datasegment,a6),a0
+	lea	(lbL02C1D4-ds,a6),a0
 	bsr.w	atoi
-	beq.w	lbC02A436
+	beq.w	term2
 	movea.l	(sp)+,a0
 	moveq	#0,d4
 	addq.l	#4,a0
 	moveq	#-1,d3
-	tst.b	(lbB02B428-datasegment,a6)
+	tst.b	(lbB02B428-ds,a6)
 	bne.b	lbC0293B6
 	clr.w	d3
 	swap	d3
 	move.w	(-4,a0),d4
-	tst.b	(lbB02B427-datasegment,a6)
+	tst.b	(lbB02B427-ds,a6)
 	bne.b	lbC0293B6
 	lsr.w	#8,d3
 	move.w	(-2,a0),d4
@@ -52429,23 +52435,23 @@ lbC0293B6	adda.l	d4,a0
 	jsr	(a0)
 	and.l	d3,d2
 	and.l	d3,d1
-lbC0293C2	lea	(lbL02C1D4-datasegment,a6),a4
+lbC0293C2	lea	(lbL02C1D4-ds,a6),a4
 	move.l	d1,d0
 	moveq	#0,d1
-	tst.b	(lbB02B429-datasegment,a6)
+	tst.b	(lbB02B429-ds,a6)
 	bne.b	lbC029410
-	tst.b	(lbB02B42B-datasegment,a6)
+	tst.b	(lbB02B42B-ds,a6)
 	bne.b	lbC0293DE
 	bsr.w	lbC022542
 	bra.w	lbC02948A
 
 lbC0293DE	move.b	#$25,(a4)+
 	moveq	#8,d2
-	tst.b	(lbB02B426-datasegment,a6)
+	tst.b	(lbB02B426-ds,a6)
 	bne.b	lbC0293F8
 	ror.l	#8,d0
 	moveq	#$10,d2
-	tst.b	(lbB02B427-datasegment,a6)
+	tst.b	(lbB02B427-ds,a6)
 	bne.b	lbC0293F8
 	swap	d0
 	moveq	#$20,d2
@@ -52461,9 +52467,9 @@ lbC02940A	dbra	d2,lbC0293FA
 
 lbC029410	move.b	#$24,(a4)+
 	lea	(ABCDEF0001020.MSG,pc),a0
-	tst.b	(lbB02B426-datasegment,a6)
+	tst.b	(lbB02B426-ds,a6)
 	bne.b	lbC029476
-	tst.b	(lbB02B428-datasegment,a6)
+	tst.b	(lbB02B428-ds,a6)
 	beq.b	lbC02945E
 	move.l	d0,d1
 	andi.l	#$F0000000,d1
@@ -52498,52 +52504,52 @@ lbC029476	move.w	d0,d1
 	and.w	d0,d1
 	move.b	(a0,d1.w),(a4)+
 lbC02948A	clr.b	(a4)+
-	lea	(lbB031E00-datasegment,a6),a4
-	jmp	(lbC02A422-datasegment,a6)
+	lea	(lbB031E00-ds,a6),a4
+	jmp	(lbC02A422-ds,a6)
 
 lbC029494	jsr	(lbC014DDC).l
-	move.l	(lbL02D1C4-datasegment,a6),d1
-	beq.w	lbC02A436
-	sub.l	(lbL02D1BC-datasegment,a6),d1
-	bcs.w	lbC02A436
+	move.l	(lbL02D1C4-ds,a6),d1
+	beq.w	term2
+	sub.l	(lbL02D1BC-ds,a6),d1
+	bcs.w	term2
 	bsr.w	lbC0295FA
 	bra.w	lbC0293C2
 
-lbC0294B2	lea	(lbL02C1D4-datasegment,a6),a0
+lbC0294B2	lea	(lbL02C1D4-ds,a6),a0
 	bsr.w	lbC02AEB2
 	move.l	d0,d1
 	bra.w	lbC0293C2
 
 lbC0294C0	move.w	#$273E,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	move.l	#lbL02C1D4,d1
-	clr.b	(lbL02C1D4-datasegment,a6)
-	jsr	(lbC020566).l
-	beq.w	lbC02A436
-	move.l	a0,(lbB02D0E8-datasegment,a6)
+	clr.b	(lbL02C1D4-ds,a6)
+	jsr	(requestfile).l
+	beq.w	term2
+	move.l	a0,(lbB02D0E8-ds,a6)
 	move.l	a0,d1
 	bsr.w	lbC02A272
 	tst.l	d0
-	beq.w	lbC02A436
-	move.l	d0,(lbB02D0E0-datasegment,a6)
+	beq.w	term2
+	move.l	d0,(lbB02D0E0-ds,a6)
 	move.l	d0,d1
 	move.l	#lbL02C1D4,d2
 	move.l	#$F0,d3
 	bsr.w	_Read
-	lea	(lbL02C1D4-datasegment,a6),a0
+	lea	(lbL02C1D4-ds,a6),a0
 	adda.l	d0,a0
 	clr.b	(a0)
-	move.l	(lbB02D0E0-datasegment,a6),d1
-	clr.l	(lbB02D0E0-datasegment,a6)
+	move.l	(lbB02D0E0-ds,a6),d1
+	clr.l	(lbB02D0E0-ds,a6)
 	bsr.w	dosclose
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC02951A	bsr.w	lbC0295FA
 	move.l	a2,d0
-	lea	(lbL02C1D4-datasegment,a6),a4
-	tst.b	(lbB02B3FE-datasegment,a6)
+	lea	(lbL02C1D4-ds,a6),a4
+	tst.b	(lbB02B3FE-ds,a6)
 	beq.b	lbC02952E
-	sub.l	(lbL02D11C-datasegment,a6),d0
+	sub.l	(workdata_strt-ds,a6),d0
 lbC02952E	move.l	d0,d1
 	bra.w	lbC0293C2
 
@@ -52553,11 +52559,11 @@ lbC029534	bsr.w	lbC0295FA
 
 lbC02953E	moveq	#0,d1
 	move.b	(a2),d1
-	tst.b	(lbB02B426-datasegment,a6)
+	tst.b	(lbB02B426-ds,a6)
 	bne.w	lbC0293C2
 	lsl.w	#8,d1
 	move.b	(1,a2),d1
-	tst.b	(lbB02B427-datasegment,a6)
+	tst.b	(lbB02B427-ds,a6)
 	bne.w	lbC0293C2
 	lsl.l	#8,d1
 	move.b	(2,a2),d1
@@ -52569,25 +52575,25 @@ lbC029568	moveq	#2,d1
 	bra.b	lbC029572
 
 lbC02956C	moveq	#0,d1
-	move.b	(lbB02EB56-datasegment,a6),d1
-lbC029572	clr.l	(lbB02D118-datasegment,a6)
-	move.b	d1,(lbB02EB3D-datasegment,a6)
+	move.b	(lbB02EB56-ds,a6),d1
+lbC029572	clr.l	(lbB02D118-ds,a6)
+	move.b	d1,(lbB02EB3D-ds,a6)
 	movem.l	a2/a3,-(sp)
-	jsr	(lbC02A87E-datasegment,a6)
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB3D-datasegment,a6)
+	jsr	(lbC02A87E-ds,a6)
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB3D-ds,a6)
 	movem.l	(sp)+,a2/a3
-	tst.l	(lbB02D118-datasegment,a6)
-	beq.w	lbC02A436
-	move.l	(lbB02D120-datasegment,a6),d1
+	tst.l	(lbB02D118-ds,a6)
+	beq.w	term2
+	move.l	(lbB02D120-ds,a6),d1
 	moveq	#2,d3
 	bsr.b	lbC0295FA
 	bra.w	lbC0293C2
 
-lbC0295A2	st	($B96,a6)
-	clr.b	($B97,a6)
-	clr.b	($B98,a6)
-	lea	($2724,a6),a0
+lbC0295A2	st	(lbB02B426-ds,a6)
+	clr.b	(lbB02B427-ds,a6)
+	clr.b	(lbB02B428-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$25D,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$25E,(a0)+
@@ -52597,10 +52603,10 @@ lbC0295A2	st	($B96,a6)
 	clr.w	(a0)
 	bra.b	lbC029624
 
-lbC0295CE	clr.b	($B96,a6)
-	st	($B97,a6)
-	clr.b	($B98,a6)
-	lea	($2724,a6),a0
+lbC0295CE	clr.b	(lbB02B426-ds,a6)
+	st	(lbB02B427-ds,a6)
+	clr.b	(lbB02B428-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$25D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$25E,(a0)+
@@ -52610,10 +52616,10 @@ lbC0295CE	clr.b	($B96,a6)
 	clr.w	(a0)
 	bra.b	lbC029624
 
-lbC0295FA	clr.b	(lbB02B426-datasegment,a6)
-	clr.b	(lbB02B427-datasegment,a6)
-	st	(lbB02B428-datasegment,a6)
-	lea	(lbB02CFB4-datasegment,a6),a0
+lbC0295FA	clr.b	(lbB02B426-ds,a6)
+	clr.b	(lbB02B427-ds,a6)
+	st	(lbB02B428-ds,a6)
+	lea	(lbB02CFB4-ds,a6),a0
 	move.w	#$25D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$25E,(a0)+
@@ -52621,16 +52627,16 @@ lbC0295FA	clr.b	(lbB02B426-datasegment,a6)
 	move.w	#$25F,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC029624	lea	(lbB02CFB4-datasegment,a6),a0
-	jsr	(lbC02A686-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+lbC029624	lea	(lbB02CFB4-ds,a6),a0
+	jsr	(lbC02A686-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC029630	move.l	(lbL02D2E8-datasegment,a6),d0
+lbC029630	move.l	(lbL02D2E8-ds,a6),d0
 	andi.l	#$202300,d0
-	move.l	d0,(lbL02D390-datasegment,a6)
-	move.l	(lbL02D2E8-datasegment,a6),d0
+	move.l	d0,(lbL02D390-ds,a6)
+	move.l	(lbL02D2E8-ds,a6),d0
 	andi.l	#$7000C000,d0
-	move.l	d0,(lbL02D38C-datasegment,a6)
+	move.l	d0,(lbL02D38C-ds,a6)
 	rts
 
 lbC02964E	bsr.b	lbC02965E
@@ -52646,41 +52652,41 @@ lbC02965A	bsr.b	lbC02965E
 	dw	0
 
 lbC02965E	movea.l	(sp)+,a0
-	move.b	(lbB02EB46-datasegment,a6),-(sp)
+	move.b	(lbB02EB46-ds,a6),-(sp)
 	move.b	(a0)+,d0
-	move.b	d0,(lbB02EB44-datasegment,a6)
+	move.b	d0,(lbB02EB44-ds,a6)
 	move.b	(a0)+,d0
 	beq.b	lbC02967E
-	lea	(lbL02C1D4-datasegment,a6),a0
+	lea	(lbL02C1D4-ds,a6),a0
 	bsr.w	lbC02AEB2
 	add.l	a0,d0
 	move.l	d0,d2
 	movea.l	a0,a1
 	bra.b	lbC0296A8
 
-lbC02967E	clr.b	(lbB02EB46-datasegment,a6)
-	st	(lbL02D128-datasegment,a6)
-	jsr	(lbC029A66-datasegment,a6)
-	lea	(lbB031E00-datasegment,a6),a4
+lbC02967E	clr.b	(lbB02EB46-ds,a6)
+	st	(lbL02D128-ds,a6)
+	jsr	(lbC029A66-ds,a6)
+	lea	(lbB031E00-ds,a6),a4
 	movem.l	a2/a3,-(sp)
 	jsr	(lbC020D16).l
 	movem.l	(sp)+,a2/a3
 	clr.b	-(a4)
 	clr.b	(1,a4)
 	move.l	a4,d2
-	lea	(lbB031E00-datasegment,a6),a1
-lbC0296A8	lea	(lbL02D8C8-datasegment,a6),a0
-	tst.b	(lbB02EB44-datasegment,a6)
+	lea	(lbB031E00-ds,a6),a1
+lbC0296A8	lea	(lbL02D8C8-ds,a6),a0
+	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC0296C0
-	lea	(lbL02DAC8-datasegment,a6),a0
-	tst.b	(case_sensitive_flag-datasegment,a6)
+	lea	(lbL02DAC8-ds,a6),a0
+	tst.b	(case_sensitive_flag-ds,a6)
 	bne.b	lbC0296C0
-	lea	(lbL02DBC8-datasegment,a6),a0
+	lea	(lbL02DBC8-ds,a6),a0
 lbC0296C0	tst.b	(a0)
 	beq.b	lbC0296E8
 lbC0296C4	cmp.l	a1,d2
 	beq.b	lbC0296E8
-	tst.b	(lbB02EB44-datasegment,a6)
+	tst.b	(lbB02EB44-ds,a6)
 	beq.b	__MatchPattern0
 	bsr.w	_cmpstr
 	bra.b	lbC0296D8
@@ -52688,22 +52694,22 @@ lbC0296C4	cmp.l	a1,d2
 __MatchPattern0	bsr.w	_MatchPattern
 lbC0296D8	addq.l	#1,a1
 	beq.b	lbC0296C4
-	move.b	(sp)+,(lbB02EB46-datasegment,a6)
-	jsr	(lbC029A9E-datasegment,a6)
+	move.b	(sp)+,(lbB02EB46-ds,a6)
+	jsr	(lbC029A9E-ds,a6)
 	bra.w	lbC02A42A
 
-lbC0296E8	move.b	(sp)+,(lbB02EB46-datasegment,a6)
-	jsr	(lbC029A9E-datasegment,a6)
-	bra.w	lbC02A436
+lbC0296E8	move.b	(sp)+,(lbB02EB46-ds,a6)
+	jsr	(lbC029A9E-ds,a6)
+	bra.w	term2
 
 lbC0296F4	moveq	#0,d0
-	st	(lbB02B424-datasegment,a6)
-	clr.b	(lbB02B425-datasegment,a6)
-lbC0296FE	tst.b	(lbB02EB4B-datasegment,a6)
+	st	(lbB02B424-ds,a6)
+	clr.b	(lbB02B425-ds,a6)
+lbC0296FE	tst.b	(lbB02EB4B-ds,a6)
 	beq.b	lbC029708
-	tst.b	(lbB02EB41-datasegment,a6)
+	tst.b	(lbB02EB41-ds,a6)
 lbC029708	beq.b	lbC02972C
-	move.l	(lbL02D0FC-datasegment,a6),d0
+	move.l	(lbL02D0FC-ds,a6),d0
 	movea.l	d0,a0
 	beq.b	lbC029708
 	cmpi.w	#$1FE,(-2,a0)
@@ -52711,17 +52717,17 @@ lbC029708	beq.b	lbC02972C
 	cmpi.w	#$1FF,(-2,a0)
 	bne.b	lbC02972C
 lbC029722	moveq	#2,d0
-	sub.l	d0,(lbL02D0FC-datasegment,a6)
-	sub.l	d0,(lbL02D100-datasegment,a6)
-lbC02972C	jmp	(lbC02A422-datasegment,a6)
+	sub.l	d0,(lbL02D0FC-ds,a6)
+	sub.l	d0,(lbL02D100-ds,a6)
+lbC02972C	jmp	(lbC02A422-ds,a6)
 
 lbC029730	moveq	#0,d0
-	clr.b	(lbB02B424-datasegment,a6)
-	st	(lbB02B425-datasegment,a6)
+	clr.b	(lbB02B424-ds,a6)
+	st	(lbB02B425-ds,a6)
 	bra.b	lbC0296FE
 
 lbC02973C	movem.l	d0/a0/a1,-(sp)
-	lea	(lbB02B3A9-datasegment,a6),a0
+	lea	(lbB02B3A9-ds,a6),a0
 	moveq	#13,d0
 	clr.b	(a0)+
 lbC029748	clr.l	(a0)+
@@ -52729,12 +52735,12 @@ lbC029748	clr.l	(a0)+
 	movem.l	(sp)+,d0/a0/a1
 	rts
 
-lbC029754	clr.b	(lbB02EBF4-datasegment,a6)
+lbC029754	clr.b	(lbB02EBF4-ds,a6)
 	moveq	#0,d2
 	moveq	#0,d3
 	moveq	#0,d4
 	moveq	#0,d5
-	addq.b	#1,(lbB02EB41-datasegment,a6)
+	addq.b	#1,(lbB02EB41-ds,a6)
 	jsr	(a0)
 	rts
 
@@ -52798,146 +52804,146 @@ lbC0297D8	bsr.b	lbC0297DC
 lbC0297DA	nop
 lbC0297DC	lea	(lbC0297DA,pc),a0
 	suba.l	(sp)+,a0
-	jsr	(lbC02A502-datasegment,a6)
+	jsr	(lbC02A502-ds,a6)
 	move.l	a0,d0
 	lsr.w	#1,d0
 	lea	(lbL02B370,pc),a0
 lbC0297EE	adda.w	d0,a0
 	st	(a0)
 	move.l	a0,-(sp)
-	pea	(lbC029A5C-datasegment,a6)
+	pea	(lbC029A5C-ds,a6)
 	lsl.l	#4,d0
 	lea	(lbL01C2C8).l,a0
 	adda.l	d0,a0
 	move.l	(a0),d1
 	beq.w	__dummy_st
 lbC029808	movea.l	d1,a1
-	clr.w	(lbW02EAC8-datasegment,a6)
-	clr.l	(lbL02CE24-datasegment,a6)
-	tst.b	(lbB02EB4A-datasegment,a6)
+	clr.w	(lbW02EAC8-ds,a6)
+	clr.l	(lbL02CE24-ds,a6)
+	tst.b	(lbB02EB4A-ds,a6)
 	bne.b	lbC029840
 	movem.l	d0/d1/a1-a4,-(sp)
-	lea	(_RawDoFmt_args-datasegment,a6),a1
+	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	(12,a0),(a1)
 	move.w	#$2756,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
-	lea	(lbL02D680-datasegment,a6),a2
-	jsr	(_RawDoFmt-datasegment,a6)
+	lea	(lbL02D680-ds,a6),a2
+	jsr	(_RawDoFmt-ds,a6)
 	movea.l	a2,a4
-	jsr	(lbC027E7C-datasegment,a6)
+	jsr	(lbC027E7C-ds,a6)
 lbC02983C	movem.l	(sp)+,d0/d1/a1-a4
-lbC029840	addq.b	#1,(lbB02EB4A-datasegment,a6)
-	cmpi.b	#$14,(lbB02EB4A-datasegment,a6)
+lbC029840	addq.b	#1,(lbB02EB4A-ds,a6)
+	cmpi.b	#$14,(lbB02EB4A-ds,a6)
 	bls.b	lbC02985C
 	bsr.w	lbC029AD4
-	clr.b	(lbB02EB41-datasegment,a6)
-	clr.b	(lbB02EB4A-datasegment,a6)
-	bra.w	_dummy_st
+	clr.b	(lbB02EB41-ds,a6)
+	clr.b	(lbB02EB4A-ds,a6)
+	bra.w	term1
 
-lbC02985C	st	(lbB02EB48-datasegment,a6)
-	st	(lbB02EB45-datasegment,a6)
-	move.l	(lbL02CE28-datasegment,a6),-(sp)
-	move.l	a1,(lbL02CE28-datasegment,a6)
-	move.w	(lbW02B4D2-datasegment,a6),-(sp)
-lbC029870	move.w	#$7FED,(lbW02B4D2-datasegment,a6)
+lbC02985C	st	(lbB02EB48-ds,a6)
+	st	(lbB02EB45-ds,a6)
+	move.l	(lbL02CE28-ds,a6),-(sp)
+	move.l	a1,(lbL02CE28-ds,a6)
+	move.w	(lbW02B4D2-ds,a6),-(sp)
+lbC029870	move.w	#$7FED,(lbW02B4D2-ds,a6)
 lbC029876	moveq	#0,d0
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC029888
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	_clear_ccr0
 
-lbC029888	tst.b	(lbB02EB3F-datasegment,a6)
+lbC029888	tst.b	(lbB02EB3F-ds,a6)
 	beq.b	lbC029898
-	subq.b	#1,(lbB02EB3F-datasegment,a6)
-	move.b	(lbB02EB3E-datasegment,a6),d0
+	subq.b	#1,(lbB02EB3F-ds,a6)
+	move.b	(lbB02EB3E-ds,a6),d0
 	bra.b	lbC0298AC
 
 lbC029898	move.w	(a1)+,d0
 	bpl.b	lbC0298AC
-	move.b	d0,(lbB02EB3E-datasegment,a6)
+	move.b	d0,(lbB02EB3E-ds,a6)
 	lsr.w	#8,d0
 	bclr	#7,d0
-	move.b	d0,(lbB02EB3F-datasegment,a6)
+	move.b	d0,(lbB02EB3F-ds,a6)
 	bra.b	lbC029876
 
 lbC0298AC	beq.w	lbC029A3E
 	cmpi.w	#$7FFE,d0
 	bne.b	lbC0298D8
-	subq.l	#1,(lbL02CE24-datasegment,a6)
+	subq.l	#1,(lbL02CE24-ds,a6)
 	bpl.b	lbC029876
-	clr.l	(lbL02CE24-datasegment,a6)
-	cmp.w	(lbW02EAC8-datasegment,a6),d0
+	clr.l	(lbL02CE24-ds,a6)
+	cmp.w	(lbW02EAC8-ds,a6),d0
 	bne.b	lbC029876
-	clr.w	(lbW02EAC8-datasegment,a6)
+	clr.w	(lbW02EAC8-ds,a6)
 	bra.b	lbC029876
 
-lbC0298CC	cmp.w	(lbW02EAC8-datasegment,a6),d0
+lbC0298CC	cmp.w	(lbW02EAC8-ds,a6),d0
 	bne.b	lbC029876
-	clr.w	(lbW02EAC8-datasegment,a6)
+	clr.w	(lbW02EAC8-ds,a6)
 	bra.b	lbC029876
 
-lbC0298D8	tst.w	(lbW02EAC8-datasegment,a6)
+lbC0298D8	tst.w	(lbW02EAC8-ds,a6)
 	beq.b	lbC0298EA
 	cmpi.w	#$7FFD,d0
 	bne.b	lbC0298CC
-lbC0298E4	addq.l	#1,(lbL02CE24-datasegment,a6)
+lbC0298E4	addq.l	#1,(lbL02CE24-ds,a6)
 	bra.b	lbC029876
 
 lbC0298EA	cmpi.w	#$7FFD,d0
 	beq.b	lbC0298E4
-	clr.l	(lbL02CE24-datasegment,a6)
+	clr.l	(lbL02CE24-ds,a6)
 	cmpi.w	#$7FE8,d0
 	bls.b	lbC02991C
 	cmpi.w	#$7FEC,d0
 	bhi.b	lbC02991C
-	move.w	d0,(lbW02B4D2-datasegment,a6)
+	move.w	d0,(lbW02B4D2-ds,a6)
 	bra.w	lbC029876
 
 lbC029908	movem.l	d0-d7/a0-a5,-(sp)
 	jsr	(lbC01BFD0).l
-	jsr	(lbC027E00-datasegment,a6)
+	jsr	(lbC027E00-ds,a6)
 	movem.l	(sp)+,d0-d7/a0-a5
 	bra.b	lbC029932
 
-lbC02991C	move.w	(lbW02B4D0-datasegment,a6),d1
-	cmp.w	(lbW02B4D2-datasegment,a6),d1
+lbC02991C	move.w	(lbW02B4D0-ds,a6),d1
+	cmp.w	(lbW02B4D2-ds,a6),d1
 	bhi.w	lbC029898
 	bclr	#15,d0
-	tst.b	(lbB02B41C-datasegment,a6)
+	tst.b	(lbB02B41C-ds,a6)
 	bne.b	lbC029908
-lbC029932	jsr	(getfuncbynum-datasegment,a6)
+lbC029932	jsr	(getfuncbynum-ds,a6)
 	cmpa.l	#default_func,a0
 	beq.w	_clear_ccr0
 	move.l	(6,a0),d0
 	movea.l	(a0),a0
 lbC029946	move.l	a0,-(sp)
-	movea.l	(window_flags_lw_ptr-datasegment,a6),a0
+	movea.l	(window_flags_lw_ptr-ds,a6),a0
 	tst.b	(a0)
 	movea.l	(sp)+,a0
 	bmi.b	lbC029946
-	tst.b	(lbB02B417-datasegment,a6)
+	tst.b	(lbB02B417-ds,a6)
 	bne.w	lbC029A00
-	tst.b	(lbB02EB78-datasegment,a6)
+	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC029964
 	bsr.w	lbC027DEC
-lbC029964	tst.b	(lbB02B418-datasegment,a6)
+lbC029964	tst.b	(lbB02B418-ds,a6)
 	bne.w	lbC029A00
 	bsr.w	_SetPointerAll
-	jsr	(lbC02A866-datasegment,a6)
-	addq.b	#1,(lbB02EB4A-datasegment,a6)
+	jsr	(lbC02A866-ds,a6)
+	addq.b	#1,(lbB02EB4A-ds,a6)
 	bsr.w	lbC027DEC
-	subq.b	#1,(lbB02EB4A-datasegment,a6)
-	tst.b	(lbB02B419-datasegment,a6)
+	subq.b	#1,(lbB02EB4A-ds,a6)
+	tst.b	(lbB02B419-ds,a6)
 	bne.b	lbC029A00
-	tst.b	(lbB02B41A-datasegment,a6)
+	tst.b	(lbB02B41A-ds,a6)
 	beq.b	lbC029998
 	movem.l	d0-d7/a0-a6,-(sp)
 	moveq	#10,d1
 	bsr.w	dosdelay
 	bra.b	lbC0299F0
 
-lbC029998	tst.b	(lbB02B41B-datasegment,a6)
+lbC029998	tst.b	(lbB02B41B-ds,a6)
 	beq.b	lbC0299AA
 	movem.l	d0-d7/a0-a6,-(sp)
 	moveq	#$14,d1
@@ -52946,55 +52952,55 @@ lbC029998	tst.b	(lbB02B41B-datasegment,a6)
 
 lbC0299AA	movem.l	d0-d7/a0-a6,-(sp)
 lbC0299AE	bsr.w	lbC028982
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC0299C4
 	movem.l	(sp)+,d0-d7/a0-a6
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	_clear_ccr0
 
 lbC0299C4	cmpa.l	#lbC01EA10,a0
 	beq.b	lbC0299F0
 	move.l	a0,-(sp)
-	move.b	(lbB02EB41-datasegment,a6),-(sp)
-	move.b	#$FF,(lbB02EB41-datasegment,a6)
+	move.b	(lbB02EB41-ds,a6),-(sp)
+	move.b	#$FF,(lbB02EB41-ds,a6)
 	bsr.w	lbC029754
-	clr.w	(lbW02EAC8-datasegment,a6)
-	move.b	(sp)+,(lbB02EB41-datasegment,a6)
+	clr.w	(lbW02EAC8-ds,a6)
+	move.b	(sp)+,(lbB02EB41-ds,a6)
 	movea.l	(sp)+,a0
-	jsr	(lbC02A866-datasegment,a6)
-	tst.b	(lbB02B41C-datasegment,a6)
+	jsr	(lbC02A866-ds,a6)
+	tst.b	(lbB02B41C-ds,a6)
 	bne.b	lbC0299AE
 lbC0299F0	movem.l	(sp)+,d0-d7/a0-a6
 lbC0299F4	move.l	a0,-(sp)
-	movea.l	(window_flags_lw_ptr-datasegment,a6),a0
+	movea.l	(window_flags_lw_ptr-ds,a6),a0
 	tst.b	(a0)
 	movea.l	(sp)+,a0
 	bmi.b	lbC0299F4
-lbC029A00	move.l	(lbL02D0FC-datasegment,a6),-(sp)
-	move.l	a1,(lbL02D0FC-datasegment,a6)
+lbC029A00	move.l	(lbL02D0FC-ds,a6),-(sp)
+	move.l	a1,(lbL02D0FC-ds,a6)
 	bsr.w	lbC029754
-	movea.l	(lbL02D0FC-datasegment,a6),a1
-	move.l	(sp)+,(lbL02D0FC-datasegment,a6)
-	subq.b	#1,(lbB02EB41-datasegment,a6)
+	movea.l	(lbL02D0FC-ds,a6),a1
+	move.l	(sp)+,(lbL02D0FC-ds,a6)
+	subq.b	#1,(lbB02EB41-ds,a6)
 	bpl.w	lbC029876
 	beq.b	lbC029A26
 _clear_ccr0	bsr.w	clear_ccr
 	bsr.w	DropIMsgAll
-lbC029A26	clr.b	(lbB02EB41-datasegment,a6)
-	clr.b	(lbB02EB3F-datasegment,a6)
-	move.w	(sp)+,(lbW02B4D2-datasegment,a6)
-	move.l	(sp)+,(lbL02CE28-datasegment,a6)
-	subq.b	#1,(lbB02EB4A-datasegment,a6)
-__dummy_st	bra.w	_dummy_st
+lbC029A26	clr.b	(lbB02EB41-ds,a6)
+	clr.b	(lbB02EB3F-ds,a6)
+	move.w	(sp)+,(lbW02B4D2-ds,a6)
+	move.l	(sp)+,(lbL02CE28-ds,a6)
+	subq.b	#1,(lbB02EB4A-ds,a6)
+__dummy_st	bra.w	term1
 
-lbC029A3E	move.w	(sp)+,(lbW02B4D2-datasegment,a6)
-	move.l	(sp)+,(lbL02CE28-datasegment,a6)
-	clr.b	(lbB02EB3F-datasegment,a6)
-	tst.w	(lbW02EAC8-datasegment,a6)
+lbC029A3E	move.w	(sp)+,(lbW02B4D2-ds,a6)
+	move.l	(sp)+,(lbL02CE28-ds,a6)
+	clr.b	(lbB02EB3F-ds,a6)
+	tst.w	(lbW02EAC8-ds,a6)
 	beq.b	lbC029A54
-	clr.b	(lbB02EB41-datasegment,a6)
-lbC029A54	subq.b	#1,(lbB02EB4A-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	clr.b	(lbB02EB41-ds,a6)
+lbC029A54	subq.b	#1,(lbB02EB4A-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC029A5C	movea.l	(sp)+,a0
 	sne	d0
@@ -53002,36 +53008,36 @@ lbC029A5C	movea.l	(sp)+,a0
 	tst.b	d0
 	rts
 
-lbC029A66	clr.l	(lbW02B478-datasegment,a6)
-	st	(lbB02EBF3-datasegment,a6)
-	tst.b	(lbB02EB9D-datasegment,a6)
+lbC029A66	clr.l	(lbW02B478-ds,a6)
+	st	(lbB02EBF3-ds,a6)
+	tst.b	(lbB02EB9D-ds,a6)
 	bne.b	lbC029A9C
-	lea	(lbB02B3E5-datasegment,a6),a0
-	lea	(lbL02EB8E-datasegment,a6),a1
+	lea	(lbB02B3E5-ds,a6),a0
+	lea	(lbL02EB8E-ds,a6),a1
 	moveq	#14,d0
 lbC029A7E	move.b	(a0),(a1)+
 	clr.b	(a0)+
 	dbra	d0,lbC029A7E
-	move.l	(lbL02D2E8-datasegment,a6),(lbL02D388-datasegment,a6)
-	clr.l	(lbL02D2E8-datasegment,a6)
-	clr.l	(lbL02D38C-datasegment,a6)
-	clr.l	(lbL02D390-datasegment,a6)
-	st	(lbB02EB9D-datasegment,a6)
+	move.l	(lbL02D2E8-ds,a6),(lbL02D388-ds,a6)
+	clr.l	(lbL02D2E8-ds,a6)
+	clr.l	(lbL02D38C-ds,a6)
+	clr.l	(lbL02D390-ds,a6)
+	st	(lbB02EB9D-ds,a6)
 lbC029A9C	rts
 
-lbC029A9E	clr.l	(lbL02D128-datasegment,a6)
-	move.l	#$1B0012,(lbW02B478-datasegment,a6)
-	clr.b	(lbB02EBF3-datasegment,a6)
-	tst.b	(lbB02EB9D-datasegment,a6)
+lbC029A9E	clr.l	(lbL02D128-ds,a6)
+	move.l	#$1B0012,(lbW02B478-ds,a6)
+	clr.b	(lbB02EBF3-ds,a6)
+	tst.b	(lbB02EB9D-ds,a6)
 	beq.b	lbC029AD2
-	lea	(lbL02EB8E-datasegment,a6),a0
-	lea	(lbB02B3E5-datasegment,a6),a1
+	lea	(lbL02EB8E-ds,a6),a0
+	lea	(lbB02B3E5-ds,a6),a1
 	moveq	#14,d0
 lbC029ABE	move.b	(a0)+,(a1)+
 	dbra	d0,lbC029ABE
-	move.l	(lbL02D388-datasegment,a6),(lbL02D2E8-datasegment,a6)
+	move.l	(lbL02D388-ds,a6),(lbL02D2E8-ds,a6)
 	bsr.w	lbC029630
-	clr.b	(lbB02EB9D-datasegment,a6)
+	clr.b	(lbB02EB9D-ds,a6)
 lbC029AD2	rts
 
 lbC029AD4	movem.l	d0/a0,-(sp)
@@ -53048,7 +53054,7 @@ lbC029AEC	bsr.w	saveregs_all
 	bra.b	lbC029AFE
 
 lbC029AF4	bsr.w	saveregs_all
-	movea.l	(lbL02B484-datasegment,a6),a5
+	movea.l	(lbL02B484-ds,a6),a5
 	moveq	#11,d2
 lbC029AFE	move.l	(a5),d1
 	clr.l	(a5)+
@@ -53062,7 +53068,7 @@ lbC029AFE	move.l	(a5),d1
 lbC029B12	dbra	d2,lbC029AFE
 	rts
 
-lbC029B18	cmpi.b	#1,(lbB02EB56-datasegment,a6)
+lbC029B18	cmpi.b	#1,(lbB02EB56-ds,a6)
 	beq.b	lbC029B26
 	jmp	(lbC015F68).l
 
@@ -53090,27 +53096,27 @@ m02	MACRO
 	dw	0,0
 
 lbC029B68	move.w	#$2717,d0
-	jsr	(gettextbynum-datasegment,a6)
-	lea	(displayid-datasegment,a6),a0
+	jsr	(gettextbynum-ds,a6)
+	lea	(displayid-ds,a6),a0
 	move.l	a0,d1
 	movem.l	d0/d1/a4,-(sp)
 	movea.l	a0,a4
-	move.l	(lbL02D1DC-datasegment,a6),d0
+	move.l	(workdata_strt_plus1-ds,a6),d0
 	beq.b	lbC029B86
 	subq.l	#1,d0
 	bra.b	lbC029B8A
 
-lbC029B86	move.l	(datasegment-datasegment,a6),d0
+lbC029B86	move.l	(ds-ds,a6),d0
 lbC029B8A	bsr.w	lbC022518
 	clr.b	(a4)
 	movem.l	(sp)+,d0/d1/a4
 	bsr.w	lbC026C74
-	beq.w	lbC02A436
+	beq.w	term2
 	bsr.w	atoi
-	beq.w	_dummy
+	beq.w	cceq
 	addq.l	#1,d0
-	move.l	d0,(lbL02D1DC-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	move.l	d0,(workdata_strt_plus1-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC029BAE	moveq	#$1A,d2
 	bra.b	lbC029BBC
@@ -53122,19 +53128,19 @@ lbC029BB6	moveq	#2,d2
 	bra.b	lbC029BBC
 
 lbC029BBA	moveq	#$19,d2
-lbC029BBC	cmpa.l	(datasegment-datasegment,a6),a2
-	beq.w	_dummy
+lbC029BBC	cmpa.l	(ds-ds,a6),a2
+	beq.w	cceq
 	move.l	a3,d3
-lbC029BC6	jsr	(lbC02A4BE-datasegment,a6)
+lbC029BC6	jsr	(lbC02A4BE-ds,a6)
 	beq.b	lbC029BD8
-	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	jmp	(lbC01C73E).l
 
 lbC029BD8	subq.l	#4,a3
 	move.l	(a3),d7
 	btst	d2,d7
 	bne.b	lbC029BEA
-	cmpa.l	(workdata_end-datasegment,a6),a3
+	cmpa.l	(workdata_struct-ds,a6),a3
 	bne.b	lbC029BC6
 	bra.w	lbC02AEDE
 
@@ -53142,42 +53148,42 @@ lbC029BEA	bsr.w	lbC02A3E6
 	bra.w	lbC02AF74
 
 lbC029BF2	move.w	#$2718,d0
-	jsr	(gettextbynum-datasegment,a6)
+	jsr	(gettextbynum-ds,a6)
 	bsr.w	lbC026C6C
-	beq.w	_dummy
+	beq.w	cceq
 	move.l	a0,d1
 	moveq	#0,d2
 	moveq	#0,d3
 	bsr.w	_Execute
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC029C10	tst.b	(lbB02EB41-datasegment,a6)
-	bne.w	_dummy
-	st	(lbB02B422-datasegment,a6)
-	clr.b	(lbB02B423-datasegment,a6)
+lbC029C10	tst.b	(lbB02EB41-ds,a6)
+	bne.w	cceq
+	st	(lbB02B422-ds,a6)
+	clr.b	(lbB02B423-ds,a6)
 	moveq	#1,d1
 	bra.b	lbC029C36
 
-lbC029C24	tst.b	(lbB02EB41-datasegment,a6)
-	bne.w	_dummy
-	clr.b	(lbB02B422-datasegment,a6)
-	st	(lbB02B423-datasegment,a6)
+lbC029C24	tst.b	(lbB02EB41-ds,a6)
+	bne.w	cceq
+	clr.b	(lbB02B422-ds,a6)
+	st	(lbB02B423-ds,a6)
 	moveq	#0,d1
 lbC029C36	move.w	#$22C,d0
-	jsr	(lbC02A686-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	jsr	(lbC02A686-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
-lbC029C42	tst.b	(lbB02EB4B-datasegment,a6)
-	beq.w	_dummy
-	movea.l	(lbL02D0FC-datasegment,a6),a0
+lbC029C42	tst.b	(lbB02EB4B-ds,a6)
+	beq.w	cceq
+	movea.l	(lbL02D0FC-ds,a6),a0
 	move.w	#$7FFD,(-2,a0)
 	andi.b	#$FB,ccr
 	rts
 
 lbC029C5A	bsr.w	saveregs_all
-	movea.l	(lbL02B484-datasegment,a6),a5
+	movea.l	(lbL02B484-ds,a6),a5
 	moveq	#11,d2
-	movea.l	(lbL02D0C0-datasegment,a6),a0
+	movea.l	(lbL02D0C0-ds,a6),a0
 	move.l	#$200,d1
 lbC029C6E	lea	(UNNAMED.MSG,pc),a3
 	movea.l	(12,a5),a2
@@ -53218,23 +53224,23 @@ AFLINEmacrodc.MSG	db	'AFLINE              macro',$A
 	db	'                    dc.w     \1',$A
 	db	'                    endm',$A,0
 
-lbC029D66	st	(lbB02EB73-datasegment,a6)
+lbC029D66	st	(lbB02EB73-ds,a6)
 	bra.b	lbC029D70
 
-lbC029D6C	clr.b	(lbB02EB73-datasegment,a6)
-lbC029D70	move.b	(lbB02EB56-datasegment,a6),(lbB02EB3D).l
+lbC029D6C	clr.b	(lbB02EB73-ds,a6)
+lbC029D70	move.b	(lbB02EB56-ds,a6),(lbB02EB3D).l
 	movem.l	a2/a3,-(sp)
-	clr.l	(lbB02D118-datasegment,a6)
-	jsr	(lbC02A87E-datasegment,a6)
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB3D-datasegment,a6)
-	move.l	(lbB02D118-datasegment,a6),d0
+	clr.l	(lbB02D118-ds,a6)
+	jsr	(lbC02A87E-ds,a6)
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB3D-ds,a6)
+	move.l	(lbB02D118-ds,a6),d0
 	beq.b	lbC029DBA
 	movea.l	d0,a2
 	bsr.w	lbC02A3CC
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	moveq	#1,d1
-	tst.b	(lbB02EB73-datasegment,a6)
+	tst.b	(lbB02EB73-ds,a6)
 	beq.b	lbC029DB6
 	movem.l	d0-d2/a2/a3,-(sp)
 	bsr.w	lbC02777C
@@ -53243,7 +53249,7 @@ lbC029D70	move.b	(lbB02EB56-datasegment,a6),(lbB02EB3D).l
 lbC029DB2	movem.l	(sp)+,d0-d2/a2/a3
 lbC029DB6	bsr.w	lbC027684
 lbC029DBA	movem.l	(sp)+,a2/a3
-	jmp	(lbC02A422-datasegment,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC029DC2	bsr.w	saveregs_all
 	moveq	#2,d1
@@ -53256,60 +53262,60 @@ lbC029DCE	moveq	#3,d1
 lbC029DD2	bsr.w	saveregs_all
 	moveq	#0,d1
 lbC029DD8	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
+	sub.l	(ds-ds,a6),d0
 	bsr.w	lbC027684
-	st	(lbB02EB48-datasegment,a6)
+	st	(lbB02EB48-ds,a6)
 	rts
 
 lbC029DE8	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02B4C8-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02B4C8-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC029DF6	move.l	a2,d0
-	sub.l	(datasegment-datasegment,a6),d0
-	move.l	d0,(lbL02B4CC-datasegment,a6)
-	jmp	(lbC02A422-datasegment,a6)
+	sub.l	(ds-ds,a6),d0
+	move.l	d0,(lbL02B4CC-ds,a6)
+	jmp	(lbC02A422-ds,a6)
 
 lbC029E04	movem.l	d0-d2/a0-a2/a5/a6,-(sp)
 	movea.l	a6,a5
-	movea.l	(intbase-datasegment,a5),a6
-	lea	(lbL02AFF0-datasegment,a5),a2
-	move.l	(window1ptr-datasegment,a5),d2
+	movea.l	(intbase-ds,a5),a6
+	lea	(lbL02AFF0-ds,a5),a2
+	move.l	(window1ptr-ds,a5),d2
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
-	lea	(lbL02B060-datasegment,a5),a2
-	move.l	(symwindowptr-datasegment,a5),d2
+	lea	(lbL02B060-ds,a5),a2
+	move.l	(symwindowptr-ds,a5),d2
 	beq.b	lbC029E28
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
-lbC029E28	lea	(lbL02B0D0-datasegment,a5),a2
-	move.l	(window2ptr-datasegment,a5),d2
+lbC029E28	lea	(lbL02B0D0-ds,a5),a2
+	move.l	(window2ptr-ds,a5),d2
 	beq.b	lbC029E36
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
-lbC029E36	lea	(lbL02B140-datasegment,a5),a2
-	move.l	(window3ptr-datasegment,a5),d2
+lbC029E36	lea	(lbL02B140-ds,a5),a2
+	move.l	(window3ptr-ds,a5),d2
 	beq.b	lbC029E44
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
-lbC029E44	lea	(lbL02B1B0-datasegment,a5),a2
-	move.l	(window4ptr-datasegment,a5),d2
+lbC029E44	lea	(lbL02B1B0-ds,a5),a2
+	move.l	(window4ptr-ds,a5),d2
 	beq.b	lbC029E52
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
-lbC029E52	lea	(lbL02B220-datasegment,a5),a2
-	move.l	(window5ptr-datasegment,a5),d2
+lbC029E52	lea	(lbL02B220-ds,a5),a2
+	move.l	(window5ptr-ds,a5),d2
 	beq.b	lbC029E60
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
-lbC029E60	lea	(lbL02B290-datasegment,a5),a2
-	move.l	(window6ptr-datasegment,a5),d2
+lbC029E60	lea	(lbL02B290-ds,a5),a2
+	move.l	(window6ptr-ds,a5),d2
 	beq.b	lbC029E6E
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
-lbC029E6E	lea	(lbL02B300-datasegment,a5),a2
-	move.l	(window7ptr-datasegment,a5),d2
+lbC029E6E	lea	(lbL02B300-ds,a5),a2
+	move.l	(window7ptr-ds,a5),d2
 	beq.b	lbC029E7C
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
@@ -53327,43 +53333,43 @@ _InitRequester	movea.l	a2,a0
 
 lbC029E98	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
 	movea.l	a6,a5
-	lea	(lbL02AFF0-datasegment,a5),a0
-	movea.l	(window1ptr-datasegment,a5),a1
-	movea.l	(intbase-datasegment,a5),a6
+	lea	(lbL02AFF0-ds,a5),a0
+	movea.l	(window1ptr-ds,a5),a1
+	movea.l	(intbase-ds,a5),a6
 	jsr	(_LVOEndRequest,a6)
-	move.l	(symwindowptr-datasegment,a5),d0
+	move.l	(symwindowptr-ds,a5),d0
 	beq.b	lbC029EBE
-	lea	(lbL02B060-datasegment,a5),a0
+	lea	(lbL02B060-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EBE	move.l	(window2ptr-datasegment,a5),d0
+lbC029EBE	move.l	(window2ptr-ds,a5),d0
 	beq.b	lbC029ECE
-	lea	(lbL02B0D0-datasegment,a5),a0
+	lea	(lbL02B0D0-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029ECE	move.l	(window3ptr-datasegment,a5),d0
+lbC029ECE	move.l	(window3ptr-ds,a5),d0
 	beq.b	lbC029EDE
-	lea	(lbL02B140-datasegment,a5),a0
+	lea	(lbL02B140-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EDE	move.l	(window4ptr-datasegment,a5),d0
+lbC029EDE	move.l	(window4ptr-ds,a5),d0
 	beq.b	lbC029EEE
-	lea	(lbL02B1B0-datasegment,a5),a0
+	lea	(lbL02B1B0-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EEE	move.l	(window5ptr-datasegment,a5),d0
+lbC029EEE	move.l	(window5ptr-ds,a5),d0
 	beq.b	lbC029EFE
-	lea	(lbL02B220-datasegment,a5),a0
+	lea	(lbL02B220-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EFE	move.l	(window6ptr-datasegment,a5),d0
+lbC029EFE	move.l	(window6ptr-ds,a5),d0
 	beq.b	lbC029F0E
-	lea	(lbL02B290-datasegment,a5),a0
+	lea	(lbL02B290-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029F0E	move.l	(window7ptr-datasegment,a5),d0
+lbC029F0E	move.l	(window7ptr-ds,a5),d0
 	beq.b	lbC029F1E
-	lea	(lbL02B300-datasegment,a5),a0
+	lea	(lbL02B300-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
 lbC029F1E	movem.l	(sp)+,d0/d1/a0/a1/a5/a6
@@ -53373,28 +53379,28 @@ _SetPointerAll	movem.l	d0-d3/a0/a1/a5/a6,-(sp)
 	movea.l	a6,a5
 	moveq	#-6,d2
 	moveq	#0,d3
-	movea.l	(intbase-datasegment,a5),a6
-	move.l	(window1ptr-datasegment,a5),d0
+	movea.l	(intbase-ds,a5),a6
+	move.l	(window1ptr-ds,a5),d0
 	bsr.w	_SetPointer
-	move.l	(symwindowptr-datasegment,a5),d0
+	move.l	(symwindowptr-ds,a5),d0
 	beq.b	lbC029F42
 	bsr.b	_SetPointer
-lbC029F42	move.l	(window2ptr-datasegment,a5),d0
+lbC029F42	move.l	(window2ptr-ds,a5),d0
 	beq.b	lbC029F4A
 	bsr.b	_SetPointer
-lbC029F4A	move.l	(window3ptr-datasegment,a5),d0
+lbC029F4A	move.l	(window3ptr-ds,a5),d0
 	beq.b	lbC029F52
 	bsr.b	_SetPointer
-lbC029F52	move.l	(window4ptr-datasegment,a5),d0
+lbC029F52	move.l	(window4ptr-ds,a5),d0
 	beq.b	lbC029F5A
 	bsr.b	_SetPointer
-lbC029F5A	move.l	(window5ptr-datasegment,a5),d0
+lbC029F5A	move.l	(window5ptr-ds,a5),d0
 	beq.b	lbC029F62
 	bsr.b	_SetPointer
-lbC029F62	move.l	(window6ptr-datasegment,a5),d0
+lbC029F62	move.l	(window6ptr-ds,a5),d0
 	beq.b	lbC029F6A
 	bsr.b	_SetPointer
-lbC029F6A	move.l	(window7ptr-datasegment,a5),d0
+lbC029F6A	move.l	(window7ptr-ds,a5),d0
 	beq.b	lbC029F72
 	bsr.b	_SetPointer
 lbC029F72	movem.l	(sp)+,d0-d3/a0/a1/a5/a6
@@ -53402,7 +53408,7 @@ lbC029F72	movem.l	(sp)+,d0-d3/a0/a1/a5/a6
 	rts
 
 _SetPointer	movea.l	d0,a0	;window
-	lea	(lbL039EC4).l,a1	;pointer
+	lea	(pointerdata).l,a1	;pointer
 	moveq	#$10,d0	;height
 	moveq	#$10,d1	;width
 	jsr	(_LVOSetPointer,a6)
@@ -53410,28 +53416,28 @@ _SetPointer	movea.l	d0,a0	;window
 
 _ClearPointerAll	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
 	movea.l	a6,a5
-	movea.l	(intbase-datasegment,a5),a6
-	move.l	(window1ptr-datasegment,a5),d0
+	movea.l	(intbase-ds,a5),a6
+	move.l	(window1ptr-ds,a5),d0
 	bsr.b	_ClearPointer
-	move.l	(symwindowptr-datasegment,a5),d0
+	move.l	(symwindowptr-ds,a5),d0
 	beq.b	lbC029FA6
 	bsr.b	_ClearPointer
-lbC029FA6	move.l	(window2ptr-datasegment,a5),d0
+lbC029FA6	move.l	(window2ptr-ds,a5),d0
 	beq.b	lbC029FAE
 	bsr.b	_ClearPointer
-lbC029FAE	move.l	(window3ptr-datasegment,a5),d0
+lbC029FAE	move.l	(window3ptr-ds,a5),d0
 	beq.b	lbC029FB6
 	bsr.b	_ClearPointer
-lbC029FB6	move.l	(window4ptr-datasegment,a5),d0
+lbC029FB6	move.l	(window4ptr-ds,a5),d0
 	beq.b	lbC029FBE
 	bsr.b	_ClearPointer
-lbC029FBE	move.l	(window5ptr-datasegment,a5),d0
+lbC029FBE	move.l	(window5ptr-ds,a5),d0
 	beq.b	lbC029FC6
 	bsr.b	_ClearPointer
-lbC029FC6	move.l	(window6ptr-datasegment,a5),d0
+lbC029FC6	move.l	(window6ptr-ds,a5),d0
 	beq.b	lbC029FCE
 	bsr.b	_ClearPointer
-lbC029FCE	move.l	(window7ptr-datasegment,a5),d0
+lbC029FCE	move.l	(window7ptr-ds,a5),d0
 	beq.b	lbC029FD6
 	bsr.b	_ClearPointer
 lbC029FD6	movem.l	(sp)+,d0/d1/a0/a1/a5/a6
@@ -53442,26 +53448,26 @@ _ClearPointer	movea.l	d0,a0
 	jsr	(_LVOClearPointer,a6)
 	rts
 
-lbC029FE8	move.b	(dl.MSG-datasegment,a6),(a4)+
-	cmp.b	(sc.MSG-datasegment,a6),d0
+lbC029FE8	move.b	(dl.MSG-ds,a6),(a4)+
+	cmp.b	(sc.MSG-ds,a6),d0
 	beq.b	lbC02A00A
-	cmp.b	(dl.MSG-datasegment,a6),d0
+	cmp.b	(dl.MSG-ds,a6),d0
 	beq.b	lbC02A00A
-	cmp.b	(xpsc.MSG-datasegment,a6),d0
+	cmp.b	(xpsc.MSG-ds,a6),d0
 	beq.b	lbC02A00A
-	cmp.b	(ps.MSG-datasegment,a6),d0
+	cmp.b	(ps.MSG-ds,a6),d0
 	beq.b	lbC02A00A
-	tst.b	(lbB02B46D-datasegment,a6)
+	tst.b	(lbB02B46D-ds,a6)
 	beq.b	lbC02A014
-lbC02A00A	move.b	(cx.MSG-datasegment,a6),(a4)+
+lbC02A00A	move.b	(cx.MSG-ds,a6),(a4)+
 	move.b	#$2E,(a4)+
 	addq.w	#2,d6
 lbC02A014	move.b	d0,(a4)+
 	addq.w	#2,d6
-setspacepostopcode	move.w	(lbW02B478-datasegment,a6),d0
+setspacepostopcode	move.w	(lbW02B478-ds,a6),d0
 	beq.b	lbC02A058
 	move.b	#1,(a4)+
-	btst	#3,(lbW02D0EE-datasegment,a6)
+	btst	#3,(lbW02D0EE-ds,a6)
 	bne.b	lbC02A048
 lbC02A02A	sub.w	d6,d0
 	bpl.b	lbC02A030
@@ -53470,24 +53476,24 @@ lbC02A030	moveq	#$20,d6
 lbC02A032	move.b	d6,(a4)+
 	dbra	d0,lbC02A032
 	moveq	#$1E,d6
-	move.l	a4,(lbB02D37C-datasegment,a6)
-	move.w	d6,(lbB02D3AA-datasegment,a6)
+	move.l	a4,(lbB02D37C-ds,a6)
+	move.w	d6,(lbB02D3AA-ds,a6)
 	move.b	#1,(a4)+
 	rts
 
-lbC02A048	tst.b	(lbB02B3EF-datasegment,a6)
+lbC02A048	tst.b	(lbB02B3EF-ds,a6)
 	beq.b	lbC02A02A
-	addq.l	#1,(lbW02D24C-datasegment,a6)
+	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#2,(a4)+
 	bra.b	lbC02A02A
 
 lbC02A058	moveq	#$1C,d0
-	tst.b	(lbB02EB46-datasegment,a6)
+	tst.b	(lbB02EB46-ds,a6)
 	bne.b	lbC02A070
 	move.b	#9,(a4)+
 	moveq	#$1E,d6
-	move.l	a4,(lbB02D37C-datasegment,a6)
-	move.w	d6,(lbB02D3AA-datasegment,a6)
+	move.l	a4,(lbB02D37C-ds,a6)
+	move.w	d6,(lbB02D3AA-ds,a6)
 	rts
 
 lbC02A070	sub.w	d6,d0
@@ -53497,38 +53503,38 @@ lbC02A076	moveq	#$20,d6
 lbC02A078	move.b	d6,(a4)+
 	dbra	d0,lbC02A078
 	moveq	#$1E,d6
-	move.l	a4,(lbB02D37C-datasegment,a6)
-	move.w	d6,(lbB02D3AA-datasegment,a6)
+	move.l	a4,(lbB02D37C-ds,a6)
+	move.w	d6,(lbB02D3AA-ds,a6)
 	rts
 
-lbC02A08A	addq.l	#1,(lbW02D24C-datasegment,a6)
+lbC02A08A	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#2,(a4)+
 lbC02A092	andi.l	#$300,d1
 	beq.b	lbC02A0C6
 lbC02A09A	bsr.b	lbC02A0E0
-	move.l	(lbL02D38C-datasegment,a6),d0
+	move.l	(lbL02D38C-ds,a6),d0
 	and.l	(a3),d0
 	bne.b	lbC02A0AA
 	move.b	#1,(a4)+
 	rts
 
-lbC02A0AA	addq.l	#1,(lbW02D24C-datasegment,a6)
+lbC02A0AA	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#2,(a4)+
 	andi.l	#$C000,d1
 	beq.b	lbC02A0BC
 	rts
 
-lbC02A0BC	addq.l	#2,(lbB02D37C-datasegment,a6)
+lbC02A0BC	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#3,(a4)+
 	rts
 
-lbC02A0C6	addq.l	#2,(lbB02D37C-datasegment,a6)
+lbC02A0C6	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#3,(-1,a4)
 	bra.b	lbC02A09A
 
-lbC02A0D2	move.w	(lbW02B47A-datasegment,a6),d0
+lbC02A0D2	move.w	(lbW02B47A-ds,a6),d0
 	beq.b	lbC02A118
-	move.l	(lbL02D390-datasegment,a6),d1
+	move.l	(lbL02D390-ds,a6),d1
 	and.l	(a3),d1
 	bne.b	lbC02A08A
 lbC02A0E0	sub.w	d6,d0
@@ -53538,23 +53544,23 @@ lbC02A0E6	move.b	d6,(a4)+
 	dbra	d0,lbC02A0E6
 lbC02A0EC	move.b	#$20,(a4)+
 	moveq	#$14,d6
-	move.l	(lbL02D38C-datasegment,a6),d0
+	move.l	(lbL02D38C-ds,a6),d0
 	and.l	(a3),d0
 	bne.b	lbC02A0FC
 	rts
 
-lbC02A0FC	addq.l	#1,(lbW02D24C-datasegment,a6)
+lbC02A0FC	addq.l	#1,(lbW02D24C-ds,a6)
 	move.b	#2,(a4)+
 	andi.l	#$C000,d0
 	beq.b	lbC02A10E
 	rts
 
-lbC02A10E	addq.l	#2,(lbB02D37C-datasegment,a6)
+lbC02A10E	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#3,(a4)+
 lbC02A116	rts
 
 lbC02A118	moveq	#$12,d0
-	tst.b	(lbB02EB46-datasegment,a6)
+	tst.b	(lbB02EB46-ds,a6)
 	bne.b	lbC02A128
 	move.b	#9,(a4)+
 	moveq	#$14,d6
@@ -53570,73 +53576,73 @@ lbC02A138	moveq	#$14,d6
 	rts
 
 lbC02A13C	addq.w	#1,d6
-	tst.w	(lbW02B478-datasegment,a6)
+	tst.w	(lbW02B478-ds,a6)
 	beq.b	lbC02A14A
 lbC02A144	move.b	#$20,(a4)+
 	rts
 
-lbC02A14A	tst.b	(lbB02EB46-datasegment,a6)
+lbC02A14A	tst.b	(lbB02EB46-ds,a6)
 	bne.b	lbC02A144
 	move.b	#9,(a4)+
 	rts
 
 dosclose	tst.l	d1
 	beq.w	lbC02A462
-	movea.l	(dosbase-datasegment,a6),a6
+	movea.l	(dosbase-ds,a6),a6
 lbC02A160	jsr	(_LVOClose,a6)
 	bra.w	inita6
 
-_CloseDevice	movea.l	(execbase-datasegment,a6),a6
+_CloseDevice	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOCloseDevice,a6)
 	bra.w	inita6
 
 _CloseLibrary	move.l	a1,d0
 	beq.b	_inita6
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOCloseLibrary,a6)
 _inita6	bra.w	inita6
 
-_CopyMem	movea.l	(execbase-datasegment,a6),a6
+_CopyMem	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOCopyMem,a6)
 	bra.w	inita6
 
-_CopyMemQuick	movea.l	(execbase-datasegment,a6),a6
+_CopyMemQuick	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOCopyMemQuick,a6)
 	bra.w	inita6
 
-dosdelay	movea.l	(dosbase-datasegment,a6),a6
+dosdelay	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVODelay,a6)
 	bra.w	inita6
 
-_DeleteFile	movea.l	(dosbase-datasegment,a6),a6
+_DeleteFile	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVODeleteFile,a6)
 	bra.w	inita6
 
-lbC02A1B4	tst.b	(lbB02EB43-datasegment,a6)
+lbC02A1B4	tst.b	(lbB02EB43-ds,a6)
 	bne.b	lbC02A1BE
-	tst.b	(lbB02EB9E-datasegment,a6)
+	tst.b	(lbB02EB9E-ds,a6)
 lbC02A1BE	bne.w	lbC02A462
-	tst.b	(lbB02EBF0-datasegment,a6)
+	tst.b	(lbB02EBF0-ds,a6)
 	bne.w	lbC02A462
-lbC02A1CA	tst.b	(lbB02EB4A-datasegment,a6)
+lbC02A1CA	tst.b	(lbB02EB4A-ds,a6)
 	bne.w	lbC02A462
 	bsr.w	saveregs_all
-_DisplayBeep	movea.l	(screenptr-datasegment,a6),a0
-	movea.l	(intbase-datasegment,a6),a6
+_DisplayBeep	movea.l	(screenptr-ds,a6),a0
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVODisplayBeep,a6)
 	bra.b	inita6
 
 _DoIO	movem.l	d0/d1/a0/a1/a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVODoIO,a6)
 	movem.l	(sp)+,d0/d1/a0/a1/a6
 	rts
 
-_Examine	movea.l	(dosbase-datasegment,a6),a6
+_Examine	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOExamine,a6)
 	bra.b	inita6
 
-_Execute	movea.l	(dosbase-datasegment,a6),a6
+_Execute	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOExecute,a6)
 	tst.l	d0
 	bra.b	inita6
@@ -53645,82 +53651,82 @@ _FreeMem	tst.l	d0
 	beq.w	lbC02A462
 	cmpa.l	#0,a1
 	beq.w	lbC02A462
-lbC02A21C	movea.l	(execbase-datasegment,a6),a6
+lbC02A21C	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeMem,a6)
-inita6	lea	(datasegment,pc),a6
+inita6	lea	(ds,pc),a6
 lbC02A228	rts
 
-_WaitPort	movea.l	(execbase-datasegment,a6),a6
+_WaitPort	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOWaitPort,a6)
 	bra.b	inita6
 
-_FreeSignal	movea.l	(execbase-datasegment,a6),a6
+_FreeSignal	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeSignal,a6)
 	bra.b	inita6
 
-_IoErr	movea.l	(dosbase-datasegment,a6),a6
+_IoErr	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOIoErr,a6)
 	bra.b	inita6
 
-_Lock	moveq	#-2,d2
-	movea.l	(dosbase-datasegment,a6),a6
+_Lock	moveq	#SHARED_LOCK,d2
+	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOLock,a6)
 	bra.b	inita6
 
-_OpenDevice	movea.l	(execbase-datasegment,a6),a6
+_OpenDevice	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOOpenDevice,a6)
 	bra.b	inita6
 
-_LoadSeg	movea.l	(dosbase-datasegment,a6),a6
+_LoadSeg	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOLoadSeg,a6)
 	bra.b	inita6
 
-_UnLoadSeg	movea.l	(dosbase-datasegment,a6),a6
+_UnLoadSeg	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOUnLoadSeg,a6)
 	bra.b	inita6
 
 lbC02A272	move.w	#$1F41,d0
 	bsr.w	gettextbynum
-	move.l	d0,(lbB02D124-datasegment,a6)
+	move.l	d0,(error_text-ds,a6)
 	move.l	#MODE_OLDFILE,d2
 	bra.b	lbC02A28C
 
 lbC02A286	move.l	#MODE_NEWFILE,d2
-lbC02A28C	move.l	d1,(lbB02D2B4-datasegment,a6)
-	clr.b	(lbB02EB62-datasegment,a6)
+lbC02A28C	move.l	d1,(lbB02D2B4-ds,a6)
+	clr.b	(lbB02EB62-ds,a6)
 lbC02A294	movea.l	d1,a0
 	cmpi.b	#$2A,(a0)
 	bne.b	lbC02A2B6
 	cmpi.b	#$3E,(1,a0)
 	bne.b	lbC02A2B6
 	lea	(2,a0),a1
-	st	(lbB02EB62-datasegment,a6)
+	st	(lbB02EB62-ds,a6)
 	move.l	#$3ED,d2
 lbC02A2B2	move.b	(a1)+,(a0)+
 lbC02A2B4	bne.b	lbC02A2B2
 lbC02A2B6	move.l	a6,-(sp)
-	movea.l	(dosbase-datasegment,a6),a6
+	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOOpen,a6)
 lbC02A2C0	movea.l	(sp)+,a6
-	tst.b	(lbB02EB62-datasegment,a6)
+	tst.b	(lbB02EB62-ds,a6)
 	beq.b	lbC02A2EE
 	tst.l	d0
 	bne.b	lbC02A2D8
 lbC02A2CC	move.l	#$3EE,d2
-	move.l	(lbB02D2B4-datasegment,a6),d1
+	move.l	(lbB02D2B4-ds,a6),d1
 	bra.b	lbC02A294
 
 lbC02A2D8	movem.l	d0/d3/a6,-(sp)
 lbC02A2DC	move.l	d0,d1
 	moveq	#0,d2
 	moveq	#1,d3
-	movea.l	(dosbase-datasegment,a6),a6
+	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOSeek,a6)
 	movem.l	(sp)+,d0/d3/a6
 lbC02A2EE	rts
 
 _cmpstr	movem.l	d0/d1/a0-a2,-(sp)
-	tst.b	(case_sensitive_flag-datasegment,a6)
+	tst.b	(case_sensitive_flag-ds,a6)
 	beq.b	lbC02A308
 lbC02A2FA	move.b	(a0)+,d0
 	beq.b	lbC02A32C
@@ -53751,46 +53757,46 @@ lbC02A330	movem.l	(sp)+,d0/d1/a0-a2
 _MatchPattern	movem.l	d1/d2/a0/a1/a6,-(sp)
 	move.l	a0,d1
 	move.l	a1,d2
-	tst.b	(case_sensitive_flag-datasegment,a6)
+	tst.b	(case_sensitive_flag-ds,a6)
 	bne.b	lbC02A34E
-	movea.l	(dosbase-datasegment,a6),a6
+	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOMatchPatternNoCase,a6)
 	bra.b	lbC02A356
 
-lbC02A34E	movea.l	(dosbase-datasegment,a6),a6
+lbC02A34E	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOMatchPattern,a6)
 lbC02A356	tst.l	d0
 	movem.l	(sp)+,d1/d2/a0/a1/a6
 	rts
 
-_Read	movea.l	(dosbase-datasegment,a6),a6
+_Read	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVORead,a6)
 	bra.w	inita6
 
-_Forbid	movea.l	(execbase-datasegment,a6),a6
+_Forbid	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOForbid,a6)
 	bra.w	inita6
 
 _Permit	movem.l	d0/a6,-(sp)
-	movea.l	(execbase-datasegment,a6),a6
+	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOPermit,a6)
 	movem.l	(sp)+,d0/a6
 	rts
 
-lbC02A388	tst.l	d1
+_UnLock_ifd1	tst.l	d1
 	bne.b	_UnLock
 	rts
 
-_UnLock	movea.l	(dosbase-datasegment,a6),a6
+_UnLock	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOUnLock,a6)
 	bra.w	inita6
 
-_Write	movea.l	(dosbase-datasegment,a6),a6
+_Write	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOWrite,a6)
 	bra.w	inita6
 
 _RawDoFmt	movem.l	a2/a3/a6,-(sp)
-	lea	(_RawDoFmt_args-datasegment,a6),a1
+	lea	(_RawDoFmt_args-ds,a6),a1
 	movea.l	a2,a3
 	lea	(_putcharfunc,pc),a2
 	movea.l	(4).w,a6
@@ -53801,19 +53807,19 @@ _RawDoFmt	movem.l	a2/a3/a6,-(sp)
 _putcharfunc	move.b	d0,(a3)+
 	rts
 
-lbC02A3C6	move.b	#1,(lbB02EB48-datasegment,a6)
+lbC02A3C6	move.b	#1,(lbB02EB48-ds,a6)
 lbC02A3CC	movea.l	a2,a3
-	suba.l	(datasegment-datasegment,a6),a3
+	suba.l	(ds-ds,a6),a3
 	adda.l	a3,a3
 	adda.l	a3,a3
-	adda.l	(workdata_end,pc),a3
+	adda.l	(workdata_struct,pc),a3
 	move.l	(a3),d7
 	andi.b	#$FB,ccr
 	rts
 
-lbC02A3E2	st	(lbB02EB48-datasegment,a6)
+lbC02A3E2	st	(lbB02EB48-ds,a6)
 lbC02A3E6	move.l	a3,d1
-	sub.l	(workdata_end,pc),d1
+	sub.l	(workdata_struct,pc),d1
 	lsr.l	#2,d1
 	add.l	(0,a6),d1
 	movea.l	d1,a2
@@ -53821,29 +53827,29 @@ lbC02A3E6	move.l	a3,d1
 	rts
 
 lbC02A3F8	movem.l	d2-d7/a0-a3,-(sp)
-	move.b	(lbB02EB56-datasegment,a6),(lbB02EB3D).l
-	clr.l	(lbB02D118-datasegment,a6)
-	jsr	(lbC02A87E-datasegment,a6)
-	clr.b	(lbB02EB63-datasegment,a6)
-	clr.b	(lbB02EB3D-datasegment,a6)
-	move.l	(lbB02D120-datasegment,a6),d1
-	move.l	(lbB02D118-datasegment,a6),d0
+	move.b	(lbB02EB56-ds,a6),(lbB02EB3D).l
+	clr.l	(lbB02D118-ds,a6)
+	jsr	(lbC02A87E-ds,a6)
+	clr.b	(lbB02EB63-ds,a6)
+	clr.b	(lbB02EB3D-ds,a6)
+	move.l	(lbB02D120-ds,a6),d1
+	move.l	(lbB02D118-ds,a6),d0
 	movem.l	(sp)+,d2-d7/a0-a3
 lbC02A420	rts
 
-lbC02A422	move.b	#$FF,(lbB02EB48-datasegment,a6)
+lbC02A422	move.b	#$FF,(lbB02EB48-ds,a6)	;must not be optimized to st because cceq must be cleared
 lbC02A428	rts
 
 lbC02A42A	andi.b	#$FB,ccr
 	rts
 
-lbC02A430	beq.b	lbC02A434
+term2_if_cceq	beq.b	term2_pop
 	rts
 
-lbC02A434	addq.l	#4,sp
-lbC02A436	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
-_dummy_st	st	(lbB02EB48-datasegment,a6)
-_dummy	cmp.l	d0,d0
+term2_pop	addq.l	#4,sp
+term2	move.w	#$7FFE,(lbW02EAC8-ds,a6)
+term1	st	(lbB02EB48-ds,a6)
+cceq	cmp.l	d0,d0
 	rts
 
 __IoErr	bsr.w	_IoErr
@@ -53877,25 +53883,25 @@ saveregs_all	lea	(-$40,sp),sp
 lbC02A4A0	movem.l	(sp)+,d0-d7/a0-a6
 	rts
 
-lbC02A4A6	tst.b	(lbB02EB4B-datasegment,a6)
+lbC02A4A6	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC02A4B2
 	bsr.w	lbC02A1B4
 	bra.b	lbC02A4B6
 
 lbC02A4B2	bsr.w	lbC02A1CA
-lbC02A4B6	move.w	#$7FFE,(lbW02EAC8-datasegment,a6)
+lbC02A4B6	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	rts
 
 lbC02A4BE	move.l	a0,-(sp)
-	movea.l	(menustrip-datasegment,a6),a0
+	movea.l	(menustrip-ds,a6),a0
 	movea.l	($12,a0),a0
 	btst	#0,(12,a0)
-	sne	(lbB02EB45-datasegment,a6)
+	sne	(lbB02EB45-ds,a6)
 	movea.l	(sp)+,a0
 	rts
 
 __ClearMenuStrip	move.l	a0,-(sp)
-	movea.l	(menustrip-datasegment,a6),a0
+	movea.l	(menustrip-ds,a6),a0
 	movea.l	($12,a0),a0
 	moveq	#0,d0
 	bsr.w	_ClearMenuStrip
@@ -53904,32 +53910,32 @@ __ClearMenuStrip	move.l	a0,-(sp)
 
 lbC02A4EA	movem.l	d0-d2/a0-a3,-(sp)
 	moveq	#1,d2
-	move.b	d2,(lbB02EB4B-datasegment,a6)
+	move.b	d2,(lbB02EB4B-ds,a6)
 	bsr.b	lbC02A52A
-	move.l	(lbB02CF86-datasegment,a6),d0
+	move.l	(lbB02CF86-ds,a6),d0
 	bsr.b	lbC02A562
 	movem.l	(sp)+,d0-d2/a0-a3
 	rts
 
 lbC02A502	movem.l	d0-d2/a0-a3,-(sp)
 	moveq	#0,d2
-	move.b	d2,(lbB02EB4B-datasegment,a6)
+	move.b	d2,(lbB02EB4B-ds,a6)
 	bsr.b	lbC02A52A
-	lea	(window3ptr-datasegment,a6),a0
-	move.w	(macros_num-datasegment,a6),d0
+	lea	(window3ptr-ds,a6),a0
+	move.w	(macros_num-ds,a6),d0
 	lsl.w	#2,d0
 	move.l	(a0,d0.w),d0
 	bsr.b	lbC02A562
 	moveq	#-1,d0
-	move.l	d0,(macros_num-datasegment,a6)
+	move.l	d0,(macros_num-ds,a6)
 	movem.l	(sp)+,d0-d2/a0-a3
 	rts
 
-lbC02A52A	move.l	(window3ptr-datasegment,a6),d0
+lbC02A52A	move.l	(window3ptr-ds,a6),d0
 	bsr.b	lbC02A53A
-	move.l	(window4ptr-datasegment,a6),d0
+	move.l	(window4ptr-ds,a6),d0
 	bsr.b	lbC02A53A
-	move.l	(window5ptr-datasegment,a6),d0
+	move.l	(window5ptr-ds,a6),d0
 lbC02A53A	beq.b	lbC02A560
 	movea.l	d0,a3
 	movea.l	($78,a3),a0
@@ -54003,7 +54009,7 @@ lbC02A5FA	movem.l	(sp)+,d0-d2/a0-a2/a6
 lbC02A600	movem.l	d0/d1/a0-a2/a6,-(sp)
 	movea.l	a6,a2
 	movea.l	($26D2,a2),a0
-lbC02A60A	movea.l	(intbase-datasegment,a2),a6
+lbC02A60A	movea.l	(intbase-ds,a2),a6
 	jsr	(_LVOClearMenuStrip,a6)
 	movea.l	(12,sp),a1
 	move.l	(sp),(12,a1)
@@ -54015,8 +54021,8 @@ lbC02A60A	movea.l	(intbase-datasegment,a2),a6
 
 _ClearMenuStrip	movem.l	d0/d1/a0-a2/a6,-(sp)
 	movea.l	a6,a2
-	movea.l	(window1ptr-datasegment,a2),a0
-	movea.l	(intbase-datasegment,a2),a6
+	movea.l	(window1ptr-ds,a2),a0
+	movea.l	(intbase-ds,a2),a6
 	jsr	(_LVOClearMenuStrip,a6)
 	movea.l	(8,sp),a0
 	move.l	(sp),d0
@@ -54026,13 +54032,13 @@ _ClearMenuStrip	movem.l	d0/d1/a0-a2/a6,-(sp)
 	bra.b	lbC02A656
 
 lbC02A650	bset	#HIGHIMAGE,(mi_Flags,a0)
-lbC02A656	movea.l	(window1ptr-datasegment,a2),a0
-	movea.l	(menustrip-datasegment,a2),a1
+lbC02A656	movea.l	(window1ptr-ds,a2),a0
+	movea.l	(menustrip-ds,a2),a1
 	jsr	(_LVOResetMenuStrip,a6)
 	movem.l	(sp)+,d0/d1/a0-a2/a6
 	rts
 
-ModifyMenuByList	tst.b	(lbB02EBF4-datasegment,a6)
+ModifyMenuByList	tst.b	(lbB02EBF4-ds,a6)
 	bne.b	lbC02A684
 	move.l	a2,-(sp)
 	movea.l	a0,a2
@@ -54048,7 +54054,7 @@ lbC02A672	move.w	(a2)+,d0	;menucode
 lbC02A682	movea.l	(sp)+,a2
 lbC02A684	rts
 
-lbC02A686	tst.b	(lbB02EBF4-datasegment,a6)
+lbC02A686	tst.b	(lbB02EBF4-ds,a6)
 lbC02A68A	bne.b	lbC02A696
 	bsr.b	findmenu
 	beq.b	lbC02A696
@@ -54058,7 +54064,7 @@ lbC02A692	move.b	d1,d0
 lbC02A696	rts
 
 findmenu	movem.l	d1/a0-a2,-(sp)
-	movea.l	(menustrip-datasegment,a6),a2
+	movea.l	(menustrip-ds,a6),a2
 	bra.b	.start
 
 .next_menu	move.l	(a2),d1	;mu_NextMenu
@@ -54092,9 +54098,9 @@ findmenu	movem.l	d1/a0-a2,-(sp)
 findmenu_setd0	movea.l	d0,a2
 	movea.l	d0,a1
 	movea.l	d0,a0
-findmenu_set	move.l	a2,(findmenu_strip-datasegment,a6)
-	move.l	a1,(findmenu_item-datasegment,a6)
-	move.l	a0,(findmenu_sub-datasegment,a6)
+findmenu_set	move.l	a2,(findmenu_strip-ds,a6)
+	move.l	a1,(findmenu_item-ds,a6)
+	move.l	a0,(findmenu_sub-ds,a6)
 	tst.l	d0
 	movem.l	(sp)+,d1/a0-a2
 	rts
@@ -54114,7 +54120,7 @@ lbC02A70E	bra.b	easyrequest_bynum
 easyrequest_33	moveq	#$33,d0
 	bra.b	easyrequest_bynum
 
-error_lib	lea	(_RawDoFmt_args-datasegment,a6),a1
+error_lib	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	a0,(a1)
 	lea	(txt_resourceutillib_version,pc),a0
 lbC02A71E	move.l	a0,(4,a1)
@@ -54152,14 +54158,14 @@ lbC02A74E	movem.l	a2/a3/a6,-(sp)
 	moveq	#1,d0
 	bsr.b	gettextbynum
 	movea.l	d0,a3
-lbC02A758	lea	(lbL02CF9E-datasegment,a6),a2
+lbC02A758	lea	(lbL02CF9E-ds,a6),a2
 	move.l	a0,(12,a2)
 	move.l	a3,($10,a2)
-	movea.l	(window1ptr-datasegment,a6),a0
+	movea.l	(window1ptr-ds,a6),a0
 	movea.l	a1,a3
 	movea.l	a2,a1
 	suba.l	a2,a2
-	movea.l	(intbase-datasegment,a6),a6
+	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOEasyRequestArgs,a6)
 	movem.l	(sp)+,a2/a3/a6
 	tst.l	d0
@@ -54169,7 +54175,7 @@ gettextbynum	movem.l	d1/a0/a1,-(sp)
 lbC02A782	tst.w	d0
 	beq.b	lbC02A7B0
 lbC02A786	lea	(textstrings).l,a0
-	move.l	(resourceutilbase-datasegment,a6),d1
+	move.l	(resourceutilbase-ds,a6),d1
 	bne.b	lbC02A7A6
 	movea.l	a0,a1
 	bra.b	lbC02A79C
@@ -54227,15 +54233,15 @@ lbC02A854	jmp	(lbC015E8E).l
 
 lbC02A85A	jmp	(lbC02003C).l
 
-lbC02A860	jmp	(nomemory).l
+_nomemory	jmp	(nomemory).l
 
 lbC02A866	jmp	(lbC020BBE).l
 
 lbC02A86C	jmp	(lbC02028C).l
 
-lbC02A872	jmp	(lbC020566).l
+_requestfile	jmp	(requestfile).l
 
-openlibjmp	jmp	(openlib).l
+_openlib	jmp	(openlib).l
 
 lbC02A87E	jmp	(lbC020CB8).l
 
@@ -54243,11 +54249,11 @@ lbC02A884	jmp	(lbC020C9C).l
 
 lbC02A88A	jmp	(lbC000028).l
 
-datasegment	dl	0	;work data start
-workdata_end	dl	0	;work data end
+ds	dl	0	;work data start address
+workdata_struct	dl	0
 workdata_strt_cmp2	dl	0	;used in cmp2
 workdata_end_cmp2	dl	0	;used in cmp2, decremented by one
-lbL02A8A0	dl	0
+workdata_end	dl	0	;work data end address
 lbL02A8A4	dl	0
 	dl	0
 	dl	0
@@ -54508,7 +54514,7 @@ lbC02AD6C	bsr.w	saveregs_nod0d1
 	movea.l	(sp)+,a6
 	tst.l	d0
 	bne.b	lbC02AD90
-	movea.l	(menustrip-datasegment,a6),a0
+	movea.l	(menustrip-ds,a6),a0
 	movea.l	(mu_FirstItem,a0),a0
 	moveq	#1,d0
 	bsr.w	_ClearMenuStrip
@@ -54521,7 +54527,7 @@ lbC02AD92	movea.l	(4).w,a6
 	bra.w	inita6
 
 lbC02ADA2	move.l	a4,-(sp)
-	lea	(lbB031E00-datasegment,a6),a4
+	lea	(lbB031E00-ds,a6),a4
 	move.l	a4,-(sp)
 	move.l	d1,-(sp)
 	jsr	(lbC022542).l
@@ -54531,7 +54537,7 @@ lbC02ADA2	move.l	a4,-(sp)
 	movea.l	(sp)+,a4
 	bra.b	lbC02ADC4
 
-lbC02ADBC	move.l	(lbL02B480-datasegment,a6),d1
+lbC02ADBC	move.l	(lbL02B480-ds,a6),d1
 	movea.l	d1,a0
 	clr.b	(a0)
 lbC02ADC4	bsr.w	lbC026C74
@@ -54640,22 +54646,22 @@ lbC02AEB4	tst.b	(a0)+
 	rts
 
 lbC02AEC0	bsr.w	_SetPointerAll
-	jsr	(lbC029B18-datasegment,a6)
+	jsr	(lbC029B18-ds,a6)
 	bsr.w	lbC0273FC
-	movea.l	(lbL02A8A0-datasegment,a6),a2
+	movea.l	(workdata_end-ds,a6),a2
 	bsr.w	lbC02A3CC
 	bsr.b	lbC02AEF0
 	bsr.w	clear_ccr
 	bra.w	lbC02A3C6
 
-lbC02AEDE	jsr	(lbC029B18-datasegment,a6)
+lbC02AEDE	jsr	(lbC029B18-ds,a6)
 	bsr.w	lbC0273FC
 	movea.l	(a6),a2
 	bsr.w	clear_ccr
 	bra.w	lbC02A3C6
 
 lbC02AEF0	move.l	a3,d0
-	sub.l	(workdata_end-datasegment,a6),d0
+	sub.l	(workdata_struct-ds,a6),d0
 	subq.l	#1,d0
 	bcc.b	lbC02AEFC
 	rts
@@ -54666,28 +54672,28 @@ lbC02AEFE	move.l	-(a3),d7
 	bpl.b	lbC02AF0E
 	subi.l	#$10000,d0
 	bcc.b	lbC02AEFE
-lbC02AF0E	jsr	(lbC02A3E6-datasegment,a6)
+lbC02AF0E	jsr	(lbC02A3E6-ds,a6)
 	move.l	(sp),d0
 	sub.l	a2,d0
 	cmpi.l	#$400,d0
 	bcs.b	lbC02AF22
-	jsr	(_SetPointerAll-datasegment,a6)
+	jsr	(_SetPointerAll-ds,a6)
 lbC02AF22	move.l	a2,-(sp)
 lbC02AF24	bclr	#7,(a3)
 	move.l	a2,(sp)
-	jsr	(lbC02A87E-datasegment,a6)
-	clr.b	(lbB02EB63-datasegment,a6)
+	jsr	(lbC02A87E-ds,a6)
+	clr.b	(lbB02EB63-ds,a6)
 	cmpa.l	(4,sp),a2
 	bcc.b	lbC02AF58
-	jsr	(lbC02A4BE-datasegment,a6)
+	jsr	(lbC02A4BE-ds,a6)
 	bne.b	lbC02AF58
-	tst.b	(lbB02EB78-datasegment,a6)
+	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC02AF24
-	jsr	(lbC02A3CC-datasegment,a6)
-	jsr	(lbC027DEC-datasegment,a6)
+	jsr	(lbC02A3CC-ds,a6)
+	jsr	(lbC027DEC-ds,a6)
 	bra.b	lbC02AF24
 
-lbC02AF4E	cmpa.l	(lbL02A8A0-datasegment,a6),a2
+lbC02AF4E	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC02AF5A
 	addq.w	#8,sp
 	bra.b	lbC02AF5E
@@ -54695,7 +54701,7 @@ lbC02AF4E	cmpa.l	(lbL02A8A0-datasegment,a6),a2
 lbC02AF58	beq.b	lbC02AF4E
 lbC02AF5A	movea.l	(sp)+,a2
 	addq.w	#4,sp
-lbC02AF5E	jmp	(lbC02A3CC-datasegment,a6)
+lbC02AF5E	jmp	(lbC02A3CC-ds,a6)
 
 lbC02AF62	movea.l	d0,a2
 	bsr.w	lbC02A3CC
@@ -54704,17 +54710,17 @@ lbC02AF6C	bsr.b	lbC02AF74
 	ori.b	#4,ccr
 	rts
 
-lbC02AF74	st	(lbB02EB48-datasegment,a6)
+lbC02AF74	st	(lbB02EB48-ds,a6)
 clear_ccr	andi.b	#$FB,ccr
 	rts
 
-lbC02AF7E	tst.b	(lbL02B382-datasegment,a6)
+lbC02AF7E	tst.b	(lbL02B382-ds,a6)
 	beq.b	lbC02AF86
 	rts
 
-lbC02AF86	jsr	(saveregs_all-datasegment,a6)
-	movea.l	(workdata_end-datasegment,a6),a0
-	move.l	(lbL02B4AC-datasegment,a6),d1
+lbC02AF86	jsr	(saveregs_all-ds,a6)
+	movea.l	(workdata_struct-ds,a6),a0
+	move.l	(workdata_struct_sz-ds,a6),d1
 	lsr.l	#2,d1
 	subq.l	#1,d1
 	move.l	#$80000002,d2
@@ -54731,13 +54737,13 @@ lbC02AFB4	or.l	d1,(a0)+
 	beq.b	lbC02AFB4
 	rts
 
-lbC02AFC0	tst.b	(lbL02B382-datasegment,a6)
+lbC02AFC0	tst.b	(lbL02B382-ds,a6)
 	beq.b	lbC02AFC8
 	rts
 
-lbC02AFC8	jsr	(saveregs_all-datasegment,a6)
-	movea.l	(workdata_end-datasegment,a6),a0
-	move.l	(lbL02B4AC-datasegment,a6),d1
+lbC02AFC8	jsr	(saveregs_all-ds,a6)
+	movea.l	(workdata_struct-ds,a6),a0
+	move.l	(workdata_struct_sz-ds,a6),d1
 	lsr.l	#2,d1
 	subq.l	#1,d1
 	move.b	#$DF,d2
@@ -55196,7 +55202,7 @@ lbW02B474	dw	0
 lbW02B476	dw	$34
 lbW02B478	dw	$1B
 lbW02B47A	dw	$12
-lbL02B47C	dl	lbL02CCDC
+examine_buffer_ptr	dl	examine_buffer
 lbL02B480	dl	lbB031E00
 lbL02B484	dl	lbL01C2C8
 lbL02B488	dl	lbL01C3E8
@@ -55205,10 +55211,10 @@ lbL02B490	dl	lbL019174
 lbL02B494	dl	lbL019974
 lbL02B498	dl	lbL018974
 lbL02B49C	dl	$FFFFFFFF
-lbL02B4A0	dx.l	1
+workdata_struct_end	dx.l	1
 lbL02B4A4	dx.l	1
-lbB02B4A8	dx.b	4
-lbL02B4AC	dx.l	1
+workdata_length	dx.b	4
+workdata_struct_sz	dx.l	1
 lbL02B4B0	dx.l	1
 lbL02B4B4	dx.l	1
 lbL02B4B8	dx.l	1
@@ -55237,8 +55243,9 @@ path_keytable	dx.b	$100
 path_macros	dx.l	$40
 lbL02C4D4	dx.l	$200
 lbL02CCD4	dx.l	2
-lbL02CCDC	dx.l	1
-lbL02CCE0	dx.l	$1E
+examine_buffer	dx.l	1	;FileInfoBlock
+examine_DirEntryType
+	dx.l	$1E
 lbL02CD58	dx.l	$22
 lbL02CDE0	dx.l	1
 lbL02CDE4	dx.l	1
@@ -55250,8 +55257,8 @@ lbL02CDF8	dx.l	1
 lbL02CDFC	dx.l	1
 lbL02CE00	dx.l	1
 lbL02CE04	dx.l	1
-lbL02CE08	dx.l	1
-lbL02CE0C	dx.l	1
+memory_adr_strt	dx.l	1
+memory_adr_end	dx.l	1
 lbL02CE10	dx.l	1
 lbL02CE14	dx.l	1
 lbL02CE18	dx.l	1
@@ -55259,7 +55266,7 @@ lbL02CE1C	dx.l	1
 lbL02CE20	dx.l	1
 lbL02CE24	dx.l	1
 lbL02CE28	dx.l	1
-lbL02CE2C	dx.l	1
+requestfile_buffer	dx.l	1
 lbL02CE30	dx.l	1
 saved_sp	dx.l	1
 wbmsg	dx.l	1
@@ -55276,7 +55283,7 @@ findmenu_sub	dx.l	1
 gfxbase	dx.l	1
 aslbase	dx.l	1
 aslfr	dx.l	1	;file requester
-lbL02CE70	dx.l	1
+requestfile_defname	dx.l	1
 gadtoolsbase	dx.l	1
 mathieeedoubbase	dx.l	1
 fpsupportbase	dx.l	1
@@ -55350,7 +55357,7 @@ lbL02D070	dx.l	2
 lbL02D078	dx.l	1
 lbL02D07C	dx.l	1
 lbL02D080	dx.l	1
-lbL02D084	dx.l	1
+parseargs_savedsp	dx.l	1
 lbL02D088	dx.l	1
 lbL02D08C	dx.l	1
 lbL02D090	dx.l	1
@@ -55374,7 +55381,7 @@ lbL02D0D4	dx.l	1
 lbL02D0D8	dx.l	1
 lbL02D0DC	dx.l	1
 lbB02D0E0	dx.b	4
-lbL02D0E4	dx.l	1
+parseargs_lock	dx.l	1
 lbB02D0E8	dx.b	4
 lbB02D0EC	dx.b	1
 lbB02D0ED	dx.b	1
@@ -55391,9 +55398,9 @@ lbL02D108	dx.l	1
 lbL02D10C	dx.l	2
 lbL02D114	dx.l	1
 lbB02D118	dx.b	4
-lbL02D11C	dx.l	1
+workdata_strt	dx.l	1
 lbB02D120	dx.b	4
-lbB02D124	dx.b	4
+error_text	dx.b	4
 lbL02D128	dx.l	1
 lbL02D12C	dx.l	1
 lbL02D130	dx.l	3
@@ -55420,7 +55427,7 @@ lbL02D1CC	dx.l	1
 lbL02D1D0	dx.l	1
 lbL02D1D4	dx.l	1
 lbL02D1D8	dx.l	1
-lbL02D1DC	dx.l	1
+workdata_strt_plus1	dx.l	1
 lbL02D1E0	dx.l	1
 lbL02D1E4	dx.l	1
 lbL02D1E8	dx.l	1
@@ -55573,7 +55580,7 @@ lbL02E4C8	dx.l	$40
 lbL02E5C8	dx.l	$40
 lbL02E6C8	dx.l	$40
 aslfr_initialfile	dx.l	$40
-lbL02E8C8	dx.l	$40
+work_data_spec_str	dx.l	$40
 aslfr_initialdrawer	dx.l	$40
 lbW02EAC8	dx.w	1
 lbB02EACA	dx.b	2
@@ -55586,7 +55593,7 @@ lbB02EAD3	dx.b	1
 lbB02EAD4	dx.b	1
 lbB02EAD5	dx.b	1
 lbW02EAD6	dx.w	1
-lbL02EAD8	dx.b	1
+loadbinaryfile	dx.b	1
 lbB02EAD9	dx.b	3
 data1_copied	dx.l	3
 	dx.w	1
@@ -55805,8 +55812,8 @@ lbB039E88	dx.b	$1A
 lbB039EA2	dx.b	$22
 DxAreaEnd
 
-	SECTION	ReSource12rs039EC4,DATA,CHIP
-lbL039EC4	dl	0
+	SECTION	ReSource14rs039EC4,DATA,CHIP
+pointerdata	dl	0
 	dl	$40007C0
 	dl	$7C0
 	dl	$1000380
@@ -55896,7 +55903,7 @@ GadgetImageData	dl	0
 	dl	0
 
 
-	SECTION	ReSource12rs03A024,CODE
+	SECTION	ReSource14rs03A024,CODE
 copyhunk2	movem.l	a2-a4,-(sp)
 	lea	(lbL03A400,pc),a0
 	lea	(lbL03576C).l,a1
