@@ -13427,6 +13427,7 @@ lbC00CA92	move.l	d0,(a0)+
 	andi.b	#$FB,ccr
 	rts
 
+	CNOP 0,4
 lbL00CAB0	dl	lbC00BD92
 	dl	lbC00BDB0
 	dl	lbC00BDCC
@@ -16260,6 +16261,7 @@ lbB00D7AE	db	$80
 	db	$80
 	db	$37
 	db	0
+	CNOP 0,4
 CmpTab1	dl	$FFFF0000
 	dl	$3C0000
 CmpTabRefPlus8	dl	$FFFF0000
@@ -30465,6 +30467,7 @@ lbC018148	movem.l	(lbL02D29C-ds,a6),a2/a3
 	bsr.w	lbC01FFD6
 	bra.b	lbC01811E
 
+	CNOP 0,4
 lbL018154	dl	$7C0010
 	dl	$FFFFFFFF
 	dl	$FFFFFFFF
@@ -33067,6 +33070,7 @@ lbC01A7B2	lea	(lbB02CFB4-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
+	CNOP 0,4
 CmpTabTab	dl	CmpTab1
 	dl	CmpTab2
 	dl	CmpTab3
@@ -34988,7 +34992,7 @@ lbC01C2A4	st	(lbB02EB40-ds,a6)
 	st	(lbB02EB48-ds,a6)
 lbC01C2C4	rts
 
-	dw	0
+	CNOP 0,4
 lbL01C2C8	dl	0
 	dl	0
 	dl	lbB02B3A9
@@ -38225,6 +38229,7 @@ lbC01ECA6	jsr	(lbC02A3E6-ds,a6)
 	jsr	(lbC02AEF0-ds,a6)
 lbC01ECC6	jmp	(lbC02A422-ds,a6)
 
+	CNOP 0,4
 lbL01ECCA	dl	lbC02003C-ds
 	dl	lbC02003C-ds
 	dl	lbC020016-ds
@@ -44224,7 +44229,7 @@ lbC023A2C	andi.b	#$FB,ccr
 	movem.l	(sp)+,d2/a0/a1
 	rts
 
-	dw	0
+	CNOP 0,4
 lbL023A38	dl	0
 	dl	lbC02198C
 	dl	lbC021ED8
@@ -54249,6 +54254,7 @@ lbC02A884	jmp	(lbC020C9C).l
 
 lbC02A88A	jmp	(lbC000028).l
 
+	CNOP 0,4
 ds	dl	0	;work data start address
 workdata_struct	dl	0
 workdata_strt_cmp2	dl	0	;used in cmp2
@@ -54755,6 +54761,7 @@ lbC02AFDE	and.b	d2,(a0)
 	bcc.b	lbC02AFDE
 	rts
 
+	CNOP 0,4
 lbL02AFF0	dl	0
 	dl	0
 	dl	0
@@ -55202,6 +55209,7 @@ lbW02B474	dw	0
 lbW02B476	dw	$34
 lbW02B478	dw	$1B
 lbW02B47A	dw	$12
+	CNOP 0,4
 examine_buffer_ptr	dl	examine_buffer
 lbL02B480	dl	lbB031E00
 lbL02B484	dl	lbL01C2C8
