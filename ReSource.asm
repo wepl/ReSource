@@ -856,9 +856,9 @@ lbC000602	move.l	#MEMF_CLEAR,d1
 	beq.w	syms_nosyms
 	lea	(gadgets_sym_hires,pc),a0
 	tst.b	(laceflag-ds,a6)
-	bne.b	_creategadgets
+	bne.b	.creategadgets
 	lea	(gadgets_sym_lores,pc),a0
-_creategadgets	bsr.w	CreateGadgets
+.creategadgets	bsr.w	CreateGadgets
 	beq.w	syms_nosyms
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
@@ -34949,7 +34949,7 @@ lbC01C210	movem.l	(sp)+,d0/a5
 	lsr.w	#3,d5
 	btst	d1,(a1,d5.w)
 	bne.w	lbC01C18E
-	btst	#0,(lbB02D3A5-ds,a6)
+	btst	#0,(detected_badaddress-ds,a6)
 	beq.w	lbC01C18E
 lbC01C256	movea.l	d0,a2
 	jsr	(lbC02A3CC-ds,a6)
@@ -42774,27 +42774,27 @@ A0B0C0D0E0F10.MSG	db	'000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C
 	db	'BABBBCBDBEBFC0C1C2C3C4C5C6C7C8C9CACBCCCDCECFD0D1D2D3D4D5D6D7D8D9DADBDCDDDEDFE0E1E2E3E4E5E6E7E8E9EAEBECEDEEEFF0F1F2F3F4F5F6F7'
 	db	'F8F9FAFBFCFDFEFF'
 
-lbC022802	movem.l	(sp)+,d0-d7/a0-a3/a5/a6
+put_adr_d0_end	movem.l	(sp)+,d0-d7/a0-a3/a5/a6
 	rts
 
 lbC022808	movem.l	d0-d7/a0-a3/a5/a6,-(sp)
-	pea	(lbC022802,pc)
+	pea	(put_adr_d0_end,pc)
 	cmp.l	(ds-ds,a6),d0
 	bcs.b	lbC02282E
 	cmp.l	(workdata_end-ds,a6),d0
 	bcs.w	lbC0228B0
 lbC02281E	btst	#2,(-$10,a3)
-	beq.b	lbC022856
+	beq.b	put_adr_d0_outside
 	sub.l	(ds-ds,a6),d0
 	bra.w	lbC0229A2
 
 lbC02282E	move.l	(ds-ds,a6),d1
 	sub.l	d0,d1
 	subq.l	#4,d1
-	beq.b	lbC022856
+	beq.b	put_adr_d0_outside
 	subq.l	#4,d1
 	bne.b	lbC02281E
-	bra.b	lbC022856
+	bra.b	put_adr_d0_outside
 
 lbC02283E	lea	(lbL02D12C-ds,a6),a0
 	tst.l	(a0)+
@@ -42808,25 +42808,25 @@ lbC02283E	lea	(lbL02D12C-ds,a6),a0
 lbC022852	move.l	d0,-(a0)
 lbC022854	bra.b	lbC0228B6
 
-lbC022856	moveq	#$34,d2
-	move.l	(ds-ds,a6),d1
+put_adr_d0_outside	moveq	#'4',d2
+	move.l	(ds-ds,a6),d1	;work data start
 	subq.l	#4,d1
 	cmp.l	d1,d0
-	beq.b	lbC02286A
+	beq.b	.write_progstart
 	subq.l	#4,d1
 	cmp.l	d1,d0
-	bne.b	lbC02287C
-	moveq	#$38,d2
-lbC02286A	lea	(ProgStart.MSG,pc),a0
-lbC02286E	move.b	(a0)+,(a4)+
-	bne.b	lbC02286E
+	bne.b	.outside
+	moveq	#'8',d2
+.write_progstart	lea	(ProgStart.MSG,pc),a0
+.copy	move.b	(a0)+,(a4)+
+	bne.b	.copy
 	subq.l	#1,a4
-	move.b	#$2D,(a4)+
+	move.b	#'-',(a4)+
 	move.b	d2,(a4)+
 	rts
 
-lbC02287C	move.l	a2,d1
-	sub.l	(ds-ds,a6),d1
+.outside	move.l	a2,d1
+	sub.l	(ds-ds,a6),d1	;work data start
 	lsl.l	#2,d1
 	movea.l	(workdata_struct-ds,a6),a0
 	btst	#2,(-4,a0,d1.l)
@@ -42837,11 +42837,11 @@ lbC02287C	move.l	a2,d1
 lbC022898	bra.w	lbC022A4C
 
 put_adr_d0	movem.l	d0-d7/a0-a3/a5/a6,-(sp)
-	pea	(lbC022802,pc)
+	pea	(put_adr_d0_end,pc)
 	cmp.l	(ds-ds,a6),d0
-	bcs.b	lbC022856
+	bcs.b	put_adr_d0_outside
 	cmp.l	(workdata_end-ds,a6),d0
-	bcc.b	lbC022856
+	bcc.b	put_adr_d0_outside
 lbC0228B0	tst.b	(lbB02EB79-ds,a6)
 	bne.b	lbC02283E
 lbC0228B6	move.l	d0,(lbL02D088-ds,a6)
@@ -44293,7 +44293,7 @@ lbC023AF6	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC023ACC
 
 lbC023B08	subq.b	#1,(lbB02EB3D-ds,a6)
@@ -44437,7 +44437,7 @@ set4q	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC023CA0	move.b	#$2D,(a4)+
@@ -44879,14 +44879,14 @@ lbC02414C	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC02415E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.w	lbC0242D6
 
 lbC024172	bsr.w	lbC0234F4
@@ -45254,7 +45254,7 @@ lbC024580	move.b	#$23,(a4)+
 lbC02458A	bra.w	lbC022292
 
 lbC02458E	move.b	#$28,(a4)+
-	bsr.w	put_adr_word
+	bsr.w	put_adr_relword
 	lea	(PC.MSG2-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45262,7 +45262,7 @@ lbC02458E	move.b	#$28,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0245A4	bsr.w	put_adr_word
+lbC0245A4	bsr.w	put_adr_relword
 	lea	(PC.MSG3-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45369,14 +45369,14 @@ lbC0246AA	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC0246BC	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC0246D8
 
 lbC0246CE	bsr.w	lbC0262D6
@@ -45570,7 +45570,7 @@ lbC0248A4	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC0248B6	move.w	d3,d0
@@ -45767,7 +45767,7 @@ lbC024ACC	addq.l	#2,a2
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC024AE2	moveq	#7,d0
@@ -46188,7 +46188,7 @@ lbC024F5E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC024F70	moveq	#7,d0
@@ -46266,7 +46266,7 @@ lbC02501E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbW025030	dw	SFC.MSG-ds
@@ -46498,7 +46498,7 @@ lbC025284	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	and.w	#7,d0
 	bra.b	lbC0252A0
 
@@ -46539,7 +46539,7 @@ lbC0252EA	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	and.w	#7,d0
 	bra.b	lbC0252D8
 
@@ -46590,7 +46590,7 @@ lbC025370	subq.l	#4,a4
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC025384	lea	(ascii.MSG6-ds,a6),a0
@@ -46726,7 +46726,7 @@ lbC0254D6	move.b	(a0)+,(a4)+
 	subq.l	#1,a4
 	rts
 
-lbC0254DE	bset	#0,(lbB02D3A5-ds,a6)
+lbC0254DE	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC0254E6	jsr	(setspacepostopcode-ds,a6)
@@ -47326,7 +47326,7 @@ lbC025B72	movea.l	(a0,d0.w),a0
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC025B94	btst	#11,d5
@@ -47514,7 +47514,7 @@ lbC025D8E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC025DA0	move.b	(WFD.MSG-ds,a6),(a4)+
@@ -47551,7 +47551,7 @@ lbC025DF2	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC025E32
 
 lbC025E04	lea	(SD.MSG,pc),a0
@@ -47562,7 +47562,7 @@ lbC025E0E	move.b	(FC.MSG-ds,a6),(a4)+
 	bra.b	lbC025E32
 
 lbC025E18	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC025E0E
 
 lbC025E26	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
@@ -47592,7 +47592,7 @@ lbC025E5A	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC025E9A
 
 lbC025E6C	lea	(SD.MSG,pc),a0
@@ -47603,7 +47603,7 @@ lbC025E76	move.b	(FC.MSG-ds,a6),(a4)+
 	bra.b	lbC025E9A
 
 lbC025E80	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC025E76
 
 lbC025E8E	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
@@ -47635,7 +47635,7 @@ lbC025ED8	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 lbC025EE8	bra.w	lbC025610
 
 lbC025EEC	moveq	#$1F,d0
@@ -47656,7 +47656,7 @@ lbC025F10	move.b	#$23,(a4)+
 	bra.b	lbC025F34
 
 lbC025F1A	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC025F06
 
 lbC025F28	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
@@ -47688,7 +47688,7 @@ lbC025F72	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 lbC025F82	bra.w	lbC025610
 
 lbC025F86	moveq	#$1F,d0
@@ -47719,7 +47719,7 @@ lbC025FC0	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC026000
 
 lbC025FD2	lea	(SD.MSG,pc),a0
@@ -47730,7 +47730,7 @@ lbC025FDC	move.b	(FC.MSG-ds,a6),(a4)+
 	bra.b	lbC026000
 
 lbC025FE6	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.b	lbC025FDC
 
 lbC025FF4	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
@@ -47835,7 +47835,7 @@ lbC0260D6	move.l	d5,d0
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
 	addq.w	#4,d6
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC026108	move.l	d5,d0
@@ -47879,7 +47879,7 @@ lbC026162	btst	#$16,d5
 	beq.w	lbC0261EA
 lbC02616A	btst	#0,(3,a2)
 	bne.b	lbC0261C8
-put_adr_long	btst	#2,(a3)
+put_adr_rellong	btst	#2,(a3)
 	bne.b	lbC02614C
 lbC026178	bsr.w	lbC023464
 	bne.b	lbC026194
@@ -47895,7 +47895,7 @@ lbC026194	addq.l	#4,a2
 	lea	($10,a3),a3
 	rts
 
-lbC02619C	bset	#3,(lbB02D3A5-ds,a6)
+lbC02619C	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
 	sub.l	(lbL02D0F0-ds,a6),d0
@@ -47916,7 +47916,7 @@ lbC0261C8	addq.l	#2,a2
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC0261DE	bsr.w	lbC0234EE
@@ -47927,7 +47927,7 @@ lbC0261DE	bsr.w	lbC0234EE
 
 lbC0261EA	btst	#0,(1,a2)
 	bne.b	lbC0261C8
-put_adr_word	btst	#0,(a3)
+put_adr_relword	btst	#0,(a3)
 	bne.b	lbC0261DE
 	tst.b	(lbB02EB3D-ds,a6)
 	bne.b	lbC0261DE
@@ -47949,7 +47949,7 @@ lbC02621A	move.l	(ds-ds,a6),d1
 	beq.b	lbC026210
 	subq.l	#4,d1
 	beq.b	lbC026210
-lbC026228	bset	#3,(lbB02D3A5-ds,a6)
+lbC026228	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
 	sub.l	(lbL02D0F0-ds,a6),d0
@@ -47997,7 +47997,7 @@ lbC026294	tst.b	(lbB02B3EA-ds,a6)
 	move.b	#1,(a4)+
 	rts
 
-lbC0262AA	bset	#3,(lbB02D3A5-ds,a6)
+lbC0262AA	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
 	sub.l	(lbL02D0F0-ds,a6),d0
@@ -48038,7 +48038,7 @@ lbC02630C	addq.l	#2,a2
 	addq.l	#8,a3
 lbC026310	rts
 
-lbC026312	bset	#3,(lbB02D3A5-ds,a6)
+lbC026312	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
 	sub.l	(lbL02D0F0-ds,a6),d0
@@ -48069,7 +48069,7 @@ lbC026338	move.l	d5,d0
 set2qbefore	subq.l	#2,a4
 set2q	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC02636A	moveq	#0,d0
@@ -48225,7 +48225,7 @@ lbC0264D4	bsr.b	lbC0264B4
 
 lbC0264EE	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 lbC0264FA	rts
 
 lbC0264FC	move.b	(W.MSG0-ds,a6),(a4)+
@@ -48261,48 +48261,48 @@ extract_cc_68020	bfextu	d5{4:4},d0
 	rts
 
 extract_cc_boundsfailed
-	bset	#3,(lbB02D3A5-ds,a6)
+	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#'*',(a4)+
 	move.b	#'+',(a4)+
 	moveq	#0,d0
 	move.b	(-1,a2),d0
-	bpl.b	lbC026592
+	bpl.b	.pos
 	addq.b	#2,d0
 	neg.b	d0
 	move.b	#'-',(-1,a4)
-	bra.b	lbC026594
+	bra.b	.go
 
-lbC026592	addq.b	#2,d0
-lbC026594	btst	#0,d0
+.pos	addq.b	#2,d0
+.go	btst	#0,d0	;odd?
 	beq.w	put_line_end
 	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.w	put_line_end
 
 extract_cc_w	move.b	(WFD.MSG-ds,a6),(a4)+
 	jsr	(setspacepostopcode-ds,a6)
 	btst	#0,(1,a2)
-	beq.w	put_adr_word
-	move.b	#$3F,(a4)
+	beq.w	put_adr_relword
+	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
-	bra.w	put_adr_word
+	bset	#0,(detected_badaddress-ds,a6)
+	bra.w	put_adr_relword
 
 extract_cc_l	move.b	(LPA.MSG-ds,a6),(a4)+
 	jsr	(setspacepostopcode-ds,a6)
 	btst	#0,(3,a2)
-	beq.w	put_adr_long
-	move.b	#$3F,(a4)
+	beq.w	put_adr_rellong
+	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
-	bra.w	put_adr_long
+	bset	#0,(detected_badaddress-ds,a6)
+	bra.w	put_adr_rellong
 
 extract_cc_68000	move.l	d5,d0
 	andi.l	#$F000000,d0
@@ -48361,7 +48361,7 @@ lbC026652	move.l	d5,d0
 	bsr.w	put_adr_d0
 	rts
 
-lbC0266A0	bset	#3,(lbB02D3A5-ds,a6)
+lbC0266A0	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
 	moveq	#0,d0
@@ -48379,7 +48379,7 @@ lbC0266C4	btst	#0,d0
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	bra.w	put_line_end
 
 lbC0266E0	tst.b	(lbL02EB80-ds,a6)
@@ -48389,13 +48389,13 @@ lbC0266E0	tst.b	(lbL02EB80-ds,a6)
 	move.b	(LPA.MSG-ds,a6),(a4)+
 lbC0266F0	jsr	(setspacepostopcode-ds,a6)
 	btst	#0,(1,a2)
-	beq.w	put_adr_word
+	beq.w	put_adr_relword
 	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
-	bra.w	put_adr_word
+	bset	#0,(detected_badaddress-ds,a6)
+	bra.w	put_adr_relword
 
 lbC026712	move.l	d5,d0
 	swap	d0
@@ -48420,11 +48420,11 @@ lbC02673C	addq.w	#2,d6
 	bne.b	lbC026754
 	move.b	(WFD.MSG-ds,a6),(a4)+
 	jsr	(setspacepostopcode-ds,a6)
-	bra.w	put_adr_word
+	bra.w	put_adr_relword
 
 lbC026754	move.b	(LPA.MSG-ds,a6),(a4)+
 	jsr	(setspacepostopcode-ds,a6)
-	bra.w	put_adr_long
+	bra.w	put_adr_rellong
 
 lbC026760	lea	(NOP.MSG-ds,a6),a0
 	move.b	(a0)+,(-1,a4)
@@ -48456,7 +48456,7 @@ lbC026790	jsr	(setspacepostopcode-ds,a6)
 	move.b	(a0)+,(a4)+
 	move.b	(a0),(a4)+
 	move.b	#$2C,(a4)+
-	bra.w	put_adr_word
+	bra.w	put_adr_relword
 
 lbC0267B0	move.l	d5,d0
 	andi.l	#$C00000,d0
@@ -48515,7 +48515,7 @@ lbC02683A	move.b	(LPA.MSG-ds,a6),(a4)+
 
 lbC026840	subq.w	#1,d6
 lbC026842	move.b	#$3F,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC02684E	move.l	d5,d0
@@ -48543,7 +48543,7 @@ lbL026880	dl	lbC026890
 	dl	lbC0268EA
 
 lbC026890	move.b	#$3F,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC02689C	move.b	(QR.MSG-ds,a6),(a4)+
@@ -48567,7 +48567,7 @@ lbC02689C	move.b	(QR.MSG-ds,a6),(a4)+
 	btst	d0,#????$70
 	bne.b	lbC0268F0
 	move.b	#$3F,(-1,a4)
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC0268EA	move.b	(WFD.MSG-ds,a6),(a4)+
@@ -48585,7 +48585,7 @@ lbC02690A	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC02691C	move.l	d5,d0
@@ -48794,7 +48794,7 @@ lbC026B18	move.l	d5,d0
 
 lbC026B36	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)+
-	bset	#0,(lbB02D3A5-ds,a6)
+	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
 lbC026B44	btst	#10,d5
@@ -53463,7 +53463,7 @@ setspacepostopcode	move.w	(lbW02B478-ds,a6),d0
 lbC02A02A	sub.w	d6,d0
 	bpl.b	lbC02A030
 	moveq	#0,d0
-lbC02A030	moveq	#$20,d6
+lbC02A030	moveq	#' ',d6
 lbC02A032	move.b	d6,(a4)+
 	dbra	d0,lbC02A032
 	moveq	#$1E,d6
@@ -55538,7 +55538,7 @@ lbW02D39E	dx.w	1
 lbW02D3A0	dx.w	1
 lbW02D3A2	dx.w	1
 lbB02D3A4	dx.b	1
-lbB02D3A5	dx.b	1
+detected_badaddress	dx.b	1	;bits: 0=odd 3=outsidework
 lbB02D3A6	dx.b	1
 lbB02D3A7	dx.b	1
 lbW02D3A8	dx.w	1
