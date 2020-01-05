@@ -27729,21 +27729,21 @@ lbC016304	bchg	#5,(a0)+
 	dbra	d0,lbC016304
 	btst	#5,(LSXPWDBLSXPWD.MSG0-ds,a6)
 	beq.b	lbC016322
-	lea	(lbL01A83C,pc),a0
+	lea	(lbL01A840,pc),a0
 	bsr.b	ModifyListMakerLowerCase
-	lea	(lbL01AFCC,pc),a0
+	lea	(lbL01AFD0,pc),a0
 	bsr.b	ModifyListMakerLowerCase
 	bra.b	lbC01636C
 
-lbC016322	lea	(lbL01A83C,pc),a0
+lbC016322	lea	(lbL01A840,pc),a0
 	bsr.b	ModifyListMakeUpperCase
-	lea	(lbL01AFCC,pc),a0
+	lea	(lbL01AFD0,pc),a0
 	bsr.b	ModifyListMakeUpperCase
 	bra.b	lbC01636C
 
 ModifyListMakerLowerCase
-	addq.l	#8,a0
-	movea.l	(a0),a1
+	addq.l	#4,a0
+	movea.l	(a0)+,a1
 	move.l	a1,d0
 	beq.b	.end
 	addq.l	#5,a1
@@ -27758,8 +27758,8 @@ ModifyListMakerLowerCase
 .end	rts
 
 ModifyListMakeUpperCase
-	addq.l	#8,a0
-	movea.l	(a0),a1
+	addq.l	#4,a0
+	movea.l	(a0)+,a1
 	move.l	a1,d0
 	beq.b	.end
 	addq.l	#5,a1
@@ -33109,8 +33109,6 @@ CmpTabTab	dl	CmpTab1
 	dl	CmpTab18
 	dl	CmpTab19
 	dl	CmpTab20
-lbL01A83C	equ	*-2
-	dw	0
 lbL01A840	dl	$80000100
 	dl	i_orib
 	dl	$80000100
@@ -33594,7 +33592,7 @@ lbL01A9FC	dl	i_movem
 	dl	0
 	dl	i_popm
 	dl	0
-lbL01AFCC	dl	0
+	dl	0
 lbL01AFD0	dl	$80000100
 	dl	i_orib
 	dl	$80000100
@@ -48580,7 +48578,9 @@ lbC02689C	move.b	(QR.MSG-ds,a6),(a4)+
 	andi.l	#$1C00,d0
 	lsr.w	#8,d0
 	lsr.w	#2,d0
+	IFD BARFLY
 	MC68020		;BASM bug
+	ENDC
 	btst	d0,#14
 	MC68000
 	bne.b	lbC0268F0
@@ -48594,7 +48594,9 @@ lbC02689C	move.b	(QR.MSG-ds,a6),(a4)+
 	beq.b	lbC0268F0
 	move.b	(B.MSG-ds,a6),(-1,a4)
 	moveq	#0,d1
+	IFD BARFLY
 	MC68020		;BASM bug
+	ENDC
 	btst	d0,#$70
 	MC68000
 	bne.b	lbC0268F0
