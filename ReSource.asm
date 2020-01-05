@@ -1,5 +1,6 @@
 
 ThisTask	equ	$114
+WA_RMBTrap	equ	$8000008A
 _LVOSplitName	equ	-$19E
 _LVOActivateGadget	equ	-$1CE
 _object_SIZEOF	equ	$C
@@ -16,6 +17,7 @@ _LVOFreeRemember	equ	-$198
 LN_NAME	equ	$A
 LIB_SIZE	equ	$22
 fr_File	equ	$4
+im_Code	equ	$18
 SA_Height	equ	$80000024
 GACT_STRINGLEFT	equ	$0
 MX_KIND	equ	$5
@@ -25,6 +27,7 @@ _LVOOpenDevice	equ	-$1BC
 WA_Height	equ	$80000067
 pr_Task	equ	$0
 LN_TYPE	equ	$8
+im_IAddress	equ	$1C
 TABLETA_InProximity	equ	$8003A008
 pr_CLI	equ	$AC
 _LVOInitBitMap	equ	-$186
@@ -49,6 +52,7 @@ POINTERA_YResolution	equ	$80039006
 GACT_RELVERIFY	equ	$1
 gpgi_Abort	equ	$8
 pr_WindowPtr	equ	$B8
+eim_IntuiMessage	equ	$0
 _LVORequest	equ	-$F0
 CYCLE_KIND	equ	$7
 _LVODisownBlitter	equ	-$1CE
@@ -67,6 +71,7 @@ GTCY_Active	equ	$8008000F
 GTLV_ShowSelected	equ	$80080035
 SA_PubName	equ	$8000002F
 _LVOOpen	equ	-$1E
+MP_MSGLIST	equ	$14
 _LVOWaitPort	equ	-$180
 gpl_Initial	equ	$8
 pr_CIS	equ	$9C
@@ -75,6 +80,7 @@ GFLG_GADGHIMAGE	equ	$2
 _LVOInitRastPort	equ	-$C6
 WA_CloseGadget	equ	$80000084
 WA_Borderless	equ	$80000088
+MN_SIZE	equ	$14
 _LVODoubleClick	equ	-$66
 GM_LAYOUT	equ	$6
 _LVOPutStr	equ	-$3B4
@@ -82,6 +88,7 @@ _LVORead	equ	-$2A
 IV_SIZE	equ	$C
 _LVOGetMsg	equ	-$174
 fh_Type	equ	$8
+im_MouseX	equ	$20
 _LVOFreeMem	equ	-$D2
 WFLG_NOCAREREFRESH	equ	$20000
 GMORE_GADGETHELP	equ	$2
@@ -104,6 +111,7 @@ SA_Font	equ	$8000002B
 _LVOGT_EndRefresh	equ	-$60
 _LVOCurrentDir	equ	-$7E
 gg_Width	equ	$8
+wd_LeftEdge	equ	$4
 AFB_68020	equ	$1
 nw_Height	equ	$6
 _LVOAllocRemember	equ	-$18C
@@ -117,6 +125,7 @@ _LVOOpenWindowTagList	equ	-$25E
 mi_NextItem	equ	$0
 _LVOGetDiskObject	equ	-$4E
 WA_SimpleRefresh	equ	$8000008C
+ALTLEFT	equ	$10
 _LVOUnLock	equ	-$5A
 _LVOBltBitMapRastPort	equ	-$25E
 _LVOWaitBlit	equ	-$E4
@@ -128,6 +137,7 @@ GTBB_Recessed	equ	$80080033
 GTLV_Labels	equ	$80080006
 TEXT_KIND	equ	$D
 mi_Flags	equ	$C
+wd_IDCMPFlags	equ	$52
 _LVOQueryOverscan	equ	-$1DA
 LIB_VERSION	equ	$14
 GMR_NOREUSE	equ	$2
@@ -156,6 +166,7 @@ _LVOFreeVisualInfo	equ	-$84
 WFLG_SMART_REFRESH	equ	$0
 GMR_NEXTACTIVE	equ	$10
 ASLSM_FilterFunc	equ	$8008007A
+im_Class	equ	$14
 wd_RPort	equ	$32
 _LVOSetAPen	equ	-$156
 _LVOFreeVec	equ	-$2B2
@@ -163,6 +174,7 @@ _LVOExNext	equ	-$6C
 SA_Left	equ	$80000021
 TC_SIZE	equ	$5C
 ASLSM_InitialDisplayHeight	equ	$80080066
+im_Qualifier	equ	$1A
 WA_CustomScreen	equ	$80000070
 WA_Left	equ	$80000064
 _LVOResetMenuStrip	equ	-$2BE
@@ -170,12 +182,14 @@ nw_DetailPen	equ	$8
 ASL_ScreenModeRequest	equ	$2
 SUPERLACE_KEY	equ	$8024
 fr_Drawer	equ	$8
+wd_TopEdge	equ	$6
 LAYOUTA_Orientation	equ	$80038003
 _LVOWrite	equ	-$30
 SA_Type	equ	$8000002D
 wa_Name	equ	$4
 sm_DisplayID	equ	$0
 GA_Disabled	equ	$8003000E
+im_ExecMessage	equ	$0
 LH_TYPE	equ	$C
 _LVOClearPointer	equ	-$3C
 WA_Gadgets	equ	$8000006C
@@ -196,6 +210,7 @@ GTYP_BOOLGADGET	equ	$1
 _LVOEasyRequestArgs	equ	-$24C
 _LVODisplayBeep	equ	-$60
 CUSTOMSCREEN	equ	$F
+MN	equ	$0
 _LVOItemAddress	equ	-$90
 _LVOPermit	equ	-$8A
 _LVOOpenScreenTagList	equ	-$264
@@ -259,6 +274,7 @@ _LVOIoErr	equ	-$84
 LIB_EXTFUNC	equ	$FFFFFFE8
 gg_TopEdge	equ	$6
 FRF_PRIVATEIDCMP	equ	$10
+im_IDCMPWindow	equ	$2C
 PLACETEXT_ABOVE	equ	$4
 PLACETEXT_IN	equ	$10
 nw_TopEdge	equ	$2
@@ -287,6 +303,7 @@ pr_Result2	equ	$94
 PLACETEXT_LEFT	equ	$1
 sm_SIZEOF	equ	$28
 WFLG_RMBTRAP	equ	$10000
+IDCMP_RAWKEY	equ	$400
 _LVOEndRequest	equ	-$78
 wd_Flags	equ	$18
 SA_DetailPen	equ	$80000026
@@ -307,6 +324,7 @@ WA_Top	equ	$80000065
 _LVOParsePatternNoCase	equ	-$3C6
 GACT_IMMEDIATE	equ	$2
 sm_DisplayWidth	equ	$4
+KEYCODE_Q	equ	$10
 _LVOSetSignal	equ	-$132
 _LVOAddIntServer	equ	-$A8
 mi_SubItem	equ	$1C
@@ -864,11 +882,11 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	clr.l	-(sp)
 	move.l	#WA_IDCMP,-(sp)
 	moveq	#0,d0
-	move.w	#185,d0
+	move.w	#$B9,d0
 	tst.b	(laceflag-ds,a6)
-	bne.b	lbC0006A8
+	bne.b	.setheight
 	move.w	#93,d0
-lbC0006A8	move.l	d0,-(sp)
+.setheight	move.l	d0,-(sp)
 	move.l	#WA_Height,-(sp)
 	pea	($273).w
 	move.l	#WA_Width,-(sp)
@@ -1008,7 +1026,7 @@ lbC000852	movem.l	(sp)+,d2-d6/a2-a5
 gadgets_sym_hires	dw	11	;LeftEdge
 	dw	25	;TopEdge
 	dw	117	;Width
-	dw	134	;Height
+gadgets_sym_lv1h	dw	134	;Height
 	dw	$FA2	;text number
 	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)	;Flags
 	dl	gadcode_sym_dir	;UserData
@@ -1017,7 +1035,7 @@ gadgets_sym_hires	dw	11	;LeftEdge
 	dw	140
 	dw	25
 	dw	231
-	dw	134
+gadgets_sym_lv2h	dw	134
 	dw	$FA3
 	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)
 	dl	gadcode_sym_inc
@@ -1026,14 +1044,14 @@ gadgets_sym_hires	dw	11	;LeftEdge
 	dw	384
 	dw	25
 	dw	231
-	dw	134
+gadgets_sym_lv3h	dw	134
 	dw	$FA4
 	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)
 	dl	gadcode_sym_ind
 	dl	LISTVIEW_KIND
 	dl	gtlv_tags
 	dw	383
-	dw	166
+gadgets_sym_b1t	dw	166	;TopEdge
 	dw	172
 	dw	12
 	dw	$11
@@ -1042,7 +1060,7 @@ gadgets_sym_hires	dw	11	;LeftEdge
 	dl	BUTTON_KIND
 	dl	ga_disabled_1
 	dw	88
-	dw	166
+gadgets_sym_b2t	dw	166	;TopEdge
 	dw	172
 	dw	12
 	dw	$FA5
@@ -5079,9 +5097,9 @@ lbC003652	movem.l	d2-d7/a2-a5,-(sp)
 	suba.w	#$DE,sp
 	movea.l	sp,a5
 	movea.l	(window1ptr-ds,a6),a0
-	move.l	($52,a0),d7
-	move.l	($18,a0),d6
-	ori.l	#$10000,($18,a0)
+	move.l	(wd_IDCMPFlags,a0),d7
+	move.l	(wd_Flags,a0),d6
+	ori.l	#(WFLG_SMART_REFRESH|WFLG_RMBTRAP),(wd_Flags,a0)
 	moveq	#2,d0
 	move.l	a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
@@ -5093,54 +5111,54 @@ lbC003652	movem.l	d2-d7/a2-a5,-(sp)
 	move.b	#1,($AC,a5)
 	move.b	#3,($AD,a5)
 	moveq	#-1,d5
-	lea	(lbW003BE6,pc),a0
-	lea	(lbL02D04E-ds,a6),a1
+	lea	(textcodes_zap2,pc),a0
+	lea	(textstrings_zap2-ds,a6),a1
 	moveq	#1,d2
-lbC0036A2	move.w	(a0)+,d0
+.loop	move.w	(a0)+,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
-	dbra	d2,lbC0036A2
-	lea	(lbW003BFE,pc),a0
-	lea	(lbL02D05A-ds,a6),a1
+	dbra	d2,.loop
+	lea	(textcodes2_zap2,pc),a0
+	lea	(textstrings2_zap2-ds,a6),a1
 	moveq	#3,d2
-lbC0036B8	move.w	(a0)+,d0
+.loop2	move.w	(a0)+,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
-	dbra	d2,lbC0036B8
+	dbra	d2,.loop2
 	lea	(gadgets_zap2,pc),a0
 	bsr.w	creategadgets
 	beq.w	lbC0039EC
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
-	move.l	#$80000070,-(sp)
+	move.l	#WA_CustomScreen,-(sp)
 	move.l	($22,a5),-(sp)
-	move.l	#$8000006C,-(sp)
+	move.l	#WA_Gadgets,-(sp)
 	move.w	#$DAC,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
-	move.l	#$8000006E,-(sp)
+	move.l	#WA_Title,-(sp)
 	moveq	#1,d0
 	move.l	d0,-(sp)
-	move.l	#$80000082,-(sp)
+	move.l	#WA_DragBar,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008A,-(sp)
+	move.l	#WA_RMBTrap,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000089,-(sp)
+	move.l	#WA_Activate,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008D,-(sp)
+	move.l	#WA_SmartRefresh,-(sp)
 	move.l	#$40040,-(sp)
-	move.l	#$8000006A,-(sp)
+	move.l	#WA_IDCMP,-(sp)
 	pea	($58).w
-	move.l	#$80000067,-(sp)
+	move.l	#WA_Height,-(sp)
 	pea	($15F).w
-	move.l	#$80000066,-(sp)
+	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(lbW02CFF0-ds,a6),d0
+	move.w	(WindowTopZap2-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000065,-(sp)
-	move.w	(lbW02CFEE-ds,a6),d0
+	move.l	#WA_Top,-(sp)
+	move.w	(WindowLeftZap2-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000064,-(sp)
+	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
@@ -5356,8 +5374,8 @@ lbC0039AC	movea.l	(4,a0),a0
 	subq.w	#1,d0
 lbC0039B4	move.w	(a0)+,(a2)+
 	dbra	d0,lbC0039B4
-lbC0039BA	move.w	(4,a3),(lbW02CFEE-ds,a6)
-	move.w	(6,a3),(lbW02CFF0-ds,a6)
+lbC0039BA	move.w	(wd_LeftEdge,a3),(WindowLeftZap2-ds,a6)
+	move.w	(wd_TopEdge,a3),(WindowTopZap2-ds,a6)
 	movea.l	a3,a0
 	move.l	a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
@@ -5570,19 +5588,19 @@ gadgets_zap2	dw	$24
 	dl	BUTTON_KIND
 	dl	tagdone
 	dl	0
-lbW003BE6	dw	$DAE
+textcodes_zap2	dw	$DAE
 	dw	$DAF
 tags_zap2_mode	dl	GTCY_Labels
-	dl	lbL02D04E
+	dl	textstrings_zap2
 	dl	GTCY_Active
 	dl	1
 	dl	0
-lbW003BFE	dw	$DB1
+textcodes2_zap2	dw	$DB1
 	dw	$DB2
 	dw	$DB3
 	dw	$DB4
 tags_zap2_type	dl	GTCY_Labels
-	dl	lbL02D05A
+	dl	textstrings2_zap2
 	dl	GTCY_Active
 	dl	3
 	dl	0
@@ -37347,11 +37365,11 @@ lbC01DE8C	sub.w	d1,d0
 	move.w	d5,d0
 	subi.w	#$15F,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbW02CFEE-ds,a6)
+	move.w	d0,(WindowLeftZap2-ds,a6)
 	move.l	d6,d0
 	subi.w	#$58,d0
 	divu.w	#3,d0
-	move.w	d0,(lbW02CFF0-ds,a6)
+	move.w	d0,(WindowTopZap2-ds,a6)
 	move.w	d5,d0
 	subq.w	#2,d0
 	move.w	d0,(lbW02D3A2-ds,a6)
@@ -51491,32 +51509,32 @@ lbC0289DA	movea.l	(userport-ds,a6),a0
 	tst.l	d0
 	beq.b	lbC0289A0
 	movea.l	d0,a1
-	move.l	($14,a1),d2
-	move.l	($18,a1),d3
+	move.l	(im_Class,a1),d2
+	move.l	(im_Code,a1),d3
 	swap	d3
-	move.l	($20,a1),d5
+	move.l	(im_MouseX,a1),d5
 	swap	d5
-	movea.l	($1C,a1),a2
-	movea.l	($2C,a1),a3
-	cmpi.l	#$400,d2
-	bne.w	lbC028A6C
+	movea.l	(im_IAddress,a1),a2
+	movea.l	(im_IDCMPWindow,a1),a3
+	cmpi.l	#IDCMP_RAWKEY,d2
+	bne.w	_norawkey
 	btst	#$19,d3
-	beq.w	lbC028A6C
+	beq.w	_norawkey
 	movem.l	d6/a1/a6,-(sp)
 	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOForbid,a6)
-	movea.l	($56,a3),a0
-	move.l	($14,a0),d6
+	movea.l	(wd_UserPort,a3),a0
+	move.l	(MP_MSGLIST,a0),d6
 lbC028A2E	movea.l	d6,a1
-	move.l	(a1),d6
+	move.l	(im_ExecMessage,a1),d6
 	beq.b	lbC028A64
-	cmpa.l	($2C,a1),a3
+	cmpa.l	(im_IDCMPWindow,a1),a3
 	bne.b	lbC028A2E
-	cmp.l	($14,a1),d2
+	cmp.l	(im_Class,a1),d2
 	bne.b	lbC028A2E
-	btst	#1,($1A,a1)
+	btst	#1,(im_Qualifier,a1)
 	beq.b	lbC028A2E
-	cmp.w	($18,a1),d3
+	cmp.w	(im_Code,a1),d3
 	bne.b	lbC028A2E
 	move.l	a1,d0
 	movea.l	(a1),a0
@@ -51529,7 +51547,7 @@ lbC028A2E	movea.l	d6,a1
 
 lbC028A64	jsr	(_LVOPermit,a6)
 	movem.l	(sp)+,d6/a1/a6
-lbC028A6C	move.l	a6,-(sp)
+_norawkey	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_ReplyIMsg,a6)
 	movea.l	(sp)+,a6
@@ -55310,8 +55328,8 @@ lbB02CFE6	dx.b	2
 lbB02CFE8	dx.b	2
 lbB02CFEA	dx.b	2
 lbB02CFEC	dx.b	2
-lbW02CFEE	dx.w	1
-lbW02CFF0	dx.w	1
+WindowLeftZap2	dx.w	1
+WindowTopZap2	dx.w	1
 symactivenum_dirs	dx.b	2	;-1 if none
 symactivenum_incs	dx.b	2
 lbB02CFF6	dx.b	2
@@ -55321,8 +55339,8 @@ searchcaselabels	dx.b	12
 searchalignlabels	dx.b	12
 searchfromlabels	dx.b	$10
 searchdummylabels	dx.b	12
-lbL02D04E	dx.l	3
-lbL02D05A	dx.l	5
+textstrings_zap2	dx.l	3
+textstrings2_zap2	dx.l	5
 lbB02D06E	dx.b	2
 lbL02D070	dx.l	2
 lbL02D078	dx.l	1
