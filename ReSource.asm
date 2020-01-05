@@ -15,6 +15,10 @@ VERSION MACRO
 	db	"6.6.1"
 	ENDM
 
+SCREENHEIGHTTRIG = 512		;required screen height for Symbols/Macros window enlargement
+SYMWINHEIGHTADD = -2+26*8	;enlargement for symbols window
+MACWINHEIGHTADD = 5*8		;enlargement for macros windows
+
 sc_Height	equ	14
 
 * here starts the normal ReSource output
@@ -884,18 +888,6 @@ lbC000602	move.l	#MEMF_CLEAR,d1
 	movea.l	d0,a5	;A5 = $CA bytes
 	jsr	(open_resourcesyms).l
 	beq.w	syms_nosyms
-
-SYMWINHEIGHTADD = -2+26*8		;enlargement for symbols window
-	move.l	(screenptr-ds,a6),a0
-	cmp	#512,(sc_Height,a0)
-	blo	.skip
-	move	#SYMWINHEIGHTADD,d1
-	add	d1,gadgets_sym_lv1h
-	add	d1,gadgets_sym_lv2h
-	add	d1,gadgets_sym_lv3h
-	add	d1,gadgets_sym_b1t
-	add	d1,gadgets_sym_b2t
-.skip
 	lea	(gadgets_sym_hires,pc),a0
 	tst.b	(laceflag-ds,a6)
 	bne.b	_creategadgets
@@ -931,7 +923,7 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	beq.b	.setheight
 	move.w	#185,d0
 	move.l	(screenptr-ds,a6),a0
-	cmp	#512,(sc_Height,a0)
+	cmp	#SCREENHEIGHTTRIG,(sc_Height,a0)
 	blo	.setheight
 	add	#SYMWINHEIGHTADD,d0
 
@@ -2426,11 +2418,16 @@ lbC0017DC	move.l	d0,-(sp)
 	move.l	#WA_SmartRefresh,-(sp)
 	clr.l	-(sp)
 	move.l	#WA_IDCMP,-(sp)
-	moveq	#0,d0
-	move.w	#$B9,d0
+
+	moveq	#$66,d0
 	tst.b	(laceflag-ds,a6)
-	bne.b	.setheight
-	move.w	#$66,d0
+	beq.b	.setheight
+	move.w	#$b9,d0
+	move.l	(screenptr-ds,a6),a0
+	cmp	#SCREENHEIGHTTRIG,(sc_Height,a0)
+	blo	.setheight
+	add	#MACWINHEIGHTADD,d0
+
 .setheight	move.l	d0,-(sp)
 	move.l	#WA_Height,-(sp)
 	pea	($10C).w
@@ -37579,6 +37576,21 @@ screen_ok	movea.l	d0,a2
 	moveq	#12,d3
 	jsr	(_LVOSetRGB4,a6)
 	movem.l	(sp)+,d3/a2/a6
+
+	;enlargement of symbols/macros windows
+	cmp	#SCREENHEIGHTTRIG,d6
+	blo	.skip
+	move	#SYMWINHEIGHTADD,d1
+	add	d1,gadgets_sym_lv1h
+	add	d1,gadgets_sym_lv2h
+	add	d1,gadgets_sym_lv3h
+	add	d1,gadgets_sym_b1t
+	add	d1,gadgets_sym_b2t
+	move	#MACWINHEIGHTADD,d1
+	add	d1,MacrosGadgetsHi_l1h
+	add	d1,MacrosGadgetsHi_b1t
+	add	d1,MacrosGadgetsHi_b2t
+.skip
 	movea.l	a2,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
