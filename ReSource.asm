@@ -300,6 +300,7 @@ sc_BarLayer	equ	$14E
 WA_Title	equ	$8000006E
 _LVORemIntServer	equ	-$AE
 pr_Result2	equ	$94
+rm_SIZEOF	equ	$C
 PLACETEXT_LEFT	equ	$1
 sm_SIZEOF	equ	$28
 WFLG_RMBTRAP	equ	$10000
@@ -312,6 +313,7 @@ _LVOCopyMem	equ	-$270
 _LVOGT_SetGadgetAttrsA	equ	-$2A
 _LVOGT_RefreshWindow	equ	-$54
 gng_LeftEdge	equ	$0
+MEMF_CHIP	equ	$2
 GTST_MaxChars	equ	$8008002E
 STRINGA_ExitHelp	equ	$80032013
 _LVOGT_BeginRefresh	equ	-$5A
@@ -337,9 +339,9 @@ WFLG_DRAGBAR	equ	$2
 ****************************************************************************
 	exeobj
 	errfile	'ram:assem.output'
-	objfile	'ReSource.16'
+	objfile	'ReSource.17'
 ;_[]
-	SECTION	ReSource16rs000000,CODE
+	SECTION	ReSource17rs000000,CODE
 ProgStart
 ; datasegment = $2a890 (sometimes a5, sometimes a6)
 lbC000000	jmp	(Start).l
@@ -856,7 +858,7 @@ lbC000602	move.l	#MEMF_CLEAR,d1
 	tst.b	(laceflag-ds,a6)
 	bne.b	_creategadgets
 	lea	(gadgets_sym_lores,pc),a0
-_creategadgets	bsr.w	creategadgets
+_creategadgets	bsr.w	CreateGadgets
 	beq.w	syms_nosyms
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
@@ -1324,7 +1326,7 @@ lbC000BAC	tst.b	(a3)+
 	bra.b	lbC000BAA
 
 lbC000BEC	lea	(lbW000DAE,pc),a0
-	bsr.w	creategadgets
+	bsr.w	CreateGadgets
 	beq.w	lbC000D6A
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
@@ -1567,7 +1569,7 @@ lbC000EB0	move.w	(a0)+,d0
 	tst.b	(laceflag-ds,a6)
 	bne.b	.go
 	lea	(gadgets_search_lores,pc),a0
-.go	bsr.w	creategadgets
+.go	bsr.w	CreateGadgets
 	beq.w	lbC000FE2
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
@@ -2309,45 +2311,45 @@ openwindow_macros2	moveq	#1,d0
 
 openwindow_macros3	moveq	#2,d0
 openwindow_macros	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	d0,d6
-	lea	(window3ptr-ds,a6),a0
+	move.l	d0,d6	;d6 = macros number
+	lea	(WindowMacros1Ptr-ds,a6),a0
 	lsl.w	#2,d0
 	move.l	(a0,d0.w),d0
-	beq.b	lbC00174A
+	beq.b	.notyetopen
 	movea.l	d0,a0
 	bsr.w	windowtofront
 	bra.w	lbC001990
 
-lbC00174A	move.l	#$10000,d1
+.notyetopen	move.l	#MEMF_CLEAR,d1
 	move.l	#$CA,d0
 	move.l	a6,-(sp)
 	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
-	bne.b	lbC00176E
+	bne.b	.memok
 	jsr	(easyrequest_3a-ds,a6)
 	bra.w	lbC0019D2
 
-lbC00176E	movea.l	d0,a5
-	lea	(lbL00E768).l,a0
+.memok	movea.l	d0,a5	;a5 = macros memory
+	lea	(Macros1Strings).l,a0
 	tst.w	d6
-	beq.b	lbC001788
+	beq.b	.alloc
 	lea	($4C,a0),a0
 	cmpi.w	#1,d6
-	beq.b	lbC001788
+	beq.b	.alloc
 	lea	($4C,a0),a0
-lbC001788	bsr.w	lbC001C9E
+.alloc	bsr.w	MacrosAllocStructs
 	beq.w	lbC0019D2
-	lea	(unknown_hires,pc),a0
+	lea	(MacrosGadgetsHi,pc),a0
 	tst.b	(laceflag-ds,a6)
 	bne.b	.go
-	lea	(unknown_lores,pc),a0
-.go	bsr.w	creategadgets
+	lea	(MacrosGadgetsLo,pc),a0
+.go	bsr.w	CreateGadgets
 	beq.w	lbC0019AC
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
-	move.l	#$80000070,-(sp)
+	move.l	#WA_CustomScreen,-(sp)
 	move.w	#$1388,d0
 	jsr	(gettextbynum-ds,a6)
 	tst.b	(laceflag-ds,a6)
@@ -2363,29 +2365,29 @@ lbC0017D6	tst.b	(a0)
 	beq.b	lbC0017DC
 	move.l	a0,d0
 lbC0017DC	move.l	d0,-(sp)
-	move.l	#$8000006E,-(sp)
+	move.l	#WA_Title,-(sp)
 	moveq	#1,d0
 	move.l	d0,-(sp)
-	move.l	#$80000083,-(sp)
+	move.l	#WA_DepthGadget,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000082,-(sp)
+	move.l	#WA_DragBar,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000089,-(sp)
+	move.l	#WA_Activate,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000084,-(sp)
+	move.l	#WA_CloseGadget,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008D,-(sp)
+	move.l	#WA_SmartRefresh,-(sp)
 	clr.l	-(sp)
-	move.l	#$8000006A,-(sp)
+	move.l	#WA_IDCMP,-(sp)
 	moveq	#0,d0
 	move.w	#$B9,d0
 	tst.b	(laceflag-ds,a6)
-	bne.b	lbC001826
+	bne.b	.setheight
 	move.w	#$66,d0
-lbC001826	move.l	d0,-(sp)
-	move.l	#$80000067,-(sp)
+.setheight	move.l	d0,-(sp)
+	move.l	#WA_Height,-(sp)
 	pea	($10C).w
-	move.l	#$80000066,-(sp)
+	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
 	move.w	(lbB02CFD8-ds,a6),d0
 	moveq	#0,d1
@@ -2399,9 +2401,9 @@ lbC001826	move.l	d0,-(sp)
 	move.w	(lbB02CFE0-ds,a6),d0
 	move.w	(lbB02CFDE-ds,a6),d1
 lbC00185E	move.l	d0,-(sp)
-	move.l	#$80000065,-(sp)
+	move.l	#WA_Top,-(sp)
 	move.l	d1,-(sp)
-	move.l	#$80000064,-(sp)
+	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
@@ -2409,7 +2411,7 @@ lbC00185E	move.l	d0,-(sp)
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	lea	(window3ptr-ds,a6),a0
+	lea	(WindowMacros1Ptr-ds,a6),a0
 	move.l	d6,d1
 	lsl.w	#2,d1
 	move.l	d0,(a0,d1.w)
@@ -2491,13 +2493,13 @@ lbC001962	lea	(ga_disabled_0,pc),a1
 lbC001966	movea.l	(8,a2),a0
 	bsr.w	SetGadgetAttrs
 lbC00196E	move.w	d6,($C8,a5)
-	lea	(lbC001D02,pc),a0
+	lea	(Macros1Dealloc,pc),a0
 	tst.w	d6
 	beq.b	lbC001988
-	lea	(lbC001D14,pc),a0
+	lea	(Macros2Dealloc,pc),a0
 	cmpi.w	#1,d6
 	beq.b	lbC001988
-	lea	(lbC001D26,pc),a0
+	lea	(Macros3Dealloc,pc),a0
 lbC001988	move.l	a0,($A6,a5)
 	move.l	a5,($78,a3)
 lbC001990	andi.b	#$FB,ccr
@@ -2529,17 +2531,17 @@ lbC0019D2	ori.b	#4,ccr
 lbC0019D6	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
-unknown_hires	dw	10
-	dw	$2B
-	dw	$F8
-	dw	$74
-	dw	$1389
-	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)
-	dl	select_macros_list
-	dl	LISTVIEW_KIND
-	dl	gtlv_tags
+MacrosGadgetsHi	dw	10	;LeftEdge
+	dw	$2B	;TopEdge
+	dw	$F8	;Width
+MacrosGadgetsHi_l1h	dw	$74	;Height
+	dw	$1389	;text number
+	dl	(PLACETEXT_ABOVE|NG_HIGHLABEL)	;Flags
+	dl	select_macros_list	;UserData
+	dl	LISTVIEW_KIND	;kind
+	dl	gtlv_tags	;tags
 	dw	$92
-	dw	$A6
+MacrosGadgetsHi_b1t	dw	$A6
 	dw	$5F
 	dw	12
 	dw	$9D1
@@ -2548,7 +2550,7 @@ unknown_hires	dw	10
 	dl	BUTTON_KIND
 	dl	ga_disabled_1
 	dw	$1B
-	dw	$A6
+MacrosGadgetsHi_b2t	dw	$A6
 	dw	$5F
 	dw	12
 	dw	$9D0
@@ -2557,7 +2559,7 @@ unknown_hires	dw	10
 	dl	BUTTON_KIND
 	dl	ga_disabled_1
 	dl	0
-unknown_lores	dw	10
+MacrosGadgetsLo	dw	10
 	dw	14
 	dw	$F8
 	dw	$44
@@ -2626,7 +2628,7 @@ select_macros_execute
 	move.w	d0,(lbB02CF8C-ds,a6)
 	add.w	d0,d0
 	move.w	(a1,d0.w),d0
-	move.l	a3,(lbB02CF86-ds,a6)
+	move.l	a3,(lbL02CF86-ds,a6)
 	rts
 
 lbW001B00	dw	lbW001B06-lbW001B00
@@ -2699,7 +2701,7 @@ select_macros_create
 	move.w	(a0,d0.w),d0
 	add.w	d0,d0
 	move.w	(a1,d0.w),d0
-	move.l	a3,(lbB02CF86-ds,a6)
+	move.l	a3,(lbL02CF86-ds,a6)
 	rts
 
 lbW001B9A	dw	lbW001BA0-lbW001B9A
@@ -2764,7 +2766,7 @@ lbW001BEC	dw	$323
 	dw	$339
 
 lbC001C12	movem.l	d2/d3/a0-a5,-(sp)
-	move.l	(lbB02CF86-ds,a6),d0
+	move.l	(lbL02CF86-ds,a6),d0
 	beq.b	lbC001C98
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
@@ -2785,14 +2787,14 @@ lbC001C32	movea.l	($2A,a5),a0
 	jsr	(_LVOFreeRemember,a6)
 	movea.l	(sp)+,a6
 	clr.l	(a5)
-lbC001C4E	lea	(lbL00E768).l,a0
-	cmpa.l	(window3ptr-ds,a6),a3
+lbC001C4E	lea	(Macros1Strings).l,a0
+	cmpa.l	(WindowMacros1Ptr-ds,a6),a3
 	beq.b	lbC001C68
 	lea	($4C,a0),a0
-	cmpa.l	(window4ptr-ds,a6),a3
+	cmpa.l	(WindowMacros2Ptr-ds,a6),a3
 	beq.b	lbC001C68
 	lea	($4C,a0),a0
-lbC001C68	bsr.b	lbC001C9E
+lbC001C68	bsr.b	MacrosAllocStructs
 	bne.b	lbC001C72
 	bsr.w	lbC001D36
 	bra.b	lbC001C98
@@ -2812,14 +2814,14 @@ lbC001C8C	movea.l	($2A,a5),a0
 lbC001C98	movem.l	(sp)+,d2/d3/a0-a5
 	rts
 
-lbC001C9E	movem.l	d2/a2/a3,-(sp)
+MacrosAllocStructs	movem.l	d2/a2/a3,-(sp)
 	movea.l	a0,a3
 	lea	($B2,a5),a2
 	move.l	a2,(8,a2)
 	addq.l	#4,a2
 	clr.l	(a2)
 	move.l	a2,-(a2)
-	moveq	#$12,d2
+	moveq	#18,d2	;19 strings
 lbC001CB4	move.l	#$10001,d1
 	moveq	#14,d0
 	lea	(a5),a0
@@ -2830,7 +2832,7 @@ lbC001CB4	move.l	#$10001,d1
 	tst.l	d0
 	beq.b	lbC001CF4
 	movea.l	d0,a1
-	move.l	(a3)+,(10,a1)
+	move.l	(a3)+,(10,a1)	;string buffer
 	movea.l	a2,a0
 	addq.l	#4,a0
 	move.l	(4,a0),d0
@@ -2848,20 +2850,20 @@ lbC001CF4	jsr	(easyrequest_3a-ds,a6)
 lbC001CFC	movem.l	(sp)+,d2/a2/a3
 	rts
 
-lbC001D02	move.w	(4,a3),(lbB02CFD6-ds,a6)
+Macros1Dealloc	move.w	(4,a3),(lbB02CFD6-ds,a6)
 	move.w	(6,a3),(lbB02CFD8-ds,a6)
-	clr.l	(window3ptr-ds,a6)
+	clr.l	(WindowMacros1Ptr-ds,a6)
 	bra.b	lbC001D36
 
-lbC001D14	move.w	(4,a3),(lbB02CFDA-ds,a6)
+Macros2Dealloc	move.w	(4,a3),(lbB02CFDA-ds,a6)
 	move.w	(6,a3),(lbB02CFDC-ds,a6)
-	clr.l	(window4ptr-ds,a6)
+	clr.l	(WindowMacros2Ptr-ds,a6)
 	bra.b	lbC001D36
 
-lbC001D26	move.w	(4,a3),(lbB02CFDE-ds,a6)
+Macros3Dealloc	move.w	(4,a3),(lbB02CFDE-ds,a6)
 	move.w	(6,a3),(lbB02CFE0-ds,a6)
-	clr.l	(window5ptr-ds,a6)
-lbC001D36	lea	(lbB02CF86-ds,a6),a0
+	clr.l	(WindowMacros3Ptr-ds,a6)
+lbC001D36	lea	(lbL02CF86-ds,a6),a0
 	cmpa.l	(a0),a3
 	bne.b	lbC001D40
 	clr.l	(a0)
@@ -2903,7 +2905,7 @@ lbC001D8C	move.l	#$10000,d1
 	beq.w	lbC001EB6
 	movea.l	d0,a5
 	lea	(gadgets_options1,pc),a0
-	bsr.w	creategadgets
+	bsr.w	CreateGadgets
 	beq.w	lbC001EA6
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
@@ -3554,7 +3556,7 @@ lbC002480	move.l	#$10000,d1
 	beq.w	lbC0025A8
 	movea.l	d0,a5
 	lea	(gadgets_options2,pc),a0
-	bsr.w	creategadgets
+	bsr.w	CreateGadgets
 	beq.w	lbC002598
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
@@ -4021,7 +4023,7 @@ lbC002964	move.w	(4,a3),(lbB02CFEA-ds,a6)
 	movea.l	(sp)+,a6
 	rts
 
-creategadgets	movem.l	d2/a2-a4,-(sp)
+CreateGadgets	movem.l	d2/a2-a4,-(sp)
 	movea.l	a0,a3
 	lea	($26,a5),a4
 	lea	($22,a5),a0
@@ -5126,7 +5128,7 @@ lbC003652	movem.l	d2-d7/a2-a5,-(sp)
 	move.l	d0,(a1)+
 	dbra	d2,.loop2
 	lea	(gadgets_zap2,pc),a0
-	bsr.w	creategadgets
+	bsr.w	CreateGadgets
 	beq.w	lbC0039EC
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
@@ -17259,7 +17261,7 @@ lbL00E72C	dl	lbB03976C-lbL00E72C
 	dl	lbB0398A4-
 	dl	lbB0398BE-
 	dl	lbB0398D8-
-lbL00E768	dl	lbB0398F2-lbL00E768
+Macros1Strings	dl	Macros1String1-Macros1Strings
 	dl	lbB03990C-
 	dl	lbB039926-
 	dl	lbB039940-
@@ -17277,8 +17279,8 @@ lbL00E768	dl	lbB0398F2-lbL00E768
 	dl	lbB039A78-
 	dl	lbB039A92-
 	dl	lbB039AAC-
-	dl	lbB039AC6-
-	dl	lbB039AE0-
+	dl	Macros1String19-
+Macros2Strings	dl	Macros2String1-Macros2Strings
 	dl	lbB039AFA-
 	dl	lbB039B14-
 	dl	lbB039B2E-
@@ -17296,8 +17298,8 @@ lbL00E768	dl	lbB0398F2-lbL00E768
 	dl	lbB039C66-
 	dl	lbB039C80-
 	dl	lbB039C9A-
-	dl	lbB039CB4-
-	dl	lbB039CCE-
+	dl	Macros2String19-
+Macros3Strings	dl	Macros3String1-Macros3Strings
 	dl	lbB039CE8-
 	dl	lbB039D02-
 	dl	lbB039D1C-
@@ -17315,7 +17317,7 @@ lbL00E768	dl	lbB0398F2-lbL00E768
 	dl	lbB039E54-
 	dl	lbB039E6E-
 	dl	lbB039E88-
-	dl	lbB039EA2-
+	dl	Macros3String19-
 functable	dl	clear_ccr-functable
 	dw	$FFD8
 	dl	0
@@ -26300,15 +26302,15 @@ lbC0152DC	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC0152EA
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC0152EA	move.l	(window3ptr-ds,a6),d0
+lbC0152EA	move.l	(WindowMacros1Ptr-ds,a6),d0
 	beq.b	lbC0152F8
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC0152F8	move.l	(window4ptr-ds,a6),d0
+lbC0152F8	move.l	(WindowMacros2Ptr-ds,a6),d0
 	beq.b	lbC015306
 	movea.l	d0,a0
 	bset	#0,($19,a0)
-lbC015306	move.l	(window5ptr-ds,a6),d0
+lbC015306	move.l	(WindowMacros3Ptr-ds,a6),d0
 	beq.b	lbC015314
 	movea.l	d0,a0
 	bset	#0,($19,a0)
@@ -26332,15 +26334,15 @@ lbC01534A	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC015358
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015358	move.l	(window3ptr-ds,a6),d0
+lbC015358	move.l	(WindowMacros1Ptr-ds,a6),d0
 	beq.b	lbC015366
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015366	move.l	(window4ptr-ds,a6),d0
+lbC015366	move.l	(WindowMacros2Ptr-ds,a6),d0
 	beq.b	lbC015374
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015374	move.l	(window5ptr-ds,a6),d0
+lbC015374	move.l	(WindowMacros3Ptr-ds,a6),d0
 	beq.b	lbC015382
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
@@ -34993,7 +34995,7 @@ lbC01C2C4	rts
 lbL01C2C8	dl	0
 	dl	0
 	dl	lbB02B3A9
-	dl	lbB0398F2
+	dl	Macros1String1
 	dl	0
 	dl	0
 	dl	lbB02B3AA
@@ -35065,11 +35067,11 @@ lbL01C2C8	dl	0
 lbL01C3E8	dl	0
 	dl	0
 	dl	lbB02B3BB
-	dl	lbB039AC6
+	dl	Macros1String19
 	dl	0
 	dl	0
 	dl	lbB02B3BC
-	dl	lbB039AE0
+	dl	Macros2String1
 	dl	0
 	dl	0
 	dl	lbB02B3BD
@@ -35141,11 +35143,11 @@ lbL01C3E8	dl	0
 	dl	0
 	dl	0
 	dl	lbB02B3CE
-	dl	lbB039CB4
+	dl	Macros2String19
 	dl	0
 	dl	0
 	dl	lbB02B3CF
-	dl	lbB039CCE
+	dl	Macros3String1
 	dl	0
 	dl	0
 	dl	lbB02B3D0
@@ -35217,7 +35219,7 @@ lbL01C3E8	dl	0
 	dl	0
 	dl	0
 	dl	lbB02B3E1
-	dl	lbB039EA2
+	dl	Macros3String19
 
 lbC01C658	lea	(lbL02C1D4-ds,a6),a0
 	move.l	a0,d1
@@ -36047,7 +36049,7 @@ lbC01CE2C	bsr.w	lbC020BBE
 	jsr	(lbC028D54-ds,a6)
 	movea.l	(sp)+,a1
 	beq.w	lbC01D09C
-	move.l	(lbB02CF86-ds,a6),d0
+	move.l	(lbL02CF86-ds,a6),d0
 	beq.b	lbC01CE8E
 	movem.l	d1/a0-a3,-(sp)
 	movea.l	d0,a3
@@ -39882,21 +39884,21 @@ lbC0204F4	move.l	(window2ptr-ds,a6),d0
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC0016D6).l
-lbC020506	move.l	(window3ptr-ds,a6),d0
+lbC020506	move.l	(WindowMacros1Ptr-ds,a6),d0
 	beq.b	lbC020518
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
-	jsr	(lbC001D02).l
-lbC020518	move.l	(window4ptr-ds,a6),d0
+	jsr	(Macros1Dealloc).l
+lbC020518	move.l	(WindowMacros2Ptr-ds,a6),d0
 	beq.b	lbC02052A
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
-	jsr	(lbC001D14).l
-lbC02052A	move.l	(window5ptr-ds,a6),d0
+	jsr	(Macros2Dealloc).l
+lbC02052A	move.l	(WindowMacros3Ptr-ds,a6),d0
 	beq.b	lbC02053C
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
-	jsr	(lbC001D26).l
+	jsr	(Macros3Dealloc).l
 lbC02053C	move.l	(window6ptr-ds,a6),d0
 	beq.b	lbC02054E
 	movea.l	d0,a3
@@ -53284,17 +53286,17 @@ lbC029E28	lea	(lbL02B0D0-ds,a5),a2
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E36	lea	(lbL02B140-ds,a5),a2
-	move.l	(window3ptr-ds,a5),d2
+	move.l	(WindowMacros1Ptr-ds,a5),d2
 	beq.b	lbC029E44
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E44	lea	(lbL02B1B0-ds,a5),a2
-	move.l	(window4ptr-ds,a5),d2
+	move.l	(WindowMacros2Ptr-ds,a5),d2
 	beq.b	lbC029E52
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E52	lea	(lbL02B220-ds,a5),a2
-	move.l	(window5ptr-ds,a5),d2
+	move.l	(WindowMacros3Ptr-ds,a5),d2
 	beq.b	lbC029E60
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
@@ -53336,17 +53338,17 @@ lbC029EBE	move.l	(window2ptr-ds,a5),d0
 	lea	(lbL02B0D0-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029ECE	move.l	(window3ptr-ds,a5),d0
+lbC029ECE	move.l	(WindowMacros1Ptr-ds,a5),d0
 	beq.b	lbC029EDE
 	lea	(lbL02B140-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EDE	move.l	(window4ptr-ds,a5),d0
+lbC029EDE	move.l	(WindowMacros2Ptr-ds,a5),d0
 	beq.b	lbC029EEE
 	lea	(lbL02B1B0-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EEE	move.l	(window5ptr-ds,a5),d0
+lbC029EEE	move.l	(WindowMacros3Ptr-ds,a5),d0
 	beq.b	lbC029EFE
 	lea	(lbL02B220-ds,a5),a0
 	movea.l	d0,a1
@@ -53377,13 +53379,13 @@ _SetPointerAll	movem.l	d0-d3/a0/a1/a5/a6,-(sp)
 lbC029F42	move.l	(window2ptr-ds,a5),d0
 	beq.b	lbC029F4A
 	bsr.b	_SetPointer
-lbC029F4A	move.l	(window3ptr-ds,a5),d0
+lbC029F4A	move.l	(WindowMacros1Ptr-ds,a5),d0
 	beq.b	lbC029F52
 	bsr.b	_SetPointer
-lbC029F52	move.l	(window4ptr-ds,a5),d0
+lbC029F52	move.l	(WindowMacros2Ptr-ds,a5),d0
 	beq.b	lbC029F5A
 	bsr.b	_SetPointer
-lbC029F5A	move.l	(window5ptr-ds,a5),d0
+lbC029F5A	move.l	(WindowMacros3Ptr-ds,a5),d0
 	beq.b	lbC029F62
 	bsr.b	_SetPointer
 lbC029F62	move.l	(window6ptr-ds,a5),d0
@@ -53414,13 +53416,13 @@ _ClearPointerAll	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
 lbC029FA6	move.l	(window2ptr-ds,a5),d0
 	beq.b	lbC029FAE
 	bsr.b	_ClearPointer
-lbC029FAE	move.l	(window3ptr-ds,a5),d0
+lbC029FAE	move.l	(WindowMacros1Ptr-ds,a5),d0
 	beq.b	lbC029FB6
 	bsr.b	_ClearPointer
-lbC029FB6	move.l	(window4ptr-ds,a5),d0
+lbC029FB6	move.l	(WindowMacros2Ptr-ds,a5),d0
 	beq.b	lbC029FBE
 	bsr.b	_ClearPointer
-lbC029FBE	move.l	(window5ptr-ds,a5),d0
+lbC029FBE	move.l	(WindowMacros3Ptr-ds,a5),d0
 	beq.b	lbC029FC6
 	bsr.b	_ClearPointer
 lbC029FC6	move.l	(window6ptr-ds,a5),d0
@@ -53901,7 +53903,7 @@ lbC02A4EA	movem.l	d0-d2/a0-a3,-(sp)
 	moveq	#1,d2
 	move.b	d2,(lbB02EB4B-ds,a6)
 	bsr.b	lbC02A52A
-	move.l	(lbB02CF86-ds,a6),d0
+	move.l	(lbL02CF86-ds,a6),d0
 	bsr.b	lbC02A562
 	movem.l	(sp)+,d0-d2/a0-a3
 	rts
@@ -53910,7 +53912,7 @@ lbC02A502	movem.l	d0-d2/a0-a3,-(sp)
 	moveq	#0,d2
 	move.b	d2,(lbB02EB4B-ds,a6)
 	bsr.b	lbC02A52A
-	lea	(window3ptr-ds,a6),a0
+	lea	(WindowMacros1Ptr-ds,a6),a0
 	move.w	(macros_num-ds,a6),d0
 	lsl.w	#2,d0
 	move.l	(a0,d0.w),d0
@@ -53920,11 +53922,11 @@ lbC02A502	movem.l	d0-d2/a0-a3,-(sp)
 	movem.l	(sp)+,d0-d2/a0-a3
 	rts
 
-lbC02A52A	move.l	(window3ptr-ds,a6),d0
+lbC02A52A	move.l	(WindowMacros1Ptr-ds,a6),d0
 	bsr.b	lbC02A53A
-	move.l	(window4ptr-ds,a6),d0
+	move.l	(WindowMacros2Ptr-ds,a6),d0
 	bsr.b	lbC02A53A
-	move.l	(window5ptr-ds,a6),d0
+	move.l	(WindowMacros3Ptr-ds,a6),d0
 lbC02A53A	beq.b	lbC02A560
 	movea.l	d0,a3
 	movea.l	($78,a3),a0
@@ -55299,13 +55301,13 @@ vblank_counter	dx.b	1
 window1ptr	dx.b	4
 userport	dx.l	1
 symwindowptr	dx.l	1
-window2ptr	dx.b	4
-window3ptr	dx.b	4
-window4ptr	dx.b	4
-window5ptr	dx.b	4
-window6ptr	dx.b	4
-window7ptr	dx.b	4
-lbB02CF86	dx.b	4
+window2ptr	dx.l	1
+WindowMacros1Ptr	dx.l	1
+WindowMacros2Ptr	dx.l	1
+WindowMacros3Ptr	dx.l	1
+window6ptr	dx.l	1
+window7ptr	dx.l	1
+lbL02CF86	dx.l	1
 macros_num	dx.b	2
 lbB02CF8C	dx.b	2
 _RawDoFmt_args	dx.b	$10
@@ -55742,7 +55744,7 @@ lbB03988A	dx.b	$1A
 lbB0398A4	dx.b	$1A
 lbB0398BE	dx.b	$1A
 lbB0398D8	dx.b	$1A
-lbB0398F2	dx.b	$1A
+Macros1String1	dx.b	$1A
 lbB03990C	dx.b	$1A
 lbB039926	dx.b	$1A
 lbB039940	dx.b	$1A
@@ -55760,8 +55762,8 @@ lbB039A5E	dx.b	$1A
 lbB039A78	dx.b	$1A
 lbB039A92	dx.b	$1A
 lbB039AAC	dx.b	$1A
-lbB039AC6	dx.b	$1A
-lbB039AE0	dx.b	$1A
+Macros1String19	dx.b	$1A
+Macros2String1	dx.b	$1A
 lbB039AFA	dx.b	$1A
 lbB039B14	dx.b	$1A
 lbB039B2E	dx.b	$1A
@@ -55779,8 +55781,8 @@ lbB039C4C	dx.b	$1A
 lbB039C66	dx.b	$1A
 lbB039C80	dx.b	$1A
 lbB039C9A	dx.b	$1A
-lbB039CB4	dx.b	$1A
-lbB039CCE	dx.b	$1A
+Macros2String19	dx.b	$1A
+Macros3String1	dx.b	$1A
 lbB039CE8	dx.b	$1A
 lbB039D02	dx.b	$1A
 lbB039D1C	dx.b	$1A
@@ -55798,10 +55800,10 @@ lbB039E3A	dx.b	$1A
 lbB039E54	dx.b	$1A
 lbB039E6E	dx.b	$1A
 lbB039E88	dx.b	$1A
-lbB039EA2	dx.b	$22
+Macros3String19	dx.b	$22
 DxAreaEnd
 
-	SECTION	ReSource16rs039EC4,DATA,CHIP
+	SECTION	ReSource17rs039EC4,DATA,CHIP
 pointerdata	dl	0
 	dl	$40007C0
 	dl	$7C0
@@ -55892,7 +55894,7 @@ GadgetImageData	dl	0
 	dl	0
 
 
-	SECTION	ReSource16rs03A024,CODE
+	SECTION	ReSource17rs03A024,CODE
 copyhunk2	movem.l	a2-a4,-(sp)
 	lea	(lbL03A400,pc),a0
 	lea	(lbL03576C).l,a1
