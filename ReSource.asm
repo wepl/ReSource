@@ -15,6 +15,8 @@ VERSION MACRO
 	db	"6.6.1"
 	ENDM
 
+sc_Height	equ	14
+
 * here starts the normal ReSource output
 
 ThisTask	equ	$114
@@ -880,6 +882,18 @@ lbC000602	move.l	#MEMF_CLEAR,d1
 	movea.l	d0,a5	;A5 = $CA bytes
 	jsr	(open_resourcesyms).l
 	beq.w	syms_nosyms
+
+SYMWINHEIGHTADD = -2+26*8		;enlargement for symbols window
+	move.l	(screenptr-ds,a6),a0
+	cmp	#512,(sc_Height,a0)
+	blo	.skip
+	move	#SYMWINHEIGHTADD,d1
+	add	d1,gadgets_sym_lv1h
+	add	d1,gadgets_sym_lv2h
+	add	d1,gadgets_sym_lv3h
+	add	d1,gadgets_sym_b1t
+	add	d1,gadgets_sym_b2t
+.skip
 	lea	(gadgets_sym_hires,pc),a0
 	tst.b	(laceflag-ds,a6)
 	bne.b	_creategadgets
@@ -909,11 +923,16 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	move.l	#WA_SmartRefresh,-(sp)
 	clr.l	-(sp)
 	move.l	#WA_IDCMP,-(sp)
-	moveq	#0,d0
-	move.w	#$B9,d0
+
+	moveq	#93,d0
 	tst.b	(laceflag-ds,a6)
-	bne.b	.setheight
-	move.w	#93,d0
+	beq.b	.setheight
+	move.w	#185,d0
+	move.l	(screenptr-ds,a6),a0
+	cmp	#512,(sc_Height,a0)
+	blo	.setheight
+	add	#SYMWINHEIGHTADD,d0
+
 .setheight	move.l	d0,-(sp)
 	move.l	#WA_Height,-(sp)
 	pea	($273).w
