@@ -54309,6 +54309,11 @@ Macros1.MSG	db	'     - Macros 1 -       ',0,0
 Macros2.MSG	db	'     - Macros 2 -       ',0,0
 Macros3.MSG	db	'     - Macros 3 -       ',0,0
 
+	CNOP 0,4
+	IFD BARFLY
+	BOPT OD8-
+	ENDC
+
 lbC02A830	jmp	(lbC01C2A4).l
 
 lbC02A836	jmp	(lbC0142B8).l
@@ -54341,7 +54346,10 @@ lbC02A884	jmp	(lbC020C9C).l
 
 lbC02A88A	jmp	(lbC000028).l
 
-	CNOP 0,4
+	IFD BARFLY
+	BOPT OD8+
+	ENDC
+
 ds	dl	0	;work data start address
 workdata_struct	dl	0
 workdata_strt_cmp2	dl	0	;used in cmp2
