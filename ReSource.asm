@@ -63,7 +63,9 @@ _LVOUnLoadSeg	equ	-$9C
 sm_ArgList	equ	$24
 _LVOInitRequester	equ	-$8A
 GFLG_RELWIDTH	equ	$20
+wd_UserData	equ	$78
 AFB_68881	equ	$4
+ASLFR_InitialDrawer	equ	$80080009
 h_Entry	equ	$8
 _LVOFreeRaster	equ	-$1F2
 SA_Overscan	equ	$80000034
@@ -95,6 +97,7 @@ GMORE_GADGETHELP	equ	$2
 _LVOCloseLibrary	equ	-$19E
 GMR_REUSE	equ	$4
 IS_CODE	equ	$12
+ASLFR_Flags1	equ	$80080014
 GMORE_SCROLLRASTER	equ	$4
 _LVOExamine	equ	-$66
 LORIENT_VERT	equ	$2
@@ -112,6 +115,8 @@ _LVOGT_EndRefresh	equ	-$60
 _LVOCurrentDir	equ	-$7E
 gg_Width	equ	$8
 wd_LeftEdge	equ	$4
+ASLFR_TitleText	equ	$80080001
+bm_BytesPerRow	equ	$0
 AFB_68020	equ	$1
 nw_Height	equ	$6
 _LVOAllocRemember	equ	-$18C
@@ -154,6 +159,7 @@ _LVOClipBlit	equ	-$228
 _LVOModifyIDCMP	equ	-$96
 _LVOAllocAslRequest	equ	-$30
 _LVOSetDrMd	equ	-$162
+gg_Flags	equ	$C
 _LVOOwnBlitter	equ	-$1C8
 WA_Width	equ	$80000066
 _LVOLoadSeg	equ	-$96
@@ -177,6 +183,7 @@ ASLSM_InitialDisplayHeight	equ	$80080066
 im_Qualifier	equ	$1A
 WA_CustomScreen	equ	$80000070
 WA_Left	equ	$80000064
+FRF_DOMSGFUNC	equ	$40
 _LVOResetMenuStrip	equ	-$2BE
 nw_DetailPen	equ	$8
 ASL_ScreenModeRequest	equ	$2
@@ -211,6 +218,7 @@ _LVOEasyRequestArgs	equ	-$24C
 _LVODisplayBeep	equ	-$60
 CUSTOMSCREEN	equ	$F
 MN	equ	$0
+si_MaxChars	equ	$A
 _LVOItemAddress	equ	-$90
 _LVOPermit	equ	-$8A
 _LVOOpenScreenTagList	equ	-$264
@@ -229,6 +237,7 @@ GTLV_Selected	equ	$80080036
 TC_MEMENTRY	equ	$4A
 _LVOSetBPen	equ	-$15C
 _LVOMove	equ	-$F0
+ASLFR_InitialFile	equ	$80080008
 _LVOOpenLibrary	equ	-$228
 _LVOAvailMem	equ	-$D8
 SA_BitMap	equ	$8000002E
@@ -242,6 +251,7 @@ _LVOReleaseSemaphore	equ	-$23A
 WA_IDCMP	equ	$8000006A
 _LVOGetVisualInfoA	equ	-$7E
 _LVOAllocMem	equ	-$C6
+ASLFR_HookFunc	equ	$80080007
 MODE_OLDFILE	equ	$3ED
 HIRES_KEY	equ	$8000
 _LVOFreeDiskObject	equ	-$5A
@@ -298,6 +308,7 @@ WA_DepthGadget	equ	$80000083
 wa_SIZEOF	equ	$8
 sc_BarLayer	equ	$14E
 WA_Title	equ	$8000006E
+bm_Rows	equ	$2
 _LVORemIntServer	equ	-$AE
 pr_Result2	equ	$94
 rm_SIZEOF	equ	$C
@@ -306,6 +317,7 @@ sm_SIZEOF	equ	$28
 WFLG_RMBTRAP	equ	$10000
 IDCMP_RAWKEY	equ	$400
 _LVOEndRequest	equ	-$78
+OFFSET_END	equ	$1
 wd_Flags	equ	$18
 SA_DetailPen	equ	$80000026
 _LVOAlert	equ	-$6C
@@ -339,9 +351,9 @@ WFLG_DRAGBAR	equ	$2
 ****************************************************************************
 	exeobj
 	errfile	'ram:assem.output'
-	objfile	'ReSource.17'
+	objfile	'ReSource.18'
 ;_[]
-	SECTION	ReSource17rs000000,CODE
+	SECTION	ReSource18rs000000,CODE
 ProgStart
 ; datasegment = $2a890 (sometimes a5, sometimes a6)
 lbC000000	jmp	(Start).l
@@ -351,7 +363,7 @@ lbC000000	jmp	(Start).l
 
 lbC000028	movem.l	d0-d6/a0-a3/a5,-(sp)
 	move.l	d0,d6
-	lea	(lbB02CF10-ds,a6),a2
+	lea	(unknown_bitmap-ds,a6),a2
 	moveq	#0,d0
 	moveq	#12,d1
 	add.l	d6,d1
@@ -4245,16 +4257,16 @@ lbC002BD0	clr.l	($56,a3)
 	rts
 
 lbC002BFE	movem.l	d2/a2/a3/a6,-(sp)
-	lea	(lbB031E00-ds,a6),a3
+	lea	(miscBuffer-ds,a6),a3
 	movea.l	a3,a0
 	move.w	#$36C,(a0)+
-	move.b	(lbB02B3E2-ds,a6),(a0)+
+	move.b	(saveRsOriginal_-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$370,(a0)+
-	move.b	(lbB02B3E3-ds,a6),(a0)+
+	move.b	(saveRsCurrent-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$368,(a0)+
-	move.b	(lbB02B3E4-ds,a6),(a0)+
+	move.b	(saveRsSpecify-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$1C,(a0)+
 	move.b	(lbB02B3E5-ds,a6),(a0)+
@@ -4482,31 +4494,31 @@ lbC002BFE	movem.l	d2/a2/a3/a6,-(sp)
 	move.b	(lbB02B437-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36E,(a0)+
-	move.b	(lbB02B438-ds,a6),(a0)+
+	move.b	(saveBinOriginal-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$372,(a0)+
-	move.b	(lbB02B439-ds,a6),(a0)+
+	move.b	(saveBinCurrent-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36A,(a0)+
-	move.b	(lbB02B43A-ds,a6),(a0)+
+	move.b	(saveBinSpecify-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36B,(a0)+
-	move.b	(lbB02B43B-ds,a6),(a0)+
+	move.b	(saveAsmOriginal-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36F,(a0)+
-	move.b	(lbB02B43C-ds,a6),(a0)+
+	move.b	(saveAsmCurrent-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$367,(a0)+
-	move.b	(lbB02B43D-ds,a6),(a0)+
+	move.b	(saveAsmSpecify-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$36D,(a0)+
-	move.b	(lbB02B43E-ds,a6),(a0)+
+	move.b	(saveExeOriginal-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$371,(a0)+
-	move.b	(lbB02B43F-ds,a6),(a0)+
+	move.b	(saveExeCurrent-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$369,(a0)+
-	move.b	(lbB02B440-ds,a6),(a0)+
+	move.b	(saveExeSpecify-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$4B,(a0)+
 	move.b	(lbB02B441-ds,a6),(a0)+
@@ -5631,7 +5643,7 @@ lbC003C4A	movem.l	d3-d7/a2-a5,-(sp)
 	movem.l	(sp)+,d3-d7/a2-a5
 	suba.l	(lbL02D070-ds,a6),a0
 	move.w	a0,($AA,a5)
-	lea	(stringbuffer).l,a0
+	lea	(currentDrawerBuf).l,a0
 	lea	(displayid-ds,a6),a2
 	movea.l	a2,a1
 	moveq	#$7E,d1
@@ -5730,5524 +5742,4243 @@ textstrings	dw	1
 	db	'Quit without saving macros?',0
 	dw	10
 	dw	8
-	db	'Symbols',0,0
-	db	11
-	db	0
-	db	8
+	db	'Symbols',0
+	dw	11
+	dw	8
 	db	'Search',0,0
-	db	0
-	db	12
-	db	0
-	db	10
+	dw	12
+	dw	10
 	db	'Macros 1',0,0
-	db	0
-	db	13
-	db	0
-	db	10
+	dw	13
+	dw	10
 	db	'Macros 2',0,0
-	db	0
-	db	14
-	db	0
-	db	10
+	dw	14
+	dw	10
 	db	'Macros 3',0,0
-	db	0
-	db	15
-	db	0
-	db	10
-	db	'Options 1',0,0
-	db	$10
-	db	0
-	db	10
-	db	'Options 2',0,0
-	db	$11
-	db	0
-	db	$12
-	db	'Load user symbols',0,0
-	db	$12
-	db	0
-	db	$1A
+	dw	15
+	dw	10
+	db	'Options 1',0
+	dw	$10
+	dw	10
+	db	'Options 2',0
+	dw	$11
+	dw	$12
+	db	'Load user symbols',0
+	dw	$12
+	dw	$1A
 	db	'        -empty-         ',0,0
-	db	0
-	db	'2',0
-	db	$1C
+	dw	$32
+	dw	$1C
 	db	'Can''t open asl.library V37',0,0
-	db	0
-	db	'3',0
-	db	' Can''t open gadtools.library V37',0,0
-	db	'4',0
-	db	$14
+	dw	$33
+	dw	$20
+	db	'Can''t open gadtools.library V37',0
+	dw	$34
+	dw	$14
 	db	'Can''t open %s V%s ',0,0
-	db	0
-	db	'5',0
-	db	':Error occurred in LayoutMenus.',$A
+	dw	$35
+	dw	$3A
+	db	'Error occurred in LayoutMenus.',$A
 	db	'Please report this error.',0,0
-	db	0
-	db	'6',0
-	db	$1E
-	db	'Error opening ReSource screen',0,0
-	db	'7',0
-	db	'*Can''t get VisualInfo for ReSource screen',0,0
-	db	0
-	db	'8',0
-	db	$1E
-	db	'Error opening ReSource window',0,0
-	db	'9',0
-	db	$1E
+	dw	$36
+	dw	$1E
+	db	'Error opening ReSource screen',0
+	dw	$37
+	dw	$2A
+	db	'Can''t get VisualInfo for ReSource screen',0,0
+	dw	$38
+	dw	$1E
+	db	'Error opening ReSource window',0
+	dw	$39
+	dw	$1E
 	db	'Can''t allocate ASL Requester',0,0
-	db	0
-	db	':',0
-	db	$18
+	dw	$3A
+	dw	$18
 	db	'Can''t allocate memory!',0,0
-	db	0
-	db	';',0
-	db	'4Bad locale string number.',$A
-	db	'Please report this error.',0,0
-	db	'<',0
-	db	'6Can''t create GadTools gadgets',$A
+	dw	$3B
+	dw	$34
+	db	'Bad locale string number.',$A
+	db	'Please report this error.',0
+	dw	$3C
+	dw	$36
+	db	'Can''t create GadTools gadgets',$A
 	db	'for ReSource requester',0,0
-	db	0
-	db	'=',0
-	db	'.Can''t exit Resource.',$A
+	dw	$3D
+	dw	$2E
+	db	'Can''t exit Resource.',$A
 	db	'Please close all windows',0
-	db	4
-	db	'ä',0
-	db	6
+	dw	$4E4
+	dw	6
 	db	'CODE',0,0
-	db	4
-	db	'å',0
-	db	6
+	dw	$4E5
+	dw	6
 	db	'code',0,0
-	db	4
-	db	'æ',0
-	db	6
+	dw	$4E6
+	dw	6
 	db	'DATA',0,0
-	db	4
-	db	'ç',0
-	db	6
+	dw	$4E7
+	dw	6
 	db	'data',0,0
-	db	4
-	db	'è',0,$A
+	dw	$4E8
+	dw	10
 	db	'REGISTERS',0
-	db	4
-	db	'é',0,$A
+	dw	$4E9
+	dw	10
 	db	'registers',0
-	db	4
-	db	'ê',0
-	db	$10
+	dw	$4EA
+	dw	$10
 	db	'SIZE SPECIFIERS',0
-	db	4
-	db	'ë',0
-	db	$10
+	dw	$4EB
+	dw	$10
 	db	'size specifiers',0
-	db	8
-	db	'A',0
-	db	$16
+	dw	$841
+	dw	$16
 	db	'Convert (xx,A0) EA''s',0,0
-	db	8
-	db	'B',0
-	db	$16
+	dw	$842
+	dw	$16
 	db	'Convert (xx,A1) EA''s',0,0
-	db	8
-	db	'C',0
-	db	$16
+	dw	$843
+	dw	$16
 	db	'Convert (xx,A2) EA''s',0,0
-	db	8
-	db	'D',0
-	db	$16
+	dw	$844
+	dw	$16
 	db	'Convert (xx,A3) EA''s',0,0
-	db	8
-	db	'E',0
-	db	$16
+	dw	$845
+	dw	$16
 	db	'Convert (xx,A4) EA''s',0,0
-	db	8
-	db	'F',0
-	db	$16
+	dw	$846
+	dw	$16
 	db	'Convert (xx,A5) EA''s',0,0
-	db	8
-	db	'G',0
-	db	$16
+	dw	$847
+	dw	$16
 	db	'Convert (xx,A6) EA''s',0,0
-	db	8
-	db	'H',0
-	db	$16
+	dw	$848
+	dw	$16
 	db	'Convert (xx,A7) EA''s',0,0
-	db	9
-	db	'Ð',0
-	db	8
+	dw	$9D0
+	dw	8
 	db	'Execute',0
-	db	9
-	db	'Ñ',0
-	db	8
+	dw	$9D1
+	dw	8
 	db	'Create',0,0
-	db	15
-	db	$A0
-	db	0
-	db	$18
+	dw	$FA0
+	dw	$18
 	db	'Symbol Bases Requester',0,0
-	db	15
-	db	'¡',0
-	db	'HDirectories           Include Files            Individual Symbol bases',0,0
-	db	15
-	db	'¢',0,$C
+	dw	$FA1
+	dw	$48
+	db	'Directories           Include Files            Individual Symbol bases',0,0
+	dw	$FA2
+	dw	12
 	db	'Directories',0
-	db	15
-	db	'£',0
-	db	14
+	dw	$FA3
+	dw	14
 	db	'Include Files',0
-	db	15
-	db	'¤',0
-	db	$18
+	dw	$FA4
+	dw	$18
 	db	'Individual Symbol Bases',0
-	db	15
-	db	'¥',0
-	db	$16
+	dw	$FA5
+	dw	$16
 	db	'Use This Symbol Base',0,0
-	db	$11
-	db	$94
-	db	0
-	db	$12
+	dw	$1194
+	dw	$12
 	db	'Search Requester',0,0
-	db	$11
-	db	$95
-	db	0
-	db	',  Type      Select Conditions      Execute',0,0
-	db	$11
-	db	$96
-	db	0
-	db	12
+	dw	$1195
+	dw	$2C
+	db	'  Type      Select Conditions      Execute',0,0
+	dw	$1196
+	dw	12
 	db	'Search Type',0
-	db	$11
-	db	$97
-	db	0
-	db	$10
+	dw	$1197
+	dw	$10
 	db	'Execute Search',0,0
-	db	$11
-	db	$98
-	db	0
-	db	$12
+	dw	$1198
+	dw	$12
 	db	'Select Conditions',0
-	db	$11
-	db	$99
-	db	0
-	db	8
+	dw	$1199
+	dw	8
 	db	'Normal',0,0
-	db	$11
-	db	$9A
-	db	0
-	db	8
+	dw	$119A
+	dw	8
 	db	'Pattern',0
-	db	$11
-	db	$9B
-	db	0
-	db	8
+	dw	$119B
+	dw	8
 	db	'Buffer',0,0
-	db	$11
-	db	$9C
-	db	0
-	db	8
+	dw	$119C
+	dw	8
 	db	'Binary',0,0
-	db	$11
-	db	$9D
-	db	0
-	db	6
+	dw	$119D
+	dw	6
 	db	'Label',0
-	db	$11
-	db	$9E
-	db	0
-	db	8
+	dw	$119E
+	dw	8
 	db	'Symbol',0,0
-	db	$11
-	db	$9F
-	db	0
-	db	$14
+	dw	$119F
+	dw	$14
 	db	'Set search string:',0,0
-	db	$11
-	db	$A0
-	db	0
-	db	$14
+	dw	$11A0
+	dw	$14
 	db	'Set search pattern:',0
-	db	$11
-	db	'¡',0
-	db	$18
+	dw	$11A1
+	dw	$18
 	db	'Set search parameters:',0,0
-	db	$11
-	db	'¢',0
-	db	$10
+	dw	$11A2
+	dw	$10
 	db	'Specify label:',0,0
-	db	$11
-	db	'£',0
-	db	$10
+	dw	$11A3
+	dw	$10
 	db	'Specify symbol:',0
-	db	$11
-	db	'¤',0,$A
+	dw	$11A4
+	dw	10
 	db	'Forwards',0,0
-	db	$11
-	db	'¥',0,$A
+	dw	$11A5
+	dw	10
 	db	'Backwards',0
-	db	$11
-	db	'¦',0
-	db	8
+	dw	$11A6
+	dw	8
 	db	'Nearest',0
-	db	$11
-	db	'§',0,$A
+	dw	$11A7
+	dw	10
 	db	'This line',0
-	db	$11
-	db	'¨',0,$C
+	dw	$11A8
+	dw	12
 	db	'Accumulator',0
-	db	$11
-	db	'©',0
-	db	$10
+	dw	$11A9
+	dw	$10
 	db	'Case sensitive',0,0
-	db	$11
-	db	'ª',0,$C
+	dw	$11AA
+	dw	12
 	db	'Ignore case',0
-	db	$11
-	db	'«',0,$C
+	dw	$11AB
+	dw	12
 	db	'Word align',0,0
-	db	$11
-	db	'¬',0,$C
+	dw	$11AC
+	dw	12
 	db	'Byte align',0,0
-	db	$11
-	db	'­',0,$C
+	dw	$11AD
+	dw	12
 	db	'From start',0,0
-	db	$11
-	db	'®',0,$A
+	dw	$11AE
+	dw	10
 	db	'From end',0,0
-	db	$11
-	db	'¯',0
-	db	14
+	dw	$11AF
+	dw	14
 	db	'From current',0,0
-	db	$13
-	db	$88
-	db	0
-	db	$12
+	dw	$1388
+	dw	$12
 	db	'Macros Requester',0,0
-	db	$13
-	db	$89
-	db	0
-	db	' Select Macro and desired action',0
-	db	$17
-	db	'p',0
-	db	$1A
+	dw	$1389
+	dw	$20
+	db	'Select Macro and desired action',0
+	dw	$1770
+	dw	$1A
 	db	'Multiple Symbol Requester',0
-	db	$17
-	db	'q',0
-	db	'"Select Symbol and desired action',0,0
-	db	11
-	db	'¸',0
-	db	$12
+	dw	$1771
+	dw	$22
+	db	'Select Symbol and desired action',0,0
+	dw	$BB8
+	dw	$12
 	db	'Options Requester',0
-	db	11
-	db	'¹',0
-	db	6
+	dw	$BB9
+	dw	6
 	db	'Show',0,0
-	db	11
-	db	'º',0
-	db	6
+	dw	$BBA
+	dw	6
 	db	'Allow',0
-	db	11
-	db	'»',0,$A
+	dw	$BBB
+	dw	10
 	db	'Interface',0
-	db	11
-	db	'¼',0
-	db	$10
+	dw	$BBC
+	dw	$10
 	db	'Error detection',0
-	db	11
-	db	'½',0
-	db	$10
+	dw	$BBD
+	dw	$10
 	db	'Pseudo opcodes',0,0
-	db	11
-	db	'¾',0
-	db	$10
+	dw	$BBE
+	dw	$10
 	db	'Size specifiers',0
-	db	11
-	db	'ê',0
-	db	8
+	dw	$BEA
+	dw	8
 	db	'Offsets',0
-	db	11
-	db	'ë',0
-	db	8
+	dw	$BEB
+	dw	8
 	db	'Labels',0,0
-	db	11
-	db	'ì',0
-	db	14
+	dw	$BEC
+	dw	14
 	db	'Hidden labels',0
-	db	11
-	db	'î',0
-	db	$16
+	dw	$BEE
+	dw	$16
 	db	'End-of-line comments',0,0
-	db	11
-	db	'ï',0
-	db	$14
+	dw	$BEF
+	dw	$14
 	db	'Full-line comments',0,0
-	db	11
-	db	'ð',0
-	db	$10
+	dw	$BF0
+	dw	$10
 	db	'Chip-load info',0,0
-	db	11
-	db	'ñ',0
-	db	$14
+	dw	$BF1
+	dw	$14
 	db	'Section statements',0,0
-	db	11
-	db	'ò',0
-	db	14
+	dw	$BF2
+	dw	14
 	db	'End statement',0
-	db	11
-	db	'ó',0
-	db	$10
+	dw	$BF3
+	dw	$10
 	db	'DCB statements',0,0
-	db	11
-	db	'ô',0
-	db	$10
+	dw	$BF4
+	dw	$10
 	db	'Separate labels',0
-	db	11
-	db	'õ',0
-	db	14
+	dw	$BF5
+	dw	14
 	db	'Label colons',0,0
-	db	11
-	db	'ö',0
-	db	$10
+	dw	$BF6
+	dw	$10
 	db	'Leading zeroes',0,0
-	db	11
-	db	'÷',0
-	db	$14
+	dw	$BF7
+	dw	$14
 	db	'Multiple constants',0,0
-	db	11
-	db	'ø',0
-	db	14
+	dw	$BF8
+	dw	14
 	db	'Data comments',0
-	db	11
-	db	'ù',0,$C
+	dw	$BF9
+	dw	12
 	db	'New Syntax',0,0
-	db	11
-	db	'ú',0
-	db	$12
+	dw	$BFA
+	dw	$12
 	db	'Strict Mnemonics',0,0
-	db	12
-	db	'N',0
-	db	$10
+	dw	$C4E
+	dw	$10
 	db	'Ref recognition',0,$C
-	db	'O',0,$C
-	db	'Auto labels',0,$C
-	db	'P',0
-	db	$12
-	db	'EQU value checks',0,0
-	db	12
-	db	'Q',0
-	db	$10
+	dw	$4F00
+	dw	$C41
+	db	'uto labels',0,$C
+	dw	$5000
+	dw	$1245
+	db	'QU value checks',0,0
+	dw	$C51
+	dw	$10
 	db	'Error comments',0,0
-	db	12
-	db	$80
-	db	0
-	db	14
+	dw	$C80
+	dw	14
 	db	'Display beep',0,0
-	db	12
-	db	$81
-	db	0
-	db	14
-	db	'User feedback',0,$C
-	db	$82
-	db	0
-	db	$10
-	db	'Feedback delays',0,$C
-	db	$83
-	db	0
-	db	14
-	db	'Verbose saves',0,$C
-	db	$84
-	db	0
-	db	$10
-	db	'Delayed refresh',0,$C
-	db	'²',0
-	db	$10
+	dw	$C81
+	dw	14
+	db	'User feedback',0
+	dw	$C82
+	dw	$10
+	db	'Feedback delays',0
+	dw	$C83
+	dw	14
+	db	'Verbose saves',0
+	dw	$C84
+	dw	$10
+	db	'Delayed refresh',0
+	dw	$CB2
+	dw	$10
 	db	'Code terminate',0,0
-	db	12
-	db	'³',0
-	db	14
-	db	'Missing label',0,$C
-	db	'´',0
-	db	14
-	db	'Bad alignment',0,$C
-	db	'µ',0
-	db	$10
+	dw	$CB3
+	dw	14
+	db	'Missing label',0
+	dw	$CB4
+	dw	14
+	db	'Bad alignment',0
+	dw	$CB5
+	dw	$10
 	db	'Code reference',0,0
-	db	12
-	db	'¶',0
-	db	$10
+	dw	$CB6
+	dw	$10
 	db	'Data reference',0,0
-	db	12
-	db	'·',0
-	db	8
+	dw	$CB7
+	dw	8
 	db	'START+',0,0
-	db	12
-	db	'¸',0
-	db	8
+	dw	$CB8
+	dw	8
 	db	'AFLINE',0,0
-	db	12
-	db	'¹',0
-	db	14
-	db	'Library calls',0,$C
-	db	'º',0
-	db	14
+	dw	$CB9
+	dw	14
+	db	'Library calls',0
+	dw	$CBA
+	dw	14
 	db	'Illegal code',0,0
-	db	12
-	db	'»',0
-	db	$10
+	dw	$CBB
+	dw	$10
 	db	'Sym/EQU values',0,0
-	db	12
-	db	'ä',0,$A
+	dw	$CE4
+	dw	10
 	db	'PUSH/POP',0,0
-	db	12
-	db	'å',0,$C
+	dw	$CE5
+	dw	12
 	db	'PUSHM/POPM',0,0
-	db	12
-	db	'æ',0
-	db	8
-	db	'BLO/BHS',0,$D
-	db	$16
-	db	0
-	db	10
-	db	'Assembler',0,$D
-	db	'H',0,$A
+	dw	$CE6
+	dw	8
+	db	'BLO/BHS',0
+	dw	$D16
+	dw	10
+	db	'Assembler',0
+	dw	$D48
+	dw	10
 	db	'Abs Word',0,0
-	db	13
-	db	'I',0
-	db	14
+	dw	$D49
+	dw	14
 	db	'Abs Longword',0,0
-	db	13
-	db	'J',0,$A
+	dw	$D4A
+	dw	10
 	db	'Optimize',0,0
-	db	13
-	db	'¬',0
-	db	$12
-	db	'New Zap Requester',0,$D
-	db	'­',0
-	db	6
-	db	'Mode:',0,$D
-	db	'®',0
-	db	6
+	dw	$DAC
+	dw	$12
+	db	'New Zap Requester',0
+	dw	$DAD
+	dw	6
+	db	'Mode:',0
+	dw	$DAE
+	dw	6
 	db	'Code',0,0
-	db	13
-	db	'¯',0
-	db	6
+	dw	$DAF
+	dw	6
 	db	'Data',0,0
-	db	13
-	db	'°',0,$C
+	dw	$DB0
+	dw	12
 	db	'Data type:',0,0
-	db	13
-	db	'±',0
-	db	6
-	db	'ASCII',0,$D
-	db	'²',0
-	db	6
+	dw	$DB1
+	dw	6
+	db	'ASCII',0
+	dw	$DB2
+	dw	6
 	db	'Byte',0,0
-	db	13
-	db	'³',0
-	db	6
+	dw	$DB3
+	dw	6
 	db	'Word',0,0
-	db	13
-	db	'´',0
-	db	6
+	dw	$DB4
+	dw	6
 	db	'Long',0,0
-	db	$1F
-	db	'@',0
-	db	'0File contains overlays!',$A
-	db	'Root node only loaded!',0,0
-	db	$1F
-	db	'A',0
-	db	$16
+	dw	$1F40
+	dw	$30
+	db	'File contains overlays!',$A
+	dw	$526F
+	dw	$6F74
+	db	' node only loaded!',0,0
+	dw	$1F41
+	dw	$16
 	db	'Can''t open that file',0,0
-	db	$1F
-	db	'B',0
-	db	$12
+	dw	$1F42
+	dw	$12
 	db	'Open which file?',0,0
-	db	$1F
-	db	'C',0
-	db	$1C
+	dw	$1F43
+	dw	$1C
 	db	'Start address, end address?',0
-	db	$1F
-	db	'D',0
-	db	$18
+	dw	$1F44
+	dw	$18
 	db	'Bad start/end addresses',0
-	db	$1F
-	db	'E',0
-	db	$1C
+	dw	$1F45
+	dw	$1C
 	db	'Drive, start cyl, end cyl?',0,0
-	db	$1F
-	db	'F',0
-	db	$1E
+	dw	$1F46
+	dw	$1E
 	db	'Too big for available memory!',0
-	db	$1F
-	db	'G',0
-	db	'&Bad disk/track/offset specifications',0,0
-	db	$1F
-	db	'H',0
-	db	$12
+	dw	$1F47
+	dw	$26
+	db	'Bad disk/track/offset specifications',0,0
+	dw	$1F48
+	dw	$12
 	db	'No disk in drive',0,0
-	db	$1F
-	db	'I',0
-	db	$16
+	dw	$1F49
+	dw	$16
 	db	'Disk write protected',0,0
-	db	$1F
-	db	'J',0,$C
+	dw	$1F4A
+	dw	12
 	db	'Seek error',0,0
-	db	$1F
-	db	'K',0
-	db	$14
+	dw	$1F4B
+	dw	$14
 	db	'Insufficient memory',0
-	db	$1F
-	db	'L',0,$C
+	dw	$1F4C
+	dw	12
 	db	'Drive busy',0,0
-	db	$1F
-	db	'M',0
-	db	$10
+	dw	$1F4D
+	dw	$10
 	db	'Bad drive type',0,0
-	db	$1F
-	db	'N',0
-	db	$14
+	dw	$1F4E
+	dw	$14
 	db	'Drive not connected',0
-	db	$1F
-	db	'O',0
-	db	$10
+	dw	$1F4F
+	dw	$10
 	db	'Track I/O error',0
-	db	$1F
-	db	'P',0,$A
+	dw	$1F50
+	dw	10
 	db	'Open file',0
-	db	$1F
-	db	'Q',0
-	db	'&Either file busy, or just not there!',0,0
-	db	$1F
-	db	'R',0
-	db	$14
+	dw	$1F51
+	dw	$26
+	db	'Either file busy, or just not there!',0,0
+	dw	$1F52
+	dw	$14
 	db	'Can''t examine file',0,0
-	db	$1F
-	db	'S',0
-	db	$1A
+	dw	$1F53
+	dw	$1A
 	db	'Error while reading file',0,0
-	db	$1F
-	db	'T',0
-	db	$1A
+	dw	$1F54
+	dw	$1A
 	db	'Determining hunk sizes...',0
-	db	$1F
-	db	'U',0
-	db	'&Bad hunk type - may not be load file',0,0
-	db	$1F
-	db	'V',0
-	db	$1E
+	dw	$1F55
+	dw	$26
+	db	'Bad hunk type - may not be load file',0,0
+	dw	$1F56
+	dw	$1E
 	db	'Allocating required memory...',0
-	db	$1F
-	db	'W',0
-	db	'"Initializing attributes table...',0,0
-	db	$1F
-	db	'X',0
-	db	$1A
+	dw	$1F57
+	dw	$22
+	db	'Initializing attributes table...',0,0
+	dw	$1F58
+	dw	$1A
 	db	'Unexpected file end found',0
-	db	$1F
-	db	'Y',0
-	db	$16
+	dw	$1F59
+	dw	$16
 	db	'Found hunk_unit block',0
-	db	$1F
-	db	'Z',0
-	db	$16
+	dw	$1F5A
+	dw	$16
 	db	'Found hunk_name block',0
-	db	$1F
-	db	'[',0
-	db	$16
+	dw	$1F5B
+	dw	$16
 	db	'Found hunk_code block',0
-	db	$1F
-	db	'\',0
-	db	$16
+	dw	$1F5C
+	dw	$16
 	db	'Found hunk_data block',0
-	db	$1F
-	db	']',0
-	db	$16
+	dw	$1F5D
+	dw	$16
 	db	'Found hunk_bss block',0,0
-	db	$1F
-	db	'^',0
-	db	$14
+	dw	$1F5E
+	dw	$14
 	db	'Found reloc32 block',0
-	db	$1F
-	db	'_',0
-	db	$18
+	dw	$1F5F
+	dw	$18
 	db	'Found hunk_symbol block',0
-	db	$1F
-	db	'`',0
-	db	$18
+	dw	$1F60
+	dw	$18
 	db	'Found hunk_debug block',0,0
-	db	$1F
-	db	'a',0
-	db	$16
+	dw	$1F61
+	dw	$16
 	db	'Found hunk_end block',0,0
-	db	$1F
-	db	'b',0
-	db	$18
+	dw	$1F62
+	dw	$18
 	db	'Found hunk_header block',0
-	db	$1F
-	db	'c',0
-	db	$1A
+	dw	$1F63
+	dw	$1A
 	db	'Found hunk_overlay block',0,0
-	db	$1F
-	db	'd',0
-	db	$18
+	dw	$1F64
+	dw	$18
 	db	'Found hunk_break block',0,0
-	db	$1F
-	db	'e',0
-	db	'$Can''t load - file contains overlays',0
-	db	$1F
-	db	'f',0
-	db	$10
+	dw	$1F65
+	dw	$24
+	db	'Can''t load - file contains overlays',0
+	dw	$1F66
+	dw	$10
 	db	'Closing file...',0
-	db	$1F
-	db	'g',0
-	db	$1E
+	dw	$1F67
+	dw	$1E
 	db	'Loading binary image file...',0,0
-	db	$1F
-	db	'h',0
-	db	$12
+	dw	$1F68
+	dw	$12
 	db	'Loading header...',0
-	db	$1F
-	db	'i',0
-	db	$1C
+	dw	$1F69
+	dw	$1C
 	db	'Loading attributes table...',0
-	db	$1F
-	db	'j',0
-	db	$16
+	dw	$1F6A
+	dw	$16
 	db	'Loading executable...',0
-	db	$1F
-	db	'k',0
-	db	$18
+	dw	$1F6B
+	dw	$18
 	db	'Loading hash tables...',0,0
-	db	$1F
-	db	'l',0
-	db	$1C
+	dw	$1F6C
+	dw	$1C
 	db	'Loading string pointers...',0,0
-	db	$1F
-	db	'm',0
-	db	$14
+	dw	$1F6D
+	dw	$14
 	db	'Loading strings...',0,0
-	db	$1F
-	db	'n',0
-	db	$10
+	dw	$1F6E
+	dw	$10
 	db	'Bad hunk length',0
-	db	''''
-	db	$10
-	db	0
-	db	$1A
+	dw	$2710
+	dw	$1A
 	db	' Auto-configuration     ',0,0
-	db	''''
-	db	$11
-	db	0
-	db	' New cursor position (percent)?',0,0
-	db	''''
-	db	$12
-	db	0
-	db	$18
+	dw	$2711
+	dw	$20
+	db	'New cursor position (percent)?',0,0
+	dw	$2712
+	dw	$18
 	db	'String/number for zap?',0,0
-	db	''''
-	db	$13
-	db	0
-	db	$12
+	dw	$2713
+	dw	$12
 	db	'EQUate to remove?',0
-	db	''''
-	db	$14
-	db	0
-	db	'&Drive, cylinder, offset to write to?',0,0
-	db	''''
-	db	$15
-	db	0
-	db	$10
+	dw	$2714
+	dw	$26
+	db	'Drive, cylinder, offset to write to?',0,0
+	dw	$2715
+	dw	$10
 	db	'String to clip?',0
-	db	''''
-	db	$16
-	db	0
-	db	$10
+	dw	$2716
+	dw	$10
 	db	'String to add?',0,0
-	db	''''
-	db	$17
-	db	0
-	db	$1C
+	dw	$2717
+	dw	$1C
 	db	'Set origin to what address?',0
-	db	''''
-	db	$18
-	db	0
-	db	$1A
+	dw	$2718
+	dw	$1A
 	db	'Command line to execute?',0,0
-	db	''''
-	db	$19
-	db	0
-	db	$12
+	dw	$2719
+	dw	$12
 	db	'New default path?',0
-	db	''''
-	db	$1A
-	db	0
-	db	'$Searching for next unsure data type',0
-	db	''''
-	db	$1B
-	db	0
-	db	$10
+	dw	$271A
+	dw	$24
+	db	'Searching for next unsure data type',0
+	dw	$271B
+	dw	$10
 	db	'Compressing...',0,0
-	db	''''
-	db	$1C
-	db	0
-	db	$12
+	dw	$271C
+	dw	$12
 	db	'Decompressing...',0,0
-	db	''''
-	db	$1D
-	db	0
-	db	14
+	dw	$271D
+	dw	14
 	db	'Relocating...',0
-	db	''''
-	db	$1E
-	db	0
-	db	14
+	dw	$271E
+	dw	14
 	db	'Delocating...',0
-	db	''''
-	db	$1F
-	db	0
-	db	$1C
+	dw	$271F
+	dw	$1C
 	db	'Searching for references...',0
-	db	''' ',0
-	db	$18
+	dw	$2720
+	dw	$18
 	db	'Saving header block...',0,0
-	db	'''!',0
-	db	'(Allocating larger block for list nodes',0,0
-	db	'''"',0
-	db	$1A
+	dw	$2721
+	dw	$28
+	db	'Allocating larger block for list nodes',0,0
+	dw	$2722
+	dw	$1A
 	db	'Saving string pointers...',0
-	db	'''#',0
-	db	'(Allocating larger block for strings...',0,0
-	db	'''$',0
-	db	$12
+	dw	$2723
+	dw	$28
+	db	'Allocating larger block for strings...',0,0
+	dw	$2724
+	dw	$12
 	db	'Saving strings...',0
-	db	'''%',0
-	db	$1C
+	dw	$2725
+	dw	$1C
 	db	'Write error - file deleted',0,0
-	db	'''&',0
-	db	$16
+	dw	$2726
+	dw	$16
 	db	'Saving hash tables...',0
-	db	'''''',0
-	db	$14
+	dw	$2727
+	dw	$14
 	db	'No matching symbols',0
-	db	'''(',0
-	db	$18
+	dw	$2728
+	dw	$18
 	db	'Symbol value collision!',0
-	db	''')',0
-	db	$1E
+	dw	$2729
+	dw	$1E
 	db	'Duplicate label! - try again',0,0
-	db	'''*',0
-	db	'"Setting preliminary data types...',0
-	db	'''+',0
-	db	$16
+	dw	$272A
+	dw	$22
+	db	'Setting preliminary data types...',0
+	dw	$272B
+	dw	$16
 	db	'Saving executable...',0,0
-	db	''',',0
-	db	$16
+	dw	$272C
+	dw	$16
 	db	'Shift how many times?',0
-	db	'''-',0
-	db	$18
+	dw	$272D
+	dw	$18
 	db	'Number to multiply by?',0,0
-	db	'''.',0
-	db	$16
+	dw	$272E
+	dw	$16
 	db	'Number to divide by?',0,0
-	db	'''/',0
-	db	$10
+	dw	$272F
+	dw	$10
 	db	'Number to add?',0,0
-	db	'''0',0
-	db	$14
+	dw	$2730
+	dw	$14
 	db	'Number to subtract?',0
-	db	'''1',0
-	db	$14
+	dw	$2731
+	dw	$14
 	db	'Number to AND with?',0
-	db	'''2',0
-	db	$14
+	dw	$2732
+	dw	$14
 	db	'Number to OR with?',0,0
-	db	'''3',0
-	db	$14
+	dw	$2733
+	dw	$14
 	db	'Number to XOR with?',0
-	db	'''4',0
-	db	$18
+	dw	$2734
+	dw	$18
 	db	'Rotate how many times?',0,0
-	db	'''5',0
-	db	$1A
+	dw	$2735
+	dw	$1A
 	db	'Sending output to file...',0
-	db	'''6',0
-	db	' Calculating file statistics...',0,0
-	db	'''7',0
-	db	$1C
+	dw	$2736
+	dw	$20
+	db	'Calculating file statistics...',0,0
+	dw	$2737
+	dw	$1C
 	db	'Saving attributes table...',0,0
-	db	'''8',0
-	db	$1A
+	dw	$2738
+	dw	$1A
 	db	'Save to which executable?',0
-	db	'''9',0
-	db	$16
+	dw	$2739
+	dw	$16
 	db	'Name of script file?',0,0
-	db	''':',0
-	db	$18
+	dw	$273A
+	dw	$18
 	db	'      Open which file?',0,0
-	db	''';',0
-	db	$16
+	dw	$273B
+	dw	$16
 	db	'Symbols file to load?',0
-	db	'''<',0
-	db	$1C
+	dw	$273C
+	dw	$1C
 	db	'Memory address to save to?',0,0
-	db	'''=',0
-	db	$14
+	dw	$273D
+	dw	$14
 	db	'New task priority?',0,0
-	db	'''>',0
-	db	$1A
+	dw	$273E
+	dw	$1A
 	db	'File to load into buffer?',0
-	db	'''?',0,$C
+	dw	$273F
+	dw	12
 	db	'New string?',0
-	db	'''@',0
-	db	$16
+	dw	$2740
+	dw	$16
 	db	'Name for this macro?',0,0
-	db	'''A',0
-	db	$16
+	dw	$2741
+	dw	$16
 	db	'New name for macros?',0,0
-	db	'''B',0
-	db	$14
+	dw	$2742
+	dw	$14
 	db	'Offset to jump to?',0,0
-	db	'''C',0
-	db	$16
+	dw	$2743
+	dw	$16
 	db	'Label to search for?',0,0
-	db	'''D',0
-	db	$16
+	dw	$2744
+	dw	$16
 	db	'Symbol to search for?',0
-	db	'''E',0
-	db	$1E
+	dw	$2745
+	dw	$1E
 	db	'Save key binding table to...',0,0
-	db	'''F',0
-	db	' Load key binding table from...',0,0
-	db	'''G',0
-	db	$12
+	dw	$2746
+	dw	$20
+	db	'Load key binding table from...',0,0
+	dw	$2747
+	dw	$12
 	db	'Save macros to...',0
-	db	'''H',0
-	db	$14
+	dw	$2748
+	dw	$14
 	db	'Load macros from...',0
-	db	'''I',0
-	db	'"How much is A4 offset from START?',0
-	db	'''J',0
-	db	'(Column start for end-of-line comments?',0,0
-	db	'''K',0
-	db	$1A
+	dw	$2749
+	dw	$22
+	db	'How much is A4 offset from START?',0
+	dw	$274A
+	dw	$28
+	db	'Column start for end-of-line comments?',0,0
+	dw	$274B
+	dw	$1A
 	db	'Overlay from which file?',0,0
-	db	'''L',0
-	db	$14
+	dw	$274C
+	dw	$14
 	db	'Save to which file?',0
-	db	'''M',0
-	db	'$Either bad file name, or file busy',0,0
-	db	'''N',0
-	db	$1C
+	dw	$274D
+	dw	$24
+	db	'Either bad file name, or file busy',0,0
+	dw	$274E
+	dw	$1C
 	db	'Error while writing to file',0
-	db	'''O',0
-	db	$1E
+	dw	$274F
+	dw	$1E
 	db	'Error while reading from file',0
-	db	'''P',0
-	db	$1C
+	dw	$2750
+	dw	$1C
 	db	'Error while reading macros',0,0
-	db	'''Q',0
-	db	$1A
+	dw	$2751
+	dw	$1A
 	db	'-Keytable file not found-',0
-	db	'''R',0
-	db	$18
+	dw	$2752
+	dw	$18
 	db	'-Macro file not found-',0,0
-	db	'''S',0,$C
+	dw	$2753
+	dw	12
 	db	'Phase #%ld',0,0
-	db	'''T',0
-	db	'ZHelp is available for all functions.',$A,$A
+	dw	$2754
+	dw	$5A
+	db	'Help is available for all functions.',$A,$A
 	db	'Please select the appropriate menu item, or key.',$A
 	db	' ',0,0
-	db	'''U',0
-	db	$18
+	dw	$2755
+	dw	$18
 	db	'Searching for "%-.32s"',0,0
-	db	'''V',0
-	db	$14
+	dw	$2756
+	dw	$14
 	db	'Executing "%-.32s"',0,0
-	db	'''W',0
-	db	'$Please select a menu, gadget or key',0
-	db	'''X',0
-	db	'$Press the key to change binding of',0,0
-	db	'''Y',0
-	db	'$Press the key to report binding of',0,0
-	db	'''Z',0
-	db	' This key is currently bound to:',0
-	db	'''[',0
-	db	$18
+	dw	$2757
+	dw	$24
+	db	'Please select a menu, gadget or key',0
+	dw	$2758
+	dw	$24
+	db	'Press the key to change binding of',0,0
+	dw	$2759
+	dw	$24
+	db	'Press the key to report binding of',0,0
+	dw	$275A
+	dw	$20
+	db	'This key is currently bound to:',0
+	dw	$275B
+	dw	$18
 	db	'is currently bound to:',0,0
-	db	'''\',0
-	db	$1E
+	dw	$275C
+	dw	$1E
 	db	'  Write to which .asm file?  ',0
-	db	''']',0
-	db	$14
+	dw	$275D
+	dw	$14
 	db	'Not enough memory!',0,0
-	db	'''^',0
-	db	$12
+	dw	$275E
+	dw	$12
 	db	'Label to create?',0,0
-	db	'''_',0
-	db	$16
+	dw	$275F
+	dw	$16
 	db	'Pre-string to create?',0
-	db	'''`',0
-	db	$18
+	dw	$2760
+	dw	$18
 	db	'Post-string to create?',0,0
-	db	'''a',0
-	db	$12
+	dw	$2761
+	dw	$12
 	db	'Symbol to create?',0
-	db	'''b',0
-	db	$16
+	dw	$2762
+	dw	$16
 	db	'String to search for?',0
-	db	'''c',0
-	db	$1C
+	dw	$2763
+	dw	$1C
 	db	'Save screen to which file?',0,0
-	db	'>'
-	db	$80
-	db	0
-	db	$1A
+	dw	$3E80
+	dw	$1A
 	db	'-= COMMERCIAL VERSION =-',0,0
-	db	'>'
-	db	$82
-	db	0
-	db	'FCopyright ©1993-94 The Puzzle Factory, Inc. -- World rights reserved',0,0
-	db	'>'
-	db	$83
-	db	0
-	db	'*Written in MC68000 assembler.  Assembled ',0
-	db	'>'
-	db	$84
-	db	0
-	db	$1C
+	dw	$3E82
+	dw	$46
+	db	'Copyright ©1993-94 The Puzzle Factory, Inc. -- World rights reserved',0,0
+	dw	$3E83
+	dw	$2A
+	db	'Written in MC68000 assembler.  Assembled ',0
+	dw	$3E84
+	dw	$1C
 	db	'To order ReSource, contact:',0
-	db	'>'
-	db	$85
-	db	0
-	db	'HReSource was originally developed by Glen McDiarmid in QLD, Australia.',0,0
-	db	$9C
-	db	'@',0
-	db	$10
+	dw	$3E85
+	dw	$48
+	db	'ReSource was originally developed by Glen McDiarmid in QLD, Australia.',0,0
+	dw	$9C40
+	dw	$10
 	db	'Library Offsets',0
-	db	$9C
-	db	'A',0
-	db	4
+	dw	$9C41
+	dw	4
 	db	'All',0
-	db	$9C
-	db	'B',0
-	db	$14
+	dw	$9C42
+	dw	$14
 	db	'AmigaGuide Library',0,0
-	db	$9C
-	db	'C',0,$C
+	dw	$9C43
+	dw	12
 	db	'Asl Library',0
-	db	$9C
-	db	'D',0
-	db	$14
+	dw	$9C44
+	dw	$14
 	db	'Battclock Resource',0,0
-	db	$9C
-	db	'E',0
-	db	$12
+	dw	$9C45
+	dw	$12
 	db	'Battmem Resource',0,0
-	db	$9C
-	db	'F',0
-	db	$10
+	dw	$9C46
+	dw	$10
 	db	'Bullet Library',0,0
-	db	$9C
-	db	'G',0
-	db	14
+	dw	$9C47
+	dw	14
 	db	'Card Resource',0
-	db	$9C
-	db	'H',0
-	db	14
+	dw	$9C48
+	dw	14
 	db	'CIA Resource',0,0
-	db	$9C
-	db	'I',0
-	db	$12
+	dw	$9C49
+	dw	$12
 	db	'ColorWheel Gadget',0
-	db	$9C
-	db	'J',0
-	db	$14
+	dw	$9C4A
+	dw	$14
 	db	'Commodities Library',0
-	db	$9C
-	db	'K',0
-	db	$10
+	dw	$9C4B
+	dw	$10
 	db	'Console Device',0,0
-	db	$9C
-	db	'L',0
-	db	$12
+	dw	$9C4C
+	dw	$12
 	db	'DataTypes Library',0
-	db	$9C
-	db	'M',0
-	db	$12
+	dw	$9C4D
+	dw	$12
 	db	'Diskfont Library',0,0
-	db	$9C
-	db	'N',0
-	db	14
+	dw	$9C4E
+	dw	14
 	db	'Disc Resource',0
-	db	$9C
-	db	'O',0,$C
+	dw	$9C4F
+	dw	12
 	db	'Dos Library',0
-	db	$9C
-	db	'P',0
-	db	$10
+	dw	$9C50
+	dw	$10
 	db	'DTClass Library',0
-	db	$9C
-	db	'Q',0
-	db	14
+	dw	$9C51
+	dw	14
 	db	'Exec Library',0,0
-	db	$9C
-	db	'R',0
-	db	$12
+	dw	$9C52
+	dw	$12
 	db	'Expansion Library',0
-	db	$9C
-	db	'S',0
-	db	$12
+	dw	$9C53
+	dw	$12
 	db	'GadTools Library',0,0
-	db	$9C
-	db	'T',0
-	db	$12
+	dw	$9C54
+	dw	$12
 	db	'Graphics Library',0,0
-	db	$9C
-	db	'U',0
-	db	14
+	dw	$9C55
+	dw	14
 	db	'Icon Library',0,0
-	db	$9C
-	db	'V',0
-	db	$12
+	dw	$9C56
+	dw	$12
 	db	'IffParse Library',0,0
-	db	$9C
-	db	'W',0
-	db	14
+	dw	$9C57
+	dw	14
 	db	'Input Device',0,0
-	db	$9C
-	db	'X',0
-	db	$12
+	dw	$9C58
+	dw	$12
 	db	'Intuition Library',0
-	db	$9C
-	db	'Y',0
-	db	14
+	dw	$9C59
+	dw	14
 	db	'Janus Library',0
-	db	$9C
-	db	'Z',0
-	db	14
+	dw	$9C5A
+	dw	14
 	db	'Keymap Device',0
-	db	$9C
-	db	'[',0
-	db	$10
+	dw	$9C5B
+	dw	$10
 	db	'Layers Library',0,0
-	db	$9C
-	db	'\',0
-	db	$10
+	dw	$9C5C
+	dw	$10
 	db	'Locale Library',0,0
-	db	$9C
-	db	']',0
-	db	$16
+	dw	$9C5D
+	dw	$16
 	db	'MathDoubTrans Library',0
-	db	$9C
-	db	'^',0
-	db	$10
+	dw	$9C5E
+	dw	$10
 	db	'MathFfp Library',0
-	db	$9C
-	db	'_',0
-	db	$18
+	dw	$9C5F
+	dw	$18
 	db	'MathIEEEdoubbas Library',0
-	db	$9C
-	db	'`',0
-	db	$18
+	dw	$9C60
+	dw	$18
 	db	'MathIEEEsingbas Library',0
-	db	$9C
-	db	'a',0
-	db	$16
+	dw	$9C61
+	dw	$16
 	db	'MathSingTrans Library',0
-	db	$9C
-	db	'b',0
-	db	$12
+	dw	$9C62
+	dw	$12
 	db	'MathTrans Library',0
-	db	$9C
-	db	'c',0
-	db	14
+	dw	$9C63
+	dw	14
 	db	'Misc Resource',0
-	db	$9C
-	db	'd',0
-	db	$10
+	dw	$9C64
+	dw	$10
 	db	'Potgo Resource',0,0
-	db	$9C
-	db	'e',0
-	db	$10
+	dw	$9C65
+	dw	$10
 	db	'Ramdrive Device',0
-	db	$9C
-	db	'f',0
-	db	$14
+	dw	$9C66
+	dw	$14
 	db	'RexxSysLib Library',0,0
-	db	$9C
-	db	'g',0
-	db	14
+	dw	$9C67
+	dw	14
 	db	'Timer Device',0,0
-	db	$9C
-	db	'h',0
-	db	$10
+	dw	$9C68
+	dw	$10
 	db	'Utility Library',0
-	db	$9C
-	db	'i',0
-	db	$12
+	dw	$9C69
+	dw	$12
 	db	'Workbench Library',0
-	db	$9C
-	db	'¤',0,$A
+	dw	$9CA4
+	dw	10
 	db	'DataTypes',0
-	db	$9C
-	db	'¥',0
-	db	14
+	dw	$9CA5
+	dw	14
 	db	'DataType IDs',0,0
-	db	$9C
-	db	'¦',0
-	db	$10
+	dw	$9CA6
+	dw	$10
 	db	'DataTypeHeader',0,0
-	db	$9C
-	db	'§',0
-	db	$12
+	dw	$9CA7
+	dw	$12
 	db	'Basic data types',0,0
-	db	$9C
-	db	'¨',0,$A
+	dw	$9CA8
+	dw	10
 	db	'Group IDs',0
-	db	$9C
-	db	'©',0
-	db	14
+	dw	$9CA9
+	dw	14
 	db	'DTHookContext',0
-	db	$9C
-	db	'ª',0
-	db	6
+	dw	$9CAA
+	dw	6
 	db	'Tool',0,0
-	db	$9C
-	db	'«',0
-	db	$10
+	dw	$9CAB
+	dw	$10
 	db	'tn_Which types',0,0
-	db	$9C
-	db	'¬',0
-	db	$10
+	dw	$9CAC
+	dw	$10
 	db	'tn_Flags values',0
-	db	$9C
-	db	'­',0,$A
+	dw	$9CAD
+	dw	10
 	db	'DataType',0,0
-	db	$9C
-	db	'®',0,$A
+	dw	$9CAE
+	dw	10
 	db	'ToolNode',0,0
-	db	$9C
-	db	'¯',0,$A
+	dw	$9CAF
+	dw	10
 	db	'Text IDs',0,0
-	db	$9C
-	db	'°',0
-	db	$10
+	dw	$9CB0
+	dw	$10
 	db	'DataTypesClass',0,0
-	db	$9C
-	db	'±',0
-	db	$10
+	dw	$9CB1
+	dw	$10
 	db	'Attribute tags',0,0
-	db	$9C
-	db	'²',0
-	db	$16
+	dw	$9CB2
+	dw	$16
 	db	'DTA_SourceType values',0
-	db	$9C
-	db	'³',0
-	db	14
+	dw	$9CB3
+	dw	14
 	db	'DTSpecialInfo',0
-	db	$9C
-	db	'´',0
-	db	$10
+	dw	$9CB4
+	dw	$10
 	db	'si_Flag bitdefs',0
-	db	$9C
-	db	'µ',0,$A
+	dw	$9CB5
+	dw	10
 	db	'DTMethod',0,0
-	db	$9C
-	db	'¶',0,$C
+	dw	$9CB6
+	dw	12
 	db	'Method tags',0
-	db	$9C
-	db	'·',0,$A
+	dw	$9CB7
+	dw	10
 	db	'FrameInfo',0
-	db	$9C
-	db	'¸',0
-	db	$12
+	dw	$9CB8
+	dw	$12
 	db	'fri_Flags bitdefs',0
-	db	$9C
-	db	'¹',0,$A
+	dw	$9CB9
+	dw	10
 	db	'dtGeneral',0
-	db	$9C
-	db	'º',0,$A
+	dw	$9CBA
+	dw	10
 	db	'dtSelect',0,0
-	db	$9C
-	db	'»',0,$C
+	dw	$9CBB
+	dw	12
 	db	'dtFrameBox',0,0
-	db	$9C
-	db	'¼',0
-	db	$18
+	dw	$9CBC
+	dw	$18
 	db	'dtf_FrameFlags bitdefs',0,0
-	db	$9C
-	db	'½',0
-	db	8
+	dw	$9CBD
+	dw	8
 	db	'dtGoto',0,0
-	db	$9C
-	db	'¾',0,$A
+	dw	$9CBE
+	dw	10
 	db	'dtTrigger',0
-	db	$9C
-	db	'¿',0
-	db	$14
+	dw	$9CBF
+	dw	$14
 	db	'dtt_Function values',0
-	db	$9C
-	db	'À',0
-	db	8
+	dw	$9CC0
+	dw	8
 	db	'dtDraw',0,0
-	db	$9C
-	db	'Á',0
-	db	8
+	dw	$9CC1
+	dw	8
 	db	'dtWrite',0
-	db	$9C
-	db	'Â',0
-	db	$10
+	dw	$9CC2
+	dw	$10
 	db	'dtw_Mode values',0
-	db	$9C
-	db	'Ã',0
-	db	14
+	dw	$9CC3
+	dw	14
 	db	'PictureClass',0,0
-	db	$9C
-	db	'Ä',0
-	db	14
+	dw	$9CC4
+	dw	14
 	db	'Masking types',0
-	db	$9C
-	db	'Å',0
-	db	$12
+	dw	$9CC5
+	dw	$12
 	db	'Compression types',0
-	db	$9C
-	db	'Æ',0
-	db	14
+	dw	$9CC6
+	dw	14
 	db	'BitMapHeader',0,0
-	db	$9C
-	db	'Ç',0
-	db	14
+	dw	$9CC7
+	dw	14
 	db	'ColorRegister',0
-	db	$9C
-	db	'È',0,$A
+	dw	$9CC8
+	dw	10
 	db	'IFF types',0
-	db	$9C
-	db	'É',0,$C
+	dw	$9CC9
+	dw	12
 	db	'SoundClass',0,0
-	db	$9C
-	db	'Ê',0,$C
+	dw	$9CCA
+	dw	12
 	db	'VoiceHeader',0
-	db	$9C
-	db	'Ë',0,$A
+	dw	$9CCB
+	dw	10
 	db	'TextClass',0
-	db	$9C
-	db	'Ì',0
-	db	6
+	dw	$9CCC
+	dw	6
 	db	'Line',0,0
-	db	$9C
-	db	'Í',0
-	db	$12
+	dw	$9CCD
+	dw	$12
 	db	'ln_Flags bitdefs',0,0
-	db	$9C
-	db	'Î',0
-	db	8
+	dw	$9CCE
+	dw	8
 	db	'Devices',0
-	db	$9C
-	db	'Ï',0
-	db	6
+	dw	$9CCF
+	dw	6
 	db	'Audio',0
-	db	$9C
-	db	'Ð',0
-	db	14
+	dw	$9CD0
+	dw	14
 	db	'Max channels',0,0
-	db	$9C
-	db	'Ñ',0
-	db	$14
+	dw	$9CD1
+	dw	$14
 	db	'Allocation priority',0
-	db	$9C
-	db	'Ò',0
-	db	$12
+	dw	$9CD2
+	dw	$12
 	db	'AudioDevice cmds',0,0
-	db	$9C
-	db	'Ó',0
-	db	$18
+	dw	$9CD3
+	dw	$18
 	db	'AudioDevice flag values',0
-	db	$9C
-	db	'Ô',0
-	db	$16
+	dw	$9CD4
+	dw	$16
 	db	'AudioDevice flag bits',0
-	db	$9C
-	db	'Õ',0
-	db	$14
+	dw	$9CD5
+	dw	$14
 	db	'AudioDevice errors',0,0
-	db	$9C
-	db	'Ö',0
-	db	$12
+	dw	$9CD6
+	dw	$12
 	db	'IOAudio structure',0
-	db	$9C
-	db	'×',0,$A
+	dw	$9CD7
+	dw	10
 	db	'BootBlock',0
-	db	$9C
-	db	'Ø',0
-	db	$14
+	dw	$9CD8
+	dw	$14
 	db	'BootBlock structure',0
-	db	$9C
-	db	'Ù',0,$A
+	dw	$9CD9
+	dw	10
 	db	'Clipboard',0
-	db	$9C
-	db	'Ú',0
-	db	$16
+	dw	$9CDA
+	dw	$16
 	db	'ClipBoardDevice cmds',0,0
-	db	$9C
-	db	'Û',0
-	db	$16
+	dw	$9CDB
+	dw	$16
 	db	'ClipboardUnitPartial',0,0
-	db	$9C
-	db	'Ü',0,$A
+	dw	$9CDC
+	dw	10
 	db	'IOClipReq',0
-	db	$9C
-	db	'Ý',0,$C
+	dw	$9CDD
+	dw	12
 	db	'SatisfyMsg',0,0
-	db	$9C
-	db	'Þ',0,$C
+	dw	$9CDE
+	dw	12
 	db	'ClipHookMsg',0
-	db	$9C
-	db	'ß',0
-	db	8
+	dw	$9CDF
+	dw	8
 	db	'Console',0
-	db	$9C
-	db	'à',0
-	db	$14
+	dw	$9CE0
+	dw	$14
 	db	'ConsoleDevice cmds',0,0
-	db	$9C
-	db	'á',0
-	db	$10
+	dw	$9CE1
+	dw	$10
 	db	'SGR parameters',0,0
-	db	$9C
-	db	'â',0
-	db	$10
+	dw	$9CE2
+	dw	$10
 	db	'DSR parameters',0,0
-	db	$9C
-	db	'ã',0
-	db	$10
+	dw	$9CE3
+	dw	$10
 	db	'CTC parameters',0,0
-	db	$9C
-	db	'ä',0
-	db	$10
+	dw	$9CE4
+	dw	$10
 	db	'TBC parameters',0,0
-	db	$9C
-	db	'å',0
-	db	$16
+	dw	$9CE5
+	dw	$16
 	db	'SM and RM parameters',0,0
-	db	$9C
-	db	'æ',0
-	db	8
+	dw	$9CE6
+	dw	8
 	db	'ConUnit',0
-	db	$9C
-	db	'ç',0
-	db	14
+	dw	$9CE7
+	dw	14
 	db	'Unit numbers',0,0
-	db	$9C
-	db	'è',0
-	db	$12
+	dw	$9CE8
+	dw	$12
 	db	'OpenDevice flags',0,0
-	db	$9C
-	db	'é',0
-	db	$12
+	dw	$9CE9
+	dw	$12
 	db	'ConUnit structure',0
-	db	$9C
-	db	'ê',0,$A
+	dw	$9CEA
+	dw	10
 	db	'GamePort',0,0
-	db	$9C
-	db	'ë',0
-	db	$14
+	dw	$9CEB
+	dw	$14
 	db	'GamePortDevice cmds',0
-	db	$9C
-	db	'ì',0
-	db	$10
+	dw	$9CEC
+	dw	$10
 	db	'GamePortTrigger',0
-	db	$9C
-	db	'í',0
-	db	$12
+	dw	$9CED
+	dw	$12
 	db	'gpt_Keys bitdefs',0,0
-	db	$9C
-	db	'î',0
-	db	$14
+	dw	$9CEE
+	dw	$14
 	db	'GamePort ctrl types',0
-	db	$9C
-	db	'ï',0
-	db	$10
+	dw	$9CEF
+	dw	$10
 	db	'GamePort errors',0
-	db	$9C
-	db	'ð',0,$C
+	dw	$9CF0
+	dw	12
 	db	'HardBlocks',0,0
-	db	$9C
-	db	'ñ',0,$A
+	dw	$9CF1
+	dw	10
 	db	'ID names',0,0
-	db	$9C
-	db	'ò',0
-	db	$10
+	dw	$9CF2
+	dw	$10
 	db	'RigidDiskBlock',0,0
-	db	$9C
-	db	'ó',0
-	db	$12
+	dw	$9CF3
+	dw	$12
 	db	'rdb_Flags bitdefs',0
-	db	$9C
-	db	'ô',0
-	db	14
+	dw	$9CF4
+	dw	14
 	db	'BadBlockEntry',0
-	db	$9C
-	db	'õ',0
-	db	14
+	dw	$9CF5
+	dw	14
 	db	'BadBlockBlock',0
-	db	$9C
-	db	'ö',0
-	db	$10
+	dw	$9CF6
+	dw	$10
 	db	'PartitionBlock',0,0
-	db	$9C
-	db	'÷',0
-	db	$12
+	dw	$9CF7
+	dw	$12
 	db	'pb_Flags bitdefs',0,0
-	db	$9C
-	db	'ø',0
-	db	$14
+	dw	$9CF8
+	dw	$14
 	db	'FileSysHeaderBlock',0,0
-	db	$9C
-	db	'ù',0
-	db	14
+	dw	$9CF9
+	dw	14
 	db	'LoadSegBlock',0,0
-	db	$9C
-	db	'ú',0
-	db	6
+	dw	$9CFA
+	dw	6
 	db	'Input',0
-	db	$9C
-	db	'û',0
-	db	$12
+	dw	$9CFB
+	dw	$12
 	db	'InputDevice cmds',0,0
-	db	$9C
-	db	'ü',0,$C
+	dw	$9CFC
+	dw	12
 	db	'InputEvent',0,0
-	db	$9C
-	db	'ý',0,$A
+	dw	$9CFD
+	dw	10
 	db	'ie_Class',0,0
-	db	$9C
-	db	'þ',0,$C
+	dw	$9CFE
+	dw	12
 	db	'ie_SubClass',0
-	db	$9C
-	db	'ÿ',0
-	db	$10
+	dw	$9CFF
+	dw	$10
 	db	'IEPointerPixel',0,0
-	db	$9D
-	db	0
-	db	0
-	db	$10
+	dw	$9D00
+	dw	$10
 	db	'IEPointerTablet',0
-	db	$9D
-	db	1
-	db	0
-	db	12
+	dw	$9D01
+	dw	12
 	db	'IENewTablet',0
-	db	$9D
-	db	2
-	db	0
-	db	$10
+	dw	$9D02
+	dw	$10
 	db	'IECLASS_RAWKEY',0,0
-	db	$9D
-	db	3
-	db	0
-	db	14
+	dw	$9D03
+	dw	14
 	db	'IECLASS_ANSI',0,0
-	db	$9D
-	db	4
-	db	0
-	db	$12
+	dw	$9D04
+	dw	$12
 	db	'IECLASS_RAWMOUSE',0,0
-	db	$9D
-	db	5
-	db	0
-	db	14
+	dw	$9D05
+	dw	14
 	db	'IECLASS_EVENT',0
-	db	$9D
-	db	6
-	db	0
-	db	$12
+	dw	$9D06
+	dw	$12
 	db	'IECLASS_REQUESTER',0
-	db	$9D
-	db	7
-	db	0
-	db	$14
+	dw	$9D07
+	dw	$14
 	db	'ie_Qualifier values',0
-	db	$9D
-	db	8
-	db	0
-	db	$12
+	dw	$9D08
+	dw	$12
 	db	'ie_Qualifier bits',0
-	db	$9D
-	db	9
-	db	0
-	db	10
+	dw	$9D09
+	dw	10
 	db	'Keyboard',0,0
-	db	$9D
-	db	10
-	db	0
-	db	$14
+	dw	$9D0A
+	dw	$14
 	db	'KeyboardDevice cmds',0
-	db	$9D
-	db	11
-	db	0
-	db	8
+	dw	$9D0B
+	dw	8
 	db	'KeyMap',0,0
-	db	$9D
-	db	12
-	db	0
-	db	12
+	dw	$9D0C
+	dw	12
 	db	'KeyMapNode',0,0
-	db	$9D
-	db	13
-	db	0
-	db	$10
+	dw	$9D0D
+	dw	$10
 	db	'KeyMapResource',0,0
-	db	$9D
-	db	14
-	db	0
-	db	$16
+	dw	$9D0E
+	dw	$16
 	db	'Qualifier type masks',0,0
-	db	$9D
-	db	15
-	db	0
-	db	$12
+	dw	$9D0F
+	dw	$12
 	db	'Qualifier values',0,0
-	db	$9D
-	db	$10
-	db	0
-	db	$10
+	dw	$9D10
+	dw	$10
 	db	'Qualifier bits',0,0
-	db	$9D
-	db	$11
-	db	0
-	db	$14
+	dw	$9D11
+	dw	$14
 	db	'Dead Prefix bitdefs',0
-	db	$9D
-	db	$12
-	db	0
-	db	$12
+	dw	$9D12
+	dw	$12
 	db	'Dead Prefix mask',0,0
-	db	$9D
-	db	$13
-	db	0
-	db	14
+	dw	$9D13
+	dw	14
 	db	'RawKey codes',0,0
-	db	$9D
-	db	$14
-	db	0
-	db	10
+	dw	$9D14
+	dw	10
 	db	'Parallel',0,0
-	db	$9D
-	db	$15
-	db	0
-	db	$16
+	dw	$9D15
+	dw	$16
 	db	'PARDevice error codes',0
-	db	$9D
-	db	$16
-	db	0
-	db	$14
+	dw	$9D16
+	dw	$14
 	db	'ParallelDevice cmds',0
-	db	$9D
-	db	$17
-	db	0
-	db	$14
+	dw	$9D17
+	dw	$14
 	db	'IO_PARFLAGS values',0,0
-	db	$9D
-	db	$18
-	db	0
-	db	$12
+	dw	$9D18
+	dw	$12
 	db	'IO_PARFLAGS bits',0,0
-	db	$9D
-	db	$19
-	db	0
-	db	$10
+	dw	$9D19
+	dw	$10
 	db	'IO_FLAGS values',0
-	db	$9D
-	db	$1A
-	db	0
-	db	14
+	dw	$9D1A
+	dw	14
 	db	'IO_FLAGS bits',0
-	db	$9D
-	db	$1B
-	db	0
-	db	$12
+	dw	$9D1B
+	dw	$12
 	db	'IO_STATUS values',0,0
-	db	$9D
-	db	$1C
-	db	0
-	db	$10
+	dw	$9D1C
+	dw	$10
 	db	'IO_STATUS bits',0,0
-	db	$9D
-	db	$1D
-	db	0
-	db	12
+	dw	$9D1D
+	dw	12
 	db	'PTermArray',0,0
-	db	$9D
-	db	$1E
-	db	0
-	db	$14
+	dw	$9D1E
+	dw	$14
 	db	'IOEXTPar structure',0,0
-	db	$9D
-	db	$1F
-	db	0
-	db	8
+	dw	$9D1F
+	dw	8
 	db	'Printer',0
-	db	$9D
-	db	' ',0
-	db	$14
+	dw	$9D20
+	dw	$14
 	db	'PrinterDevice cmds',0,0
-	db	$9D
-	db	'!',0
-	db	14
+	dw	$9D21
+	dw	14
 	db	'Printer codes',0
-	db	$9D
-	db	'"',0,$C
+	dw	$9D22
+	dw	12
 	db	'IOPrtCmdReq',0
-	db	$9D
-	db	'#',0,$A
+	dw	$9D23
+	dw	10
 	db	'IODrpReq',0,0
-	db	$9D
-	db	'$',0
-	db	$12
+	dw	$9D24
+	dw	$12
 	db	'io_Special values',0
-	db	$9D
-	db	'%',0
-	db	$16
+	dw	$9D25
+	dw	$16
 	db	'PrinterDevice errors',0,0
-	db	$9D
-	db	'&',0
-	db	8
+	dw	$9D26
+	dw	8
 	db	'Prtbase',0
-	db	$9D
-	db	'''',0
-	db	$10
+	dw	$9D27
+	dw	$10
 	db	'du_Flags values',0
-	db	$9D
-	db	'(',0
-	db	14
+	dw	$9D28
+	dw	14
 	db	'du_Flags bits',0
-	db	$9D
-	db	')',0,$A
+	dw	$9D29
+	dw	10
 	db	'Constants',0
-	db	$9D
-	db	'*',0
-	db	$10
+	dw	$9D2A
+	dw	$10
 	db	'pd_Flags values',0
-	db	$9D
-	db	'+',0
-	db	14
+	dw	$9D2B
+	dw	14
 	db	'pd_Flags bits',0
-	db	$9D
-	db	',',0,$C
+	dw	$9D2C
+	dw	12
 	db	'PrinterData',0
-	db	$9D
-	db	'-',0
-	db	$16
+	dw	$9D2D
+	dw	$16
 	db	'Printer Class values',0,0
-	db	$9D
-	db	'.',0
-	db	$14
+	dw	$9D2E
+	dw	$14
 	db	'Printer Class bits',0,0
-	db	$9D
-	db	'/',0
-	db	$14
+	dw	$9D2F
+	dw	$14
 	db	'Composite PPC defs',0,0
-	db	$9D
-	db	'0',0
-	db	$12
+	dw	$9D30
+	dw	$12
 	db	'Color Class defs',0,0
-	db	$9D
-	db	'1',0
-	db	$14
+	dw	$9D31
+	dw	$14
 	db	'PrinterExtendedData',0
-	db	$9D
-	db	'2',0
-	db	$10
+	dw	$9D32
+	dw	$10
 	db	'PrinterSegment',0,0
-	db	$9D
-	db	'3',0
-	db	8
+	dw	$9D33
+	dw	8
 	db	'PrtGfx',0,0
-	db	$9D
-	db	'4',0
-	db	$14
+	dw	$9D34
+	dw	$14
 	db	'colorEntry indexes',0,0
-	db	$9D
-	db	'5',0,$C
+	dw	$9D35
+	dw	12
 	db	'colorEntry',0,0
-	db	$9D
-	db	'6',0
-	db	8
+	dw	$9D36
+	dw	8
 	db	'PrtInfo',0
-	db	$9D
-	db	'7',0,$A
+	dw	$9D37
+	dw	10
 	db	'ScsiDisk',0,0
-	db	$9D
-	db	'8',0
-	db	$12
+	dw	$9D38
+	dw	$12
 	db	'SCSICmd ptr flag',0,0
-	db	$9D
-	db	'9',0
-	db	8
+	dw	$9D39
+	dw	8
 	db	'SCSICmd',0
-	db	$9D
-	db	':',0
-	db	$12
+	dw	$9D3A
+	dw	$12
 	db	'scsi_Flags values',0
-	db	$9D
-	db	';',0
-	db	$10
+	dw	$9D3B
+	dw	$10
 	db	'scsi_Flags bits',0
-	db	$9D
-	db	'<',0
-	db	$16
+	dw	$9D3C
+	dw	$16
 	db	'SCSI io_Error values',0,0
-	db	$9D
-	db	'=',0
-	db	8
+	dw	$9D3D
+	dw	8
 	db	'Serial',0,0
-	db	$9D
-	db	'>',0
-	db	$12
+	dw	$9D3E
+	dw	$12
 	db	'Useful constants',0,0
-	db	$9D
-	db	'?',0
-	db	$12
+	dw	$9D3F
+	dw	$12
 	db	'SerialDevice cmds',0
-	db	$9D
-	db	'@',0
-	db	$14
+	dw	$9D40
+	dw	$14
 	db	'IO_SERFLAGS values',0,0
-	db	$9D
-	db	'A',0
-	db	$12
+	dw	$9D41
+	dw	$12
 	db	'IO_SERFLAGS bits',0,0
-	db	$9D
-	db	'B',0
-	db	$14
+	dw	$9D42
+	dw	$14
 	db	'IO_EXTFLAGS values',0,0
-	db	$9D
-	db	'C',0
-	db	$12
+	dw	$9D43
+	dw	$12
 	db	'IO_EXTFLAGS bits',0,0
-	db	$9D
-	db	'D',0,$A
+	dw	$9D44
+	dw	10
 	db	'TERMARRAY',0
-	db	$9D
-	db	'E',0,$A
+	dw	$9D45
+	dw	10
 	db	'IOEXTSER',0,0
-	db	$9D
-	db	'F',0
-	db	$14
+	dw	$9D46
+	dw	$14
 	db	'SerialDevice errors',0
-	db	$9D
-	db	'G',0
-	db	6
+	dw	$9D47
+	dw	6
 	db	'Timer',0
-	db	$9D
-	db	'H',0
-	db	$12
+	dw	$9D48
+	dw	$12
 	db	'Unit definitions',0,0
-	db	$9D
-	db	'I',0
-	db	14
+	dw	$9D49
+	dw	14
 	db	'TimeVal (TV)',0,0
-	db	$9D
-	db	'J',0,$A
+	dw	$9D4A
+	dw	10
 	db	'EClockVal',0
-	db	$9D
-	db	'K',0
-	db	$14
+	dw	$9D4B
+	dw	$14
 	db	'TimeRequest (IOTV)',0,0
-	db	$9D
-	db	'L',0
-	db	$12
+	dw	$9D4C
+	dw	$12
 	db	'TimerDevice cmds',0,0
-	db	$9D
-	db	'M',0,$A
+	dw	$9D4D
+	dw	10
 	db	'TrackDisk',0
-	db	$9D
-	db	'N',0
-	db	$1A
+	dw	$9D4E
+	dw	$1A
 	db	'Physical drive constants',0,0
-	db	$9D
-	db	'O',0
-	db	$16
+	dw	$9D4F
+	dw	$16
 	db	'External cmds bitdefs',0
-	db	$9D
-	db	'P',0
-	db	$16
+	dw	$9D50
+	dw	$16
 	db	'TrackDiskDevice cmds',0,0
-	db	$9D
-	db	'Q',0
-	db	8
+	dw	$9D51
+	dw	8
 	db	'IOExtTD',0
-	db	$9D
-	db	'R',0
-	db	14
+	dw	$9D52
+	dw	14
 	db	'DriveGeometry',0
-	db	$9D
-	db	'S',0
-	db	14
+	dw	$9D53
+	dw	14
 	db	'Device types',0,0
-	db	$9D
-	db	'T',0
-	db	$10
+	dw	$9D54
+	dw	$10
 	db	'dg_Flags values',0
-	db	$9D
-	db	'U',0
-	db	14
+	dw	$9D55
+	dw	14
 	db	'dg_Flags bits',0
-	db	$9D
-	db	'V',0
-	db	$18
+	dw	$9D56
+	dw	$18
 	db	'OpenDevice flag values',0,0
-	db	$9D
-	db	'W',0
-	db	$16
+	dw	$9D57
+	dw	$16
 	db	'OpenDevice flag bits',0,0
-	db	$9D
-	db	'X',0,$C
+	dw	$9D58
+	dw	12
 	db	'Drive types',0
-	db	$9D
-	db	'Y',0
-	db	$18
+	dw	$9D59
+	dw	$18
 	db	'TrackDiskDevice errors',0,0
-	db	$9D
-	db	'Z',0
-	db	$10
+	dw	$9D5A
+	dw	$10
 	db	'TDU_PublicUnit',0,0
-	db	$9D
-	db	'[',0
-	db	$14
+	dw	$9D5B
+	dw	$14
 	db	'TDU_PUBFLAGS values',0
-	db	$9D
-	db	'\',0
-	db	$12
+	dw	$9D5C
+	dw	$12
 	db	'TDU_PUBFLAGS bits',0
-	db	$9D
-	db	']',0,$A
+	dw	$9D5D
+	dw	10
 	db	'Narrator',0,0
-	db	$9D
-	db	'^',0
-	db	$16
+	dw	$9D5E
+	dw	$16
 	db	'Narrator error codes',0,0
-	db	$9D
-	db	'_',0
-	db	$16
+	dw	$9D5F
+	dw	$16
 	db	'Narrator Driver (NDI)',0
-	db	$9D
-	db	'`',0
-	db	$16
+	dw	$9D60
+	dw	$16
 	db	'MouthReadBlock (MRB)',0,0
-	db	$9D
-	db	'a',0,$A
+	dw	$9D61
+	dw	10
 	db	'DiskFont',0,0
-	db	$9D
-	db	'b',0,$A
+	dw	$9D62
+	dw	10
 	db	'ID types',0,0
-	db	$9D
-	db	'c',0
-	db	$12
+	dw	$9D63
+	dw	$12
 	db	'FontContents (FC)',0
-	db	$9D
-	db	'd',0
-	db	$14
+	dw	$9D64
+	dw	$14
 	db	'TFontContents (TFC)',0
-	db	$9D
-	db	'e',0
-	db	$1A
+	dw	$9D65
+	dw	$1A
 	db	'FontContentsHeader (FCH)',0,0
-	db	$9D
-	db	'f',0
-	db	$10
+	dw	$9D66
+	dw	$10
 	db	'DiskFontHeader',0,0
-	db	$9D
-	db	'g',0
-	db	$10
+	dw	$9D67
+	dw	$10
 	db	'taf_Type values',0
-	db	$9D
-	db	'h',0
-	db	14
+	dw	$9D68
+	dw	14
 	db	'taf_Type bits',0
-	db	$9D
-	db	'i',0
-	db	$10
+	dw	$9D69
+	dw	$10
 	db	'AvailFonts (AF)',0
-	db	$9D
-	db	'j',0
-	db	$12
+	dw	$9D6A
+	dw	$12
 	db	'TAvailFonts (TAF)',0
-	db	$9D
-	db	'k',0
-	db	$18
+	dw	$9D6B
+	dw	$18
 	db	'AvailFontsHeader (AFH)',0,0
-	db	$9D
-	db	'l',0,$C
+	dw	$9D6C
+	dw	12
 	db	'DiskFontTag',0
-	db	$9D
-	db	'm',0,$A
+	dw	$9D6D
+	dw	10
 	db	'Max sizes',0
-	db	$9D
-	db	'n',0
-	db	$14
+	dw	$9D6E
+	dw	$14
 	db	'Spec & inquiry tags',0
-	db	$9D
-	db	'o',0
-	db	$10
+	dw	$9D6F
+	dw	$10
 	db	'Underline tags',0,0
-	db	$9D
-	db	'p',0,$C
+	dw	$9D70
+	dw	12
 	db	'Slant tags',0,0
-	db	$9D
-	db	'q',0,$C
+	dw	$9D71
+	dw	12
 	db	'Weight tags',0
-	db	$9D
-	db	'r',0
-	db	$10
+	dw	$9D72
+	dw	$10
 	db	'HorizStyle tags',0
-	db	$9D
-	db	's',0
-	db	6
+	dw	$9D73
+	dw	6
 	db	'Glyph',0
-	db	$9D
-	db	't',0,$C
+	dw	$9D74
+	dw	12
 	db	'GlyphEngine',0
-	db	$9D
-	db	'u',0,$A
+	dw	$9D75
+	dw	10
 	db	'GlyphMap',0,0
-	db	$9D
-	db	'v',0
-	db	$10
+	dw	$9D76
+	dw	$10
 	db	'GlyphWidthEntry',0
-	db	$9D
-	db	'w',0,$A
+	dw	$9D77
+	dw	10
 	db	'OTErrors',0,0
-	db	$9D
-	db	'x',0
-	db	8
+	dw	$9D78
+	dw	8
 	db	'Errors',0,0
-	db	$9D
-	db	'y',0
-	db	4
+	dw	$9D79
+	dw	4
 	db	'Dos',0
-	db	$9D
-	db	'z',0,$A
+	dw	$9D7A
+	dw	10
 	db	'DateTime',0,0
-	db	$9D
-	db	'{',0
-	db	$12
+	dw	$9D7B
+	dw	$12
 	db	'dat_Flags values',0,0
-	db	$9D
-	db	'|',0
-	db	$10
+	dw	$9D7C
+	dw	$10
 	db	'dat_Flags bits',0,0
-	db	$9D
-	db	'}',0
-	db	$14
+	dw	$9D7D
+	dw	$14
 	db	'Date format values',0,0
-	db	$9D
-	db	'~',0
-	db	$10
+	dw	$9D7E
+	dw	$10
 	db	'File open parms',0
-	db	$9D
-	db	$7F
-	db	0
-	db	12
+	dw	$9D7F
+	dw	12
 	db	'Seek codes',0,0
-	db	$9D
-	db	$80
-	db	0
-	db	10
+	dw	$9D80
+	dw	10
 	db	'Lock type',0
-	db	$9D
-	db	$81
-	db	0
-	db	10
+	dw	$9D81
+	dw	10
 	db	'DateStamp',0
-	db	$9D
-	db	$82
-	db	0
-	db	14
+	dw	$9D82
+	dw	14
 	db	'FileInfoBlock',0
-	db	$9D
-	db	$83
-	db	0
-	db	$12
+	dw	$9D83
+	dw	$12
 	db	'Protection values',0
-	db	$9D
-	db	$84
-	db	0
-	db	$10
+	dw	$9D84
+	dw	$10
 	db	'Protection bits',0
-	db	$9D
-	db	$85
-	db	0
-	db	10
+	dw	$9D85
+	dw	10
 	db	'InfoData',0,0
-	db	$9D
-	db	$86
-	db	0
-	db	$16
+	dw	$9D86
+	dw	$16
 	db	'InfoData disk states',0,0
-	db	$9D
-	db	$87
-	db	0
-	db	$14
+	dw	$9D87
+	dw	$14
 	db	'InfoData disk types',0
-	db	$9D
-	db	$88
-	db	0
-	db	10
+	dw	$9D88
+	dw	10
 	db	'IO errors',0
-	db	$9D
-	db	$89
-	db	0
-	db	14
+	dw	$9D89
+	dw	14
 	db	'Return codes',0,0
-	db	$9D
-	db	$8A
-	db	0
-	db	10
+	dw	$9D8A
+	dw	10
 	db	'BreakBits',0
-	db	$9D
-	db	$8B
-	db	0
-	db	$12
+	dw	$9D8B
+	dw	$12
 	db	'SameLock returns',0,0
-	db	$9D
-	db	$8C
-	db	0
-	db	$12
+	dw	$9D8C
+	dw	$12
 	db	'ChangeMode types',0,0
-	db	$9D
-	db	$8D
-	db	0
-	db	$10
+	dw	$9D8D
+	dw	$10
 	db	'MakeLink values',0
-	db	$9D
-	db	$8E
-	db	0
-	db	$12
+	dw	$9D8E
+	dw	$12
 	db	'ReadItem returns',0,0
-	db	$9D
-	db	$8F
-	db	0
-	db	$10
+	dw	$9D8F
+	dw	$10
 	db	'DosObject types',0
-	db	$9D
-	db	$90
-	db	0
-	db	8
+	dw	$9D90
+	dw	8
 	db	'DosASL',0,0
-	db	$9D
-	db	$91
-	db	0
-	db	12
+	dw	$9D91
+	dw	12
 	db	'AnchorPath',0,0
-	db	$9D
-	db	$92
-	db	0
-	db	$10
+	dw	$9D92
+	dw	$10
 	db	'ap_Flags values',0
-	db	$9D
-	db	$93
-	db	0
-	db	14
+	dw	$9D93
+	dw	14
 	db	'ap_Flags bits',0
-	db	$9D
-	db	$94
-	db	0
-	db	8
+	dw	$9D94
+	dw	8
 	db	'AChain',0,0
-	db	$9D
-	db	$95
-	db	0
-	db	$10
+	dw	$9D95
+	dw	$10
 	db	'an_Flags values',0
-	db	$9D
-	db	$96
-	db	0
-	db	14
+	dw	$9D96
+	dw	14
 	db	'an_Flags bits',0
-	db	$9D
-	db	$97
-	db	0
-	db	$14
+	dw	$9D97
+	dw	$14
 	db	'Wildcard constants',0,0
-	db	$9D
-	db	$98
-	db	0
-	db	$10
+	dw	$9D98
+	dw	$10
 	db	'an_Status bits',0,0
-	db	$9D
-	db	$99
-	db	0
-	db	14
+	dw	$9D99
+	dw	14
 	db	'Match returns',0
-	db	$9D
-	db	$9A
-	db	0
-	db	10
+	dw	$9D9A
+	dw	10
 	db	'DosExtens',0
-	db	$9D
-	db	$9B
-	db	0
-	db	8
+	dw	$9D9B
+	dw	8
 	db	'Process',0
-	db	$9D
-	db	$9C
-	db	0
-	db	$10
+	dw	$9D9C
+	dw	$10
 	db	'pr_Flags values',0
-	db	$9D
-	db	$9D
-	db	0
-	db	14
+	dw	$9D9D
+	dw	14
 	db	'pr_Flags bits',0
-	db	$9D
-	db	$9E
-	db	0
-	db	12
+	dw	$9D9E
+	dw	12
 	db	'FileHandle',0,0
-	db	$9D
-	db	$9F
-	db	0
-	db	10
+	dw	$9D9F
+	dw	10
 	db	'DosPacket',0
-	db	$9D
-	db	$A0
-	db	0
-	db	$10
+	dw	$9DA0
+	dw	$10
 	db	'StandardPacket',0,0
-	db	$9D
-	db	'¡',0
-	db	14
+	dw	$9DA1
+	dw	14
 	db	'Packet types',0,0
-	db	$9D
-	db	'¢',0,$C
+	dw	$9DA2
+	dw	12
 	db	'ErrorString',0
-	db	$9D
-	db	'£',0,$A
+	dw	$9DA3
+	dw	10
 	db	'RootNode',0,0
-	db	$9D
-	db	'¤',0
-	db	$10
+	dw	$9DA4
+	dw	$10
 	db	'rn_Flags values',0
-	db	$9D
-	db	'¥',0
-	db	14
+	dw	$9DA5
+	dw	14
 	db	'rn_Flags bits',0
-	db	$9D
-	db	'¦',0,$C
+	dw	$9DA6
+	dw	12
 	db	'CliProcList',0
-	db	$9D
-	db	'§',0
-	db	8
+	dw	$9DA7
+	dw	8
 	db	'DosInfo',0
-	db	$9D
-	db	'¨',0
-	db	8
+	dw	$9DA8
+	dw	8
 	db	'Segment',0
-	db	$9D
-	db	'©',0
-	db	14
+	dw	$9DA9
+	dw	14
 	db	'seg_UC values',0
-	db	$9D
-	db	'ª',0
-	db	$16
+	dw	$9DAA
+	dw	$16
 	db	'CommandLineInterface',0,0
-	db	$9D
-	db	'«',0,$C
+	dw	$9DAB
+	dw	12
 	db	'DeviceList',0,0
-	db	$9D
-	db	'¬',0
-	db	8
+	dw	$9DAC
+	dw	8
 	db	'Devinfo',0
-	db	$9D
-	db	'­',0
-	db	8
+	dw	$9DAD
+	dw	8
 	db	'DosList',0
-	db	$9D
-	db	'®',0
-	db	$12
+	dw	$9DAE
+	dw	$12
 	db	'DeviceList types',0,0
-	db	$9D
-	db	'¯',0
-	db	8
+	dw	$9DAF
+	dw	8
 	db	'DevProc',0
-	db	$9D
-	db	'°',0
-	db	$12
+	dw	$9DB0
+	dw	$12
 	db	'dvp_Flags values',0,0
-	db	$9D
-	db	'±',0
-	db	$10
+	dw	$9DB1
+	dw	$10
 	db	'dvp_Flags bits',0,0
-	db	$9D
-	db	'²',0
-	db	$18
+	dw	$9DB2
+	dw	$18
 	db	'LockDosList flag values',0
-	db	$9D
-	db	'³',0
-	db	$16
+	dw	$9DB3
+	dw	$16
 	db	'LockDosList flag bits',0
-	db	$9D
-	db	'´',0,$A
+	dw	$9DB4
+	dw	10
 	db	'FileLock',0,0
-	db	$9D
-	db	'µ',0
-	db	$12
+	dw	$9DB5
+	dw	$12
 	db	'ErrorReport types',0
-	db	$9D
-	db	'¶',0
-	db	$14
+	dw	$9DB6
+	dw	$14
 	db	'Shell packet types',0,0
-	db	$9D
-	db	'·',0
-	db	$18
+	dw	$9DB7
+	dw	$18
 	db	'fib_DirEntryType types',0,0
-	db	$9D
-	db	'¸',0,$A
+	dw	$9DB8
+	dw	10
 	db	'DosHunks',0,0
-	db	$9D
-	db	'¹',0,$C
+	dw	$9DB9
+	dw	12
 	db	'Hunk types',0,0
-	db	$9D
-	db	'º',0
-	db	$14
+	dw	$9DBA
+	dw	$14
 	db	'Hunk_ext sub-types',0,0
-	db	$9D
-	db	'»',0
-	db	8
+	dw	$9DBB
+	dw	8
 	db	'DosTags',0
-	db	$9D
-	db	'¼',0,$C
+	dw	$9DBC
+	dw	12
 	db	'System tags',0
-	db	$9D
-	db	'½',0
-	db	$14
+	dw	$9DBD
+	dw	$14
 	db	'CreateNewProc tags',0,0
-	db	$9D
-	db	'¾',0
-	db	$14
+	dw	$9DBE
+	dw	$14
 	db	'AllocDosObject tags',0
-	db	$9D
-	db	'¿',0
-	db	6
+	dw	$9DBF
+	dw	6
 	db	'ExAll',0
-	db	$9D
-	db	'À',0
-	db	$12
+	dw	$9DC0
+	dw	$12
 	db	'ExAll data types',0,0
-	db	$9D
-	db	'Á',0,$A
+	dw	$9DC1
+	dw	10
 	db	'ExAllData',0
-	db	$9D
-	db	'Â',0
-	db	14
+	dw	$9DC2
+	dw	14
 	db	'ExAllControl',0,0
-	db	$9D
-	db	'Ã',0,$C
+	dw	$9DC3
+	dw	12
 	db	'FileHandler',0
-	db	$9D
-	db	'Ä',0,$A
+	dw	$9DC4
+	dw	10
 	db	'DosEnvec',0,0
-	db	$9D
-	db	'Å',0
-	db	$10
+	dw	$9DC5
+	dw	$10
 	db	'DosEnvec values',0
-	db	$9D
-	db	'Æ',0
-	db	$12
+	dw	$9DC6
+	dw	$12
 	db	'FileSysStartupMsg',0
-	db	$9D
-	db	'Ç',0,$C
+	dw	$9DC7
+	dw	12
 	db	'DeviceNode',0,0
-	db	$9D
-	db	'È',0
-	db	8
+	dw	$9DC8
+	dw	8
 	db	'Notify',0,0
-	db	$9D
-	db	'É',0
-	db	14
+	dw	$9DC9
+	dw	14
 	db	'NotifyMessage',0
-	db	$9D
-	db	'Ê',0
-	db	$14
+	dw	$9DCA
+	dw	$14
 	db	'NotifyMessage class',0
-	db	$9D
-	db	'Ë',0
-	db	$14
+	dw	$9DCB
+	dw	$14
 	db	'NotifyMessage code',0,0
-	db	$9D
-	db	'Ì',0
-	db	14
+	dw	$9DCC
+	dw	14
 	db	'NotifyRequest',0
-	db	$9D
-	db	'Í',0
-	db	$10
+	dw	$9DCD
+	dw	$10
 	db	'nr_Flags values',0
-	db	$9D
-	db	'Î',0
-	db	14
+	dw	$9DCE
+	dw	14
 	db	'nr_Flags bits',0
-	db	$9D
-	db	'Ï',0
-	db	8
+	dw	$9DCF
+	dw	8
 	db	'CSource',0
-	db	$9D
-	db	'Ð',0
-	db	8
+	dw	$9DD0
+	dw	8
 	db	'RDArgs',0,0
-	db	$9D
-	db	'Ñ',0
-	db	$12
+	dw	$9DD1
+	dw	$12
 	db	'RDA_Flags values',0,0
-	db	$9D
-	db	'Ò',0
-	db	$10
+	dw	$9DD2
+	dw	$10
 	db	'RDA_Flags bits',0,0
-	db	$9D
-	db	'Ó',0
-	db	8
+	dw	$9DD3
+	dw	8
 	db	'Record',0,0
-	db	$9D
-	db	'Ô',0
-	db	$12
+	dw	$9DD4
+	dw	$12
 	db	'LockRecords modes',0
-	db	$9D
-	db	'Õ',0,$C
+	dw	$9DD5
+	dw	12
 	db	'RecordLock',0,0
-	db	$9D
-	db	'Ö',0
-	db	6
+	dw	$9DD6
+	dw	6
 	db	'Stdio',0
-	db	$9D
-	db	'×',0
-	db	14
+	dw	$9DD7
+	dw	14
 	db	'SetVBuf types',0
-	db	$9D
-	db	'Ø',0
-	db	4
+	dw	$9DD8
+	dw	4
 	db	'Var',0
-	db	$9D
-	db	'Ù',0,$A
+	dw	$9DD9
+	dw	10
 	db	'LocalVar',0,0
-	db	$9D
-	db	'Ú',0
-	db	$18
+	dw	$9DDA
+	dw	$18
 	db	'lv_Node.ln_Type bitdefs',0
-	db	$9D
-	db	'Û',0
-	db	$12
+	dw	$9DDB
+	dw	$12
 	db	'lv_Flags bitdefs',0,0
-	db	$9D
-	db	'Ü',0
-	db	6
+	dw	$9DDC
+	dw	6
 	db	'Exec',0,0
-	db	$9D
-	db	'Ý',0
-	db	8
+	dw	$9DDD
+	dw	8
 	db	'Alerts',0,0
-	db	$9D
-	db	'Þ',0,$C
+	dw	$9DDE
+	dw	12
 	db	'Alert codes',0
-	db	$9D
-	db	'ß',0
-	db	$10
+	dw	$9DDF
+	dw	$10
 	db	'DeviceData (DD)',0
-	db	$9D
-	db	'à',0
-	db	6
+	dw	$9DE0
+	dw	6
 	db	'Unit',0,0
-	db	$9D
-	db	'á',0
-	db	$12
+	dw	$9DE1
+	dw	$12
 	db	'UNIT_FLAGS values',0
-	db	$9D
-	db	'â',0
-	db	$10
+	dw	$9DE2
+	dw	$10
 	db	'UNIT_FLAGS bits',0
-	db	$9D
-	db	'ã',0
-	db	$14
+	dw	$9DE3
+	dw	$14
 	db	'Standard IO Errors',0,0
-	db	$9D
-	db	'ä',0,$A
+	dw	$9DE4
+	dw	10
 	db	'Execbase',0,0
-	db	$9D
-	db	'å',0
-	db	$12
+	dw	$9DE5
+	dw	$12
 	db	'AttnFlags values',0,0
-	db	$9D
-	db	'æ',0
-	db	$10
+	dw	$9DE6
+	dw	$10
 	db	'AttnFlags bits',0,0
-	db	$9D
-	db	'ç',0
-	db	$14
+	dw	$9DE7
+	dw	$14
 	db	'CacheControl values',0
-	db	$9D
-	db	'è',0
-	db	$12
+	dw	$9DE8
+	dw	$12
 	db	'CacheControl bits',0
-	db	$9D
-	db	'é',0
-	db	$10
+	dw	$9DE9
+	dw	$10
 	db	'CacheDMA values',0
-	db	$9D
-	db	'ê',0
-	db	14
+	dw	$9DEA
+	dw	14
 	db	'CacheDMA bits',0
-	db	$9D
-	db	'ë',0,$C
+	dw	$9DEB
+	dw	12
 	db	'Interrupts',0,0
-	db	$9D
-	db	'ì',0
-	db	$18
+	dw	$9DEC
+	dw	$18
 	db	'InterruptStructure (IS)',0
-	db	$9D
-	db	'í',0
-	db	$16
+	dw	$9DED
+	dw	$16
 	db	'InterruptVector (IV)',0,0
-	db	$9D
-	db	'î',0,$A
+	dw	$9DEE
+	dw	10
 	db	'Sys flags',0
-	db	$9D
-	db	'ï',0
-	db	$18
+	dw	$9DEF
+	dw	$18
 	db	'SoftInt ListHeader (SH)',0
-	db	$9D
-	db	'ð',0
-	db	14
+	dw	$9DF0
+	dw	14
 	db	'SoftInt mask',0,0
-	db	$9D
-	db	'ñ',0
-	db	14
+	dw	$9DF1
+	dw	14
 	db	'HardInt (NMI)',0
-	db	$9D
-	db	'ò',0
-	db	4
+	dw	$9DF2
+	dw	4
 	db	'IO',0,0
-	db	$9D
-	db	'ó',0
-	db	$14
+	dw	$9DF3
+	dw	$14
 	db	'IO Standard (IOSTD)',0
-	db	$9D
-	db	'ô',0
-	db	$12
+	dw	$9DF4
+	dw	$12
 	db	'IO_FLAGS bitdefs',0,0
-	db	$9D
-	db	'õ',0
-	db	$14
+	dw	$9DF5
+	dw	$14
 	db	'IO Function offsets',0
-	db	$9D
-	db	'ö',0
-	db	$10
+	dw	$9DF6
+	dw	$10
 	db	'Device cmds std',0
-	db	$9D
-	db	'÷',0,$A
+	dw	$9DF7
+	dw	10
 	db	'Libraries',0
-	db	$9D
-	db	'ø',0
-	db	$12
+	dw	$9DF8
+	dw	$12
 	db	'Special Constants',0
-	db	$9D
-	db	'ù',0
-	db	$16
+	dw	$9DF9
+	dw	$16
 	db	'Std Library Functions',0
-	db	$9D
-	db	'ú',0
-	db	$18
+	dw	$9DFA
+	dw	$18
 	db	'Library structure (LIB)',0
-	db	$9D
-	db	'û',0
-	db	$12
+	dw	$9DFB
+	dw	$12
 	db	'LIB_FLAGS values',0,0
-	db	$9D
-	db	'ü',0
-	db	$10
+	dw	$9DFC
+	dw	$10
 	db	'LIB_FLAGS bits',0,0
-	db	$9D
-	db	'ý',0
-	db	6
+	dw	$9DFD
+	dw	6
 	db	'Lists',0
-	db	$9D
-	db	'þ',0
-	db	$10
+	dw	$9DFE
+	dw	$10
 	db	'ListHeader (LH)',0
-	db	$9D
-	db	'ÿ',0
-	db	$18
+	dw	$9DFF
+	dw	$18
 	db	'MinimalListHeader (MLH)',0
-	db	$9E
-	db	0
-	db	0
-	db	8
+	dw	$9E00
+	dw	8
 	db	'Memory',0,0
-	db	$9E
-	db	1
-	db	0
-	db	$10
+	dw	$9E01
+	dw	$10
 	db	'MemoryList (ML)',0
-	db	$9E
-	db	2
-	db	0
-	db	$12
+	dw	$9E02
+	dw	$12
 	db	'MemoryEntry (ME)',0,0
-	db	$9E
-	db	3
-	db	0
-	db	$18
+	dw	$9E03
+	dw	$18
 	db	'Memory attribute values',0
-	db	$9E
-	db	4
-	db	0
-	db	$16
+	dw	$9E04
+	dw	$16
 	db	'Memory attribute bits',0
-	db	$9E
-	db	5
-	db	0
-	db	$1A
+	dw	$9E05
+	dw	$1A
 	db	'MemBlock alignment rules',0,0
-	db	$9E
-	db	6
-	db	0
-	db	$10
+	dw	$9E06
+	dw	$10
 	db	'MemHandlerData',0,0
-	db	$9E
-	db	7
-	db	0
-	db	$14
+	dw	$9E07
+	dw	$14
 	db	'memh_Flags bitdefs',0,0
-	db	$9E
-	db	8
-	db	0
-	db	$16
+	dw	$9E08
+	dw	$16
 	db	'MemoryHandler returns',0
-	db	$9E
-	db	9
-	db	0
-	db	$12
+	dw	$9E09
+	dw	$12
 	db	'MemoryHeader (MH)',0
-	db	$9E
-	db	10
-	db	0
-	db	$12
+	dw	$9E0A
+	dw	$12
 	db	'MemoryChunk (MC)',0,0
-	db	$9E
-	db	11
-	db	0
-	db	6
+	dw	$9E0B
+	dw	6
 	db	'Nodes',0
-	db	$9E
-	db	12
-	db	0
-	db	14
+	dw	$9E0C
+	dw	14
 	db	'ListNode (LN)',0
-	db	$9E
-	db	13
-	db	0
-	db	$16
+	dw	$9E0D
+	dw	$16
 	db	'MinimalListNode (MLN)',0
-	db	$9E
-	db	14
-	db	0
-	db	12
+	dw	$9E0E
+	dw	12
 	db	'Node types',0,0
-	db	$9E
-	db	15
-	db	0
-	db	6
+	dw	$9E0F
+	dw	6
 	db	'Ports',0
-	db	$9E
-	db	$10
-	db	0
-	db	$12
+	dw	$9E10
+	dw	$12
 	db	'MessagePort (MP)',0,0
-	db	$9E
-	db	$11
-	db	0
-	db	$10
+	dw	$9E11
+	dw	$10
 	db	'MP_FLAGS values',0
-	db	$9E
-	db	$12
-	db	0
-	db	$10
+	dw	$9E12
+	dw	$10
 	db	'PutMsg actions',0,0
-	db	$9E
-	db	$13
-	db	0
-	db	14
+	dw	$9E13
+	dw	14
 	db	'Message (MN)',0,0
-	db	$9E
-	db	$14
-	db	0
-	db	10
+	dw	$9E14
+	dw	10
 	db	'Resident',0,0
-	db	$9E
-	db	$15
-	db	0
-	db	$12
+	dw	$9E15
+	dw	$12
 	db	'ResidentTag (RT)',0,0
-	db	$9E
-	db	$16
-	db	0
-	db	$14
+	dw	$9E16
+	dw	$14
 	db	'RT_MATCHWORD value',0,0
-	db	$9E
-	db	$17
-	db	0
-	db	$10
+	dw	$9E17
+	dw	$10
 	db	'RT_FLAGS values',0
-	db	$9E
-	db	$18
-	db	0
-	db	14
+	dw	$9E18
+	dw	14
 	db	'RT_FLAGS bits',0
-	db	$9E
-	db	$19
-	db	0
-	db	10
+	dw	$9E19
+	dw	10
 	db	'Semaphore',0
-	db	$9E
-	db	$1A
-	db	0
-	db	$16
+	dw	$9E1A
+	dw	$16
 	db	'SignalSemaphore (SSR)',0
-	db	$9E
-	db	$1B
-	db	0
-	db	$16
+	dw	$9E1B
+	dw	$16
 	db	'SignalSemaphore (SS)',0,0
-	db	$9E
-	db	$1C
-	db	0
-	db	$18
+	dw	$9E1C
+	dw	$18
 	db	'SemaphoreMessage (SSM)',0,0
-	db	$9E
-	db	$1D
-	db	0
-	db	$10
+	dw	$9E1D
+	dw	$10
 	db	'Semaphore (SM)',0,0
-	db	$9E
-	db	$1E
-	db	0
-	db	8
+	dw	$9E1E
+	dw	8
 	db	'Strings',0
-	db	$9E
-	db	$1F
-	db	0
-	db	$12
+	dw	$9E1F
+	dw	$12
 	db	'Terminal Control',0,0
-	db	$9E
-	db	' ',0
-	db	6
+	dw	$9E20
+	dw	6
 	db	'Tasks',0
-	db	$9E
-	db	'!',0
-	db	$12
+	dw	$9E21
+	dw	$12
 	db	'TaskControl (TC)',0,0
-	db	$9E
-	db	'"',0
-	db	14
+	dw	$9E22
+	dw	14
 	db	'ExtendedTask',0,0
-	db	$9E
-	db	'#',0
-	db	$14
+	dw	$9E23
+	dw	$14
 	db	'Child status values',0
-	db	$9E
-	db	'$',0
-	db	$10
+	dw	$9E24
+	dw	$10
 	db	'StackSwapStruct',0
-	db	$9E
-	db	'%',0
-	db	$10
+	dw	$9E25
+	dw	$10
 	db	'TC_FLAGS values',0
-	db	$9E
-	db	'&',0
-	db	14
+	dw	$9E26
+	dw	14
 	db	'TC_FLAGS bits',0
-	db	$9E
-	db	'''',0,$C
+	dw	$9E27
+	dw	12
 	db	'Task states',0
-	db	$9E
-	db	'(',0
-	db	$14
+	dw	$9E28
+	dw	$14
 	db	'Task signal values',0,0
-	db	$9E
-	db	')',0
-	db	$12
+	dw	$9E29
+	dw	$12
 	db	'Task signal bits',0,0
-	db	$9E
-	db	'*',0
-	db	8
+	dw	$9E2A
+	dw	8
 	db	'Gadgets',0
-	db	$9E
-	db	'+',0,$C
+	dw	$9E2B
+	dw	12
 	db	'COLORWHEEL',0,0
-	db	$9E
-	db	',',0
-	db	14
+	dw	$9E2C
+	dw	14
 	db	'ColorWheelHSB',0
-	db	$9E
-	db	'-',0
-	db	14
+	dw	$9E2D
+	dw	14
 	db	'ColorWheelRGB',0
-	db	$9E
-	db	'.',0
-	db	$10
+	dw	$9E2E
+	dw	$10
 	db	'ColorWheel tags',0
-	db	$9E
-	db	'/',0
-	db	$10
+	dw	$9E2F
+	dw	$10
 	db	'GradientSlider',0,0
-	db	$9E
-	db	'0',0
-	db	$14
+	dw	$9E30
+	dw	$14
 	db	'GradientSlider tags',0
-	db	$9E
-	db	'1',0,$A
+	dw	$9E31
+	dw	10
 	db	'Graphics',0,0
-	db	$9E
-	db	'2',0
-	db	6
+	dw	$9E32
+	dw	6
 	db	'CLIP',0,0
-	db	$9E
-	db	'3',0
-	db	6
+	dw	$9E33
+	dw	6
 	db	'Layer',0
-	db	$9E
-	db	'4',0,$A
+	dw	$9E34
+	dw	10
 	db	'ClipRect',0,0
-	db	$9E
-	db	'5',0
-	db	$18
+	dw	$9E35
+	dw	$18
 	db	'Internal cliprect flags',0
-	db	$9E
-	db	'6',0
-	db	$16
+	dw	$9E36
+	dw	$16
 	db	'Defines for clipping',0,0
-	db	$9E
-	db	'7',0
-	db	8
+	dw	$9E37
+	dw	8
 	db	'Coerce',0,0
-	db	$9E
-	db	'8',0
-	db	$14
+	dw	$9E38
+	dw	$14
 	db	'Mode coercion defs',0,0
-	db	$9E
-	db	'9',0
-	db	8
+	dw	$9E39
+	dw	8
 	db	'Copper',0,0
-	db	$9E
-	db	':',0
-	db	$14
+	dw	$9E3A
+	dw	$14
 	db	'Copper instructions',0
-	db	$9E
-	db	';',0
-	db	8
+	dw	$9E3B
+	dw	8
 	db	'CopIns',0,0
-	db	$9E
-	db	'<',0
-	db	8
+	dw	$9E3C
+	dw	8
 	db	'CprList',0
-	db	$9E
-	db	'=',0
-	db	8
+	dw	$9E3D
+	dw	8
 	db	'CopList',0
-	db	$9E
-	db	'>',0,$A
+	dw	$9E3E
+	dw	10
 	db	'UCopList',0,0
-	db	$9E
-	db	'?',0
-	db	8
+	dw	$9E3F
+	dw	8
 	db	'CopInit',0
-	db	$9E
-	db	'@',0
-	db	8
+	dw	$9E40
+	dw	8
 	db	'Display',0
-	db	$9E
-	db	'A',0
-	db	$10
+	dw	$9E41
+	dw	$10
 	db	'bplcon0 defines',0
-	db	$9E
-	db	'B',0
-	db	$10
+	dw	$9E42
+	dw	$10
 	db	'bplcon1 defines',0
-	db	$9E
-	db	'C',0
-	db	$1A
+	dw	$9E43
+	dw	$1A
 	db	'Display window start/stop',0
-	db	$9E
-	db	'D',0
-	db	$16
+	dw	$9E44
+	dw	$16
 	db	'Data fetch start/stop',0
-	db	$9E
-	db	'E',0,$C
+	dw	$9E45
+	dw	12
 	db	'vposr bits',0,0
-	db	$9E
-	db	'F',0,$C
+	dw	$9E46
+	dw	12
 	db	'DisplayInfo',0
-	db	$9E
-	db	'G',0
-	db	$14
+	dw	$9E47
+	dw	$14
 	db	'DataChunk type IDs',0,0
-	db	$9E
-	db	'H',0,$C
+	dw	$9E48
+	dw	12
 	db	'QueryHeader',0
-	db	$9E
-	db	'I',0
-	db	14
+	dw	$9E49
+	dw	14
 	db	'Availability',0,0
-	db	$9E
-	db	'J',0
-	db	$10
+	dw	$9E4A
+	dw	$10
 	db	'Mode properties',0
-	db	$9E
-	db	'K',0
-	db	14
+	dw	$9E4B
+	dw	14
 	db	'DimensionInfo',0
-	db	$9E
-	db	'L',0,$C
+	dw	$9E4C
+	dw	12
 	db	'MonitorInfo',0
-	db	$9E
-	db	'M',0
-	db	$16
+	dw	$9E4D
+	dw	$16
 	db	'Monitor compatibility',0
-	db	$9E
-	db	'N',0,$A
+	dw	$9E4E
+	dw	10
 	db	'NameInfo',0,0
-	db	$9E
-	db	'O',0
-	db	8
+	dw	$9E4F
+	dw	8
 	db	'VecInfo',0
-	db	$9E
-	db	'P',0
-	db	6
+	dw	$9E50
+	dw	6
 	db	'Gels',0,0
-	db	$9E
-	db	'Q',0
-	db	$12
+	dw	$9E51
+	dw	$12
 	db	'VS_VSFlags values',0
-	db	$9E
-	db	'R',0
-	db	$10
+	dw	$9E52
+	dw	$10
 	db	'VS_VSFlags bits',0
-	db	$9E
-	db	'S',0
-	db	$14
+	dw	$9E53
+	dw	$14
 	db	'bob_BobFlags values',0
-	db	$9E
-	db	'T',0
-	db	$12
+	dw	$9E54
+	dw	$12
 	db	'bob_BobFlags bits',0
-	db	$9E
-	db	'U',0
-	db	$1A
+	dw	$9E55
+	dw	$1A
 	db	'Animation procedures defs',0
-	db	$9E
-	db	'V',0
-	db	$14
+	dw	$9E56
+	dw	$14
 	db	'Virtual Sprite (VS)',0
-	db	$9E
-	db	'W',0
-	db	$14
+	dw	$9E57
+	dw	$14
 	db	'BlitterObject (BOB)',0
-	db	$9E
-	db	'X',0
-	db	14
+	dw	$9E58
+	dw	14
 	db	'AnimComp (AC)',0
-	db	$9E
-	db	'Y',0
-	db	$10
+	dw	$9E59
+	dw	$10
 	db	'AnimObject (AO)',0
-	db	$9E
-	db	'Z',0
-	db	$12
+	dw	$9E5A
+	dw	$12
 	db	'dBufPacket (DBP)',0,0
-	db	$9E
-	db	'[',0
-	db	4
+	dw	$9E5B
+	dw	4
 	db	'Gfx',0
-	db	$9E
-	db	'\',0
-	db	$10
+	dw	$9E5C
+	dw	$10
 	db	'Misc. gfx flags',0
-	db	$9E
-	db	']',0
-	db	8
+	dw	$9E5D
+	dw	8
 	db	'Bitmap',0,0
-	db	$9E
-	db	'^',0,$A
+	dw	$9E5E
+	dw	10
 	db	'Rectangle',0
-	db	$9E
-	db	'_',0
-	db	8
+	dw	$9E5F
+	dw	8
 	db	'Rect32',0,0
-	db	$9E
-	db	'`',0
-	db	8
+	dw	$9E60
+	dw	8
 	db	'tPoint',0,0
-	db	$9E
-	db	'a',0
-	db	$10
+	dw	$9E61
+	dw	$10
 	db	'bm_Flags values',0
-	db	$9E
-	db	'b',0
-	db	14
+	dw	$9E62
+	dw	14
 	db	'bm_Flags bits',0
-	db	$9E
-	db	'c',0
-	db	$12
+	dw	$9E63
+	dw	$12
 	db	'BitMapAttr flags',0,0
-	db	$9E
-	db	'd',0
-	db	8
+	dw	$9E64
+	dw	8
 	db	'GfxBase',0
-	db	$9E
-	db	'e',0
-	db	$12
+	dw	$9E65
+	dw	$12
 	db	'dalestuff bitdefs',0
-	db	$9E
-	db	'f',0
-	db	$14
+	dw	$9E66
+	dw	$14
 	db	'ChipRevBits values',0,0
-	db	$9E
-	db	'g',0
-	db	$12
+	dw	$9E67
+	dw	$12
 	db	'ChipRevBits bits',0,0
-	db	$9E
-	db	'h',0
-	db	$12
+	dw	$9E68
+	dw	$12
 	db	'SetChipRev values',0
-	db	$9E
-	db	'i',0,$C
+	dw	$9E69
+	dw	12
 	db	'Memory type',0
-	db	$9E
-	db	'j',0
-	db	14
+	dw	$9E6A
+	dw	14
 	db	'DisplayFlags',0,0
-	db	$9E
-	db	'k',0,$A
+	dw	$9E6B
+	dw	10
 	db	'GfxNodes',0,0
-	db	$9E
-	db	'l',0
-	db	$12
+	dw	$9E6C
+	dw	$12
 	db	'ExtendedNode XLN',0,0
-	db	$9E
-	db	'm',0
-	db	$16
+	dw	$9E6D
+	dw	$16
 	db	'XLN_SUBSYSTEM values',0,0
-	db	$9E
-	db	'n',0
-	db	$10
+	dw	$9E6E
+	dw	$10
 	db	'XLN_TYPE values',0
-	db	$9E
-	db	'o',0
-	db	8
+	dw	$9E6F
+	dw	8
 	db	'Layers',0,0
-	db	$9E
-	db	'p',0
-	db	$10
+	dw	$9E70
+	dw	$10
 	db	'li_Flags values',0
-	db	$9E
-	db	'q',0,$A
+	dw	$9E71
+	dw	10
 	db	'LayerInfo',0
-	db	$9E
-	db	'r',0
-	db	$12
+	dw	$9E72
+	dw	$12
 	db	'Misc. Layers defs',0
-	db	$9E
-	db	's',0
-	db	$10
+	dw	$9E73
+	dw	$10
 	db	'BackFill values',0
-	db	$9E
-	db	't',0
-	db	8
+	dw	$9E74
+	dw	8
 	db	'ModeID',0,0
-	db	$9E
-	db	'u',0
-	db	$16
+	dw	$9E75
+	dw	$16
 	db	'Monitor IDs and modes',0
-	db	$9E
-	db	'v',0
-	db	$10
+	dw	$9E76
+	dw	$10
 	db	'BestModeID tags',0
-	db	$9E
-	db	'w',0
-	db	8
+	dw	$9E77
+	dw	8
 	db	'Monitor',0
-	db	$9E
-	db	'x',0
-	db	$16
+	dw	$9E78
+	dw	$16
 	db	'AnalogSignalInterval',0,0
-	db	$9E
-	db	'y',0
-	db	$10
+	dw	$9E79
+	dw	$10
 	db	'SpecialMonitor',0,0
-	db	$9E
-	db	'z',0,$C
+	dw	$9E7A
+	dw	12
 	db	'MonitorSpec',0
-	db	$9E
-	db	'{',0
-	db	$10
+	dw	$9E7B
+	dw	$10
 	db	'ms_Flags values',0
-	db	$9E
-	db	'|',0
-	db	14
+	dw	$9E7C
+	dw	14
 	db	'ms_Flags bits',0
-	db	$9E
-	db	'}',0
-	db	$10
+	dw	$9E7D
+	dw	$10
 	db	'BEAMCON0 values',0
-	db	$9E
-	db	'~',0,$A
+	dw	$9E7E
+	dw	10
 	db	'RastPort',0,0
-	db	$9E
-	db	$7F
-	db	0
-	db	8
+	dw	$9E7F
+	dw	8
 	db	'TmpRas',0,0
-	db	$9E
-	db	$80
-	db	0
-	db	10
+	dw	$9E80
+	dw	10
 	db	'GelsInfo',0,0
-	db	$9E
-	db	$81
-	db	0
-	db	$10
+	dw	$9E81
+	dw	$10
 	db	'rp_Flags values',0
-	db	$9E
-	db	$82
-	db	0
-	db	14
+	dw	$9E82
+	dw	14
 	db	'rp_Flags bits',0
-	db	$9E
-	db	$83
-	db	0
-	db	$14
+	dw	$9E83
+	dw	$14
 	db	'RP_DrawMode values',0,0
-	db	$9E
-	db	$84
-	db	0
-	db	$14
+	dw	$9E84
+	dw	$14
 	db	'RP_TxFlags bitdefs',0,0
-	db	$9E
-	db	$85
-	db	0
-	db	10
+	dw	$9E85
+	dw	10
 	db	'RastPort',0,0
-	db	$9E
-	db	$86
-	db	0
-	db	10
+	dw	$9E86
+	dw	10
 	db	'AreaInfo',0,0
-	db	$9E
-	db	$87
-	db	0
-	db	8
+	dw	$9E87
+	dw	8
 	db	'Regions',0
-	db	$9E
-	db	$88
-	db	0
-	db	8
+	dw	$9E88
+	dw	8
 	db	'Region',0,0
-	db	$9E
-	db	$89
-	db	0
-	db	$10
+	dw	$9E89
+	dw	$10
 	db	'RegionRectangle',0
-	db	$9E
-	db	$8A
-	db	0
-	db	8
+	dw	$9E8A
+	dw	8
 	db	'RPAttr',0,0
-	db	$9E
-	db	$8B
-	db	0
-	db	$10
+	dw	$9E8B
+	dw	$10
 	db	'GetRPAttr tags',0,0
-	db	$9E
-	db	$8C
-	db	0
-	db	6
+	dw	$9E8C
+	dw	6
 	db	'Scale',0
-	db	$9E
-	db	$8D
-	db	0
-	db	14
+	dw	$9E8D
+	dw	14
 	db	'BitScaleArgs',0,0
-	db	$9E
-	db	$8E
-	db	0
-	db	8
+	dw	$9E8E
+	dw	8
 	db	'Sprite',0,0
-	db	$9E
-	db	$8F
-	db	0
-	db	14
+	dw	$9E8F
+	dw	14
 	db	'SimpleSprite',0,0
-	db	$9E
-	db	$90
-	db	0
-	db	10
+	dw	$9E90
+	dw	10
 	db	'ExtSprite',0
-	db	$9E
-	db	$91
-	db	0
-	db	$16
+	dw	$9E91
+	dw	$16
 	db	'AllocSpriteData tags',0,0
-	db	$9E
-	db	$92
-	db	0
-	db	$12
+	dw	$9E92
+	dw	$12
 	db	'GetExtSprite tags',0
-	db	$9E
-	db	$93
-	db	0
-	db	6
+	dw	$9E93
+	dw	6
 	db	'Text',0,0
-	db	$9E
-	db	$94
-	db	0
-	db	$14
+	dw	$9E94
+	dw	$14
 	db	'Font Styles values',0,0
-	db	$9E
-	db	$95
-	db	0
-	db	$12
+	dw	$9E95
+	dw	$12
 	db	'Font Styles bits',0,0
-	db	$9E
-	db	$96
-	db	0
-	db	$12
+	dw	$9E96
+	dw	$12
 	db	'Font Flags values',0
-	db	$9E
-	db	$97
-	db	0
-	db	$10
+	dw	$9E97
+	dw	$10
 	db	'Font Flags bits',0
-	db	$9E
-	db	$98
-	db	0
-	db	10
+	dw	$9E98
+	dw	10
 	db	'TextAttr',0,0
-	db	$9E
-	db	$99
-	db	0
-	db	10
+	dw	$9E99
+	dw	10
 	db	'TTextAttr',0
-	db	$9E
-	db	$9A
-	db	0
-	db	10
+	dw	$9E9A
+	dw	10
 	db	'Text tags',0
-	db	$9E
-	db	$9B
-	db	0
-	db	$18
+	dw	$9E9B
+	dw	$18
 	db	'WeighTAMatch constants',0,0
-	db	$9E
-	db	$9C
-	db	0
-	db	10
+	dw	$9E9C
+	dw	10
 	db	'TextFont',0,0
-	db	$9E
-	db	$9D
-	db	0
-	db	$12
+	dw	$9E9D
+	dw	$12
 	db	'TextFontExtension',0
-	db	$9E
-	db	$9E
-	db	0
-	db	$14
+	dw	$9E9E
+	dw	$14
 	db	'tfe_Flags0 bitdefs',0,0
-	db	$9E
-	db	$9F
-	db	0
-	db	$10
+	dw	$9E9F
+	dw	$10
 	db	'ColorFontColors',0
-	db	$9E
-	db	$A0
-	db	0
-	db	14
+	dw	$9EA0
+	dw	14
 	db	'ColorTextFont',0
-	db	$9E
-	db	'¡',0
-	db	$12
+	dw	$9EA1
+	dw	$12
 	db	'ctf_Flags values',0,0
-	db	$9E
-	db	'¢',0,$C
+	dw	$9EA2
+	dw	12
 	db	'TextExtent',0,0
-	db	$9E
-	db	'£',0
-	db	14
+	dw	$9EA3
+	dw	14
 	db	'VideoControl',0,0
-	db	$9E
-	db	'¤',0
-	db	$12
+	dw	$9EA4
+	dw	$12
 	db	'VideoControl tags',0
-	db	$9E
-	db	'¥',0
-	db	6
+	dw	$9EA5
+	dw	6
 	db	'View',0,0
-	db	$9E
-	db	'¦',0,$A
+	dw	$9EA6
+	dw	10
 	db	'ViewModes',0
-	db	$9E
-	db	'§',0
-	db	$10
+	dw	$9EA7
+	dw	$10
 	db	'A2024 ViewModes',0
-	db	$9E
-	db	'¨',0,$A
+	dw	$9EA8
+	dw	10
 	db	'ColorMap',0,0
-	db	$9E
-	db	'©',0
-	db	$10
+	dw	$9EA9
+	dw	$10
 	db	'cm_Type values',0,0
-	db	$9E
-	db	'ª',0
-	db	$10
+	dw	$9EAA
+	dw	$10
 	db	'cm_Flags values',0
-	db	$9E
-	db	'«',0
-	db	$12
+	dw	$9EAB
+	dw	$12
 	db	'cm_Flags bitdefs',0,0
-	db	$9E
-	db	'¬',0
-	db	$1A
+	dw	$9EAC
+	dw	$1A
 	db	'cm_SpriteResolution flags',0
-	db	$9E
-	db	'­',0
-	db	$14
+	dw	$9EAD
+	dw	$14
 	db	'cm_AuxFlags bitdefs',0
-	db	$9E
-	db	'®',0
-	db	14
+	dw	$9EAE
+	dw	14
 	db	'PaletteExtra',0,0
-	db	$9E
-	db	'¯',0
-	db	$16
+	dw	$9EAF
+	dw	$16
 	db	'ObtainBestPen values',0,0
-	db	$9E
-	db	'°',0
-	db	$14
+	dw	$9EB0
+	dw	$14
 	db	'ObtainBestPen tags',0,0
-	db	$9E
-	db	'±',0
-	db	$12
+	dw	$9EB1
+	dw	$12
 	db	'ObtainPen bitdefs',0
-	db	$9E
-	db	'²',0,$A
+	dw	$9EB2
+	dw	10
 	db	'ViewPort',0,0
-	db	$9E
-	db	'³',0
-	db	6
+	dw	$9EB3
+	dw	6
 	db	'View',0,0
-	db	$9E
-	db	'´',0,$A
+	dw	$9EB4
+	dw	10
 	db	'ViewExtra',0
-	db	$9E
-	db	'µ',0
-	db	14
+	dw	$9EB5
+	dw	14
 	db	'ViewPortExtra',0
-	db	$9E
-	db	'¶',0
-	db	$12
+	dw	$9EB6
+	dw	$12
 	db	'vpe_Flags bitdefs',0
-	db	$9E
-	db	'·',0,$A
+	dw	$9EB7
+	dw	10
 	db	'CollTable',0
-	db	$9E
-	db	'¸',0
-	db	8
+	dw	$9EB8
+	dw	8
 	db	'RasInfo',0
-	db	$9E
-	db	'¹',0
-	db	$16
+	dw	$9EB9
+	dw	$16
 	db	'_LVOMakeVPort returns',0
-	db	$9E
-	db	'º',0
-	db	$14
+	dw	$9EBA
+	dw	$14
 	db	'_LVOMrgCop returns',0,0
-	db	$9E
-	db	'»',0,$A
+	dw	$9EBB
+	dw	10
 	db	'DBufInfo',0,0
-	db	$9E
-	db	'¼',0,$A
+	dw	$9EBC
+	dw	10
 	db	'Hardware',0,0
-	db	$9E
-	db	'½',0
-	db	8
+	dw	$9EBD
+	dw	8
 	db	'ADKBITS',0
-	db	$9E
-	db	'¾',0,$A
+	dw	$9EBE
+	dw	10
 	db	'ADK bits',0,0
-	db	$9E
-	db	'¿',0,$C
+	dw	$9EBF
+	dw	12
 	db	'ADK values',0,0
-	db	$9E
-	db	'À',0
-	db	$10
+	dw	$9EC0
+	dw	$10
 	db	'Precomp values',0,0
-	db	$9E
-	db	'Á',0
-	db	6
+	dw	$9EC1
+	dw	6
 	db	'Blit',0,0
-	db	$9E
-	db	'Â',0,$A
+	dw	$9EC2
+	dw	10
 	db	'BlitNode',0,0
-	db	$9E
-	db	'Ã',0
-	db	$14
+	dw	$9EC3
+	dw	$14
 	db	'Blit queuer defines',0
-	db	$9E
-	db	'Ä',0
-	db	$10
+	dw	$9EC4
+	dw	$10
 	db	'Blit size masks',0
-	db	$9E
-	db	'Å',0,$C
+	dw	$9EC5
+	dw	12
 	db	'Agnus width',0
-	db	$9E
-	db	'Æ',0
-	db	14
+	dw	$9EC6
+	dw	14
 	db	'BlitCon0 defs',0
-	db	$9E
-	db	'Ç',0
-	db	$10
+	dw	$9EC7
+	dw	$10
 	db	'BLTCON0 bitdefs',0
-	db	$9E
-	db	'È',0
-	db	14
+	dw	$9EC8
+	dw	14
 	db	'BLTCON1 flags',0
-	db	$9E
-	db	'É',0
-	db	$16
+	dw	$9EC9
+	dw	$16
 	db	'Generic BLTCONx flags',0
-	db	$9E
-	db	'Ê',0
-	db	$18
+	dw	$9ECA
+	dw	$18
 	db	'SHIFT alignment values',0,0
-	db	$9E
-	db	'Ë',0
-	db	14
+	dw	$9ECB
+	dw	14
 	db	'BlitCon1 defs',0
-	db	$9E
-	db	'Ì',0
-	db	14
+	dw	$9ECC
+	dw	14
 	db	'OCTANT values',0
-	db	$9E
-	db	'Í',0
-	db	4
+	dw	$9ECD
+	dw	4
 	db	'CIA',0
-	db	$9E
-	db	'Î',0
-	db	$18
+	dw	$9ECE
+	dw	$18
 	db	'CIA Hardware addresses',0,0
-	db	$9E
-	db	'Ï',0
-	db	14
+	dw	$9ECF
+	dw	14
 	db	'ICR bit masks',0
-	db	$9E
-	db	'Ð',0
-	db	$10
+	dw	$9ED0
+	dw	$10
 	db	'ICR bit numbers',0
-	db	$9E
-	db	'Ñ',0
-	db	14
+	dw	$9ED1
+	dw	14
 	db	'CRA bit masks',0
-	db	$9E
-	db	'Ò',0
-	db	$10
+	dw	$9ED2
+	dw	$10
 	db	'CRA bit numbers',0
-	db	$9E
-	db	'Ó',0
-	db	14
+	dw	$9ED3
+	dw	14
 	db	'CRB bit masks',0
-	db	$9E
-	db	'Ô',0
-	db	$10
+	dw	$9ED4
+	dw	$10
 	db	'CRB bit numbers',0
-	db	$9E
-	db	'Õ',0
-	db	$12
+	dw	$9ED5
+	dw	$12
 	db	'CRB INMODE masks',0,0
-	db	$9E
-	db	'Ö',0
-	db	$14
+	dw	$9ED6
+	dw	$14
 	db	'CIAA Port A values',0,0
-	db	$9E
-	db	'×',0
-	db	$12
+	dw	$9ED7
+	dw	$12
 	db	'CIAA Port A bits',0,0
-	db	$9E
-	db	'Ø',0
-	db	$14
+	dw	$9ED8
+	dw	$14
 	db	'CIAB Port A values',0,0
-	db	$9E
-	db	'Ù',0
-	db	$12
+	dw	$9ED9
+	dw	$12
 	db	'CIAB Port A bits',0,0
-	db	$9E
-	db	'Ú',0
-	db	$14
+	dw	$9EDA
+	dw	$14
 	db	'CIAB Port B values',0,0
-	db	$9E
-	db	'Û',0
-	db	$12
+	dw	$9EDB
+	dw	$12
 	db	'CIAB Port B bits',0,0
-	db	$9E
-	db	'Ü',0
-	db	8
+	dw	$9EDC
+	dw	8
 	db	'Custom',0,0
-	db	$9E
-	db	'Ý',0
-	db	$1A
+	dw	$9EDD
+	dw	$1A
 	db	'Custom Hardware addresses',0
-	db	$9E
-	db	'Þ',0
-	db	$16
+	dw	$9EDE
+	dw	$16
 	db	'AudChannel structure',0,0
-	db	$9E
-	db	'ß',0
-	db	$14
+	dw	$9EDF
+	dw	$14
 	db	'SpriteDef structure',0
-	db	$9E
-	db	'à',0
-	db	8
+	dw	$9EE0
+	dw	8
 	db	'DMABits',0
-	db	$9E
-	db	'á',0
-	db	$12
+	dw	$9EE1
+	dw	$12
 	db	'DMACON bit masks',0,0
-	db	$9E
-	db	'â',0
-	db	$14
+	dw	$9EE2
+	dw	$14
 	db	'DMACON bit numbers',0,0
-	db	$9E
-	db	'ã',0
-	db	8
+	dw	$9EE3
+	dw	8
 	db	'INTBITS',0
-	db	$9E
-	db	'ä',0
-	db	$12
+	dw	$9EE4
+	dw	$12
 	db	'INTBITS bit masks',0
-	db	$9E
-	db	'å',0
-	db	$14
+	dw	$9EE5
+	dw	$14
 	db	'INTBITS bit numbers',0
-	db	$9E
-	db	'æ',0
-	db	6
+	dw	$9EE6
+	dw	6
 	db	'Trap',0,0
-	db	$9E
-	db	'ç',0
-	db	14
+	dw	$9EE7
+	dw	14
 	db	'Trap vectors',0,0
-	db	$9E
-	db	'è',0,$A
+	dw	$9EE8
+	dw	10
 	db	'Intuition',0
-	db	$9E
-	db	'é',0
-	db	8
+	dw	$9EE9
+	dw	8
 	db	'CGHOOKS',0
-	db	$9E
-	db	'ê',0,$C
+	dw	$9EEA
+	dw	12
 	db	'GadgetInfo',0,0
-	db	$9E
-	db	'ë',0
-	db	8
+	dw	$9EEB
+	dw	8
 	db	'Classes',0
-	db	$9E
-	db	'ì',0
-	db	8
+	dw	$9EEC
+	dw	8
 	db	'ICLASS',0,0
-	db	$9E
-	db	'í',0
-	db	$12
+	dw	$9EED
+	dw	$12
 	db	'cl_Flags bitdefs',0,0
-	db	$9E
-	db	'î',0
-	db	8
+	dw	$9EEE
+	dw	8
 	db	'_Object',0
-	db	$9E
-	db	'ï',0,$A
+	dw	$9EEF
+	dw	10
 	db	'ClassUsr',0,0
-	db	$9E
-	db	'ð',0
-	db	4
+	dw	$9EF0
+	dw	4
 	db	'Msg',0
-	db	$9E
-	db	'ñ',0,$C
+	dw	$9EF1
+	dw	12
 	db	'Method IDs',0,0
-	db	$9E
-	db	'ò',0
-	db	6
+	dw	$9EF2
+	dw	6
 	db	'opSet',0
-	db	$9E
-	db	'ó',0,$A
+	dw	$9EF3
+	dw	10
 	db	'opUpdate',0,0
-	db	$9E
-	db	'ô',0
-	db	$12
+	dw	$9EF4
+	dw	$12
 	db	'opu_Flags bitdefs',0
-	db	$9E
-	db	'õ',0
-	db	6
+	dw	$9EF5
+	dw	6
 	db	'opGet',0
-	db	$9E
-	db	'ö',0,$A
+	dw	$9EF6
+	dw	10
 	db	'opAddTail',0
-	db	$9E
-	db	'÷',0,$A
+	dw	$9EF7
+	dw	10
 	db	'opMember',0,0
-	db	$9E
-	db	'ø',0,$C
+	dw	$9EF8
+	dw	12
 	db	'GadgetClass',0
-	db	$9E
-	db	'ù',0
-	db	$12
+	dw	$9EF9
+	dw	$12
 	db	'Gadget Class tags',0
-	db	$9E
-	db	'ú',0
-	db	$10
+	dw	$9EFA
+	dw	$10
 	db	'PROPGCLASS tags',0
-	db	$9E
-	db	'û',0
-	db	$10
+	dw	$9EFB
+	dw	$10
 	db	'STRGCLASS tags',0,0
-	db	$9E
-	db	'ü',0
-	db	$14
+	dw	$9EFC
+	dw	$14
 	db	'Gadget Layout tags',0,0
-	db	$9E
-	db	'ý',0
-	db	$14
+	dw	$9EFD
+	dw	$14
 	db	'Orientation values',0,0
-	db	$9E
-	db	'þ',0
-	db	$12
+	dw	$9EFE
+	dw	$12
 	db	'Gadget method IDs',0
-	db	$9E
-	db	'ÿ',0,$A
+	dw	$9EFF
+	dw	10
 	db	'MsgHeader',0
-	db	$9F
-	db	0
-	db	0
-	db	10
+	dw	$9F00
+	dw	10
 	db	'gpHitTest',0
-	db	$9F
-	db	1
-	db	0
-	db	$14
+	dw	$9F01
+	dw	$14
 	db	'GM_HITTEST returns',0,0
-	db	$9F
-	db	2
-	db	0
-	db	10
+	dw	$9F02
+	dw	10
 	db	'gpRender',0,0
-	db	$9F
-	db	3
-	db	0
-	db	$12
+	dw	$9F03
+	dw	$12
 	db	'gpr_Redraw values',0
-	db	$9F
-	db	4
-	db	0
-	db	8
+	dw	$9F04
+	dw	8
 	db	'gpInput',0
-	db	$9F
-	db	5
-	db	0
-	db	14
+	dw	$9F05
+	dw	14
 	db	'gpInput flags',0
-	db	$9F
-	db	6
-	db	0
-	db	$10
+	dw	$9F06
+	dw	$10
 	db	'gpInput bitdefs',0
-	db	$9F
-	db	7
-	db	0
-	db	14
+	dw	$9F07
+	dw	14
 	db	'gpGoInactive',0,0
-	db	$9F
-	db	8
-	db	0
-	db	10
+	dw	$9F08
+	dw	10
 	db	'gpLayout',0,0
-	db	$9F
-	db	9
-	db	0
-	db	8
+	dw	$9F09
+	dw	8
 	db	'ICClass',0
-	db	$9F
-	db	10
-	db	0
-	db	$16
+	dw	$9F0A
+	dw	$16
 	db	'Boopsi message types',0,0
-	db	$9F
-	db	11
-	db	0
-	db	$16
+	dw	$9F0B
+	dw	$16
 	db	'Interconnection tags',0,0
-	db	$9F
-	db	12
-	db	0
-	db	$12
+	dw	$9F0C
+	dw	$12
 	db	'ICA_TARGET values',0
-	db	$9F
-	db	13
-	db	0
-	db	12
+	dw	$9F0D
+	dw	12
 	db	'ImageClass',0,0
-	db	$9F
-	db	14
-	db	0
-	db	$10
+	dw	$9F0E
+	dw	$10
 	db	'IMAGECLASS tags',0
-	db	$9F
-	db	15
-	db	0
-	db	$12
+	dw	$9F0F
+	dw	$12
 	db	'SYSIA_Size values',0
-	db	$9F
-	db	$10
-	db	0
-	db	$14
+	dw	$9F10
+	dw	$14
 	db	'SYSIA_Which values',0,0
-	db	$9F
-	db	$11
-	db	0
-	db	$14
+	dw	$9F11
+	dw	$14
 	db	'IA_FrameType values',0
-	db	$9F
-	db	$12
-	db	0
-	db	$12
+	dw	$9F12
+	dw	$12
 	db	'Image message IDs',0
-	db	$9F
-	db	$13
-	db	0
-	db	$10
+	dw	$9F13
+	dw	$10
 	db	'IM_DRAW states',0,0
-	db	$9F
-	db	$14
-	db	0
-	db	12
+	dw	$9F14
+	dw	12
 	db	'impFrameBox',0
-	db	$9F
-	db	$15
-	db	0
-	db	$10
+	dw	$9F15
+	dw	$10
 	db	'impf_FrameFlags',0
-	db	$9F
-	db	$16
-	db	0
-	db	8
+	dw	$9F16
+	dw	8
 	db	'impDraw',0
-	db	$9F
-	db	$17
-	db	0
-	db	10
+	dw	$9F17
+	dw	10
 	db	'impErase',0,0
-	db	$9F
-	db	$18
-	db	0
-	db	12
+	dw	$9F18
+	dw	12
 	db	'impHitTest',0,0
-	db	$9F
-	db	$19
-	db	0
-	db	6
+	dw	$9F19
+	dw	6
 	db	'Menu',0,0
-	db	$9F
-	db	$1A
-	db	0
-	db	12
+	dw	$9F1A
+	dw	12
 	db	'Menu flags',0,0
-	db	$9F
-	db	$1B
-	db	0
-	db	10
+	dw	$9F1B
+	dw	10
 	db	'MenuItem',0,0
-	db	$9F
-	db	$1C
-	db	0
-	db	$10
+	dw	$9F1C
+	dw	$10
 	db	'MenuItem flags',0,0
-	db	$9F
-	db	$1D
-	db	0
-	db	10
+	dw	$9F1D
+	dw	10
 	db	'Requester',0
-	db	$9F
-	db	$1E
-	db	0
-	db	$10
+	dw	$9F1E
+	dw	$10
 	db	'Requester flags',0
-	db	$9F
-	db	$1F
-	db	0
-	db	8
+	dw	$9F1F
+	dw	8
 	db	'Gadget',0,0
-	db	$9F
-	db	' ',0,$A
+	dw	$9F20
+	dw	10
 	db	'ExtGadget',0
-	db	$9F
-	db	'!',0
-	db	14
+	dw	$9F21
+	dw	14
 	db	'Gadget flags',0,0
-	db	$9F
-	db	'"',0
-	db	$12
+	dw	$9F22
+	dw	$12
 	db	'Gadget activation',0
-	db	$9F
-	db	'#',0
-	db	14
+	dw	$9F23
+	dw	14
 	db	'Gadget types',0,0
-	db	$9F
-	db	'$',0
-	db	14
+	dw	$9F24
+	dw	14
 	db	'GMORE_xxx IDs',0
-	db	$9F
-	db	'%',0,$A
+	dw	$9F25
+	dw	10
 	db	'BoolInfo',0,0
-	db	$9F
-	db	'&',0
-	db	$10
+	dw	$9F26
+	dw	$10
 	db	'BoolInfo flags',0,0
-	db	$9F
-	db	'''',0,$A
+	dw	$9F27
+	dw	10
 	db	'PropInfo',0,0
-	db	$9F
-	db	'(',0
-	db	$10
+	dw	$9F28
+	dw	$10
 	db	'PropInfo flags',0,0
-	db	$9F
-	db	')',0
-	db	$14
+	dw	$9F29
+	dw	$14
 	db	'PropInfo constants',0,0
-	db	$9F
-	db	'*',0,$C
+	dw	$9F2A
+	dw	12
 	db	'StringInfo',0,0
-	db	$9F
-	db	'+',0,$A
+	dw	$9F2B
+	dw	10
 	db	'IntuiText',0
-	db	$9F
-	db	',',0
-	db	8
+	dw	$9F2C
+	dw	8
 	db	'Border',0,0
-	db	$9F
-	db	'-',0
-	db	6
+	dw	$9F2D
+	dw	6
 	db	'Image',0
-	db	$9F
-	db	'.',0
-	db	14
+	dw	$9F2E
+	dw	14
 	db	'IntuiMessage',0,0
-	db	$9F
-	db	'/',0
-	db	$10
+	dw	$9F2F
+	dw	$10
 	db	'ExtIntuiMessage',0
-	db	$9F
-	db	'0',0
-	db	14
+	dw	$9F30
+	dw	14
 	db	'IDCMP classes',0
-	db	$9F
-	db	'1',0
-	db	$1A
+	dw	$9F31
+	dw	$1A
 	db	'IDCMP_CHANGEWINDOW codes',0,0
-	db	$9F
-	db	'2',0
-	db	$18
+	dw	$9F32
+	dw	$18
 	db	'IDCMP_MENUVERIFY codes',0,0
-	db	$9F
-	db	'3',0
-	db	$1A
+	dw	$9F33
+	dw	$1A
 	db	'IDCMP_WBENCHMESSAGE codes',0
-	db	$9F
-	db	'4',0
-	db	6
+	dw	$9F34
+	dw	6
 	db	'IBox',0,0
-	db	$9F
-	db	'5',0
-	db	8
+	dw	$9F35
+	dw	8
 	db	'Window',0,0
-	db	$9F
-	db	'6',0
-	db	14
+	dw	$9F36
+	dw	14
 	db	'Window flags',0,0
-	db	$9F
-	db	'7',0
-	db	$14
+	dw	$9F37
+	dw	$14
 	db	'Other Window values',0
-	db	$9F
-	db	'8',0,$A
+	dw	$9F38
+	dw	10
 	db	'NewWindow',0
-	db	$9F
-	db	'9',0
-	db	14
+	dw	$9F39
+	dw	14
 	db	'ExtNewWindow',0,0
-	db	$9F
-	db	':',0
-	db	$18
+	dw	$9F3A
+	dw	$18
 	db	'OpenWindowTagList tags',0,0
-	db	$9F
-	db	';',0
-	db	$12
+	dw	$9F3B
+	dw	$12
 	db	'HelpControl flags',0
-	db	$9F
-	db	'<',0,$A
+	dw	$9F3C
+	dw	10
 	db	'Remember',0,0
-	db	$9F
-	db	'=',0,$A
+	dw	$9F3D
+	dw	10
 	db	'ColorSpec',0
-	db	$9F
-	db	'>',0,$C
+	dw	$9F3E
+	dw	12
 	db	'EasyStruct',0,0
-	db	$9F
-	db	'?',0,$C
+	dw	$9F3F
+	dw	12
 	db	'Menu masks',0,0
-	db	$9F
-	db	'@',0
-	db	$1A
+	dw	$9F40
+	dw	$1A
 	db	'CheckMark default widths',0,0
-	db	$9F
-	db	'A',0
-	db	$12
+	dw	$9F41
+	dw	$12
 	db	'DisplayAlert defs',0
-	db	$9F
-	db	'B',0
-	db	$18
+	dw	$9F42
+	dw	$18
 	db	'AutoRequest pen defines',0
-	db	$9F
-	db	'C',0
-	db	$10
+	dw	$9F43
+	dw	$10
 	db	'RAWMOUSE codes',0,0
-	db	$9F
-	db	'D',0
-	db	14
+	dw	$9F44
+	dw	14
 	db	'RAWKEY codes',0,0
-	db	$9F
-	db	'E',0
-	db	$12
+	dw	$9F45
+	dw	$12
 	db	'RAWKEY qualifiers',0
-	db	$9F
-	db	'F',0,$C
+	dw	$9F46
+	dw	12
 	db	'Tablet tags',0
-	db	$9F
-	db	'G',0,$C
+	dw	$9F47
+	dw	12
 	db	'TabletData',0,0
-	db	$9F
-	db	'H',0
-	db	$10
+	dw	$9F48
+	dw	$10
 	db	'TabletHookData',0,0
-	db	$9F
-	db	'I',0
-	db	14
+	dw	$9F49
+	dw	14
 	db	'PointerClass',0,0
-	db	$9F
-	db	'J',0
-	db	$10
+	dw	$9F4A
+	dw	$10
 	db	'NewObject tags',0,0
-	db	$9F
-	db	'K',0
-	db	$1A
+	dw	$9F4B
+	dw	$1A
 	db	'POINTERA_XResolution defs',0
-	db	$9F
-	db	'L',0
-	db	$1A
+	dw	$9F4C
+	dw	$1A
 	db	'POINTERA_YResolution defs',0
-	db	$9F
-	db	'M',0,$C
+	dw	$9F4D
+	dw	12
 	db	'Preferences',0
-	db	$9F
-	db	'N',0
-	db	$10
+	dw	$9F4E
+	dw	$10
 	db	'Font size codes',0
-	db	$9F
-	db	'P',0,$A
+	dw	$9F50
+	dw	10
 	db	'Lace flag',0
-	db	$9F
-	db	'Q',0,$C
+	dw	$9F51
+	dw	12
 	db	'Enable CLI',0,0
-	db	$9F
-	db	'R',0
-	db	14
+	dw	$9F52
+	dw	14
 	db	'Printer port',0,0
-	db	$9F
-	db	'S',0
-	db	$10
+	dw	$9F53
+	dw	$10
 	db	'Baud rate codes',0
-	db	$9F
-	db	'T',0,$C
+	dw	$9F54
+	dw	12
 	db	'Paper type',0,0
-	db	$9F
-	db	'U',0,$C
+	dw	$9F55
+	dw	12
 	db	'Print pitch',0
-	db	$9F
-	db	'V',0
-	db	14
+	dw	$9F56
+	dw	14
 	db	'Print quality',0
-	db	$9F
-	db	'W',0
-	db	14
+	dw	$9F57
+	dw	14
 	db	'Print spacing',0
-	db	$9F
-	db	'X',0,$C
+	dw	$9F58
+	dw	12
 	db	'Print image',0
-	db	$9F
-	db	'Y',0
-	db	14
+	dw	$9F59
+	dw	14
 	db	'Print aspect',0,0
-	db	$9F
-	db	'Z',0,$C
+	dw	$9F5A
+	dw	12
 	db	'Print shade',0
-	db	$9F
-	db	'[',0,$C
+	dw	$9F5B
+	dw	12
 	db	'Paper size',0,0
-	db	$9F
-	db	'\',0
-	db	14
+	dw	$9F5C
+	dw	14
 	db	'Printer type',0,0
-	db	$9F
-	db	']',0
-	db	$14
+	dw	$9F5D
+	dw	$14
 	db	'Serial buffer size',0,0
-	db	$9F
-	db	'^',0
-	db	$12
+	dw	$9F5E
+	dw	$12
 	db	'Serial bit masks',0,0
-	db	$9F
-	db	'_',0
-	db	8
+	dw	$9F5F
+	dw	8
 	db	'Parity',0,0
-	db	$9F
-	db	'`',0,$A
+	dw	$9F60
+	dw	10
 	db	'Handshake',0
-	db	$9F
-	db	'a',0
-	db	$10
+	dw	$9F61
+	dw	$10
 	db	'RGB PrintFlags',0,0
-	db	$9F
-	db	'b',0
-	db	$12
+	dw	$9F62
+	dw	$12
 	db	'Center PrintFlags',0
-	db	$9F
-	db	'c',0
-	db	$16
+	dw	$9F63
+	dw	$16
 	db	'Dimensions PrintFlags',0
-	db	$9F
-	db	'd',0
-	db	$14
+	dw	$9F64
+	dw	$14
 	db	'Scaling PrintFlags',0,0
-	db	$9F
-	db	'e',0
-	db	$16
+	dw	$9F65
+	dw	$16
 	db	'Dithering PrintFlags',0,0
-	db	$9F
-	db	'f',0
-	db	$1A
+	dw	$9F66
+	dw	$1A
 	db	'Anti-aliasing PrintFlags',0,0
-	db	$9F
-	db	'g',0
-	db	8
+	dw	$9F67
+	dw	8
 	db	'Screens',0
-	db	$9F
-	db	'h',0,$A
+	dw	$9F68
+	dw	10
 	db	'DrawInfo',0,0
-	db	$9F
-	db	'i',0
-	db	$14
+	dw	$9F69
+	dw	$14
 	db	'dri_Version values',0,0
-	db	$9F
-	db	'j',0
-	db	$12
+	dw	$9F6A
+	dw	$12
 	db	'dri_Flags bitdefs',0
-	db	$9F
-	db	'k',0
-	db	$12
+	dw	$9F6B
+	dw	$12
 	db	'dri_Pens indexes',0,0
-	db	$9F
-	db	'l',0
-	db	$14
+	dw	$9F6C
+	dw	$14
 	db	'dri_Pens complement',0
-	db	$9F
-	db	'm',0
-	db	8
+	dw	$9F6D
+	dw	8
 	db	'Screen',0,0
-	db	$9F
-	db	'n',0
-	db	14
+	dw	$9F6E
+	dw	14
 	db	'Screen types',0,0
-	db	$9F
-	db	'o',0
-	db	14
+	dw	$9F6F
+	dw	14
 	db	'Screen flags',0,0
-	db	$9F
-	db	'p',0
-	db	$1A
+	dw	$9F70
+	dw	$1A
 	db	'Height & width constants',0,0
-	db	$9F
-	db	'q',0,$C
+	dw	$9F71
+	dw	12
 	db	'Screen tags',0
-	db	$9F
-	db	'r',0
-	db	$18
+	dw	$9F72
+	dw	$18
 	db	'OpenScreen error codes',0,0
-	db	$9F
-	db	's',0,$A
+	dw	$9F73
+	dw	10
 	db	'NewScreen',0
-	db	$9F
-	db	't',0
-	db	14
+	dw	$9F74
+	dw	14
 	db	'ExtNewScreen',0,0
-	db	$9F
-	db	'u',0
-	db	$10
+	dw	$9F75
+	dw	$10
 	db	'Overscan types',0,0
-	db	$9F
-	db	'v',0
-	db	14
+	dw	$9F76
+	dw	14
 	db	'PubScreenNode',0
-	db	$9F
-	db	'w',0
-	db	$12
+	dw	$9F77
+	dw	$12
 	db	'psn_Flags values',0,0
-	db	$9F
-	db	'x',0
-	db	$14
+	dw	$9F78
+	dw	$14
 	db	'PubScreen name len',0,0
-	db	$9F
-	db	'y',0
-	db	$10
+	dw	$9F79
+	dw	$10
 	db	'PubScreen modes',0
-	db	$9F
-	db	'z',0
-	db	$14
+	dw	$9F7A
+	dw	$14
 	db	'ScreenDepth values',0,0
-	db	$9F
-	db	'{',0
-	db	$16
+	dw	$9F7B
+	dw	$16
 	db	'ScreenPosition values',0
-	db	$9F
-	db	'|',0
-	db	14
+	dw	$9F7C
+	dw	14
 	db	'ScreenBuffer',0,0
-	db	$9F
-	db	'}',0
-	db	$18
+	dw	$9F7D
+	dw	$18
 	db	'AllocScreenBuffer flags',0
-	db	$9F
-	db	'~',0
-	db	8
+	dw	$9F7E
+	dw	8
 	db	'SGHooks',0
-	db	$9F
-	db	$7F
-	db	0
-	db	14
+	dw	$9F7F
+	dw	14
 	db	'StringExtend',0,0
-	db	$9F
-	db	$80
-	db	0
-	db	8
+	dw	$9F80
+	dw	8
 	db	'SGWork',0,0
-	db	$9F
-	db	$81
-	db	0
-	db	$12
+	dw	$9F81
+	dw	$12
 	db	'sgw_EditOp flags',0,0
-	db	$9F
-	db	$82
-	db	0
-	db	$12
+	dw	$9F82
+	dw	$12
 	db	'sgw_Modes bitdefs',0
-	db	$9F
-	db	$83
-	db	0
-	db	$14
+	dw	$9F83
+	dw	$14
 	db	'sgw_Actions bitdefs',0
-	db	$9F
-	db	$84
-	db	0
-	db	14
+	dw	$9F84
+	dw	14
 	db	'Function IDs',0,0
-	db	$9F
-	db	$85
-	db	0
-	db	10
+	dw	$9F85
+	dw	10
 	db	'Libraries',0
-	db	$9F
-	db	$86
-	db	0
-	db	12
+	dw	$9F86
+	dw	12
 	db	'AmigaGuide',0,0
-	db	$9F
-	db	$87
-	db	0
-	db	10
+	dw	$9F87
+	dw	10
 	db	'Tool IDs',0,0
-	db	$9F
-	db	$88
-	db	0
-	db	$18
+	dw	$9F88
+	dw	$18
 	db	'GetAmigaGuideAttr tags',0,0
-	db	$9F
-	db	$89
-	db	0
-	db	14
+	dw	$9F89
+	dw	14
 	db	'AmigaGuideMsg',0
-	db	$9F
-	db	$8A
-	db	0
-	db	14
+	dw	$9F8A
+	dw	14
 	db	'NewAmigaGuide',0
-	db	$9F
-	db	$8B
-	db	0
-	db	$12
+	dw	$9F8B
+	dw	$12
 	db	'nag_Flags bitdefs',0
-	db	$9F
-	db	$8C
-	db	0
-	db	$16
+	dw	$9F8C
+	dw	$16
 	db	'Callback function IDs',0
-	db	$9F
-	db	$8D
-	db	0
-	db	$12
+	dw	$9F8D
+	dw	$12
 	db	'Error message IDs',0
-	db	$9F
-	db	$8E
-	db	0
-	db	6
+	dw	$9F8E
+	dw	6
 	db	'XRef',0,0
-	db	$9F
-	db	$8F
-	db	0
-	db	$10
+	dw	$9F8F
+	dw	$10
 	db	'XRef node types',0
-	db	$9F
-	db	$90
-	db	0
-	db	$10
+	dw	$9F90
+	dw	$10
 	db	'AmigaGuideHost',0,0
-	db	$9F
-	db	$91
-	db	0
-	db	8
+	dw	$9F91
+	dw	8
 	db	'Methods',0
-	db	$9F
-	db	$92
-	db	0
-	db	12
+	dw	$9F92
+	dw	12
 	db	'opFindHost',0,0
-	db	$9F
-	db	$93
-	db	0
-	db	10
+	dw	$9F93
+	dw	10
 	db	'opNodeIO',0,0
-	db	$9F
-	db	$94
-	db	0
-	db	$12
+	dw	$9F94
+	dw	$12
 	db	'onm_Flags bitdefs',0
-	db	$9F
-	db	$95
-	db	0
-	db	$10
+	dw	$9F95
+	dw	$10
 	db	'onm_Attrs tags',0,0
-	db	$9F
-	db	$96
-	db	0
-	db	14
+	dw	$9F96
+	dw	14
 	db	'opExpungeNode',0
-	db	$9F
-	db	$97
-	db	0
-	db	4
+	dw	$9F97
+	dw	4
 	db	'ASL',0
-	db	$9F
-	db	$98
-	db	0
-	db	$10
+	dw	$9F98
+	dw	$10
 	db	'Requester types',0
-	db	$9F
-	db	$99
-	db	0
-	db	14
+	dw	$9F99
+	dw	14
 	db	'FileRequester',0
-	db	$9F
-	db	$9A
-	db	0
-	db	$14
+	dw	$9F9A
+	dw	$14
 	db	'File requester tags',0
-	db	$9F
-	db	$9B
-	db	0
-	db	$1A
+	dw	$9F9B
+	dw	$1A
 	db	'Bitdefs for ASLFR_Flags1',0,0
-	db	$9F
-	db	$9C
-	db	0
-	db	$1A
+	dw	$9F9C
+	dw	$1A
 	db	'Bitdefs for ASLFR_Flags2',0,0
-	db	$9F
-	db	$9D
-	db	0
-	db	14
+	dw	$9F9D
+	dw	14
 	db	'FontRequester',0
-	db	$9F
-	db	$9E
-	db	0
-	db	$14
+	dw	$9F9E
+	dw	$14
 	db	'Font requester tags',0
-	db	$9F
-	db	$9F
-	db	0
-	db	$18
+	dw	$9F9F
+	dw	$18
 	db	'Bitdefs for ASLFO_Flags',0
-	db	$9F
-	db	$A0
-	db	0
-	db	$14
+	dw	$9FA0
+	dw	$14
 	db	'ScreenModeRequester',0
-	db	$9F
-	db	'¡',0,$C
+	dw	$9FA1
+	dw	12
 	db	'DisplayMode',0
-	db	$9F
-	db	'¢',0
-	db	$1A
+	dw	$9FA2
+	dw	$1A
 	db	'ScreenMode requester tags',0
-	db	$9F
-	db	'£',0,$C
+	dw	$9FA3
+	dw	12
 	db	'Commodities',0
-	db	$9F
-	db	'¤',0,$A
+	dw	$9FA4
+	dw	10
 	db	'NewBroker',0
-	db	$9F
-	db	'¥',0
-	db	$12
+	dw	$9FA5
+	dw	$12
 	db	'nb_Version values',0
-	db	$9F
-	db	'¦',0
-	db	$12
+	dw	$9FA6
+	dw	$12
 	db	'Sizes for buffers',0
-	db	$9F
-	db	'§',0
-	db	$10
+	dw	$9FA7
+	dw	$10
 	db	'nb_Unique flags',0
-	db	$9F
-	db	'¨',0
-	db	$10
+	dw	$9FA8
+	dw	$10
 	db	'nb_Flags values',0
-	db	$9F
-	db	'©',0
-	db	$1A
+	dw	$9FA9
+	dw	$1A
 	db	'Commodities object types',0,0
-	db	$9F
-	db	'ª',0
-	db	$1A
+	dw	$9FAA
+	dw	$1A
 	db	'Commodities message types',0
-	db	$9F
-	db	'«',0
-	db	$10
+	dw	$9FAB
+	dw	$10
 	db	'CXM_COMMAND IDs',0
-	db	$9F
-	db	'¬',0
-	db	$10
+	dw	$9FAC
+	dw	$10
 	db	'InputXpression',0,0
-	db	$9F
-	db	'­',0
-	db	$12
+	dw	$9FAD
+	dw	$12
 	db	'ix_Version values',0
-	db	$9F
-	db	'®',0
-	db	$14
+	dw	$9FAE
+	dw	$14
 	db	'ix_QualSame values',0,0
-	db	$9F
-	db	'¯',0
-	db	$14
+	dw	$9FAF
+	dw	$14
 	db	'ix_QualMask values',0,0
-	db	$9F
-	db	'°',0
-	db	$18
+	dw	$9FB0
+	dw	$18
 	db	'CxBroker error returns',0,0
-	db	$9F
-	db	'±',0
-	db	$18
+	dw	$9FB1
+	dw	$18
 	db	'CxObjError return vals',0,0
-	db	$9F
-	db	'²',0,$C
+	dw	$9FB2
+	dw	12
 	db	'ConfigRegs',0,0
-	db	$9F
-	db	'³',0
-	db	14
+	dw	$9FB3
+	dw	14
 	db	'ExpansionRom',0,0
-	db	$9F
-	db	'´',0
-	db	$12
+	dw	$9FB4
+	dw	$12
 	db	'ExpansionControl',0,0
-	db	$9F
-	db	'µ',0
-	db	$14
+	dw	$9FB5
+	dw	$14
 	db	'Manifest constants',0,0
-	db	$9F
-	db	'¶',0
-	db	$14
+	dw	$9FB6
+	dw	$14
 	db	'er_Type board defs',0,0
-	db	$9F
-	db	'·',0
-	db	$1A
+	dw	$9FB7
+	dw	$1A
 	db	'er_Type memory size defs',0,0
-	db	$9F
-	db	'¸',0
-	db	$14
+	dw	$9FB8
+	dw	$14
 	db	'Other er_Type defs',0,0
-	db	$9F
-	db	'¹',0
-	db	$12
+	dw	$9FB9
+	dw	$12
 	db	'er_Flags bitdefs',0,0
-	db	$9F
-	db	'º',0
-	db	$14
+	dw	$9FBA
+	dw	$14
 	db	'Other er_Flags defs',0
-	db	$9F
-	db	'»',0
-	db	$16
+	dw	$9FBB
+	dw	$16
 	db	'ec_Interrupt bitdefs',0,0
-	db	$9F
-	db	'¼',0,$A
+	dw	$9FBC
+	dw	10
 	db	'DiagArea',0,0
-	db	$9F
-	db	'½',0
-	db	$10
+	dw	$9FBD
+	dw	$10
 	db	'da_Config flags',0
-	db	$9F
-	db	'¾',0,$C
+	dw	$9FBE
+	dw	12
 	db	'ConfigVars',0,0
-	db	$9F
-	db	'¿',0,$A
+	dw	$9FBF
+	dw	10
 	db	'ConfigDev',0
-	db	$9F
-	db	'À',0
-	db	$12
+	dw	$9FC0
+	dw	$12
 	db	'cd_Flags bitdefs',0,0
-	db	$9F
-	db	'Á',0
-	db	$10
+	dw	$9FC1
+	dw	$10
 	db	'CurrentBinding',0,0
-	db	$9F
-	db	'Â',0,$A
+	dw	$9FC2
+	dw	10
 	db	'Expansion',0
-	db	$9F
-	db	'Ã',0
-	db	$14
+	dw	$9FC3
+	dw	$14
 	db	'AddDosNode bitdefs',0,0
-	db	$9E
-	db	'4',0
-	db	14
+	dw	$9E34
+	dw	14
 	db	'ExpansionBase',0
-	db	$9E
-	db	'5',0,$A
+	dw	$9E35
+	dw	10
 	db	'BootNode',0,0
-	db	$9E
-	db	'6',0,$C
+	dw	$9E36
+	dw	12
 	db	'Error codes',0
-	db	$9E
-	db	'7',0
-	db	$12
+	dw	$9E37
+	dw	$12
 	db	'eb_Flags bitdefs',0,0
-	db	$9E
-	db	'8',0,$A
+	dw	$9E38
+	dw	10
 	db	'GadTools',0,0
-	db	$9E
-	db	'9',0
-	db	14
+	dw	$9E39
+	dw	14
 	db	'Gadget kinds',0,0
-	db	$9E
-	db	':',0
-	db	$14
+	dw	$9E3A
+	dw	$14
 	db	'GadTools IDCMPFlags',0
-	db	$9E
-	db	';',0,$A
+	dw	$9E3B
+	dw	10
 	db	'NewGadget',0
-	db	$9E
-	db	'<',0
-	db	$10
+	dw	$9E3C
+	dw	$10
 	db	'ng_Flags values',0
-	db	$9E
-	db	'=',0
-	db	8
+	dw	$9E3D
+	dw	8
 	db	'NewMenu',0
-	db	$9E
-	db	'>',0
-	db	$10
+	dw	$9E3E
+	dw	$10
 	db	'gnm_Type values',0
-	db	$9E
-	db	'?',0
-	db	$10
+	dw	$9E3F
+	dw	$10
 	db	'nm_Flags values',0
-	db	$9E
-	db	'@',0
-	db	$16
+	dw	$9E40
+	dw	$16
 	db	'NewMenu return codes',0,0
-	db	$9E
-	db	'A',0
-	db	$18
+	dw	$9E41
+	dw	$18
 	db	'MX gadget default dims',0,0
-	db	$9E
-	db	'B',0
-	db	$16
+	dw	$9E42
+	dw	$16
 	db	'Checkbox default dims',0
-	db	$9E
-	db	'C',0
-	db	14
+	dw	$9E43
+	dw	14
 	db	'GadTools tags',0
-	db	$9E
-	db	'D',0
-	db	$14
+	dw	$9E44
+	dw	$14
 	db	'Justification tags',0,0
-	db	$9E
-	db	'E',0
-	db	$10
+	dw	$9E45
+	dw	$10
 	db	'FrameType tags',0,0
-	db	$9E
-	db	'F',0
-	db	$16
+	dw	$9E46
+	dw	$16
 	db	'Inter-element spacing',0
-	db	$9E
-	db	'G',0
-	db	$1A
+	dw	$9E47
+	dw	$1A
 	db	'GTLV_CallBack tag values',0,0
-	db	$9E
-	db	'H',0
-	db	$16
+	dw	$9E48
+	dw	$16
 	db	'CallBack hook returns',0
-	db	$9E
-	db	'I',0,$A
+	dw	$9E49
+	dw	10
 	db	'LVDrawMsg',0
-	db	$9E
-	db	'J',0
-	db	$12
+	dw	$9E4A
+	dw	$12
 	db	'lvdm_State states',0
-	db	$9E
-	db	'K',0,$A
+	dw	$9E4B
+	dw	10
 	db	'IffParse',0,0
-	db	$9E
-	db	'L',0,$A
+	dw	$9E4C
+	dw	10
 	db	'IFFHandle',0
-	db	$9E
-	db	'M',0
-	db	$14
+	dw	$9E4D
+	dw	$14
 	db	'iff_Flags bit masks',0
-	db	$9E
-	db	'N',0
-	db	14
+	dw	$9E4E
+	dw	14
 	db	'IFFStreamCmd',0,0
-	db	$9E
-	db	'O',0,$C
+	dw	$9E4F
+	dw	12
 	db	'ContextNode',0
-	db	$9E
-	db	'P',0
-	db	$12
+	dw	$9E50
+	dw	$12
 	db	'LocalContextItem',0,0
-	db	$9E
-	db	'Q',0
-	db	$10
+	dw	$9E51
+	dw	$10
 	db	'StoredProperty',0,0
-	db	$9E
-	db	'R',0
-	db	$10
+	dw	$9E52
+	dw	$10
 	db	'CollectionItem',0,0
-	db	$9E
-	db	'S',0
-	db	$10
+	dw	$9E53
+	dw	$10
 	db	'ClipboardHandle',0
-	db	$9E
-	db	'T',0
-	db	$12
+	dw	$9E54
+	dw	$12
 	db	'IFF return codes',0,0
-	db	$9E
-	db	'U',0
-	db	$12
+	dw	$9E55
+	dw	$12
 	db	'Universal IFF IDs',0
-	db	$9E
-	db	'V',0
-	db	$18
+	dw	$9E56
+	dw	$18
 	db	'Local context ID codes',0,0
-	db	$9E
-	db	'W',0
-	db	$18
+	dw	$9E57
+	dw	$18
 	db	'ParseIFF control modes',0,0
-	db	$9E
-	db	'X',0
-	db	$16
+	dw	$9E58
+	dw	$16
 	db	'StoreLocalItem modes',0,0
-	db	$9E
-	db	'Y',0
-	db	$14
+	dw	$9E59
+	dw	$14
 	db	'Unknown size value',0,0
-	db	$9E
-	db	'Z',0
-	db	$1A
+	dw	$9E5A
+	dw	$1A
 	db	'Call-back command values',0,0
-	db	$9E
-	db	'[',0
-	db	8
+	dw	$9E5B
+	dw	8
 	db	'Locale',0,0
-	db	$9E
-	db	'\',0
-	db	$18
+	dw	$9E5C
+	dw	$18
 	db	'GetLocaleStr constants',0,0
-	db	$9E
-	db	']',0
-	db	$1A
+	dw	$9E5D
+	dw	$1A
 	db	'loc_MeasuringSystem vals',0,0
-	db	$9E
-	db	'^',0
-	db	$16
+	dw	$9E5E
+	dw	$16
 	db	'loc_CalendarType vals',0
-	db	$9E
-	db	'_',0
-	db	$18
+	dw	$9E5F
+	dw	$18
 	db	'loc_MonxxxSpaceSep vals',0
-	db	$9E
-	db	'`',0
-	db	$18
+	dw	$9E60
+	dw	$18
 	db	'loc_MonxxxSignPos vals',0,0
-	db	$9E
-	db	'a',0
-	db	$16
+	dw	$9E61
+	dw	$16
 	db	'loc_MonxxxCSPos vals',0,0
-	db	$9E
-	db	'b',0
-	db	$12
+	dw	$9E62
+	dw	$12
 	db	'OpenCatalog tags',0,0
-	db	$9E
-	db	'c',0
-	db	14
+	dw	$9E63
+	dw	14
 	db	'StrnCmp types',0
-	db	$9E
-	db	'd',0
-	db	8
+	dw	$9E64
+	dw	8
 	db	'Catalog',0
-	db	$9E
-	db	'e',0,$C
+	dw	$9E65
+	dw	12
 	db	'Translator',0,0
-	db	$9E
-	db	'f',0
-	db	$18
+	dw	$9E66
+	dw	$18
 	db	'Translator error codes',0,0
-	db	$9E
-	db	'g',0
-	db	6
+	dw	$9E67
+	dw	6
 	db	'Prefs',0
-	db	$9E
-	db	'h',0
-	db	6
+	dw	$9E68
+	dw	6
 	db	'Font',0,0
-	db	$9E
-	db	'i',0,$A
+	dw	$9E69
+	dw	10
 	db	'FontPrefs',0
-	db	$9E
-	db	'j',0
-	db	$10
+	dw	$9E6A
+	dw	$10
 	db	'fp_Type values',0,0
-	db	$9E
-	db	'k',0,$A
+	dw	$9E6B
+	dw	10
 	db	'IControl',0,0
-	db	$9E
-	db	'l',0
-	db	14
+	dw	$9E6C
+	dw	14
 	db	'IControlPrefs',0
-	db	$9E
-	db	'm',0
-	db	$12
+	dw	$9E6D
+	dw	$12
 	db	'ic_Flags bitdefs',0,0
-	db	$9E
-	db	'n',0,$C
+	dw	$9E6E
+	dw	12
 	db	'InputPrefs',0,0
-	db	$9E
-	db	'o',0
-	db	14
+	dw	$9E6F
+	dw	14
 	db	'CountryPrefs',0,0
-	db	$9E
-	db	'p',0,$C
+	dw	$9E70
+	dw	12
 	db	'LocalePrefs',0
-	db	$9E
-	db	'q',0,$A
+	dw	$9E71
+	dw	10
 	db	'Overscan',0,0
-	db	$9E
-	db	'r',0
-	db	14
+	dw	$9E72
+	dw	14
 	db	'OverscanPrefs',0
-	db	$9E
-	db	's',0
-	db	8
+	dw	$9E73
+	dw	8
 	db	'Palette',0
-	db	$9E
-	db	't',0
-	db	14
+	dw	$9E74
+	dw	14
 	db	'PalettePrefs',0,0
-	db	$9E
-	db	'u',0
-	db	8
+	dw	$9E75
+	dw	8
 	db	'Pointer',0
-	db	$9E
-	db	'v',0
-	db	14
+	dw	$9E76
+	dw	14
 	db	'PointerPrefs',0,0
-	db	$9E
-	db	'w',0
-	db	$14
+	dw	$9E77
+	dw	$14
 	db	'pp_Which constants',0,0
-	db	$9E
-	db	'x',0,$A
+	dw	$9E78
+	dw	10
 	db	'RGBTable',0,0
-	db	$9E
-	db	'y',0
-	db	8
+	dw	$9E79
+	dw	8
 	db	'PrefHdr',0
-	db	$9E
-	db	'z',0,$C
+	dw	$9E7A
+	dw	12
 	db	'PrefHeader',0,0
-	db	$9E
-	db	'{',0,$C
+	dw	$9E7B
+	dw	12
 	db	'PrinterGfx',0,0
-	db	$9E
-	db	'|',0
-	db	$10
+	dw	$9E7C
+	dw	$10
 	db	'PrinterGfxPrefs',0
-	db	$9E
-	db	'}',0
-	db	$14
+	dw	$9E7D
+	dw	$14
 	db	'pg_Aspect constants',0
-	db	$9E
-	db	'~',0
-	db	$14
+	dw	$9E7E
+	dw	$14
 	db	'pg_Shade constants',0,0
-	db	$9E
-	db	$7F
-	db	0
-	db	$14
+	dw	$9E7F
+	dw	$14
 	db	'pg_Image constants',0,0
-	db	$9E
-	db	$80
-	db	0
-	db	$18
+	dw	$9E80
+	dw	$18
 	db	'pg_ColorCorrect bitdefs',0
-	db	$9E
-	db	$81
-	db	0
-	db	$18
+	dw	$9E81
+	dw	$18
 	db	'pg_Dimensions constants',0
-	db	$9E
-	db	$82
-	db	0
-	db	$18
+	dw	$9E82
+	dw	$18
 	db	'pg_Dithering constants',0,0
-	db	$9E
-	db	$83
-	db	0
-	db	$1A
+	dw	$9E83
+	dw	$1A
 	db	'pg_GraphicsFlags bitdefs',0,0
-	db	$9E
-	db	$84
-	db	0
-	db	10
+	dw	$9E84
+	dw	10
 	db	'PrinterPS',0
-	db	$9E
-	db	$85
-	db	0
-	db	$10
+	dw	$9E85
+	dw	$10
 	db	'PrinterPSPrefs',0,0
-	db	$9E
-	db	$86
-	db	0
-	db	$18
+	dw	$9E86
+	dw	$18
 	db	'ps_DriverMode constants',0
-	db	$9E
-	db	$87
-	db	0
-	db	$1A
+	dw	$9E87
+	dw	$1A
 	db	'ps_PaperFormat constants',0,0
-	db	$9E
-	db	$88
-	db	0
-	db	$12
+	dw	$9E88
+	dw	$12
 	db	'ps_Font constants',0
-	db	$9E
-	db	$89
-	db	0
-	db	$14
+	dw	$9E89
+	dw	$14
 	db	'ps_Pitch constants',0,0
-	db	$9E
-	db	$8A
-	db	0
-	db	$1A
+	dw	$9E8A
+	dw	$1A
 	db	'ps_Orientation constants',0,0
-	db	$9E
-	db	$8B
-	db	0
-	db	$12
+	dw	$9E8B
+	dw	$12
 	db	'ps_Tab constants',0,0
-	db	$9E
-	db	$8C
-	db	0
-	db	$14
+	dw	$9E8C
+	dw	$14
 	db	'ps_Image constants',0,0
-	db	$9E
-	db	$8D
-	db	0
-	db	$16
+	dw	$9E8D
+	dw	$16
 	db	'ps_Shading constants',0,0
-	db	$9E
-	db	$8E
-	db	0
-	db	$18
+	dw	$9E8E
+	dw	$18
 	db	'ps_Dithering constants',0,0
-	db	$9E
-	db	$8F
-	db	0
-	db	$1A
+	dw	$9E8F
+	dw	$1A
 	db	'ps_Transparency constants',0
-	db	$9E
-	db	$90
-	db	0
-	db	$14
+	dw	$9E90
+	dw	$14
 	db	'ps_Aspect constants',0
-	db	$9E
-	db	$91
-	db	0
-	db	$1A
+	dw	$9E91
+	dw	$1A
 	db	'ps_ScalingType constants',0,0
-	db	$9E
-	db	$92
-	db	0
-	db	$1A
+	dw	$9E92
+	dw	$1A
 	db	'ps_ScalingMath constants',0,0
-	db	$9E
-	db	$93
-	db	0
-	db	$18
+	dw	$9E93
+	dw	$18
 	db	'ps_Centering constants',0,0
-	db	$9E
-	db	$94
-	db	0
-	db	12
+	dw	$9E94
+	dw	12
 	db	'PrinterTxt',0,0
-	db	$9E
-	db	$95
-	db	0
-	db	$10
+	dw	$9E95
+	dw	$10
 	db	'PrinterTxtPrefs',0
-	db	$9E
-	db	$96
-	db	0
-	db	$12
+	dw	$9E96
+	dw	$12
 	db	'pt_Port constants',0
-	db	$9E
-	db	$97
-	db	0
-	db	$18
+	dw	$9E97
+	dw	$18
 	db	'pt_PaperType constants',0,0
-	db	$9E
-	db	$98
-	db	0
-	db	$18
+	dw	$9E98
+	dw	$18
 	db	'pt_PaperSize constants',0,0
-	db	$9E
-	db	$99
-	db	0
-	db	$18
+	dw	$9E99
+	dw	$18
 	db	'pt_PrintPitch constants',0
-	db	$9E
-	db	$9A
-	db	0
-	db	$1A
+	dw	$9E9A
+	dw	$1A
 	db	'pt_PrintSpacing constants',0
-	db	$9E
-	db	$9B
-	db	0
-	db	$1A
+	dw	$9E9B
+	dw	$1A
 	db	'pt_PrintQuality constants',0
-	db	$9E
-	db	$9C
-	db	0
-	db	$12
+	dw	$9E9C
+	dw	$12
 	db	'PrinterUnitPrefs',0,0
-	db	$9E
-	db	$9D
-	db	0
-	db	12
+	dw	$9E9D
+	dw	12
 	db	'ScreenMode',0,0
-	db	$9E
-	db	$9E
-	db	0
-	db	$10
+	dw	$9E9E
+	dw	$10
 	db	'ScreenModePrefs',0
-	db	$9E
-	db	$9F
-	db	0
-	db	$14
+	dw	$9E9F
+	dw	$14
 	db	'smp_Control bitdefs',0
-	db	$9E
-	db	$A0
-	db	0
-	db	12
+	dw	$9EA0
+	dw	12
 	db	'SerialPrefs',0
-	db	$9E
-	db	'¡',0
-	db	$14
+	dw	$9EA1
+	dw	$14
 	db	'sp_Parity constants',0
-	db	$9E
-	db	'¢',0
-	db	$1A
+	dw	$9EA2
+	dw	$1A
 	db	'sp_Input/OutputHandshake',0,0
-	db	$9E
-	db	'£',0
-	db	6
+	dw	$9EA3
+	dw	6
 	db	'Sound',0
-	db	$9E
-	db	'¤',0,$C
+	dw	$9EA4
+	dw	12
 	db	'SoundPrefs',0,0
-	db	$9E
-	db	'¥',0
-	db	$18
+	dw	$9EA5
+	dw	$18
 	db	'sop_AudioType constants',0
-	db	$9E
-	db	'¦',0,$A
+	dw	$9EA6
+	dw	10
 	db	'WBPattern',0
-	db	$9E
-	db	'§',0
-	db	$10
+	dw	$9EA7
+	dw	$10
 	db	'WBPatternPrefs',0,0
-	db	$9E
-	db	'¨',0
-	db	$14
+	dw	$9EA8
+	dw	$14
 	db	'wbp_Which constants',0
-	db	$9E
-	db	'©',0
-	db	$12
+	dw	$9EA9
+	dw	$12
 	db	'wbp_Flags bitdefs',0
-	db	$9E
-	db	'ª',0
-	db	$10
+	dw	$9EAA
+	dw	$10
 	db	'Depth constants',0
-	db	$9E
-	db	'«',0
-	db	$18
+	dw	$9EAB
+	dw	$18
 	db	'Pattern width & height',0,0
-	db	$9E
-	db	'¬',0,$A
+	dw	$9EAC
+	dw	10
 	db	'Resources',0
-	db	$9E
-	db	'­',0
-	db	$12
+	dw	$9EAD
+	dw	$12
 	db	'BattMemBitsAmiga',0,0
-	db	$9E
-	db	'®',0
-	db	$14
+	dw	$9EAE
+	dw	$14
 	db	'Amiga specific bits',0
-	db	$9E
-	db	'¯',0
-	db	$12
+	dw	$9EAF
+	dw	$12
 	db	'BattMemBitsShared',0
-	db	$9E
-	db	'°',0,$C
+	dw	$9EB0
+	dw	12
 	db	'Shared bits',0
-	db	$9E
-	db	'±',0
-	db	6
+	dw	$9EB1
+	dw	6
 	db	'Card',0,0
-	db	$9E
-	db	'²',0,$C
+	dw	$9EB2
+	dw	12
 	db	'CardHandle',0,0
-	db	$9E
-	db	'³',0,$C
+	dw	$9EB3
+	dw	12
 	db	'DeviceTData',0
-	db	$9E
-	db	'´',0
-	db	14
+	dw	$9EB4
+	dw	14
 	db	'CardMemoryMap',0
-	db	$9E
-	db	'µ',0
-	db	$16
+	dw	$9EB5
+	dw	$16
 	db	'cah_CardFlags bitdefs',0
-	db	$9E
-	db	'¶',0
-	db	$14
+	dw	$9EB6
+	dw	$14
 	db	'ReleaseCard bitdefs',0
-	db	$9E
-	db	'·',0
-	db	$14
+	dw	$9EB7
+	dw	$14
 	db	'ReadStatus returns',0,0
-	db	$9E
-	db	'¸',0
-	db	$18
+	dw	$9EB8
+	dw	$18
 	db	'CardProgramVoltage defs',0
-	db	$9E
-	db	'¹',0
-	db	$18
+	dw	$9EB9
+	dw	$18
 	db	'CardMiscControl bitdefs',0
-	db	$9E
-	db	'º',0
-	db	$14
+	dw	$9EBA
+	dw	$14
 	db	'CardInterface defs',0,0
-	db	$9E
-	db	'»',0
-	db	$18
+	dw	$9EBB
+	dw	$18
 	db	'Execute-in-place tuple',0,0
-	db	$9E
-	db	'¼',0,$C
+	dw	$9EBC
+	dw	12
 	db	'TP_AmigaXIP',0
-	db	$9E
-	db	'½',0
-	db	$16
+	dw	$9EBD
+	dw	$16
 	db	'TP_BOOTFLAGS bitdefs',0,0
-	db	$9E
-	db	'¾',0
-	db	6
+	dw	$9EBE
+	dw	6
 	db	'Disk',0,0
-	db	$9E
-	db	'¿',0
-	db	$12
+	dw	$9EBF
+	dw	$12
 	db	'DiscResourceUnit',0,0
-	db	$9E
-	db	'À',0
-	db	$14
+	dw	$9EC0
+	dw	$14
 	db	'Allocation bitdefs',0,0
-	db	$9E
-	db	'Á',0
-	db	$10
+	dw	$9EC1
+	dw	$10
 	db	'Hardware Magic',0,0
-	db	$9E
-	db	'Â',0,$C
+	dw	$9EC2
+	dw	12
 	db	'FileSysRes',0,0
-	db	$9E
-	db	'Ã',0
-	db	$10
+	dw	$9EC3
+	dw	$10
 	db	'FileSysResource',0
-	db	$9E
-	db	'Ä',0
-	db	14
+	dw	$9EC4
+	dw	14
 	db	'FileSysEntry',0,0
-	db	$9E
-	db	'Å',0
-	db	14
+	dw	$9EC5
+	dw	14
 	db	'MathResource',0,0
-	db	$9E
-	db	'Æ',0
-	db	$12
+	dw	$9EC6
+	dw	$12
 	db	'MathIEEEResource',0,0
-	db	$9E
-	db	'Ç',0
-	db	$18
+	dw	$9EC7
+	dw	$18
 	db	'MathIEEEResource_Flags',0,0
-	db	$9E
-	db	'È',0
-	db	6
+	dw	$9EC8
+	dw	6
 	db	'Misc',0,0
-	db	$9E
-	db	'É',0
-	db	$12
+	dw	$9EC9
+	dw	$12
 	db	'Unit number defs',0,0
-	db	$9E
-	db	'Ê',0
-	db	6
+	dw	$9ECA
+	dw	6
 	db	'Rexx',0,0
-	db	$9E
-	db	'Ë',0
-	db	14
+	dw	$9ECB
+	dw	14
 	db	'Error numbers',0
-	db	$9E
-	db	'Ì',0
-	db	8
+	dw	$9ECC
+	dw	8
 	db	'RexxIO',0,0
-	db	$9E
-	db	'Í',0
-	db	8
+	dw	$9ECD
+	dw	8
 	db	'IoBuff',0,0
-	db	$9E
-	db	'Î',0
-	db	$12
+	dw	$9ECE
+	dw	$12
 	db	'Access mode defs',0,0
-	db	$9E
-	db	'Ï',0
-	db	$16
+	dw	$9ECF
+	dw	$16
 	db	'SeekF offset anchors',0,0
-	db	$9E
-	db	'Ð',0,$C
+	dw	$9ED0
+	dw	12
 	db	'RexxMsgPort',0
-	db	$9E
-	db	'Ñ',0
-	db	$16
+	dw	$9ED1
+	dw	$16
 	db	'Private packet types',0,0
-	db	$9E
-	db	'Ò',0
-	db	8
+	dw	$9ED2
+	dw	8
 	db	'RxsLib',0,0
-	db	$9E
-	db	'Ó',0
-	db	$16
+	dw	$9ED3
+	dw	$16
 	db	'Global flag bit defs',0,0
-	db	$9E
-	db	'Ô',0
-	db	$14
+	dw	$9ED4
+	dw	$14
 	db	'Control flags mask',0,0
-	db	$9E
-	db	'Õ',0
-	db	$1A
+	dw	$9ED5
+	dw	$1A
 	db	'Initialization constants',0,0
-	db	$9E
-	db	'Ö',0
-	db	$16
+	dw	$9ED6
+	dw	$16
 	db	'Char attr flag values',0
-	db	$9E
-	db	'×',0
-	db	$14
+	dw	$9ED7
+	dw	$14
 	db	'Char attr flag bits',0
-	db	$9E
-	db	'Ø',0
-	db	8
+	dw	$9ED8
+	dw	8
 	db	'Storage',0
-	db	$9E
-	db	'Ù',0
-	db	8
+	dw	$9ED9
+	dw	8
 	db	'NexxStr',0
-	db	$9E
-	db	'Ú',0
-	db	$18
+	dw	$9EDA
+	dw	$18
 	db	'String attribute values',0
-	db	$9E
-	db	'Û',0
-	db	$16
+	dw	$9EDB
+	dw	$16
 	db	'Combinations of flags',0
-	db	$9E
-	db	'Ü',0
-	db	$16
+	dw	$9EDC
+	dw	$16
 	db	'String attribute bits',0
-	db	$9E
-	db	'Ý',0
-	db	8
+	dw	$9EDD
+	dw	8
 	db	'RexxArg',0
-	db	$9E
-	db	'Þ',0
-	db	8
+	dw	$9EDE
+	dw	8
 	db	'RexxMsg',0
-	db	$9E
-	db	'ß',0
-	db	14
+	dw	$9EDF
+	dw	14
 	db	'Command codes',0
-	db	$9E
-	db	'à',0
-	db	$18
+	dw	$9EE0
+	dw	$18
 	db	'Command modifier flags',0,0
-	db	$9E
-	db	'á',0
-	db	$16
+	dw	$9EE1
+	dw	$16
 	db	'Command modifier bits',0
-	db	$9E
-	db	'â',0,$A
+	dw	$9EE2
+	dw	10
 	db	'RexxRsrc',0,0
-	db	$9E
-	db	'ã',0
-	db	$14
+	dw	$9EE3
+	dw	$14
 	db	'Resource node types',0
-	db	$9E
-	db	'ä',0
-	db	$12
+	dw	$9EE4
+	dw	$12
 	db	'Global Data size',0,0
-	db	$9E
-	db	'å',0,$A
+	dw	$9EE5
+	dw	10
 	db	'RexxTask',0,0
-	db	$9E
-	db	'æ',0
-	db	$14
+	dw	$9EE6
+	dw	$14
 	db	'RexxTask flag bits',0,0
-	db	$9E
-	db	'ç',0
-	db	$18
+	dw	$9EE7
+	dw	$18
 	db	'Memory allocation defs',0,0
-	db	$9E
-	db	'è',0
-	db	8
+	dw	$9EE8
+	dw	8
 	db	'SrcNode',0
-	db	$9E
-	db	'é',0
-	db	8
+	dw	$9EE9
+	dw	8
 	db	'Utility',0
-	db	$9E
-	db	'ê',0
-	db	6
+	dw	$9EEA
+	dw	6
 	db	'Date',0,0
-	db	$9E
-	db	'ë',0,$A
+	dw	$9EEB
+	dw	10
 	db	'ClockData',0
-	db	$9E
-	db	'ì',0
-	db	6
+	dw	$9EEC
+	dw	6
 	db	'Hooks',0
-	db	$9E
-	db	'í',0
-	db	6
+	dw	$9EED
+	dw	6
 	db	'Hook',0,0
-	db	$9E
-	db	'î',0
-	db	6
+	dw	$9EEE
+	dw	6
 	db	'Name',0,0
-	db	$9E
-	db	'ï',0,$C
+	dw	$9EEF
+	dw	12
 	db	'NamedObject',0
-	db	$9E
-	db	'ð',0
-	db	$12
+	dw	$9EF0
+	dw	$12
 	db	'NamedObject tags',0,0
-	db	$9E
-	db	'ñ',0
-	db	$12
+	dw	$9EF1
+	dw	$12
 	db	'ANO_Flags bitdefs',0
-	db	$9E
-	db	'ò',0
-	db	6
+	dw	$9EF2
+	dw	6
 	db	'Pack',0,0
-	db	$9E
-	db	'ó',0
-	db	$12
+	dw	$9EF3
+	dw	$12
 	db	'PackTable bitdefs',0
-	db	$9E
-	db	'ô',0
-	db	8
+	dw	$9EF4
+	dw	8
 	db	'TagItem',0
-	db	$9E
-	db	'õ',0
-	db	$12
+	dw	$9EF5
+	dw	$12
 	db	'ti_Tag constants',0,0
-	db	$9E
-	db	'ö',0
-	db	$16
+	dw	$9EF6
+	dw	$16
 	db	'FilterTagItems specs',0,0
-	db	$9E
-	db	'÷',0
-	db	14
+	dw	$9EF7
+	dw	14
 	db	'MapTags types',0
-	db	$9E
-	db	'ø',0
-	db	$14
+	dw	$9EF8
+	dw	$14
 	db	'MergeTagItems types',0
-	db	$9E
-	db	'ù',0,$A
+	dw	$9EF9
+	dw	10
 	db	'Workbench',0
-	db	$9E
-	db	'ú',0
-	db	8
+	dw	$9EFA
+	dw	8
 	db	'Startup',0
-	db	$9E
-	db	'û',0,$A
+	dw	$9EFB
+	dw	10
 	db	'WBStartup',0
-	db	$9E
-	db	'ü',0
-	db	6
+	dw	$9EFC
+	dw	6
 	db	'WBArg',0
-	db	$9E
-	db	'ý',0
-	db	$18
+	dw	$9EFD
+	dw	$18
 	db	'Workbench object types',0,0
-	db	$9E
-	db	'þ',0,$C
+	dw	$9EFE
+	dw	12
 	db	'DrawerData',0,0
-	db	$9E
-	db	'ÿ',0,$C
+	dw	$9EFF
+	dw	12
 	db	'DiskObject',0,0
-	db	$9F
-	db	0
-	db	0
-	db	$16
+	dw	$9F00
+	dw	$16
 	db	'DiskObject constants',0,0
-	db	$9F
-	db	1
-	db	0
-	db	10
+	dw	$9F01
+	dw	10
 	db	'FreeList',0,0
-	db	$9F
-	db	2
-	db	0
-	db	$14
+	dw	$9F02
+	dw	$14
 	db	'WBPortMessage types',0
-	db	$9F
-	db	3
-	db	0
-	db	$12
+	dw	$9F03
+	dw	$12
 	db	'Icon no position',0,0
-	db	$9F
-	db	4
-	db	0
-	db	12
+	dw	$9F04
+	dw	12
 	db	'AppMessage',0,0
-	db	$9F
-	db	5
-	db	0
-	db	12
+	dw	$9F05
+	dw	12
 	db	'am_Version',0,0
-	db	$9F
-	db	6
-	db	0
-	db	10
+	dw	$9F06
+	dw	10
 	db	'AppWindow',0
-	db	$9F
-	db	7
-	db	0
-	db	8
+	dw	$9F07
+	dw	8
 	db	'AppIcon',0
-	db	$9F
-	db	8
-	db	0
-	db	12
+	dw	$9F08
+	dw	12
 	db	'AppMenuItem',0
-	db	'¯È',0
-	db	$1E
+	dw	$AFC8
+	dw	$1E
 	db	'Buffer contains non-hex data',0,0
-	db	'¯É',0
-	db	'bOriginal instruction is %d bytes',$A
+	dw	$AFC9
+	dw	$62
+	db	'Original instruction is %d bytes',$A
 	db	'Assembled instruction is %d bytes',$A
 	db	'Overwrite instruction anyway?',0,0
-	db	'¯Ê',0
-	db	$14
+	dw	$AFCA
+	dw	$14
 	db	'Empty input buffer',0,0
-	db	'¯Ë',0
-	db	$16
+	dw	$AFCB
+	dw	$16
 	db	'Unrecognized mnemonic',0
-	db	'¯Ì',0
-	db	$1E
+	dw	$AFCC
+	dw	$1E
 	db	'Bad size or wrong operand(s)',0,0
-	db	'¯Í',0
-	db	$14
+	dw	$AFCD
+	dw	$14
 	db	'Expected expression',0
-	db	'¯Î',0
-	db	14
+	dw	$AFCE
+	dw	14
 	db	'Bad specifier',0
-	db	'¯Ï',0
-	db	$1E
+	dw	$AFCF
+	dw	$1E
 	db	'Missing } on bit field spec.',0,0
-	db	'¯Ð',0,$C
+	dw	$AFD0
+	dw	12
 	db	'Missing }?',0,0
-	db	'¯Ñ',0
-	db	$12
+	dw	$AFD1
+	dw	$12
 	db	'Bad register pair',0
-	db	'¯Ò',0
-	db	$1A
+	dw	$AFD2
+	dw	$1A
 	db	'Bad type in register pair',0
-	db	'¯Ó',0
-	db	$18
+	dw	$AFD3
+	dw	$18
 	db	'Expected register pair',0,0
-	db	'¯Ô',0
-	db	14
+	dw	$AFD4
+	dw	14
 	db	'Expected ")"',0,0
-	db	'¯Õ',0
-	db	$12
+	dw	$AFD5
+	dw	$12
 	db	'Expression syntax',0
-	db	'¯Ö',0
-	db	$1A
+	dw	$AFD6
+	dw	$1A
 	db	'Expected Address register',0
-	db	'¯×',0
-	db	$10
+	dw	$AFD7
+	dw	$10
 	db	'Index register',0,0
-	db	'¯Ø',0
-	db	$12
+	dw	$AFD8
+	dw	$12
 	db	'Dn pair expected',0,0
-	db	'¯Ù',0
-	db	$12
+	dw	$AFD9
+	dw	$12
 	db	'FPn pair expected',0
-	db	'¯Ú',0
-	db	$10
+	dw	$AFDA
+	dw	$10
 	db	'Register pair?',0,0
-	db	'¯Û',0
-	db	' Unidentified error in regbit()',0,0
-	db	'¯Ü',0,$A
+	dw	$AFDB
+	dw	$20
+	db	'Unidentified error in regbit()',0,0
+	dw	$AFDC
+	dw	10
 	db	'Bad size',0,0
-	db	'¯Ý',0
-	db	$16
+	dw	$AFDD
+	dw	$16
 	db	'Bad size in size76()',0,0
-	db	'¯Þ',0
-	db	$16
+	dw	$AFDE
+	dw	$16
 	db	'Bad size in size109()',0
-	db	'¯ß',0
-	db	$18
+	dw	$AFDF
+	dw	$18
 	db	'Bad size in size109b()',0,0
-	db	'¯à',0
-	db	$16
+	dw	$AFE0
+	dw	$16
 	db	'Bad type in modreg()',0,0
-	db	'¯á',0
-	db	'"Unidentified error in getrlist()',0,0
-	db	'¯â',0
-	db	' Unidentified error in bitfld()',0,0
-	db	'¯ã',0
-	db	$14
+	dw	$AFE1
+	dw	$22
+	db	'Unidentified error in getrlist()',0,0
+	dw	$AFE2
+	dw	$20
+	db	'Unidentified error in bitfld()',0,0
+	dw	$AFE3
+	dw	$14
 	db	'Bad size in fsize()',0
-	db	'¯ä',0
-	db	'$An addressing allowed only on FPIAR',0
-	db	'¯å',0
-	db	'2Only a single FP control register may be selected',0
-	db	'¯æ',0
-	db	$1C
+	dw	$AFE4
+	dw	$24
+	db	'An addressing allowed only on FPIAR',0
+	dw	$AFE5
+	dw	$32
+	db	'Only a single FP control register may be selected',0
+	dw	$AFE6
+	dw	$1C
 	db	'Bad function code specifier',0
-	db	'¯ç',0,$C
+	dw	$AFE7
+	dw	12
 	db	'Bad string',0,0
-	db	'¯è',0
-	db	$10
+	dw	$AFE8
+	dw	$10
 	db	'Unknown symbol',0,0
-	db	'¯é',0
-	db	$14
+	dw	$AFE9
+	dw	$14
 	db	'Illegal use of ZPC',0,0
-	db	'¯ê',0
-	db	14
+	dw	$AFEA
+	dw	14
 	db	'Expected ","',0,0
-	db	'¯ë',0
-	db	$1E
+	dw	$AFEB
+	dw	$1E
 	db	'Bad indexed addressing syntax',0
-	db	'¯ì',0
-	db	$18
+	dw	$AFEC
+	dw	$18
 	db	'Error in register list',0,0
-	db	'¯í',0
-	db	'"Unidentified error in checklist()',0
-	db	'¯î',0
-	db	$18
+	dw	$AFED
+	dw	$22
+	db	'Unidentified error in checklist()',0
+	dw	$AFEE
+	dw	$18
 	db	'Indexed indirect syntax',0
-	db	'¯ï',0
-	db	$18
+	dw	$AFEF
+	dw	$18
 	db	'Memory Indirect syntax',0,0
-	db	'¯ð',0
-	db	$18
+	dw	$AFF0
+	dw	$18
 	db	'Base register expected',0,0
-	db	'¯ñ',0
-	db	$18
+	dw	$AFF1
+	dw	$18
 	db	'Index Register Expected',0
-	db	'¯ò',0
-	db	'&Byte not allowed to address register',0,0
-	db	'¯ó',0
-	db	$18
+	dw	$AFF2
+	dw	$26
+	db	'Byte not allowed to address register',0,0
+	dw	$AFF3
+	dw	$18
 	db	'Bad branch destination',0,0
-	db	'¯ô',0
-	db	14
+	dw	$AFF4
+	dw	14
 	db	'USP Required',0,0
-	db	'¯õ',0
-	db	$16
+	dw	$AFF5
+	dw	$16
 	db	'Simple indexing only',0,0
-	db	'¯ö',0
-	db	'(Unidentified error in FMOVE instruction',0
-	db	'¯÷',0
-	db	$1E
+	dw	$AFF6
+	dw	$28
+	db	'Unidentified error in FMOVE instruction',0
+	dw	$AFF7
+	dw	$1E
 	db	'Illegal register for pmovefd',0,0
-	db	'¯ø',0
-	db	$18
+	dw	$AFF8
+	dw	$18
 	db	'Register size mismatch',0,0
-	db	'¯ù',0
-	db	$14
+	dw	$AFF9
+	dw	$14
 	db	'Read only register',0,0
-	db	'¯ú',0
-	db	$18
+	dw	$AFFA
+	dw	$18
 	db	'Error in Mnemonic table',0
-	db	'¯û',0
-	db	$1C
+	dw	$AFFB
+	dw	$1C
 	db	'Bad base-displacement size',0,0
-	db	'¯ü',0
-	db	$1C
+	dw	$AFFC
+	dw	$1C
 	db	'Bad outer-displacement size',0
-	db	'¯ý',0
-	db	$14
+	dw	$AFFD
+	dw	$14
 	db	'Bad index sub-mode',0,0
-	db	'¯þ',0
-	db	$1E
+	dw	$AFFE
+	dw	$1E
 	db	'Bad indexed addressing syntax',0
-	db	'¯ÿ',0
-	db	$14
+	dw	$AFFF
+	dw	$14
 	db	'Value out of range',0,0
-	db	'°',0,0
-	db	$1C
+	dw	$B000
+	dw	$1C
 	db	'Illegal register for pvalid',0
-	db	'ÃP',0
-	db	6
+	dw	$C350
+	dw	6
 	db	'(#1)',0,0
-	db	'ÃQ',0
-	db	6
+	dw	$C351
+	dw	6
 	db	'(#2)',0,0
-	db	'ÃR',0
-	db	6
+	dw	$C352
+	dw	6
 	db	'(#3)',0,0
-	db	'ÃS',0
-	db	6
+	dw	$C353
+	dw	6
 	db	'(#4)',0,0
-	db	'ÃT',0
-	db	6
+	dw	$C354
+	dw	6
 	db	'(#5)',0,0
-	db	'ÃU',0
-	db	6
+	dw	$C355
+	dw	6
 	db	'(#6)',0,0
-	db	'ÃV',0
-	db	6
+	dw	$C356
+	dw	6
 	db	'(#7)',0,0
-	db	'ÃW',0
-	db	6
+	dw	$C357
+	dw	6
 	db	'(#8)',0,0
-	db	'ÃX',0
-	db	6
+	dw	$C358
+	dw	6
 	db	'(#9)',0,0
-	db	'ÃY',0
-	db	6
+	dw	$C359
+	dw	6
 	db	'(#10)',0
-	db	'ÃZ',0
-	db	6
+	dw	$C35A
+	dw	6
 	db	'(#11)',0
-	db	'Ã[',0
-	db	6
+	dw	$C35B
+	dw	6
 	db	'(#12)',0
-	db	'Ã\',0
-	db	6
+	dw	$C35C
+	dw	6
 	db	'(#13)',0
-	db	'Ã]',0
-	db	6
+	dw	$C35D
+	dw	6
 	db	'(#14)',0
-	db	'Ã^',0
-	db	6
+	dw	$C35E
+	dw	6
 	db	'(#15)',0
-	db	'Ã_',0
-	db	6
+	dw	$C35F
+	dw	6
 	db	'(#16)',0
-	db	'Ã`',0
-	db	6
+	dw	$C360
+	dw	6
 	db	'(#17)',0
-	db	'Ãa',0
-	db	6
+	dw	$C361
+	dw	6
 	db	'(#18)',0
-	db	'Ãb',0
-	db	6
+	dw	$C362
+	dw	6
 	db	'(#19)',0
-	db	'Ãc',0
-	db	6
+	dw	$C363
+	dw	6
 	db	'(#39)',0
-	db	'Ãd',0
-	db	$16
+	dw	$C364
+	dw	$16
 	db	'User-defined symbols',0,0
-	db	'Ãe',0,$A
+	dw	$C365
+	dw	10
 	db	'Metacomco',0
-	db	'Ãf',0
-	db	6
+	dw	$C366
+	dw	6
 	db	'Cape',0,0
-	db	'Ãg',0
-	db	8
+	dw	$C367
+	dw	8
 	db	'Macro68',0
-	db	'Ãh',0
-	db	4
+	dw	$C368
+	dw	4
 	db	'ON',0,0
-	db	'Ãi',0
-	db	4
-	db	'OFF',0,0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	0
-	db	0
+	dw	$C369
+	dw	4
+	db	'OFF',0
+	dw	0
+	dw	0
+	dw	0
+	dw	0
 
 autorequest	movem.l	d2/d3/a2/a3/a6,-(sp)
 	lea	(intuitionlibr.MSG).l,a1
@@ -11429,20 +10160,20 @@ lbC00B1AC	clr.b	(lbL02EB66-ds,a6)
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(error_text-ds,a6)
 	clr.b	(aslfr_initialfile-ds,a6)
-	move.w	#$1F42,d0
+	move.w	#$1F42,d0	;open which file? (open load file)
 	jsr	(gettextbynum-ds,a6)
 	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
 	jsr	(_requestfile-ds,a6)
 	beq.w	lbC00B264
-	jsr	(lbC02727C-ds,a6)
+	jsr	(BuildAllFileNames-ds,a6)
 	tst.b	(lbB02B417-ds,a6)
 	bne.b	lbC00B1E6
 	tst.b	(lbB02B418-ds,a6)
 	beq.b	lbC00B1EC
 lbC00B1E6	tst.b	(lbB02EB41-ds,a6)
 	bne.b	lbC00B1F8
-lbC00B1EC	lea	(lbB031E00-ds,a6),a0
+lbC00B1EC	lea	(miscBuffer-ds,a6),a0
 	clr.b	(a0)
 	jsr	(print_text_a0-ds,a6)
 	bra.b	lbC00B21C
@@ -11460,10 +10191,10 @@ lbC00B1F8	st	(lbB02EB83-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC00B21C	lea	(work_data_spec_str-ds,a6),a0
-	move.l	a0,(lbB02D0E8-ds,a6)
-	cmpi.b	#$2A,(a0)
+	move.l	a0,(SaveFileName-ds,a6)
+	cmpi.b	#'*',(a0)
 	beq.b	lbC00B24C
-	cmpi.b	#$2D,(a0)
+	cmpi.b	#'-',(a0)
 	beq.b	lbC00B24C
 	move.l	a0,d1
 	jsr	(_Lock-ds,a6)
@@ -11476,7 +10207,7 @@ lbC00B242	move.l	d0,d1
 	clr.l	(parseargs_lock-ds,a6)
 	jsr	(_UnLock_ifd1-ds,a6)
 lbC00B24C	bsr.b	lbC00B29E
-	movea.l	(lbB02D0E8-ds,a6),a0
+	movea.l	(SaveFileName-ds,a6),a0
 	bsr.w	parseargs_special
 	beq.b	lbC00B278
 	jsr	(lbC027E00-ds,a6)
@@ -11517,27 +10248,27 @@ lbC00B29E	jsr	(saveregs_all-ds,a6)
 	move.b	d6,(lbL02EB36-ds,a6)
 	move.b	d6,(lbB02EB59-ds,a6)
 	move.b	d6,(lbL02EB72-ds,a6)
-	move.b	d6,(lbB02EB85-ds,a6)
+	move.b	d6,(saveRsOriginal-ds,a6)
 	st	(lbB02EB69-ds,a6)
 	tst.b	(lbB02EB83-ds,a6)
 	bne.b	lbC00B306
-	clr.b	(lbB02EB82-ds,a6)
+	clr.b	(allFileNamesBuild-ds,a6)
 	lea	(lbL02C4D4-ds,a6),a0
 	move.l	a0,(lbL02B4B0-ds,a6)
-	move.b	d6,(lbL02E1C8-ds,a6)
+	move.b	d6,(fileNameSaveAsm-ds,a6)
 	move.l	d6,(lbL02D0C8-ds,a6)
 	move.l	d6,(lbL02D0CC-ds,a6)
 	move.l	d6,(lbL02D0D0-ds,a6)
 	move.l	d6,(lbL02D1BC-ds,a6)
 	move.l	d6,(lbL02D1C4-ds,a6)
-lbC00B306	movea.l	(lbL02D158-ds,a6),a1
-	move.l	(lbL02B4B4-ds,a6),d0
+lbC00B306	movea.l	(strings-ds,a6),a1
+	move.l	(stringsSz-ds,a6),d0
 	jsr	(_FreeMem-ds,a6)
-	move.l	d6,(lbL02B4B4-ds,a6)
-	movea.l	(lbL02D14C-ds,a6),a1
-	move.l	(lbL02B4BC-ds,a6),d0
+	move.l	d6,(stringsSz-ds,a6)
+	movea.l	(stringPointer-ds,a6),a1
+	move.l	(stringPointerSz-ds,a6),d0
 	jsr	(_FreeMem-ds,a6)
-	move.l	d6,(lbL02B4BC-ds,a6)
+	move.l	d6,(stringPointerSz-ds,a6)
 	move.l	d6,(lbL02B4C8-ds,a6)
 	move.w	#$7FFF,(lbL02B4CC-ds,a6)
 	jsr	(freework-ds,a6)
@@ -11545,16 +10276,16 @@ lbC00B306	movea.l	(lbL02D158-ds,a6),a1
 	move.l	d2,d0
 	jsr	(_AllocMemClear-ds,a6)
 	move.l	d0,(lbL02D154-ds,a6)
-	move.l	d0,(lbL02D158-ds,a6)
+	move.l	d0,(strings-ds,a6)
 	move.l	d0,(lbL02D160-ds,a6)
 	beq.w	lbC00B292
-	move.l	d2,(lbL02B4B4-ds,a6)
+	move.l	d2,(stringsSz-ds,a6)
 	move.l	d2,(lbL02B4C0-ds,a6)
 	move.l	d2,d0
 	jsr	(_AllocMemClear-ds,a6)
-	move.l	d0,(lbL02D14C-ds,a6)
+	move.l	d0,(stringPointer-ds,a6)
 	beq.w	lbC00B292
-	move.l	d2,(lbL02B4BC-ds,a6)
+	move.l	d2,(stringPointerSz-ds,a6)
 	movea.l	d0,a0
 	move.l	d6,(lbL02D148-ds,a6)
 	moveq	#-1,d1
@@ -11565,7 +10296,7 @@ lbC00B306	movea.l	(lbL02D158-ds,a6),a1
 	move.l	#$C2,d0
 lbC00B384	move.l	d1,(a0)+
 	dbra	d0,lbC00B384
-	lea	(lbL02F600-ds,a6),a0
+	lea	(hashtable1-ds,a6),a0
 	move.l	#$27F,d0
 lbC00B394	move.l	d6,(a0)+
 	move.l	d6,(a0)+
@@ -11577,7 +10308,7 @@ lbC00B394	move.l	d6,(a0)+
 
 lbC00B3A6	move.w	#$1F43,d0
 	jsr	(gettextbynum-ds,a6)
-	jsr	(lbC026C6C-ds,a6)
+	jsr	(StringRequest240nb-ds,a6)
 	bne.b	lbC00B3BA
 	jmp	(term2-ds,a6)
 
@@ -11666,7 +10397,7 @@ lbC00B4BE	move.w	#$1F45,d0
 	jsr	(gettextbynum-ds,a6)
 	lea	(displayid-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC026C74-ds,a6)
+	jsr	(StringRequest240-ds,a6)
 	bne.b	lbC00B4E2
 	tst.b	(lbB02EB69-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
@@ -11810,7 +10541,7 @@ lbC00B698	move.w	#9,(lbW02EB1A-ds,a6)
 copy_workdata_name	lea	(work_data_spec_str-ds,a6),a1
 lbC00B6BC	move.b	(a0)+,(a1)+
 	bne.b	lbC00B6BC
-	jsr	(lbC02727C-ds,a6)
+	jsr	(BuildAllFileNames-ds,a6)
 	movea.l	(ds-ds,a6),a2
 	movea.l	(workdata_struct-ds,a6),a3
 	move.l	(a3),d7
@@ -11820,7 +10551,7 @@ lbC00B6BC	move.b	(a0)+,(a1)+
 lbC00B6D6	jsr	(lbC02892C-ds,a6)
 	tst.b	(lbB02EB69-ds,a6)
 	beq.b	_term2
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	clr.b	(a0)
 	jsr	(print_text_a0-ds,a6)
 	clr.b	(lbB02EB41-ds,a6)
@@ -11885,11 +10616,11 @@ parseargs	move.l	sp,(parseargs_savedsp-ds,a6)
 	beq.b	.noarg
 	move.b	#'/',(a0)+
 	clr.b	(a0)
-.noarg	move.w	#$1F50,d0
+.noarg	move.w	#$1F50,d0	;open file
 	jsr	(gettextbynum-ds,a6)
 	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(_requestfile-ds,a6)
+	jsr	(_requestfile-ds,a6)	;request file if only drawer was specified
 	bcc.b	.reqfailed
 	jmp	(term1-ds,a6)
 
@@ -11952,7 +10683,7 @@ parseargs_special	cmpi.b	#'*',(a0)
 
 .m	bra.w	memory
 
-.filespec	jsr	(lbC02727C-ds,a6)
+.filespec	jsr	(BuildAllFileNames-ds,a6)
 	move.w	#$1F51,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(error_text-ds,a6)
@@ -11980,8 +10711,8 @@ parseargs_special	cmpi.b	#'*',(a0)
 	beq.w	lbC00C5B2
 	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenOldFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	beq.w	lbC00C5B2
 	move.l	d0,d1
 	lea	(displayid-ds,a6),a0
@@ -12027,8 +10758,8 @@ lbC00B964	jsr	(lbC0273CA-ds,a6)
 	move.l	d0,(lbL02D0BC-ds,a6)
 	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenOldFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	beq.w	lbC00C5B2
 	move.l	d0,d1
 	move.l	(lbL02D0B8-ds,a6),d2
@@ -12041,7 +10772,7 @@ lbC00B964	jsr	(lbC0273CA-ds,a6)
 	cmp.l	d0,d3
 	bne.w	_term1
 	movea.l	(lbL02D0B8-ds,a6),a1
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC00B9F2
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	lbC00C5B6
@@ -12340,7 +11071,7 @@ lbC00BD08	subq.l	#1,d6
 	st	(lbL02EB66-ds,a6)
 	bra.w	lbC00C34A
 
-lbC00BD20	jsr	(lbC02A4BE-ds,a6)
+lbC00BD20	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC00BD30
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	lbC00C5B6
@@ -12856,7 +11587,7 @@ lbC00C356	tst.b	(lbB02EB4C-ds,a6)
 	clr.b	(work_data_spec_str-ds,a6)
 	st	(lbB02EB4C-ds,a6)
 lbC00C364	move.l	a4,-(sp)
-	move.w	#$1F66,d0
+	move.w	#$1F66,d0	;closing file...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
@@ -12980,8 +11711,8 @@ lbC00C4B2	move.l	a4,-(sp)
 	move.l	d0,(workdata_end_cmp2-ds,a6)
 	lea	(work_data_spec_str-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenOldFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	beq.w	lbC00C5B2
 	move.l	d0,d1
 	move.l	(ds-ds,a6),d2
@@ -13044,30 +11775,30 @@ lbC00C5B6	jsr	(lbC02A4A6-ds,a6)
 	rts
 
 lbC00C5CE	clr.b	(work_data_spec_str-ds,a6)
-	move.l	(lbL02B4BC-ds,a6),d0
+	move.l	(stringPointerSz-ds,a6),d0
 	beq.b	lbC00C5E0
-	movea.l	(lbL02D14C-ds,a6),a1
+	movea.l	(stringPointer-ds,a6),a1
 	jsr	(_FreeMem-ds,a6)
 lbC00C5E0	jsr	(freework-ds,a6)
 	move.l	#$2000,d0
 	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00B292
 	move.l	d0,(lbL02D154-ds,a6)
-	move.l	d0,(lbL02D158-ds,a6)
+	move.l	d0,(strings-ds,a6)
 	move.l	d0,(lbL02D160-ds,a6)
 	move.l	#$30C,d1
-	move.l	d1,(lbL02B4B4-ds,a6)
-	move.l	d1,(lbL02B4BC-ds,a6)
+	move.l	d1,(stringsSz-ds,a6)
+	move.l	d1,(stringPointerSz-ds,a6)
 	move.l	d1,(lbL02B4C0-ds,a6)
 	add.l	d1,d0
 	clr.l	(lbL02D148-ds,a6)
-	move.l	d0,(lbL02D14C-ds,a6)
+	move.l	d0,(stringPointer-ds,a6)
 	movea.l	d0,a0
 	moveq	#-1,d1
 	move.l	#$C2,d0
 lbC00C624	move.l	d1,(a0)+
 	dbra	d0,lbC00C624
-	lea	(lbL02F600-ds,a6),a0
+	lea	(hashtable1-ds,a6),a0
 	move.l	#$27F,d0
 lbC00C634	clr.l	(a0)+
 	clr.l	(a0)+
@@ -13087,13 +11818,13 @@ lbC00C648	move.l	d0,d6
 	lea	(displayid-ds,a6),a0
 	movea.l	a0,a5
 	addq.l	#4,a5
-	movea.l	(lbL02D14C-ds,a6),a1
-	move.l	(lbL02B4BC-ds,a6),d0
-	clr.l	(lbL02B4BC-ds,a6)
+	movea.l	(stringPointer-ds,a6),a1
+	move.l	(stringPointerSz-ds,a6),d0
+	clr.l	(stringPointerSz-ds,a6)
 	jsr	(_FreeMem-ds,a6)
-	movea.l	(lbL02D158-ds,a6),a1
-	move.l	(lbL02B4B4-ds,a6),d0
-	clr.l	(lbL02B4B4-ds,a6)
+	movea.l	(strings-ds,a6),a1
+	move.l	(stringsSz-ds,a6),d0
+	clr.l	(stringsSz-ds,a6)
 	jsr	(_FreeMem-ds,a6)
 	move.w	#$1F46,d0
 	jsr	(gettextbynum-ds,a6)
@@ -13146,15 +11877,15 @@ lbC00C6EC	move.l	d5,(workdata_length-ds,a6)
 	move.l	d0,d5
 	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5CE
-	move.l	d5,(lbL02B4BC-ds,a6)
-	move.l	d0,(lbL02D14C-ds,a6)
+	move.l	d5,(stringPointerSz-ds,a6)
+	move.l	d0,(stringPointer-ds,a6)
 	move.l	(a5)+,d5
 	move.l	d5,d0
 	jsr	(_AllocMemClear-ds,a6)
 	beq.w	lbC00C5CE
-	move.l	d0,(lbL02D158-ds,a6)
+	move.l	d0,(strings-ds,a6)
 	move.l	d0,(lbL02D160-ds,a6)
-	move.l	d5,(lbL02B4B4-ds,a6)
+	move.l	d5,(stringsSz-ds,a6)
 	move.l	(a5)+,d5
 	add.l	d0,d5
 	move.l	(a5)+,(lbL02D098-ds,a6)
@@ -13229,7 +11960,7 @@ lbC00C812	move.b	(a5)+,d0
 	move.l	(a5)+,d1
 	add.l	(ds-ds,a6),d1
 	move.l	d1,(lbL02CDEC-ds,a6)
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	move.l	(workdata_struct-ds,a6),d2
 	move.l	(workdata_struct_sz-ds,a6),d3
 	move.w	#$1F53,d0
@@ -13247,7 +11978,7 @@ lbC00C812	move.b	(a5)+,d0
 	bne.w	lbC00C5CE
 	tst.b	(lbB02EB47-ds,a6)
 	bne.b	lbC00C898
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	move.l	(ds-ds,a6),d2
 	move.l	(workdata_length-ds,a6),d3
 	move.l	a4,-(sp)
@@ -13260,8 +11991,8 @@ lbC00C812	move.b	(a5)+,d0
 	jsr	(_Read-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC00C5CE
-lbC00C898	move.l	(lbB02D0E0-ds,a6),d1
-	lea	(lbL02F600-ds,a6),a0
+lbC00C898	move.l	(saveFH-ds,a6),d1
+	lea	(hashtable1-ds,a6),a0
 	move.l	a0,d2
 	move.l	#$2800,d3
 	move.l	a4,-(sp)
@@ -13273,12 +12004,12 @@ lbC00C898	move.l	(lbB02D0E0-ds,a6),d1
 	jsr	(_Read-ds,a6)
 	tst.b	(lbB02EB37-ds,a6)
 	beq.b	lbC00C8C8
-	jsr	(lbC02A83C-ds,a6)
+	jsr	(_Decompressing-ds,a6)
 lbC00C8C8	cmp.l	d0,d3
 	bne.w	lbC00C5CE
-	move.l	(lbB02D0E0-ds,a6),d1
-	move.l	(lbL02D14C-ds,a6),d2
-	move.l	(lbL02B4BC-ds,a6),d3
+	move.l	(saveFH-ds,a6),d1
+	move.l	(stringPointer-ds,a6),d2
+	move.l	(stringPointerSz-ds,a6),d3
 	move.l	a4,-(sp)
 	move.w	#$1F6C,d0
 	jsr	(gettextbynum-ds,a6)
@@ -13288,9 +12019,9 @@ lbC00C8C8	cmp.l	d0,d3
 	jsr	(_Read-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC00C5CE
-	move.l	(lbB02D0E0-ds,a6),d1
-	move.l	(lbL02D158-ds,a6),d2
-	move.l	(lbL02B4B4-ds,a6),d3
+	move.l	(saveFH-ds,a6),d1
+	move.l	(strings-ds,a6),d2
+	move.l	(stringsSz-ds,a6),d3
 	move.l	a4,-(sp)
 	move.w	#$1F6D,d0
 	jsr	(gettextbynum-ds,a6)
@@ -13311,11 +12042,11 @@ lbC00C8C8	cmp.l	d0,d3
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(dosclose-ds,a6)
-	clr.l	(lbB02D0E0-ds,a6)
-	movea.l	(lbL02D158-ds,a6),a0
-	adda.l	(lbL02B4B4-ds,a6),a0
+	clr.l	(saveFH-ds,a6)
+	movea.l	(strings-ds,a6),a0
+	adda.l	(stringsSz-ds,a6),a0
 	moveq	#0,d0
 lbC00C95E	tst.l	-(a0)
 	bne.b	lbC00C966
@@ -13323,12 +12054,12 @@ lbC00C95E	tst.l	-(a0)
 	bra.b	lbC00C95E
 
 lbC00C966	move.l	d0,(lbL02B4C0-ds,a6)
-	move.l	(lbL02D158-ds,a6),d1
-	add.l	(lbL02B4B4-ds,a6),d1
+	move.l	(strings-ds,a6),d1
+	add.l	(stringsSz-ds,a6),d1
 	sub.l	d0,d1
 	move.l	d1,(lbL02D154-ds,a6)
-	st	(lbB02EB85-ds,a6)
-	jsr	(lbC02A836-ds,a6)
+	st	(saveRsOriginal-ds,a6)
+	jsr	(_Relocating-ds,a6)
 	st	(lbB02EB48-ds,a6)
 	andi.b	#$FB,ccr
 	rts
@@ -13349,7 +12080,7 @@ lbC00C98A	tst.b	(lbB02EB37-ds,a6)
 	move.l	d1,d3
 	move.l	d2,(workdata_struct-ds,a6)
 	move.l	d3,(workdata_struct_sz-ds,a6)
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 lbC00C9BE	rts
 
 lbC00C9C0	tst.b	(lbB02EB37-ds,a6)
@@ -13360,7 +12091,7 @@ lbC00C9C0	tst.b	(lbB02EB37-ds,a6)
 	move.l	(sp)+,d3
 	movea.l	d2,a0
 	move.l	(a0),d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 lbC00C9D8	rts
 
 kickstart	jsr	(_SetPointerAll-ds,a6)
@@ -13393,10 +12124,10 @@ kickstart	jsr	(_SetPointerAll-ds,a6)
 	clr.b	(lbB02D39B-ds,a6)
 	clr.b	(lbB02EAD5-ds,a6)
 	lea	(work_data_spec_str-ds,a6),a0
-	move.b	#$4B,(a0)+
-	move.b	#$49,(a0)+
-	move.b	#$43,(a0)+
-	move.b	#$4B,(a0)+
+	move.b	#'K',(a0)+
+	move.b	#'I',(a0)+
+	move.b	#'C',(a0)+
+	move.b	#'K',(a0)+
 	clr.b	(a0)
 	st	(lbB02EB47-ds,a6)
 	move.l	(kickstart_adr-ds,a6),d0
@@ -17342,7 +16073,7 @@ functable	dl	clear_ccr-functable
 	dl	lbC028982-
 	dw	$FFF4
 	dl	0
-	dl	lbB031E00-
+	dl	miscBuffer-
 	dw	$FFF8
 	dl	0
 	dl	lbC02803A-
@@ -17381,16 +16112,16 @@ default_func	dl	term1-default_func
 	dl	lbC017A6C-
 	dw	$306
 	dl	0
-	dl	lbC013F5A-
+	dl	SaveRs-
 	dw	$45
 	dl	0
-	dl	lbC013C98-
+	dl	SaveRsOriginal-
 	dw	$36C
 	dl	0
-	dl	lbC013CC6-
+	dl	SaveRsCurrent-
 	dw	$370
 	dl	0
-	dl	lbC013CF4-
+	dl	SaveRsSpecify-
 	dw	$368
 	dl	0
 	dl	lbC01C83E-
@@ -18710,7 +17441,7 @@ default_func	dl	term1-default_func
 	dl	lbC015A72-
 	dw	$388
 	dl	0
-	dl	lbC015EF0-
+	dl	SaveBinaryImage-
 	dw	$2AC
 	dl	0
 	dl	lbC016400-
@@ -18845,10 +17576,10 @@ default_func	dl	term1-default_func
 	dl	lbC01A74A-
 	dw	$1C4
 	dl	0
-	dl	lbC0142D4-
+	dl	Delocating-
 	dw	$29F
 	dl	0
-	dl	lbC0142B8-
+	dl	Relocating-
 	dw	$2A0
 	dl	0
 	dl	lbC0165CE-
@@ -18872,13 +17603,13 @@ default_func	dl	term1-default_func
 	dl	lbC013F2C-
 	dw	$272
 	dl	0
-	dl	lbC013D3A-
+	dl	SaveBinOriginal-
 	dw	$36E
 	dl	0
-	dl	lbC013D68-
+	dl	SaveBinCurrent-
 	dw	$372
 	dl	0
-	dl	lbC013D96-
+	dl	SaveBinSpecify-
 	dw	$36A
 	dl	0
 	dl	lbC01EFF0-
@@ -18887,13 +17618,13 @@ default_func	dl	term1-default_func
 	dl	lbC01EFD4-
 	dw	$185
 	dl	0
-	dl	lbC013DDC-
+	dl	SaveAsmOriginal-
 	dw	$36B
 	dl	0
-	dl	lbC013E0A-
+	dl	SaveAsmCurrent-
 	dw	$36F
 	dl	0
-	dl	lbC013E38-
+	dl	SaveAsmSpecify-
 	dw	$367
 	dl	0
 	dl	lbC01EFEA-
@@ -18923,13 +17654,13 @@ default_func	dl	term1-default_func
 	dl	lbC0174A4-
 	dw	$365
 	dl	0
-	dl	lbC013E7E-
+	dl	SaveExeOriginal-
 	dw	$36D
 	dl	0
-	dl	lbC013EAA-
+	dl	SaveExeCurrent-
 	dw	$371
 	dl	0
-	dl	lbC013ED6-
+	dl	SaveExeSpecify-
 	dw	$369
 	dl	0
 	dl	lbC01614E-
@@ -24282,9 +23013,9 @@ lbW013A52	dw	AL.MSG-i_orib
 	dw	0
 	db	0
 
-lbC013ADA	jsr	(saveregs_all-ds,a6)
+Compressing	jsr	(saveregs_all-ds,a6)
 	move.l	a4,-(sp)
-	move.w	#$271B,d0
+	move.w	#$271B,d0	;compressing...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
@@ -24378,9 +23109,9 @@ lbC013BC2	move.l	-(a4),-(a1)
 	move.l	a1,(workdata_struct-ds,a6)
 	rts
 
-lbC013BD0	jsr	(saveregs_all-ds,a6)
+Decompressing	jsr	(saveregs_all-ds,a6)
 	move.l	a4,-(sp)
-	move.w	#$271C,d0
+	move.w	#$271C,d0	;decompressing...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
@@ -24455,10 +23186,10 @@ lbC013C90	move.l	d1,(a0)+
 	dbra	d0,lbC013C90
 	rts
 
-lbC013C98	st	(lbB02B3E2-ds,a6)
-	clr.b	(lbB02B3E3-ds,a6)
-	clr.b	(lbB02B3E4-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+SaveRsOriginal	st	(saveRsOriginal_-ds,a6)
+	clr.b	(saveRsCurrent-ds,a6)
+	clr.b	(saveRsSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36C,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$370,(a0)+
@@ -24466,12 +23197,12 @@ lbC013C98	st	(lbB02B3E2-ds,a6)
 	move.w	#$368,(a0)+
 	move.w	#0,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013CC6	clr.b	(lbB02B3E2-ds,a6)
-	st	(lbB02B3E3-ds,a6)
-	clr.b	(lbB02B3E4-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+SaveRsCurrent	clr.b	(saveRsOriginal_-ds,a6)
+	st	(saveRsCurrent-ds,a6)
+	clr.b	(saveRsSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36C,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$370,(a0)+
@@ -24479,17 +23210,17 @@ lbC013CC6	clr.b	(lbB02B3E2-ds,a6)
 	move.w	#$368,(a0)+
 	move.w	#0,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013CF4	move.w	#$2719,d0
+SaveRsSpecify	move.w	#$2719,d0	;new default path?
 	jsr	(gettextbynum-ds,a6)
-	move.l	#lbL02E4C8,d1
-	jsr	(lbC026C74).l
+	move.l	#saveRsSpecifyBuf,d1
+	jsr	(StringRequest240).l
 	jsr	(term2_if_cceq-ds,a6)
-	clr.b	(lbB02B3E2-ds,a6)
-	clr.b	(lbB02B3E3-ds,a6)
-	st	(lbB02B3E4-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	clr.b	(saveRsOriginal_-ds,a6)
+	clr.b	(saveRsCurrent-ds,a6)
+	st	(saveRsSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36C,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$370,(a0)+
@@ -24497,12 +23228,12 @@ lbC013CF4	move.w	#$2719,d0
 	move.w	#$368,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013D3A	st	(lbB02B438-ds,a6)
-	clr.b	(lbB02B439-ds,a6)
-	clr.b	(lbB02B43A-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+SaveBinOriginal	st	(saveBinOriginal-ds,a6)
+	clr.b	(saveBinCurrent-ds,a6)
+	clr.b	(saveBinSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36E,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$372,(a0)+
@@ -24510,12 +23241,12 @@ lbC013D3A	st	(lbB02B438-ds,a6)
 	move.w	#$36A,(a0)+
 	move.w	#0,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013D68	clr.b	(lbB02B438-ds,a6)
-	st	(lbB02B439-ds,a6)
-	clr.b	(lbB02B43A-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+SaveBinCurrent	clr.b	(saveBinOriginal-ds,a6)
+	st	(saveBinCurrent-ds,a6)
+	clr.b	(saveBinSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36E,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$372,(a0)+
@@ -24523,17 +23254,17 @@ lbC013D68	clr.b	(lbB02B438-ds,a6)
 	move.w	#$36A,(a0)+
 	move.w	#0,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013D96	move.w	#$2719,d0
+SaveBinSpecify	move.w	#$2719,d0	;new default path?
 	jsr	(gettextbynum-ds,a6)
-	move.l	#lbL02E0C8,d1
-	jsr	(lbC026C74).l
+	move.l	#saveBinSpecifyBuf,d1
+	jsr	(StringRequest240).l
 	jsr	(term2_if_cceq-ds,a6)
-	clr.b	(lbB02B438-ds,a6)
-	clr.b	(lbB02B439-ds,a6)
-	st	(lbB02B43A-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	clr.b	(saveBinOriginal-ds,a6)
+	clr.b	(saveBinCurrent-ds,a6)
+	st	(saveBinSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36E,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$372,(a0)+
@@ -24541,12 +23272,12 @@ lbC013D96	move.w	#$2719,d0
 	move.w	#$36A,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013DDC	st	(lbB02B43B-ds,a6)
-	clr.b	(lbB02B43C-ds,a6)
-	clr.b	(lbB02B43D-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+SaveAsmOriginal	st	(saveAsmOriginal-ds,a6)
+	clr.b	(saveAsmCurrent-ds,a6)
+	clr.b	(saveAsmSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36B,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$36F,(a0)+
@@ -24554,12 +23285,12 @@ lbC013DDC	st	(lbB02B43B-ds,a6)
 	move.w	#$367,(a0)+
 	move.w	#0,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013E0A	clr.b	(lbB02B43B-ds,a6)
-	st	(lbB02B43C-ds,a6)
-	clr.b	(lbB02B43D-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+SaveAsmCurrent	clr.b	(saveAsmOriginal-ds,a6)
+	st	(saveAsmCurrent-ds,a6)
+	clr.b	(saveAsmSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36B,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$36F,(a0)+
@@ -24567,17 +23298,17 @@ lbC013E0A	clr.b	(lbB02B43B-ds,a6)
 	move.w	#$367,(a0)+
 	move.w	#0,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013E38	move.w	#$2719,d0
+SaveAsmSpecify	move.w	#$2719,d0	;new default path?
 	jsr	(gettextbynum-ds,a6)
-	move.l	#lbL02E2C8,d1
-	jsr	(lbC026C74).l
+	move.l	#saveAsmSpecifyBuf,d1
+	jsr	(StringRequest240).l
 	jsr	(term2_if_cceq-ds,a6)
-	clr.b	(lbB02B43B-ds,a6)
-	clr.b	(lbB02B43C-ds,a6)
-	st	(lbB02B43D-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	clr.b	(saveAsmOriginal-ds,a6)
+	clr.b	(saveAsmCurrent-ds,a6)
+	st	(saveAsmSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36B,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$36F,(a0)+
@@ -24585,12 +23316,12 @@ lbC013E38	move.w	#$2719,d0
 	move.w	#$367,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-	bra.w	lbC013F18
+	bra.w	ModifyFileNames
 
-lbC013E7E	st	(lbB02B43E-ds,a6)
-	clr.b	(lbB02B43F-ds,a6)
-	clr.b	(lbB02B440-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+SaveExeOriginal	st	(saveExeOriginal-ds,a6)
+	clr.b	(saveExeCurrent-ds,a6)
+	clr.b	(saveExeSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36D,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$371,(a0)+
@@ -24598,12 +23329,12 @@ lbC013E7E	st	(lbB02B43E-ds,a6)
 	move.w	#$369,(a0)+
 	move.w	#0,(a0)+
 	clr.w	(a0)
-	bra.b	lbC013F18
+	bra.b	ModifyFileNames
 
-lbC013EAA	clr.b	(lbB02B43E-ds,a6)
-	st	(lbB02B43F-ds,a6)
-	clr.b	(lbB02B440-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+SaveExeCurrent	clr.b	(saveExeOriginal-ds,a6)
+	st	(saveExeCurrent-ds,a6)
+	clr.b	(saveExeSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$371,(a0)+
@@ -24611,17 +23342,17 @@ lbC013EAA	clr.b	(lbB02B43E-ds,a6)
 	move.w	#$369,(a0)+
 	move.w	#0,(a0)+
 	clr.w	(a0)
-	bra.b	lbC013F18
+	bra.b	ModifyFileNames
 
-lbC013ED6	move.w	#$2719,d0
+SaveExeSpecify	move.w	#$2719,d0	;new default path?
 	jsr	(gettextbynum-ds,a6)
-	move.l	#lbL02E6C8,d1
-	jsr	(lbC026C74).l
+	move.l	#saveExeSpecifyBuf,d1
+	jsr	(StringRequest240).l
 	jsr	(term2_if_cceq-ds,a6)
-	clr.b	(lbB02B43E-ds,a6)
-	clr.b	(lbB02B43F-ds,a6)
-	st	(lbB02B440-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	clr.b	(saveExeOriginal-ds,a6)
+	clr.b	(saveExeCurrent-ds,a6)
+	st	(saveExeSpecify-ds,a6)
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$36D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$371,(a0)+
@@ -24629,38 +23360,38 @@ lbC013ED6	move.w	#$2719,d0
 	move.w	#$369,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC013F18	lea	(lbB02CFB4-ds,a6),a0
+ModifyFileNames	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
-lbC013F20	clr.b	(lbB02EB82-ds,a6)
-	jsr	(lbC02727C-ds,a6)
+lbC013F20	clr.b	(allFileNamesBuild-ds,a6)
+	jsr	(BuildAllFileNames-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC013F2C	bsr.w	lbC014DB2
 	bne.b	lbC013F34
 	rts
 
-lbC013F34	move.l	#lbL02DFC8,d1
+lbC013F34	move.l	#fileNameSaveBin,d1
 	st	(lbB02EB42-ds,a6)
 	bra.b	lbC013F70
 
 lbC013F40	st	(lbB02EB42-ds,a6)
 	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
 	move.l	(workdata_end-ds,a6),(lbL02D140).l
-	move.l	#lbL02DFC8,d1
+	move.l	#fileNameSaveBin,d1
 	bra.b	lbC013F70
 
-lbC013F5A	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
+SaveRs	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
 	move.l	(workdata_end-ds,a6),(lbL02D140-ds,a6)
 	clr.b	(lbB02EB42-ds,a6)
-	move.l	#lbL02E3C8,d1
+	move.l	#fileNameSaveRs,d1
 lbC013F70	pea	(clear_ccr-ds,a6)
-	move.w	#$274C,d0
+	move.w	#$274C,d0	;save to which file (save .rs)
 	jsr	(gettextbynum-ds,a6)
 	jsr	(requestfile).l
-	beq.w	_nosymdata
+	beq.w	StopMacros
 	tst.b	(a0)
 	beq.w	lbC014364
-	move.l	a0,(lbB02D0E8-ds,a6)
+	move.l	a0,(SaveFileName-ds,a6)
 	jsr	(_SetPointerAll-ds,a6)
 	move.l	(kickstart_adr-ds,a6),d0
 	cmp.l	(ds-ds,a6),d0
@@ -24669,13 +23400,13 @@ lbC013F70	pea	(clear_ccr-ds,a6)
 	beq.b	lbC013FB2
 lbC013FA8	tst.b	(lbB02EAD9-ds,a6)
 	bne.b	lbC013FB2
-	bsr.w	lbC0142D4
-lbC013FB2	move.l	(lbB02D0E8-ds,a6),d1
-	jsr	(lbC02A286-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
-	beq.w	lbC01424E
+	bsr.w	Delocating
+lbC013FB2	move.l	(SaveFileName-ds,a6),d1
+	jsr	(OpenNewFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
+	beq.w	SaveRsFailed
 	move.l	d0,d4
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	tst.b	(lbB02EB42-ds,a6)
 	bne.w	lbC01414E
 	move.l	a0,-(sp)
@@ -24697,10 +23428,10 @@ lbC013FF0	cmpi.l	#$FBFFFF,(ds-ds,a6)
 
 lbC01400C	move.l	#$CEEFDEAD,(a4)+
 lbC014012	move.l	(workdata_struct_sz-ds,a6),(a4)+
-	move.l	(lbL02B4BC-ds,a6),(a4)+
-	move.l	(lbL02B4B4-ds,a6),(a4)+
+	move.l	(stringPointerSz-ds,a6),(a4)+
+	move.l	(stringsSz-ds,a6),(a4)+
 	move.l	(lbL02D154-ds,a6),d0
-	sub.l	(lbL02D158-ds,a6),d0
+	sub.l	(strings-ds,a6),d0
 	move.l	d0,(a4)+
 	move.l	(lbL02D098-ds,a6),(a4)+
 	move.l	(lbL02B4C8-ds,a6),(a4)+
@@ -24761,34 +23492,34 @@ lbC0140C0	move.b	d0,(a4)+
 	moveq	#$40,d3
 	st	(lbB02EB48-ds,a6)
 	move.l	a4,-(sp)
-	move.w	#$2720,d0
+	move.w	#$2720,d0	;saving header block...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	jsr	(_Write-ds,a6)
 	cmpi.l	#$40,d0
-	bne.w	lbC01424E
-	jsr	(lbC02A4BE-ds,a6)
-	bne.w	lbC01424E
+	bne.w	SaveRsFailed
+	jsr	(CheckAbort-ds,a6)
+	bne.w	SaveRsFailed
 	move.l	d4,d1
-	bsr.w	lbC013ADA
+	bsr.w	Compressing
 	move.l	(workdata_struct-ds,a6),d2
 	move.l	(workdata_struct_sz-ds,a6),d3
 	move.l	d3,-(sp)
 	move.l	a4,-(sp)
-	move.w	#$2737,d0
+	move.w	#$2737,d0	;calculating file statistics...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	bsr.w	lbC01429A
 	jsr	(_Write-ds,a6)
-	bsr.w	lbC013BD0
+	bsr.w	Decompressing
 	cmp.l	(sp)+,d0
-	bne.w	lbC01424E
-	jsr	(lbC02A4BE-ds,a6)
-	bne.w	lbC01424E
+	bne.w	SaveRsFailed
+	jsr	(CheckAbort-ds,a6)
+	bne.w	SaveRsFailed
 lbC01414E	move.l	d4,d1
 	move.l	(lbL02D13C-ds,a6),d2
 	tst.b	(lbB02EB42-ds,a6)
@@ -24800,7 +23531,7 @@ lbC01414E	move.l	d4,d1
 lbC01416A	move.l	(lbL02D140-ds,a6),d3
 	sub.l	(lbL02D13C-ds,a6),d3
 	move.l	a4,-(sp)
-	move.w	#$272B,d0
+	move.w	#$272B,d0	;saving executable...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
@@ -24821,62 +23552,62 @@ lbC01419E	move.l	d3,-(sp)
 	bsr.w	lbC01429A
 	jsr	(_Write-ds,a6)
 	cmp.l	(sp)+,d0
-	bne.w	lbC01424E
-	jsr	(lbC02A4BE-ds,a6)
-	bne.w	lbC01424E
+	bne.w	SaveRsFailed
+	jsr	(CheckAbort-ds,a6)
+	bne.w	SaveRsFailed
 	tst.b	(lbB02EB42-ds,a6)
 	bne.w	lbC014248
 	move.l	d4,d1
-lbC0141C0	move.l	#lbL02F600,d2
+lbC0141C0	move.l	#hashtable1,d2
 	move.l	#$2800,d3
 	move.l	a4,-(sp)
-	move.w	#$2726,d0
+	move.w	#$2726,d0	;saving hash tables...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	jsr	(_Write-ds,a6)
 	cmpi.l	#$2800,d0
-	bne.b	lbC01424E
-	jsr	(lbC02A4BE-ds,a6)
-	bne.b	lbC01424E
+	bne.b	SaveRsFailed
+	jsr	(CheckAbort-ds,a6)
+	bne.b	SaveRsFailed
 	move.l	d4,d1
-	move.l	(lbL02D14C-ds,a6),d2
-	move.l	(lbL02B4BC-ds,a6),d3
+	move.l	(stringPointer-ds,a6),d2
+	move.l	(stringPointerSz-ds,a6),d3
 	move.l	d3,-(sp)
 	move.l	a4,-(sp)
-	move.w	#$2722,d0
+	move.w	#$2722,d0	;saving string pointers...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	jsr	(_Write-ds,a6)
 	cmp.l	(sp)+,d0
-	bne.b	lbC01424E
-	jsr	(lbC02A4BE-ds,a6)
-	bne.b	lbC01424E
+	bne.b	SaveRsFailed
+	jsr	(CheckAbort-ds,a6)
+	bne.b	SaveRsFailed
 	move.l	d4,d1
-	move.l	(lbL02D158-ds,a6),d2
-	move.l	(lbL02B4B4-ds,a6),d3
+	move.l	(strings-ds,a6),d2
+	move.l	(stringsSz-ds,a6),d3
 	move.l	d3,-(sp)
 	move.l	a4,-(sp)
-	move.w	#$2724,d0
+	move.w	#$2724,d0	;saving strings...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	jsr	(_Write-ds,a6)
 	cmp.l	(sp)+,d0
-	bne.b	lbC01424E
-	jsr	(lbC02A4BE-ds,a6)
-	bne.b	lbC01424E
-lbC014248	bsr.b	lbC01427A
+	bne.b	SaveRsFailed
+	jsr	(CheckAbort-ds,a6)
+	bne.b	SaveRsFailed
+lbC014248	bsr.b	Closing
 	moveq	#1,d0
 	rts
 
-lbC01424E	move.w	#$7FFE,(lbW02EAC8-ds,a6)
-	bsr.b	lbC01427A
-	move.l	(lbB02D0E8-ds,a6),d1
+SaveRsFailed	move.w	#$7FFE,(lbW02EAC8-ds,a6)
+	bsr.b	Closing
+	move.l	(SaveFileName-ds,a6),d1
 	jsr	(_DeleteFile-ds,a6)
 	move.w	#$2725,d0
 	jsr	(gettextbynum-ds,a6)
@@ -24884,19 +23615,19 @@ lbC01424E	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	jsr	(SetWindowTitle-ds,a6)
 	moveq	#$3C,d1
 	jsr	(dosdelay-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	bra.w	lbC01435C
 
-lbC01427A	move.l	a4,-(sp)
-	move.w	#$1F66,d0
+Closing	move.l	a4,-(sp)
+	move.w	#$1F66,d0	;closing file...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(dosclose-ds,a6)
-	clr.l	(lbB02D0E0-ds,a6)
-	bra.b	lbC0142B8
+	clr.l	(saveFH-ds,a6)
+	bra.b	Relocating
 
 lbC01429A	tst.b	(lbB02EB42-ds,a6)
 	bne.b	lbC0142B6
@@ -24909,25 +23640,25 @@ lbC01429A	tst.b	(lbB02EB42-ds,a6)
 	movem.l	(sp)+,d1-d3/a0/a1
 lbC0142B6	rts
 
-lbC0142B8	jsr	(_SetPointerAll-ds,a6)
+Relocating	jsr	(_SetPointerAll-ds,a6)
 	move.l	a4,-(sp)
-	move.w	#$271D,d0
+	move.w	#$271D,d0	;relocating...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	st	(lbW02EB76-ds,a6)
-	bra.b	lbC0142EE
+	bra.b	Locating
 
-lbC0142D4	jsr	(_SetPointerAll-ds,a6)
+Delocating	jsr	(_SetPointerAll-ds,a6)
 	move.l	a4,-(sp)
-	move.w	#$271E,d0
+	move.w	#$271E,d0	;delocating...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	clr.b	(lbW02EB76-ds,a6)
-lbC0142EE	jsr	(saveregs_all-ds,a6)
+Locating	jsr	(saveregs_all-ds,a6)
 	movem.l	(ds-ds,a6),a2/a3
 	move.l	(workdata_struct_end-ds,a6),d1
 	move.l	a2,d2
@@ -24968,13 +23699,13 @@ lbC014340	cmp.l	a3,d1
 
 lbC014352	jmp	(lbC02A422-ds,a6)
 
-_nosymdata	move.w	#$7FFE,(lbW02EAC8-ds,a6)
+StopMacros	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 lbC01435C	st	(lbB02EB48-ds,a6)
-lbC014360	jsr	(lbC02A502-ds,a6)
+lbC014360	jsr	(DisableMacros-ds,a6)
 lbC014364	cmp.l	d0,d0
 	rts
 
-writeaboutmessage	lea	(lbB031E00-ds,a6),a1
+writeaboutmessage	lea	(miscBuffer-ds,a6),a1
 	move.b	#2,(a1)+	;invers
 	move.w	#$3E80,d0	;commercial version
 	bsr.b	gettextbynum_copy_a1
@@ -25005,7 +23736,7 @@ writeaboutmessage	lea	(lbB031E00-ds,a6),a1
 	bsr.b	gettextbynum_copy_a1
 	move.b	#10,(a1)+
 	clr.b	(a1)
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	jsr	(print_text_a0).l
 	jsr	(DropIMsgAll-ds,a6)
 	jmp	(mainloop2).l
@@ -25028,14 +23759,14 @@ ThePuzzleFact.MSG	db	'     The Puzzle Factory, Inc.         Helios Software',$A
 	db	'     +(503) 935-3709                  +(623) 554828',$A,$A,$A,0
 
 lbC01455E	tst.l	(workdata_length-ds,a6)
-	beq.w	_nosymdata
-	move.w	#$274B,d0
+	beq.w	StopMacros
+	move.w	#$274B,d0	;overlay from which file
 	jsr	(gettextbynum-ds,a6)
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
 	jsr	(requestfile).l
-	beq.w	_nosymdata
+	beq.w	StopMacros
 	cmpi.b	#$2A,(a0)
 	bne.b	lbC0145A4
 	tst.b	(1,a0)
@@ -25050,20 +23781,20 @@ lbC014596	dbra	d0,lbC014594
 	bcc.b	lbC014594
 	bra.b	lbC0145D4
 
-lbC0145A4	move.l	a0,(lbB02D0E8-ds,a6)
+lbC0145A4	move.l	a0,(SaveFileName-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A272-ds,a6)
+	jsr	(OpenOldFile-ds,a6)
 	tst.l	d0
-	beq.w	_nosymdata
-	move.l	d0,(lbB02D0E0-ds,a6)
+	beq.w	StopMacros
+	move.l	d0,(saveFH-ds,a6)
 	move.l	d0,d1
 	move.l	a2,d2
 	move.l	(workdata_length-ds,a6),d3
 	jsr	(_Read-ds,a6)
-	move.l	(lbB02D0E0-ds,a6),d1
-	clr.l	(lbB02D0E0-ds,a6)
+	move.l	(saveFH-ds,a6),d1
+	clr.l	(saveFH-ds,a6)
 	jsr	(dosclose-ds,a6)
-	bsr.w	lbC0142B8
+	bsr.w	Relocating
 lbC0145D4	jmp	(lbC02A422-ds,a6)
 
 data1	dl	0
@@ -25102,7 +23833,7 @@ lbC014632	move.b	(lbB02EB56-ds,a6),(lbB02EB3D).l
 	rts
 
 _getsymsdata_a5	bsr.w	getsymsdata_a5
-	beq.w	_nosymdata
+	beq.w	StopMacros
 	movea.l	a5,a0
 	adda.l	d0,a0
 	bsr.b	lbC014632
@@ -25111,7 +23842,7 @@ lbC01466E	beq.b	lbC014684
 	move.l	a0,d2
 	lea	(lbL02C1D4-ds,a6),a0
 	jsr	(atoi-ds,a6)
-	beq.w	_nosymdata
+	beq.w	StopMacros
 	movea.l	d2,a0
 	move.l	d1,d0
 	bra.b	lbC01468C
@@ -25119,7 +23850,7 @@ lbC01466E	beq.b	lbC014684
 lbC014684	tst.l	(lbB02D118-ds,a6)
 	beq.w	lbC014364
 lbC01468C	bsr.w	lbC014BD8
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.b	#$28,(a4)+
 	move.l	d0,(lbL02D394-ds,a6)
 lbC01469C	move.l	a0,d4
@@ -25183,7 +23914,7 @@ lbC014720	tst.b	(lbB02EB70-ds,a6)
 	addq.b	#1,(lbB02EB70-ds,a6)
 lbC014740	move.b	#$29,(-1,a4)
 	clr.b	(a4)
-	lea	(lbB031E00-ds,a6),a5
+	lea	(miscBuffer-ds,a6),a5
 	tst.b	(lbB02EB70-ds,a6)
 	bne.b	lbC014756
 	addq.l	#1,a5
@@ -25229,12 +23960,12 @@ lbC0147A2	lea	(lbL00E72C,pc),a0
 	movea.l	d0,a0
 lbC0147B2	move.b	(a0)+,(a1)+
 	bne.b	lbC0147B2
-	move.w	#$273B,d0
+	move.w	#$273B,d0	;symbols file to load?
 	jsr	(gettextbynum-ds,a6)
 	lea	(displayid-ds,a6),a0
 	move.l	a0,d1
-	move.l	#$733A6D79,(a0)+
-	move.l	#$73796D73,(a0)+
+	move.l	#'s:my',(a0)+
+	move.l	#'syms',(a0)+
 	clr.b	(a0)
 	jsr	(requestfile).l
 	jsr	(term2_if_cceq-ds,a6)
@@ -25335,7 +24066,7 @@ lbC0148B8	move.l	(sp)+,d0
 	addq.l	#8,d1
 	movea.l	d1,a0
 	bsr.w	getsymsdata_a5
-	beq.w	_nosymdata
+	beq.w	StopMacros
 	tst.b	(a0)
 	bpl.b	lbC0148EE
 	st	(lbB02EB70-ds,a6)
@@ -25350,7 +24081,7 @@ lbC0148EE	jsr	(saveregs_nod0d1a0a1-ds,a6)
 _getsymsdata_a5_save
 	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	bsr.w	getsymsdata_a5
-	beq.w	_nosymdata
+	beq.w	StopMacros
 	movea.l	a5,a0
 	adda.l	d0,a0
 	lea	(displayid-ds,a6),a3
@@ -25375,7 +24106,7 @@ lbC014930	moveq	#0,d0
 lbC014944	move.l	d0,(lbL02D2F8-ds,a6)
 	lea	(lbL02C1D4-ds,a6),a0
 	jsr	(atoi-ds,a6)
-	beq.w	_nosymdata
+	beq.w	StopMacros
 	movea.l	d2,a0
 	move.l	d1,d0
 	bra.b	lbC014962
@@ -25495,12 +24226,12 @@ lbC014A76	move.b	#$FF,(a3)
 	jsr	(lbC000B64).l
 lbC014A86	movem.l	(sp)+,d1-d3/a0-a3
 	tst.w	d0
-	ble.w	_nosymdata
+	ble.w	StopMacros
 	lea	(lbB02D480-ds,a6),a2
 lbC014A94	subq.w	#1,d0
 	beq.b	lbC014AA2
 lbC014A98	tst.b	(a2)+
-	bmi.w	_nosymdata
+	bmi.w	StopMacros
 	bne.b	lbC014A98
 	bra.b	lbC014A94
 
@@ -25793,7 +24524,7 @@ lbC014D86	move.w	#$273D,d0
 	moveq	#0,d0
 	move.b	(9,a1),d0
 	jsr	(lbC02ADA2-ds,a6)
-	beq.w	_nosymdata
+	beq.w	StopMacros
 	movea.l	(thistask1-ds,a6),a1
 	move.b	d1,d0
 	movea.l	(execbase-ds,a6),a6
@@ -25825,7 +24556,7 @@ lbC014DEC	jsr	(saveregs_all-ds,a6)
 	move.w	#$2762,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	#lbL02DCC8,d1
-	jsr	(lbC026C74-ds,a6)
+	jsr	(StringRequest240-ds,a6)
 	bne.b	lbC014E1C
 lbC014E0A	jmp	(cceq-ds,a6)
 
@@ -26209,10 +24940,10 @@ lbC0151BE	eor.b	d2,d3
 	lsl.w	#8,d4
 	add.l	d4,d4
 	add.l	d3,d4
-	lea	(lbL02FA00-ds,a6),a0
+	lea	(hashtable2-ds,a6),a0
 	lsl.l	#2,d4
 	lea	(a0,d4.l),a1
-	movea.l	(lbL02D14C-ds,a6),a0
+	movea.l	(stringPointer-ds,a6),a0
 lbC0151E2	move.l	(a1),d2
 	beq.b	lbC015202
 	cmp.l	(8,a0,d2.l),d0
@@ -26366,7 +25097,7 @@ lbL0153A0	dl	_misc_FUNCTION
 	dl	lbB02CEEA
 	dl	lbL02F400
 	dl	lbL02EC00
-	dl	lbB031E00
+	dl	miscBuffer
 ReSourcehelpl.MSG	db	'ReSourcehelp.library',0,0
 
 lbC0153E2	lea	(lbB02DEC8).l,a0
@@ -26412,11 +25143,11 @@ lbC015452	move.l	#lbB02DF48,d1
 lbC01545E	move.l	#lbB02DEC8,d1
 	move.w	#$2743,d0
 lbC015468	jsr	(gettextbynum-ds,a6)
-	jmp	(lbC026C74-ds,a6)
+	jmp	(StringRequest240-ds,a6)
 
 lbC015470	st	(lbB02B42E-ds,a6)
 	clr.b	(lbB02B42F-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$34D,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$350,(a0)+
@@ -26426,19 +25157,19 @@ lbC015470	st	(lbB02B42E-ds,a6)
 
 lbC015490	clr.b	(lbB02B42E-ds,a6)
 	st	(lbB02B42F-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$34D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$350,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC0154AE	lea	(lbB02CFB4-ds,a6),a0
+lbC0154AE	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC0154BA	st	(lbB02B413-ds,a6)
 	clr.b	(lbB02B414-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$37E,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$37F,(a0)+
@@ -26448,13 +25179,13 @@ lbC0154BA	st	(lbB02B413-ds,a6)
 
 lbC0154DA	clr.b	(lbB02B413-ds,a6)
 	st	(lbB02B414-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$37E,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$37F,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC0154F8	lea	(lbB02CFB4-ds,a6),a0
+lbC0154F8	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -26464,7 +25195,7 @@ lbC01550A	ori.b	#$20,(a0)+
 	dbra	d0,lbC01550A
 	st	(case_sensitive_flag-ds,a6)
 	clr.b	(lbB02B412-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$380,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$381,(a0)+
@@ -26478,13 +25209,13 @@ lbC015538	andi.b	#$DF,(a0)+
 	dbra	d0,lbC015538
 	clr.b	(case_sensitive_flag-ds,a6)
 	st	(lbB02B412-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$380,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$381,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01555E	lea	(lbB02CFB4-ds,a6),a0
+lbC01555E	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -27144,7 +25875,7 @@ lbC015C02	clr.b	(lbB02B400-ds,a6)
 	clr.b	(lbB02B401-ds,a6)
 	st	(lbB02B402-ds,a6)
 	clr.b	(lbB02B403-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$246,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$1A6,(a0)+
@@ -27160,7 +25891,7 @@ lbC015C3C	st	(lbB02B400-ds,a6)
 	clr.b	(lbB02B401-ds,a6)
 	clr.b	(lbB02B402-ds,a6)
 	clr.b	(lbB02B403-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$246,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1A6,(a0)+
@@ -27176,7 +25907,7 @@ lbC015C74	clr.b	(lbB02B400-ds,a6)
 	st	(lbB02B401-ds,a6)
 	clr.b	(lbB02B402-ds,a6)
 	clr.b	(lbB02B403-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$246,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1A6,(a0)+
@@ -27192,7 +25923,7 @@ lbC015CAC	clr.b	(lbB02B400-ds,a6)
 	clr.b	(lbB02B401-ds,a6)
 	clr.b	(lbB02B402-ds,a6)
 	st	(lbB02B403-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$246,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1A6,(a0)+
@@ -27202,7 +25933,7 @@ lbC015CAC	clr.b	(lbB02B400-ds,a6)
 	move.w	#$3B2,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC015CE2	lea	(lbB02CFB4-ds,a6),a0
+lbC015CE2	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -27249,7 +25980,7 @@ lbC015D42	move.l	(a0)+,(a1)+
 
 lbC015D52	st	(lbB02B40B-ds,a6)
 	clr.b	(lbB02B40A-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$268,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$270,(a0)+
@@ -27259,7 +25990,7 @@ lbC015D52	st	(lbB02B40B-ds,a6)
 
 lbC015D72	clr.b	(lbB02B40B-ds,a6)
 	st	(lbB02B40A-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$268,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$270,(a0)+
@@ -27272,7 +26003,7 @@ lbC015D90	moveq	#1,d1
 lbC015D9A	st	(lbB02B429-ds,a6)
 	clr.b	(lbB02B42A-ds,a6)
 	clr.b	(lbB02B42B-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$29C,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$29D,(a0)+
@@ -27285,7 +26016,7 @@ lbC015D9A	st	(lbB02B429-ds,a6)
 lbC015DC6	clr.b	(lbB02B429-ds,a6)
 	st	(lbB02B42A-ds,a6)
 	clr.b	(lbB02B42B-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$29C,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$29D,(a0)+
@@ -27298,7 +26029,7 @@ lbC015DC6	clr.b	(lbB02B429-ds,a6)
 lbC015DF2	clr.b	(lbB02B429-ds,a6)
 	clr.b	(lbB02B42A-ds,a6)
 	st	(lbB02B42B-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$29C,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$29D,(a0)+
@@ -27306,14 +26037,14 @@ lbC015DF2	clr.b	(lbB02B429-ds,a6)
 	move.w	#$29E,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC015E1C	lea	(lbB02CFB4-ds,a6),a0
+lbC015E1C	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC015E28	jsr	(lbC02AFC0-ds,a6)
 	st	(flag_DT_enabled-ds,a6)
 	clr.b	(lbB02B42D-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$2AF,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$2B0,(a0)+
@@ -27324,13 +26055,13 @@ lbC015E28	jsr	(lbC02AFC0-ds,a6)
 lbC015E4C	jsr	(lbC02AFC0-ds,a6)
 	clr.b	(flag_DT_enabled-ds,a6)
 	st	(lbB02B42D-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$2AF,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$2B0,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC015E6E	lea	(lbB02CFB4-ds,a6),a0
+lbC015E6E	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -27370,38 +26101,38 @@ lbC015ED0	addq.l	#1,a0
 	andi.b	#$FB,ccr
 	rts
 
-lbC015EDC	cmpi.b	#$5A,d0
+lbC015EDC	cmpi.b	#'Z',d0
 	bhi.b	lbC015ED0
-	cmpi.b	#$40,d0
+	cmpi.b	#'@',d0
 	bls.b	lbC015ED0
 	or.b	#$20,d0
 	move.b	d0,(a0)
 	bra.b	lbC015ED0
 
-lbC015EF0	move.l	(lbL02D1F0-ds,a6),d2
+SaveBinaryImage	move.l	(binaryImageStrt-ds,a6),d2
 	jsr	(term2_if_cceq-ds,a6)
-	move.l	(lbL02D1F8-ds,a6),d3
-	sub.l	d2,d3
-	move.w	#$274C,d0
+	move.l	(binaryImageEnd-ds,a6),d3
+	sub.l	d2,d3	;d3 = length
+	move.w	#$274C,d0	;save to which file? (save binary)
 	jsr	(gettextbynum-ds,a6)
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
 	jsr	(requestfile).l
 	jsr	(term2_if_cceq-ds,a6)
-	move.l	a0,(lbB02D0E8-ds,a6)
+	move.l	a0,(SaveFileName-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A286-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenNewFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
 	move.l	d0,d1
-	move.l	(lbL02D1F0-ds,a6),d2
+	move.l	(binaryImageStrt-ds,a6),d2
 	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	beq.b	lbC015F3A
 	moveq	#0,d3
-lbC015F3A	move.l	(lbB02D0E0-ds,a6),d1
-	clr.l	(lbB02D0E0-ds,a6)
+lbC015F3A	move.l	(saveFH-ds,a6),d1
+	clr.l	(saveFH-ds,a6)
 	jsr	(dosclose-ds,a6)
 	move.l	d3,d0
 	jmp	(term2_if_cceq-ds,a6)
@@ -27422,7 +26153,7 @@ lbC015F68	move.b	#1,(lbB02EB56-ds,a6)
 	clr.b	(lbB02B407-ds,a6)
 	clr.b	(lbB02B408-ds,a6)
 	clr.b	(lbB02B409-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$50,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$51,(a0)+
@@ -27439,7 +26170,7 @@ lbC015FA8	move.b	#2,(lbB02EB56-ds,a6)
 	st	(lbB02B407-ds,a6)
 	clr.b	(lbB02B408-ds,a6)
 	clr.b	(lbB02B409-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$50,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$51,(a0)+
@@ -27456,7 +26187,7 @@ lbC015FE6	move.b	#3,(lbB02EB56-ds,a6)
 	clr.b	(lbB02B407-ds,a6)
 	st	(lbB02B408-ds,a6)
 	clr.b	(lbB02B409-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$50,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$51,(a0)+
@@ -27473,7 +26204,7 @@ lbC016024	move.b	#4,(lbB02EB56-ds,a6)
 	clr.b	(lbB02B407-ds,a6)
 	clr.b	(lbB02B408-ds,a6)
 	st	(lbB02B409-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$50,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$51,(a0)+
@@ -27483,7 +26214,7 @@ lbC016024	move.b	#4,(lbB02EB56-ds,a6)
 	move.w	#$313,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC016060	lea	(lbB02CFB4-ds,a6),a0
+lbC016060	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -27495,10 +26226,10 @@ lbC016074	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
 	move.l	(workdata_end-ds,a6),(lbL02D140).l
 lbC016082	move.w	#$273C,d0
 	jsr	(gettextbynum-ds,a6)
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
-	jsr	(lbC026C74-ds,a6)
+	jsr	(StringRequest240-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
 	jsr	(atoi-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
@@ -27563,7 +26294,7 @@ lbC016144	clr.l	(lbL02D1BC-ds,a6)
 lbC01614E	clr.b	(lbB02EB46-ds,a6)
 	clr.b	(lbB02B442-ds,a6)
 	st	(lbB02B441-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$4B,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$4C,(a0)+
@@ -27574,13 +26305,13 @@ lbC01614E	clr.b	(lbB02EB46-ds,a6)
 lbC016172	st	(lbB02EB46-ds,a6)
 	st	(lbB02B442-ds,a6)
 	clr.b	(lbB02B441-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$4B,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$4C,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC016194	lea	(lbB02CFB4-ds,a6),a0
+lbC016194	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -27823,14 +26554,14 @@ lbC0163F2	move.l	#lbL02C4D4,(lbL02B4B0-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
-lbC016400	move.l	(lbL02D1F0-ds,a6),d0
+lbC016400	move.l	(binaryImageStrt-ds,a6),d0
 	beq.b	lbC016410
 	movea.l	d0,a1
 	move.l	(lbL02D1F4-ds,a6),d0
 	jsr	(_FreeMem-ds,a6)
 lbC016410	clr.l	(lbL02D1F4-ds,a6)
-	clr.l	(lbL02D1F0-ds,a6)
-	clr.l	(lbL02D1F8-ds,a6)
+	clr.l	(binaryImageStrt-ds,a6)
+	clr.l	(binaryImageEnd-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
@@ -27838,7 +26569,7 @@ lbC016422	clr.l	(lbL02CDF0-ds,a6)
 	st	(lbB02B3F4-ds,a6)
 	clr.b	(lbB02B3F5-ds,a6)
 	clr.b	(lbB02B3F6-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$16A,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$16B,(a0)+
@@ -27853,7 +26584,7 @@ lbC016452	moveq	#10,d0
 	clr.b	(lbB02B3F4-ds,a6)
 	st	(lbB02B3F5-ds,a6)
 	clr.b	(lbB02B3F6-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$16A,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$16B,(a0)+
@@ -27868,7 +26599,7 @@ lbC016484	moveq	#$10,d0
 	clr.b	(lbB02B3F4-ds,a6)
 	clr.b	(lbB02B3F5-ds,a6)
 	st	(lbB02B3F6-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$16A,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$16B,(a0)+
@@ -27876,7 +26607,7 @@ lbC016484	moveq	#$10,d0
 	move.w	#$16C,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC0164B4	lea	(lbB02CFB4-ds,a6),a0
+lbC0164B4	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -28007,7 +26738,7 @@ lbC0165FA	jsr	(_SetPointerAll-ds,a6)
 	bsr.w	lbC0165AC
 	moveq	#1,d0
 	move.l	d0,(lbW02D348-ds,a6)
-	lea	(lbL034400).l,a0
+	lea	(fileName).l,a0
 	moveq	#$3F,d0
 	moveq	#-1,d1
 lbC01664E	move.l	d1,(a0)+
@@ -28021,7 +26752,7 @@ lbC01664E	move.l	d1,(a0)+
 	move.l	(lbL02D1E0-ds,a6),(lbL02D344).l
 	bra.b	lbC016684
 
-lbC016672	jsr	(lbC02A4BE-ds,a6)
+lbC016672	jsr	(CheckAbort-ds,a6)
 	bne.w	lbC0167C6
 	jsr	(lbC02A3CC-ds,a6)
 	jsr	(lbC027DEC-ds,a6)
@@ -28060,7 +26791,7 @@ lbC0166EE	tst.b	(lbB02EB78-ds,a6)
 lbC0166F6	move.l	(lbL02D1E0-ds,a6),(lbL02D334).l
 	movea.l	(lbL02D338-ds,a6),a2
 	moveq	#0,d0
-	lea	(lbL034400).l,a0
+	lea	(fileName).l,a0
 	move.l	(workdata_end-ds,a6),d2
 lbC01670E	adda.l	(lbW02D348-ds,a6),a2
 	cmp.l	a2,d2
@@ -28416,13 +27147,13 @@ lbC016AAE	move.l	d0,(lbL02D344-ds,a6)
 	move.b	(a0)+,(a1)+
 	move.b	(a0)+,(a1)+
 	move.w	#$FF,d0
-	lea	(lbL034400).l,a1
+	lea	(fileName).l,a1
 lbC016AC8	move.b	(a0)+,(a1)+
 	dbra	d0,lbC016AC8
 	move.l	a0,-(sp)
 	movea.l	(ds-ds,a6),a0
 	moveq	#0,d0
-	lea	(lbL034400).l,a1
+	lea	(fileName).l,a1
 	moveq	#7,d1
 lbC016ADE	move.b	(a0)+,d0
 	bset	d1,(a1,d0.w)
@@ -29411,9 +28142,9 @@ lbW0173CC	dw	lbC0167C6-lbW0173CC
 	dw	lbC017206-lbW0173CC
 	dw	lbC017244-lbW0173CC
 
-lbC017484	move.l	(lbB02D0E0-ds,a6),d1
+lbC017484	move.l	(saveFH-ds,a6),d1
 	jsr	(dosclose-ds,a6)
-	clr.l	(lbB02D0E0-ds,a6)
+	clr.l	(saveFH-ds,a6)
 	movea.l	(lbL02D2FC-ds,a6),a1
 	move.l	(lbL02D304-ds,a6),d0
 	jsr	(_FreeMem-ds,a6)
@@ -29426,19 +28157,19 @@ lbC0174A4	st	(lbB02EB84-ds,a6)
 
 lbC0174AA	clr.b	(lbB02EB84-ds,a6)
 lbC0174AE	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	move.w	#$2738,d0
+	move.w	#$2738,d0	;save to which executable?
 	jsr	(gettextbynum-ds,a6)
-	lea	(lbL02E5C8-ds,a6),a0
+	lea	(fileNameSaveExe-ds,a6),a0
 	move.l	a0,d1
 	jsr	(requestfile).l
 	beq.b	lbC017484
 	jsr	(_SetPointerAll-ds,a6)
-	move.l	#lbL02E5C8,d1
-	jsr	(lbC02A286-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	move.l	#fileNameSaveExe,d1
+	jsr	(OpenNewFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	beq.b	lbC017484
 	movem.l	(ds-ds,a6),a2/a3
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.l	(workdata_struct_end-ds,a6),d0
 	moveq	#0,d5
 	moveq	#0,d3
@@ -29492,7 +28223,7 @@ lbC017562	cmpa.l	(workdata_struct_end-ds,a6),a3
 	beq.b	lbC017562
 	subq.l	#4,a3
 	jsr	(lbC02A3E6-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	moveq	#0,d2
 	move.l	(4,a4),d0
 	subq.l	#8,d0
@@ -29521,7 +28252,7 @@ lbC0175AC	moveq	#0,d2
 	moveq	#1,d2
 	bra.b	lbC01758E
 
-lbC0175B8	lea	(lbB031E00-ds,a6),a4
+lbC0175B8	lea	(miscBuffer-ds,a6),a4
 	lea	(displayid-ds,a6),a5
 	move.l	a5,d2
 	move.l	#$3F3,(a5)+
@@ -29532,7 +28263,7 @@ lbC0175B8	lea	(lbB031E00-ds,a6),a4
 	subq.l	#1,d5
 	move.l	d5,(a5)+
 	moveq	#$14,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC017484
@@ -29550,14 +28281,14 @@ lbC0175FC	btst	#14,d1
 	bset	#$1E,d0
 lbC017606	move.l	d0,(a5)
 	moveq	#4,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	subq.l	#4,d0
 	bne.w	lbC017484
 	lea	($14,a4),a4
 	bra.b	lbC0175E8
 
-lbC01761E	lea	(lbB031E00-ds,a6),a4
+lbC01761E	lea	(miscBuffer-ds,a6),a4
 	move.l	(lbL02D2FC-ds,a6),(lbL02D300).l
 lbC01762A	tst.l	(a4)
 	beq.w	lbC017846
@@ -29574,7 +28305,7 @@ lbC01762A	tst.l	(a4)
 	lsr.l	#2,d0
 	move.l	d0,(a5)+
 	moveq	#8,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC017484
@@ -29591,13 +28322,13 @@ lbC01767E	move.l	(12,a4),d0
 	lsr.l	#2,d0
 	move.l	d0,(a5)+
 	moveq	#8,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC017484
 	move.l	(12,a4),d3
 	move.l	a2,d2
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	bne.w	lbC017484
@@ -29608,7 +28339,7 @@ lbC01767E	move.l	(12,a4),d0
 	sub.l	d0,d3
 	clr.l	-(sp)
 	move.l	sp,d2
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
@@ -29630,7 +28361,7 @@ lbC0176F4	lea	($14,a4),a4
 	move.l	#$3F2,-(sp)
 	move.l	sp,d2
 	moveq	#4,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
@@ -29651,14 +28382,14 @@ lbC017720	movem.l	(4,sp),a2/a3
 	beq.b	lbC01775A
 	clr.l	-(sp)
 	moveq	#4,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	move.l	sp,d2
 	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	subq.l	#4,d0
 lbC01775A	rts
 
-lbC01775C	lea	(lbB031E00-ds,a6),a4
+lbC01775C	lea	(miscBuffer-ds,a6),a4
 	move.l	d0,d1
 	bra.b	lbC017768
 
@@ -29704,7 +28435,7 @@ lbC0177CA	move.l	d3,(a5)+
 	addq.l	#8,d0
 	move.l	a1,-(sp)
 	move.l	d0,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	movea.l	(sp)+,a1
 	cmp.l	d0,d3
@@ -29734,7 +28465,7 @@ lbC017818	move.w	(lbW02D3A0-ds,a6),d0
 	move.l	d0,(a5)
 	moveq	#4,d3
 	move.l	a5,d2
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	move.l	a1,-(sp)
 	jsr	(_Write-ds,a6)
 	movea.l	(sp)+,a1
@@ -29743,9 +28474,9 @@ lbC017818	move.w	(lbW02D3A0-ds,a6),d0
 	beq.b	lbC017802
 	rts
 
-lbC017846	move.l	(lbB02D0E0-ds,a6),d1
+lbC017846	move.l	(saveFH-ds,a6),d1
 	jsr	(dosclose-ds,a6)
-	clr.l	(lbB02D0E0-ds,a6)
+	clr.l	(saveFH-ds,a6)
 	movea.l	(lbL02D2FC-ds,a6),a1
 	move.l	(lbL02D304-ds,a6),d0
 	jsr	(_FreeMem-ds,a6)
@@ -29766,7 +28497,7 @@ lbC01787E	move.l	(a3)+,d0
 	bne.b	lbC0178AE
 lbC01788A	jsr	(lbC02A3E6-ds,a6)
 	subq.l	#1,a2
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.w	(a1)+,d0
 	bra.b	lbC01789C
 
@@ -29793,7 +28524,7 @@ lbC0178CA	move.l	(a3)+,d0
 	bne.b	lbC0178FA
 lbC0178D6	jsr	(lbC02A3E6-ds,a6)
 	subq.l	#1,a2
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.w	(a1)+,d0
 	bra.b	lbC0178E8
 
@@ -29822,7 +28553,7 @@ lbC017912	move.l	(a3)+,d0
 	clr.l	-(sp)
 	moveq	#4,d3
 	move.l	sp,d2
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	addq.l	#4,sp
@@ -29838,7 +28569,7 @@ lbC01793C	subq.l	#4,a3
 	move.l	#$3F0,-(sp)
 	moveq	#4,d3
 	move.l	sp,d2
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
@@ -29855,13 +28586,13 @@ lbC017960	jsr	(lbC02A3E6-ds,a6)
 	move.l	d1,-(sp)
 	move.l	sp,d2
 	moveq	#4,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
 	movem.l	(sp)+,d2/d3
 	bne.b	lbC01799E
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	cmp.l	d0,d3
 	beq.b	lbC0179C2
@@ -29873,7 +28604,7 @@ lbC0179A0	move.l	a3,d0
 	move.l	d0,-(sp)
 	moveq	#4,d3
 	move.l	sp,d2
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
@@ -29888,7 +28619,7 @@ lbC0179C2	moveq	#3,d0
 	sub.l	d0,d3
 	clr.l	-(sp)
 	move.l	sp,d2
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Write-ds,a6)
 	addq.l	#4,sp
 	cmp.l	d0,d3
@@ -29958,7 +28689,7 @@ lbC017A7C	moveq	#0,d2
 	jsr	(lbC01FFD6).l
 	movem.l	(ds-ds,a6),a2/a3
 lbC017AB2	move.l	(a3),d7
-lbC017AB4	jsr	(lbC02A4BE-ds,a6)
+lbC017AB4	jsr	(CheckAbort-ds,a6)
 	bne.b	lbC017A62
 	cmpa.l	(workdata_struct_end-ds,a6),a3
 	bcc.w	lbC017B8A
@@ -32535,24 +31266,24 @@ lbC01A186	jmp	(term2-ds,a6)
 lbC01A18A	jsr	(saveregs_nod0d1-ds,a6)
 	move.b	(lbB02EB46-ds,a6),-(sp)
 	st	(lbB02EB46-ds,a6)
-	move.w	#$2763,d0
+	move.w	#$2763,d0	;save screen to which file?
 	jsr	(gettextbynum-ds,a6)
 	lea	(displayid-ds,a6),a0
 	move.l	a0,d1
-	move.l	#$5052543A,(a0)+
+	move.l	#'PRT:',(a0)+
 	clr.b	(a0)
 	bsr.w	requestfile
 lbC01A1B0	beq.b	lbC01A174
 	jsr	(_SetPointerAll-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A286-ds,a6)
+	jsr	(OpenNewFile-ds,a6)
 	jsr	(lbC029A9E-ds,a6)
 	move.l	d0,(lbL02D128-ds,a6)
 	beq.b	lbC01A1B0
 	jsr	(lbC029A66-ds,a6)
 	moveq	#0,d4
 	move.b	(lbB02EB6A-ds,a6),d4
-	lea	(lbB031E00-ds,a6),a3
+	lea	(miscBuffer-ds,a6),a3
 lbC01A1D4	lea	(displayid-ds,a6),a4
 	moveq	#0,d6
 lbC01A1DA	cmpi.b	#9,(a3)
@@ -32662,7 +31393,7 @@ lbC01A2EE	or.l	d0,(a0)+
 lbC01A2F8	st	(lbB02B443-ds,a6)
 	clr.b	(lbB02B444-ds,a6)
 	clr.b	(lbB02B445-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$192,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$193,(a0)+
@@ -32675,7 +31406,7 @@ lbC01A2F8	st	(lbB02B443-ds,a6)
 lbC01A324	clr.b	(lbB02B443-ds,a6)
 	st	(lbB02B444-ds,a6)
 	clr.b	(lbB02B445-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$192,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$193,(a0)+
@@ -32688,7 +31419,7 @@ lbC01A324	clr.b	(lbB02B443-ds,a6)
 lbC01A350	clr.b	(lbB02B443-ds,a6)
 	clr.b	(lbB02B444-ds,a6)
 	st	(lbB02B445-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$192,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$193,(a0)+
@@ -32696,13 +31427,13 @@ lbC01A350	clr.b	(lbB02B443-ds,a6)
 	move.w	#$194,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01A37A	lea	(lbB02CFB4-ds,a6),a0
+lbC01A37A	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC01A386	st	(lbB02B404-ds,a6)
 	clr.b	(lbB02B405-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$195,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$196,(a0)+
@@ -32712,13 +31443,13 @@ lbC01A386	st	(lbB02B404-ds,a6)
 
 lbC01A3A6	clr.b	(lbB02B404-ds,a6)
 	st	(lbB02B405-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$195,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$196,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01A3C4	lea	(lbB02CFB4-ds,a6),a0
+lbC01A3C4	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -32848,7 +31579,7 @@ lbC01A52A	move.l	a2,d0
 
 lbC01A53A	move.w	#$2711,d0
 	jsr	(gettextbynum-ds,a6)
-	jsr	(lbC026C6C-ds,a6)
+	jsr	(StringRequest240nb-ds,a6)
 	beq.w	lbC01A186
 	jsr	(atoi-ds,a6)
 	beq.w	lbC01A272
@@ -33028,7 +31759,7 @@ lbC01A700	clr.b	(lbB02B430-ds,a6)
 
 lbC01A72A	st	(lbC02B436-ds,a6)
 	clr.b	(lbB02B437-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$1C3,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$1C4,(a0)+
@@ -33038,19 +31769,19 @@ lbC01A72A	st	(lbC02B436-ds,a6)
 
 lbC01A74A	clr.b	(lbC02B436-ds,a6)
 	st	(lbB02B437-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$1C3,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1C4,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01A768	lea	(lbB02CFB4-ds,a6),a0
+lbC01A768	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC01A774	st	(lbB02B3FE-ds,a6)
 	clr.b	(lbC02B3FF-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$1C5,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$1C6,(a0)+
@@ -33060,13 +31791,13 @@ lbC01A774	st	(lbB02B3FE-ds,a6)
 
 lbC01A794	clr.b	(lbB02B3FE-ds,a6)
 	st	(lbC02B3FF-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$1C5,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$1C6,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC01A7B2	lea	(lbB02CFB4-ds,a6),a0
+lbC01A7B2	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -34076,7 +32807,7 @@ lbL01B18C	dl	i_movem2
 lbC01B760	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2712,d0
 	jsr	(gettextbynum-ds,a6)
-	jsr	(lbC026C6C-ds,a6)
+	jsr	(StringRequest240nb-ds,a6)
 	beq.b	lbC01B7DA
 	cmpi.b	#$27,(a0)
 	bne.b	lbC01B788
@@ -34190,7 +32921,7 @@ lbC01B88A	move.b	(a0)+,(a1)+
 lbC01B890	clr.b	(a1)
 	move.l	d4,d0
 lbC01B894	move.l	#aslfr_initialfile,d1
-	jsr	(lbC026C74-ds,a6)
+	jsr	(StringRequest240-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
 	jsr	(lbC02AEB2-ds,a6)
 	move.b	d5,d1
@@ -34342,20 +33073,20 @@ lbC01BA2C	movem.l	a2/a3,-(sp)
 	jsr	(_AllocMemClear-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
 	move.l	#$1000,(lbL02D1F4-ds,a6)
-	move.l	d0,(lbL02D1F0-ds,a6)
-	move.l	d0,(lbL02D1F8-ds,a6)
+	move.l	d0,(binaryImageStrt-ds,a6)
+	move.l	d0,(binaryImageEnd-ds,a6)
 	move.l	(lbL02D1F4-ds,a6),d3
-lbC01BA5C	movea.l	(lbL02D1F8-ds,a6),a2
+lbC01BA5C	movea.l	(binaryImageEnd-ds,a6),a2
 	move.l	a2,d4
-	sub.l	(lbL02D1F0-ds,a6),d4
+	sub.l	(binaryImageStrt-ds,a6),d4
 lbC01BA66	cmp.l	d3,d4
 	bcs.b	lbC01BAA0
 	move.l	d3,d0
 	add.l	d0,d0
 	jsr	(_AllocMemClear-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
-	movea.l	(lbL02D1F0-ds,a6),a1
-	move.l	d0,(lbL02D1F0-ds,a6)
+	movea.l	(binaryImageStrt-ds,a6),a1
+	move.l	d0,(binaryImageStrt-ds,a6)
 	movea.l	d0,a2
 	move.l	d3,d0
 	movem.l	d0/a1/a2,-(sp)
@@ -34366,13 +33097,13 @@ lbC01BA86	move.l	(a1)+,(a2)+
 	jsr	(_FreeMem-ds,a6)
 	add.l	d3,d3
 	move.l	d3,(lbL02D1F4-ds,a6)
-	movea.l	(lbL02D1F0-ds,a6),a2
+	movea.l	(binaryImageStrt-ds,a6),a2
 	adda.l	d4,a2
 lbC01BAA0	addq.l	#1,d4
 	move.b	(a3)+,(a2)+
 	bne.b	lbC01BA66
 	subq.l	#1,a2
-	move.l	a2,(lbL02D1F8-ds,a6)
+	move.l	a2,(binaryImageEnd-ds,a6)
 	movem.l	(sp)+,a2/a3
 	andi.b	#$FB,ccr
 	rts
@@ -34383,7 +33114,7 @@ lbC01BAB6	tst.b	(lbB02EB41-ds,a6)
 
 lbC01BAC0	clr.b	(lbB02EB49-ds,a6)
 	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	move.w	#$2747,d0
+	move.w	#$2747,d0	;save macros to...
 	jsr	(gettextbynum-ds,a6)
 	lea	(path_macros-ds,a6),a0
 	move.l	a0,d1
@@ -34392,17 +33123,17 @@ lbC01BAC0	clr.b	(lbB02EB49-ds,a6)
 	rts
 
 lbC01BADE	jsr	(_SetPointerAll-ds,a6)
-	move.l	a0,(lbB02D0E8-ds,a6)
+	move.l	a0,(SaveFileName-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A286-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenNewFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$274D,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,d4
 	move.l	(sp)+,d1
 	beq.w	lbC01BB9A
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.l	#$BABEF00F,(a4)+
 	clr.l	(a4)+
 	lea	(Macros1.MSG-ds,a6),a0
@@ -34437,19 +33168,19 @@ lbC01BB52	cmpa.l	#lbC01C658,a5
 	movea.l	(a5)+,a0
 	tst.l	d6
 	beq.b	lbC01BB52
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.l	d5,(a4)+
 	move.l	d7,(a4)+
 	moveq	#$17,d0
 lbC01BB72	move.b	(a0)+,(a4)+
 	dbra	d0,lbC01BB72
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	move.l	(lbL02B480-ds,a6),d2
 	moveq	#$20,d3
 	jsr	(_Write-ds,a6)
 	cmp.l	d3,d0
 	bne.b	lbC01BB9A
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	move.l	d6,d2
 	move.l	d7,d3
 	jsr	(_Write-ds,a6)
@@ -34471,14 +33202,14 @@ lbC01BBB4	move.l	(lbL02D0C0-ds,a6),d1
 	move.l	(lbL02D0C4-ds,a6),d0
 	clr.l	(lbL02D0C0-ds,a6)
 	jsr	(_FreeMem-ds,a6)
-lbC01BBC8	move.l	(lbB02D0E0-ds,a6),d1
-	clr.l	(lbB02D0E0-ds,a6)
+lbC01BBC8	move.l	(saveFH-ds,a6),d1
+	clr.l	(saveFH-ds,a6)
 	jsr	(dosclose-ds,a6)
 	andi.b	#$FB,ccr
 	rts
 
 lbC01BBDA	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	move.w	#$2745,d0
+	move.w	#$2745,d0	;save keybinding table to...
 	jsr	(gettextbynum-ds,a6)
 	lea	(path_keytable-ds,a6),a0
 	move.l	a0,d1
@@ -34487,10 +33218,10 @@ lbC01BBDA	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	rts
 
 lbC01BBF4	jsr	(_SetPointerAll-ds,a6)
-	move.l	a0,(lbB02D0E8-ds,a6)
+	move.l	a0,(SaveFileName-ds,a6)
 	move.l	a0,d1
-	jsr	(lbC02A286-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenNewFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	move.l	d0,-(sp)
 	move.w	#$274D,d0
 	jsr	(gettextbynum-ds,a6)
@@ -34513,8 +33244,8 @@ lbC01BC36	jsr	(_DisplayBeep_cond-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#$50,d1
 	jsr	(dosdelay-ds,a6)
-lbC01BC4A	move.l	(lbB02D0E0-ds,a6),d1
-	clr.l	(lbB02D0E0-ds,a6)
+lbC01BC4A	move.l	(saveFH-ds,a6),d1
+	clr.l	(saveFH-ds,a6)
 	jsr	(dosclose-ds,a6)
 	andi.b	#$FB,ccr
 	rts
@@ -34528,7 +33259,7 @@ lbC01BC5C	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	st	(lbB02EB7A-ds,a6)
 	jsr	(lbC028982-ds,a6)
 	clr.b	(lbB02EB7A-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.l	(lbB02D17C-ds,a6),d1
 	beq.b	lbC01BC94
 	lea	(lbL034500).l,a0
@@ -34563,7 +33294,7 @@ lbC01BCD0	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	jsr	(lbC028982-ds,a6)
 	moveq	#0,d0
 	move.b	d0,(lbB02EB7A-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.w	(lbB02EACC-ds,a6),d0
 	bne.b	lbC01BD00
 	rts
@@ -34587,7 +33318,7 @@ lbC01BD38	move.w	(a2)+,d1
 	bclr	#15,d1
 	cmp.w	d1,d0
 	bne.b	lbC01BD62
-	cmpa.l	#stringbuffer,a4
+	cmpa.l	#currentDrawerBuf,a4
 	bcc.b	lbC01BD62
 	movem.l	a0/a1,-(sp)
 lbC01BD4E	move.b	(a0)+,(a4)+
@@ -34625,7 +33356,7 @@ lbC01BD6E	tst.b	(a0)+
 	cmpi.w	#$212,d0
 	bne.b	lbC01BDB8
 	moveq	#0,d0
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 lbC01BDB8	lea	(lbL034500).l,a0
 	move.w	d0,(a0,d1.l)
 lbC01BDC2	jmp	(lbC02A422-ds,a6)
@@ -34848,7 +33579,7 @@ OFF.MSG	db	'OFF',0,0
 lbC01C0FA	lea	(lbB02D24F-ds,a6),a5
 	jsr	(_SetPointerAll-ds,a6)
 	jsr	(lbC0273FC-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.l	a5,-(sp)
 	bsr.w	lbC020D16
 	movea.l	(sp)+,a5
@@ -34857,7 +33588,7 @@ lbC01C0FA	lea	(lbB02D24F-ds,a6),a5
 lbC01C118	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC01C168
 	movem.l	a2/a5,-(sp)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	bsr.w	lbC020D16
 	movem.l	(sp)+,d0/a5
 	tst.b	(a5)
@@ -34865,12 +33596,12 @@ lbC01C118	cmpa.l	(workdata_end-ds,a6),a2
 	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.b	lbC01C168
 	movem.l	a2/a5,-(sp)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	bsr.w	lbC020D16
 	tst.b	(lbB02EB78-ds,a6)
 	beq.b	lbC01C162
 lbC01C14A	movem.l	(sp)+,d0/a5
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 	bne.b	lbC01C158
 	tst.b	(a5)
 	beq.b	lbC01C118
@@ -34887,7 +33618,7 @@ lbC01C168	jsr	(lbC02742E-ds,a6)
 lbC01C170	lea	(lbB02D3A4-ds,a6),a5
 	jsr	(_SetPointerAll-ds,a6)
 	jsr	(lbC0273FC-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.l	a5,-(sp)
 	bsr.w	lbC020D16
 	movea.l	(sp)+,a5
@@ -34895,11 +33626,11 @@ lbC01C170	lea	(lbB02D3A4-ds,a6),a5
 	clr.w	(lbB02EAD0-ds,a6)
 lbC01C18E	cmpa.l	(workdata_end-ds,a6),a2
 	bcc.w	lbC01C266
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 	bne.w	lbC01C266
 	movem.l	a2/a5,-(sp)
 	clr.w	(lbB02D39C-ds,a6)
-lbC01C1A6	lea	(lbB031E00-ds,a6),a4
+lbC01C1A6	lea	(miscBuffer-ds,a6),a4
 	clr.w	(lbL02D226-ds,a6)
 	addq.w	#1,(lbB02D39C-ds,a6)
 	move.b	(lbB02D39D-ds,a6),(lbB02EB3D).l
@@ -35249,7 +33980,7 @@ load_keytable	lea	(RSkeytable.MSG,pc),a0
 RSkeytable.MSG	db	'RS.keytable',0
 
 lbC01C69E	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	move.w	#$2746,d0
+	move.w	#$2746,d0	;load keybinding table from...
 	jsr	(gettextbynum-ds,a6)
 	lea	(path_keytable-ds,a6),a0
 	move.l	a0,d1
@@ -35260,8 +33991,8 @@ lbC01C69E	jsr	(saveregs_nod0d1a0a1-ds,a6)
 lbC01C6B8	jsr	(saveregs_nod0d1a0a1-ds,a6)
 lbC01C6BC	move.l	#path_keytable,d1
 	jsr	(_SetPointerAll-ds,a6)
-	jsr	(lbC02A272-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenOldFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	move.l	d0,d1
 lbC01C6D0	move.w	#$2751,d0
 	jsr	(gettextbynum-ds,a6)
@@ -35270,7 +34001,7 @@ lbC01C6D0	move.w	#$2751,d0
 	bne.b	lbC01C6E2
 lbC01C6DE	bra.w	lbC01BC36
 
-lbC01C6E2	move.l	(lbB02D0E0-ds,a6),d1
+lbC01C6E2	move.l	(saveFH-ds,a6),d1
 	move.l	#lbL034500,d2
 	move.l	#$820,d3
 	jsr	(_Read-ds,a6)
@@ -35293,7 +34024,7 @@ lbC01C712	moveq	#2,d2
 
 lbC01C716	moveq	#$19,d2
 lbC01C718	move.l	a3,d3
-lbC01C71A	jsr	(lbC02A4BE-ds,a6)
+lbC01C71A	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC01C728
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	lbC01C73E
@@ -35408,7 +34139,7 @@ lbC01C854	move.w	#$2710,d0
 	movea.l	(12,a5),a1
 lbC01C862	move.b	(a0)+,(a1)+
 	bne.b	lbC01C862
-	lea	(lbB031E00-ds,a6),a5
+	lea	(miscBuffer-ds,a6),a5
 	lea	(OptionTable,pc),a1
 .loop	move.w	(a1)+,d0
 	beq.b	.end
@@ -35631,14 +34362,14 @@ lbC01CAC8	move.w	#$339,(a5)+
 	clr.w	(a5)+
 	move.l	a5,d0
 	movea.l	(lbL02B488-ds,a6),a5
-	sub.l	#lbB031E00,d0
+	sub.l	#miscBuffer,d0
 	move.l	d0,(4,a5)
 	jsr	(_AllocMem-ds,a6)
 	beq.b	lbC01CB02
 	movea.l	d0,a1
 	move.l	d0,(a5)
 	move.l	(4,a5),d0
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 lbC01CAF0	move.w	(a0)+,(a1)+
 	subq.l	#2,d0
 	bne.b	lbC01CAF0
@@ -35874,19 +34605,19 @@ OptionTable	dw	lbB02B3E5-ds
 	dw	$3B1
 	dw	0
 lbW01CCCC	dw	$8000
-	dw	lbL02E2C8-ds
+	dw	saveAsmSpecifyBuf-ds
 	dw	$BAD
 	dw	$367
 	dw	$8000
-	dw	lbL02E4C8-ds
+	dw	saveRsSpecifyBuf-ds
 	dw	$B54
 	dw	$368
 	dw	$8000
-	dw	lbL02E6C8-ds
+	dw	saveExeSpecifyBuf-ds
 	dw	$BB0
 	dw	$369
 	dw	$8000
-	dw	lbL02E0C8-ds
+	dw	saveBinSpecifyBuf-ds
 	dw	$BAA
 	dw	$36A
 	dw	0
@@ -36102,7 +34833,7 @@ lbC01CEF6	cmpa.l	(lbL02D2F4-ds,a6),a0
 	beq.w	lbC01D026
 	cmpa.l	(lbL02D2F0-ds,a6),a0
 	beq.w	lbC01D026
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC01CF16
 lbC01CF0C	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	lbC01D026
@@ -36223,14 +34954,14 @@ lbC01D03C	movea.l	(lbL02D104-ds,a6),a5
 lbC01D076	move.b	(a1)+,(a0)+
 	bne.b	lbC01D076
 lbC01D07A	clr.b	(lbB02EB41-ds,a6)
-	jsr	(lbC02A502-ds,a6)
+	jsr	(DisableMacros-ds,a6)
 	jsr	(lbC001C12).l
 	jsr	(lbC02973C-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC01D090	jsr	(lbC027C36-ds,a6)
 	clr.b	(lbB02EB41-ds,a6)
-	jsr	(lbC02A502-ds,a6)
+	jsr	(DisableMacros-ds,a6)
 lbC01D09C	jsr	(lbC02973C-ds,a6)
 	st	(lbB02EB48-ds,a6)
 	cmp.b	d0,d0
@@ -36246,7 +34977,7 @@ load_macros	lea	(RSmacros.MSG,pc),a0
 RSmacros.MSG	db	'RS.macros',0
 
 lbC01D0C6	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	move.w	#$2748,d0
+	move.w	#$2748,d0	;load macros from...
 	jsr	(gettextbynum-ds,a6)
 	lea	(path_macros-ds,a6),a0
 	move.l	a0,d1
@@ -36293,8 +35024,8 @@ lbC01D10A	move.l	#examine_buffer,d2
 	move.l	d0,(lbL02D1D0-ds,a6)
 	lea	(path_macros-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenOldFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	move.l	d0,d1
 	move.w	#$2752,d0
 	jsr	(gettextbynum-ds,a6)
@@ -36477,7 +35208,7 @@ lbC01D38C	move.l	d0,-(sp)
 	sub.l	(ds-ds,a6),d0
 	move.l	d0,(lbL02CDE4-ds,a6)
 	movem.l	(sp)+,d2/a0
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.b	#$1B,(a4)+
 	move.b	#$30,(a4)+
 	move.l	(lbL02CDE0-ds,a6),d0
@@ -36492,7 +35223,7 @@ lbC01D38C	move.l	d0,-(sp)
 	bsr.w	lbC022542
 	move.b	#$1B,(a4)+
 lbC01D40C	clr.b	(a4)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	movea.l	a4,a0
 	jsr	(lbC02AEB2-ds,a6)
 	movea.l	(lbB02D118-ds,a6),a1
@@ -36508,9 +35239,9 @@ lbC01D42C	move.w	#$2739,d0
 	bra.b	lbC01D446
 
 lbC01D43A	clr.b	(lbB02EB77-ds,a6)
-	move.w	#$273E,d0
+	move.w	#$273E,d0	;file to load into buffer?
 	jsr	(gettextbynum-ds,a6)
-lbC01D446	lea	(lbB031E00-ds,a6),a0
+lbC01D446	lea	(miscBuffer-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
 	tst.b	(lbB02EB77-ds,a6)
@@ -36520,7 +35251,7 @@ lbC01D45A	move.b	(a1)+,(a0)+
 	bne.b	lbC01D45A
 lbC01D45E	bsr.w	requestfile
 	beq.w	lbC01D56C
-	move.l	a0,(lbB02D0E8-ds,a6)
+	move.l	a0,(SaveFileName-ds,a6)
 	tst.b	(lbB02EB77-ds,a6)
 	bne.b	lbC01D484
 	move.l	(lbL02D1E4-ds,a6),d0
@@ -36529,7 +35260,7 @@ lbC01D45E	bsr.w	requestfile
 	move.l	(lbL02D1E8-ds,a6),d0
 	jsr	(_FreeMem-ds,a6)
 	clr.l	(lbL02D1E4-ds,a6)
-lbC01D484	movea.l	(lbB02D0E8-ds,a6),a0
+lbC01D484	movea.l	(SaveFileName-ds,a6),a0
 	move.l	a0,d1
 	jsr	(_Lock-ds,a6)
 	move.l	d0,(parseargs_lock-ds,a6)
@@ -36546,10 +35277,10 @@ lbC01D484	movea.l	(lbB02D0E8-ds,a6),a0
 	clr.l	(parseargs_lock-ds,a6)
 	move.l	(sp)+,d0
 	beq.b	lbC01D51C
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	move.l	a0,d1
-	jsr	(lbC02A272-ds,a6)
-	move.l	d0,(lbB02D0E0-ds,a6)
+	jsr	(OpenOldFile-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	beq.b	lbC01D51C
 	move.l	(lbL02CD58-ds,a6),d0
 	addq.l	#1,d0
@@ -36574,7 +35305,7 @@ lbC01D504	move.l	d2,d3
 	move.l	d0,d2
 	clr.b	(a0,d3.l)
 	subq.l	#1,d3
-	move.l	(lbB02D0E0-ds,a6),d1
+	move.l	(saveFH-ds,a6),d1
 	jsr	(_Read-ds,a6)
 	cmp.l	d0,d3
 	beq.b	lbC01D54E
@@ -36594,8 +35325,8 @@ lbC01D542	jsr	(_FreeMem-ds,a6)
 	clr.l	(lbL02D1E4-ds,a6)
 	clr.l	(lbL02D1EC-ds,a6)
 lbC01D54E	move.l	d0,d3
-	move.l	(lbB02D0E0-ds,a6),d1
-	clr.l	(lbB02D0E0-ds,a6)
+	move.l	(saveFH-ds,a6),d1
+	clr.l	(saveFH-ds,a6)
 	jsr	(dosclose-ds,a6)
 	move.l	(parseargs_lock-ds,a6),d1
 	clr.l	(parseargs_lock-ds,a6)
@@ -36762,7 +35493,7 @@ lbC01D758	tst.b	(reqmodeflag-ds,a5)
 lbC01D760	subq.w	#1,d0
 	ble.b	_nocon
 	lea	(txt_badwbargs,pc),a0
-	bra.w	lbC01D90E
+	bra.w	print_txt_a0
 
 _nocon	move.w	#$1C9,d0
 	jsr	(getfuncbynum-ds,a5)
@@ -36793,88 +35524,88 @@ _fromcli	movea.l	(execbase-ds,a5),a6
 	beq.w	nogadtools
 	tst.l	(wbmsg-ds,a5)
 	bne.w	argsparsing_end
-	movea.l	a3,a0
+	movea.l	a3,a0	;argument parsing command line
 example_code_strt	lea	(a0,d3.w),a1
-lbC01D7DE	cmpi.b	#$20,-(a1)
-	dbhi	d3,lbC01D7DE
+.searchspace	cmpi.b	#' ',-(a1)	;remove trailing spaces
+	dbhi	d3,.searchspace
 example_code_end	blt.w	argsparsing_end
 	clr.b	(1,a1)
 	lea	(work_data_spec_str-ds,a5),a1
-lbC01D7F2	move.b	(a0)+,d0
-	beq.w	lbC01D8C4
+.loop	move.b	(a0)+,d0
+	beq.w	.term_workdata_str
 	cmpi.b	#' ',d0
-	bls.b	lbC01D7F2
+	bls.b	.loop
 	cmpi.b	#'?',d0
-	beq.w	lbC01D90A
+	beq.w	print_usage
 	cmpi.b	#'"',d0
-	beq.w	lbC01D8B8
+	beq.w	.quoted
 	cmpi.b	#'-',d0
-	bne.w	lbC01D8B6
+	bne.w	.nooption
 	move.b	(a0)+,d0
 	cmpi.b	#'a',d0
-	bcs.b	lbC01D828
+	bcs.b	.upper
 	cmpi.b	#'z',d0
-	bhi.b	lbC01D828
-	subi.b	#' ',d0
-lbC01D828	cmpi.b	#'F',d0
-	bne.b	lbC01D856
+	bhi.b	.upper
+	subi.b	#' ',d0	;make uppercase
+.upper	cmpi.b	#'F',d0
+	bne.b	.not_f
 	moveq	#0,d0
 	moveq	#0,d1
-lbC01D832	move.l	d0,(lbL02D174-ds,a5)
+.set_fflag	move.l	d0,(fflag-ds,a5)
 	move.b	(a0)+,d1
 	cmpi.b	#$20,d1
-	bls.b	lbC01D7F2
-	subi.b	#$30,d1
-	bcs.b	lbC01D852
-	cmpi.b	#$39,d1
-	bhi.b	lbC01D852
+	bls.b	.loop
+	subi.b	#'0',d1
+	bcs.b	.loop_one_back
+	cmpi.b	#'9',d1
+	bhi.b	.loop_one_back
 	mulu.w	#10,d0
 	add.l	d1,d0
-	bra.b	lbC01D832
+	bra.b	.set_fflag
 
-lbC01D852	subq.w	#1,a0
-	bra.b	lbC01D7F2
+.loop_one_back	subq.w	#1,a0
+	bra.b	.loop
 
-lbC01D856	cmpi.b	#'R',d0
-	bne.b	lbC01D872
+.not_f	cmpi.b	#'R',d0
+	bne.b	.not_r
 	st	(reqmodeflag-ds,a5)
 	tst.b	(laceflag-ds,a5)
-	bne.w	lbC01D90A
+	bne.w	print_usage
 	tst.b	(nolaceflag-ds,a5)
-	bne.w	lbC01D90A
-	bra.b	lbC01D7F2
+	bne.w	print_usage
+	bra.b	.loop
 
-lbC01D872	cmpi.b	#'S',d0
-	bne.b	lbC01D880
+.not_r	cmpi.b	#'S',d0
+	bne.b	.not_s
 	st	(sysrenderflag-ds,a5)
-	bra.w	lbC01D7F2
+	bra.w	.loop
 
-lbC01D880	cmpi.b	#'N',d0
-	bne.b	lbC01D89A
+.not_s	cmpi.b	#'N',d0
+	bne.b	.not_n
 	st	(nolaceflag-ds,a5)
 	tst.b	(laceflag-ds,a5)
-	bne.b	lbC01D90A
+	bne.b	print_usage
 	tst.b	(reqmodeflag-ds,a5)
-	bne.b	lbC01D90A
-	bra.w	lbC01D7F2
+	bne.b	print_usage
+	bra.w	.loop
 
-lbC01D89A	cmpi.b	#'I',d0
-	bne.b	lbC01D8B4
+.not_n	cmpi.b	#'I',d0
+	bne.b	.not_i
 	st	(laceflag-ds,a5)
 	tst.b	(nolaceflag-ds,a5)
-	bne.b	lbC01D90A
+	bne.b	print_usage
 	tst.b	(reqmodeflag-ds,a5)
-	bne.b	lbC01D90A
-	bra.w	lbC01D7F2
+	bne.b	print_usage
+	bra.w	.loop
 
-lbC01D8B4	subq.w	#2,a0
-lbC01D8B6	subq.w	#1,a0
-lbC01D8B8	move.b	(a0)+,(a1)+
-	bne.b	lbC01D8B8
+.not_i	subq.w	#2,a0
+.nooption	subq.w	#1,a0
+.quoted	move.b	(a0)+,(a1)+
+	bne.b	.quoted
 	subq.w	#2,a1
-	cmpi.b	#$22,(a1)
+	cmpi.b	#'"',(a1)
 	bne.b	argsparsing_end
-lbC01D8C4	clr.b	(a1)
+.term_workdata_str	clr.b	(a1)
 argsparsing_end	movea.l	a5,a6
 	lea	(ReSourceutill.MSG,pc),a1
 	move.l	#$20006,d0	;version/revision
@@ -36899,8 +35630,8 @@ lbC01D904	addq.l	#1,a1
 	clr.b	(a1)
 lbC01D908	bra.b	Start2
 
-lbC01D90A	lea	(txt_usage,pc),a0
-lbC01D90E	move.l	a0,d1
+print_usage	lea	(txt_usage,pc),a0
+print_txt_a0	move.l	a0,d1
 	movea.l	(dosbase-ds,a5),a6
 	jsr	(_LVOPutStr,a6)
 	moveq	#0,d0
@@ -36939,9 +35670,9 @@ Start2	move.b	#$14,(lbL02D114-ds,a6)
 	move.l	#lbL02C4D4,(lbL02B4B0-ds,a6)
 	move.w	#$7F03,(lbB02D3A6-ds,a6)
 	move.l	#$30C,d2
-	move.l	d2,(lbL02B4B4-ds,a6)
+	move.l	d2,(stringsSz-ds,a6)
 	move.l	d2,(lbL02B4B8-ds,a6)
-	move.l	d2,(lbL02B4BC-ds,a6)
+	move.l	d2,(stringPointerSz-ds,a6)
 	move.l	d2,(lbL02B4C0-ds,a6)
 	moveq	#-1,d2
 	move.l	d2,(lbL035120).l
@@ -37031,15 +35762,15 @@ Start3	movea.l	(execbase-ds,a6),a0
 	movea.l	d0,a1
 	move.l	-(a1),d0	;segment size
 	jsr	(_FreeMem-ds,a6)
-	move.l	(lbL02B4B4-ds,a6),d0
+	move.l	(stringsSz-ds,a6),d0
 	jsr	(_AllocMemClear-ds,a6)
 	move.l	d0,(lbL02D154-ds,a6)
 	beq.w	nomemory
-	move.l	d0,(lbL02D158-ds,a6)
+	move.l	d0,(strings-ds,a6)
 	move.l	d0,(lbL02D160-ds,a6)
-	move.l	(lbL02B4BC-ds,a6),d0
+	move.l	(stringPointerSz-ds,a6),d0
 	jsr	(_AllocMemClear-ds,a6)
-	move.l	d0,(lbL02D14C-ds,a6)
+	move.l	d0,(stringPointer-ds,a6)
 	beq.w	nomemory
 	movea.l	d0,a0
 	clr.l	(lbL02D148-ds,a6)
@@ -37411,7 +36142,7 @@ lbC01DF26	move.l	d5,d0
 	moveq	#3,d1
 	jsr	(_LVOBltClear,a6)
 lbC01DF44	dbra	d2,lbC01DF26
-	lea	(lbB02CF10-ds,a5),a3
+	lea	(unknown_bitmap-ds,a5),a3
 	movea.l	a3,a0
 	moveq	#1,d0
 	move.l	d5,d1
@@ -37643,7 +36374,7 @@ lbC01E1CA	move.b	(a2),(a0)+
 	jsr	(easyrequest_39-ds,a6)
 	bra.w	nomemory
 
-.aslfr_ok	lea	(lbB02CF10-ds,a6),a0
+.aslfr_ok	lea	(unknown_bitmap-ds,a6),a0
 	movea.l	(8,a0),a0
 	move.l	d6,d0
 	mulu.w	d3,d0
@@ -37723,25 +36454,25 @@ lbC01E28A	move.w	d0,(lbW02D3A8-ds,a6)
 	move.w	#$273A,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(error_text-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	tst.b	(work_data_spec_str-ds,a6)
-	beq.b	lbC01E368
+	beq.b	.nofilespec
 	jsr	(parseargs).l
-	bne.b	lbC01E3A2
+	bne.b	.filespecok
 	move.l	a4,-(sp)
 	movea.l	(error_text-ds,a6),a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#60,d1
 	jsr	(dosdelay-ds,a6)
-lbC01E368	lea	(_RawDoFmt_args-ds,a6),a1
+.nofilespec	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	#example_code_strt,(a1)+
 	move.l	#example_code_end,(a1)
 	lea	(work_data_spec_str-ds,a6),a2
 	lea	(mlxlx.MSG,pc),a0
 	jsr	(_RawDoFmt-ds,a6)
 	jsr	(parseargs).l
-	bne.b	lbC01E3A2
+	bne.b	.filespecok
 	move.l	a4,-(sp)
 	movea.l	(error_text-ds,a6),a4
 	jsr	(SetWindowTitle-ds,a6)
@@ -37750,12 +36481,12 @@ lbC01E368	lea	(_RawDoFmt_args-ds,a6),a1
 	jsr	(dosdelay-ds,a6)
 	bra.w	nomemory
 
-lbC01E3A2	clr.b	(lbB02EB69-ds,a6)
+.filespecok	clr.b	(lbB02EB69-ds,a6)
 	jsr	(lbC0297B4-ds,a6)
 	jsr	(DropIMsgAll-ds,a6)
 	bsr.w	lbC020BBE
 	jsr	(lbC027E00-ds,a6)
-	move.l	(lbL02D174-ds,a6),d0
+	move.l	(fflag-ds,a6),d0
 	beq.w	mainloop2
 	jsr	(getfuncbynum-ds,a6)
 	cmpa.l	#default_func,a0
@@ -37827,7 +36558,7 @@ mainloop1	jsr	(_DisplayBeep_cond-ds,a6)
 mainloop2	movea.l	(saved_sp-ds,a6),sp
 	pea	(lbC01E854,pc)
 	jsr	(lbC02A3CC-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	jsr	(lbC028982-ds,a6)
 	tst.b	(lbW02EB7E-ds,a6)
 	bne.b	_help
@@ -38247,7 +36978,7 @@ lbL01ECCA	dl	lbC02003C-ds
 
 lbC01ED0A	pea	(clear_ccr-ds,a6)
 	jsr	(_SetPointerAll-ds,a6)
-lbC01ED12	lea	(lbB031E00-ds,a6),a4
+lbC01ED12	lea	(miscBuffer-ds,a6),a4
 	move.w	#$FFFF,(lbB02D39A-ds,a6)
 	bset	#5,(1,a3)
 	bne.b	lbC01ED7A
@@ -38526,9 +37257,9 @@ lbC01F022	clr.l	(a0)+
 	jsr	(lbC029A66-ds,a6)
 	tst.b	(lbB02EB64-ds,a6)
 	bne.b	lbC01F07A
-	move.w	#$275C,d0
+	move.w	#$275C,d0	;write to which .asm file?
 	jsr	(gettextbynum-ds,a6)
-	lea	(lbL02E1C8-ds,a6),a0
+	lea	(fileNameSaveAsm-ds,a6),a0
 	move.l	a0,d1
 	bsr.w	requestfile
 	bne.b	lbC01F054
@@ -38538,9 +37269,9 @@ lbC01F022	clr.l	(a0)+
 lbC01F054	st	(lbB02EB7D-ds,a6)
 	jsr	(_SetPointerAll-ds,a6)
 	move.l	a0,d1
-	move.l	d1,(lbB02D0E8-ds,a6)
+	move.l	d1,(SaveFileName-ds,a6)
 	move.l	d1,d4
-	jsr	(lbC02A286-ds,a6)
+	jsr	(OpenNewFile-ds,a6)
 	jsr	(lbC029A66-ds,a6)
 	move.l	d0,(lbL02D128-ds,a6)
 	bne.b	lbC01F07A
@@ -38557,7 +37288,7 @@ lbC01F07A	movem.l	a2/a3,-(sp)
 lbC01F094	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	tst.b	(lbB02EB65-ds,a6)
 	bne.w	lbC01F26E
 	move.b	#10,(a4)+
@@ -38574,7 +37305,7 @@ lbC01F0CE	move.b	(a0)+,(a4)+
 	bne.b	lbC01F0CE
 	addq.l	#3,(lbW02D228-ds,a6)
 	subq.l	#1,a4
-lbC01F0D8	lea	(lbL02F600-ds,a6),a0
+lbC01F0D8	lea	(hashtable1-ds,a6),a0
 	lea	($2000,a0),a0
 	move.l	a0,d7
 	addi.l	#$400,d7
@@ -38590,14 +37321,14 @@ lbC01F0F8	movem.l	(sp)+,d0-d2/a1/a5
 	bra.b	lbC01F0F0
 
 lbC01F0FE	movea.l	d0,a1
-	adda.l	(lbL02D14C-ds,a6),a1
+	adda.l	(stringPointer-ds,a6),a1
 	move.l	(8,a1),d1
 	moveq	#0,d2
 	move.b	d1,d2
 	beq.b	lbC01F0F0
 	lsr.l	#8,d1
 	movea.l	d1,a5
-	adda.l	(lbL02D158-ds,a6),a5
+	adda.l	(strings-ds,a6),a5
 	cmpi.b	#2,d2
 	bne.b	lbC01F12A
 	cmpi.b	#$44,(a5)
@@ -38703,7 +37434,7 @@ lbC01F25E	move.b	#$2A,(a4)+
 	addq.l	#1,(lbW02D228-ds,a6)
 lbC01F26E	cmpa.l	(lbL02D140-ds,a6),a2
 	bge.w	lbC01F342
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC01F286
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	lbC01F34E
@@ -38733,7 +37464,7 @@ lbC01F2D0	move.l	a4,d3
 	bne.b	lbC01F2EC
 	cmpa.l	(lbL02D140-ds,a6),a2
 	bcc.b	lbC01F2EC
-	cmpa.l	#stringbuffer,a4
+	cmpa.l	#currentDrawerBuf,a4
 	bcs.b	lbC01F26E
 lbC01F2EC	bsr.w	lbC01F3A2
 	beq.w	lbC01F26E
@@ -38744,7 +37475,7 @@ lbC01F2F4	move.l	(lbL02D128-ds,a6),d1
 	jsr	(dosclose-ds,a6)
 lbC01F306	jsr	(lbC029A9E-ds,a6)
 	clr.b	(lbB02EB65-ds,a6)
-	move.l	(lbB02D0E8-ds,a6),d1
+	move.l	(SaveFileName-ds,a6),d1
 	jsr	(_DeleteFile-ds,a6)
 	movem.l	(sp)+,a2/a3
 	jsr	(lbC02A4A6-ds,a6)
@@ -38754,7 +37485,7 @@ lbC01F306	jsr	(lbC029A9E-ds,a6)
 	jsr	(SetWindowTitle-ds,a6)
 	moveq	#$3C,d1
 	jsr	(dosdelay-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	jsr	(lbC029A9E-ds,a6)
 	clr.b	(lbB02EB65-ds,a6)
 	jmp	(cceq-ds,a6)
@@ -38780,7 +37511,7 @@ lbC01F37C	move.l	-(a4),-(a6)
 	move.l	(a3)+,-(a3)
 	move.l	(lbB02D3B1-ds,a5),-(a2)
 	moveq	#$7E,d6
-lbC01F38A	cmpa.l	#stringbuffer,a4
+lbC01F38A	cmpa.l	#currentDrawerBuf,a4
 	bcc.b	lbC01F3A2
 	tst.b	(lbB02EB5A-ds,a6)
 	bne.b	lbC01F3A2
@@ -38874,7 +37605,7 @@ lbC01F49C	move.w	d0,-(sp)
 	beq.b	lbC01F4BA
 	lea	(counted.MSG,pc),a0
 lbC01F4BA	move.l	a0,-(sp)
-	lea	(lbL02E1C8-ds,a6),a0
+	lea	(fileNameSaveAsm-ds,a6),a0
 	move.l	a0,-(sp)
 	lea	(Sourceprofile.MSG,pc),a0
 	movea.l	sp,a1
@@ -38887,7 +37618,7 @@ lbC01F4BA	move.l	a0,-(sp)
 	lea	($9A,sp),sp
 	movea.l	a4,a0
 	jsr	(print_text_a0-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	cmp.w	d0,d0
 	movem.l	(sp)+,d2-d7/a0-a3/a5
 	rts
@@ -38942,7 +37673,7 @@ lbC01FA1C	jsr	(lbC029B18-ds,a6)
 	move.w	(lbB02CEEA-ds,a6),d0
 	divu.w	#12,d0
 lbC01FA2A	movem.l	d0/a2,-(sp)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	bsr.w	lbC020D16
 	movem.l	(sp)+,d0/d1
 	cmpa.l	(workdata_end-ds,a6),a2
@@ -39000,7 +37731,7 @@ lbC01FACE	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FAF6
 	cmpi.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FAF6
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 lbC01FAE0	moveq	#8,d0
 	jsr	(lbC02A88A-ds,a6)
 lbC01FAE6	cmpi.b	#10,(a0)+
@@ -39026,7 +37757,7 @@ lbC01FAFE	bsr.w	lbC01FA7C
 
 lbC01FB2A	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FB4C
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 lbC01FB34	moveq	#4,d0
 	jsr	(lbC02A88A-ds,a6)
 	subq.b	#1,(lbB02EB60-ds,a6)
@@ -39054,7 +37785,7 @@ lbC01FB54	bsr.w	lbC01FA7C
 
 lbC01FB80	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FBAA
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 lbC01FB8A	moveq	#2,d1
 	moveq	#0,d0
 lbC01FB8E	addq.l	#1,d0
@@ -39085,7 +37816,7 @@ lbC01FBB2	bsr.w	lbC01FA7C
 
 lbC01FBDE	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FC08
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 lbC01FBE8	moveq	#6,d1
 	moveq	#0,d0
 lbC01FBEC	addq.l	#1,d0
@@ -39174,7 +37905,7 @@ lbC01FCD2	tst.b	(lbB02EB61-ds,a6)
 	cmpi.b	#1,(lbB02EB60-ds,a6)
 	beq.b	lbC01FD1C
 	bsr.w	lbC020BC8
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	moveq	#0,d1
 	move.b	(lbB02EB60-ds,a6),d1
 	subq.w	#1,d1
@@ -39206,7 +37937,7 @@ lbC01FD38	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FD7A
 	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
 	bsr.w	lbC020BC8
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	moveq	#0,d1
 	move.b	(lbB02EB60-ds,a6),d1
 	subq.w	#1,d1
@@ -39238,7 +37969,7 @@ lbC01FD98	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FDE2
 	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
 	bsr.w	lbC020BC8
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	moveq	#0,d1
 	move.b	(lbB02EB60-ds,a6),d1
 	subq.w	#1,d1
@@ -39273,7 +38004,7 @@ lbC01FE00	tst.b	(lbB02EB61-ds,a6)
 	bne.b	lbC01FE4A
 	move.b	(lbB02EB5F-ds,a6),(lbB02EB60-ds,a6)
 	bsr.w	lbC020BC8
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	moveq	#0,d1
 	move.b	(lbB02EB60-ds,a6),d1
 	subq.w	#1,d1
@@ -39706,22 +38437,22 @@ lbC0202EC	movea.l	a6,a5
 	lea	(vblank_struct-ds,a5),a1
 	moveq	#5,d0
 	jsr	(_LVORemIntServer,a6)
-lbC020304	move.l	(lbL02D158-ds,a5),d0
+lbC020304	move.l	(strings-ds,a5),d0
 	beq.b	lbC020314
 	movea.l	d0,a1
-	move.l	(lbL02B4B4-ds,a5),d0
+	move.l	(stringsSz-ds,a5),d0
 	jsr	(_LVOFreeMem,a6)
-lbC020314	move.l	(lbL02D14C-ds,a5),d0
+lbC020314	move.l	(stringPointer-ds,a5),d0
 	beq.b	lbC020324
 	movea.l	d0,a1
-	move.l	(lbL02B4BC-ds,a5),d0
+	move.l	(stringPointerSz-ds,a5),d0
 	jsr	(_LVOFreeMem,a6)
 lbC020324	move.l	(lbL02D1E4-ds,a5),d0
 	beq.b	lbC020334
 	movea.l	d0,a1
 	move.l	(lbL02D1E8-ds,a5),d0
 	jsr	(_LVOFreeMem,a6)
-lbC020334	move.l	(lbL02D1F0-ds,a5),d0
+lbC020334	move.l	(binaryImageStrt-ds,a5),d0
 	beq.b	lbC020344
 	movea.l	d0,a1
 	move.l	(lbL02D1F4-ds,a5),d0
@@ -39792,7 +38523,7 @@ lbC0203E6	move.l	(a2)+,d0
 	ext.l	d1
 	jsr	(_LVOFreeRaster,a6)
 lbC0203FC	dbra	d2,lbC0203E6
-	lea	(lbB02CF10-ds,a5),a1
+	lea	(unknown_bitmap-ds,a5),a1
 	move.l	(8,a1),d0
 	beq.b	lbC02041C
 	movea.l	d0,a0
@@ -39829,16 +38560,16 @@ lbC020454	move.l	(resourceutilbase-ds,a5),d0
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
 lbC020462	move.l	(aslbase-ds,a5),d0
-	beq.b	lbC02047E
+	beq.b	.noasl
 	movea.l	d0,a6
 	move.l	(aslfr-ds,a5),d0
-	beq.b	lbC020476
+	beq.b	.noaslfr
 	movea.l	d0,a0
 	jsr	(_LVOFreeAslRequest,a6)
-lbC020476	movea.l	a6,a1
+.noaslfr	movea.l	a6,a1
 	movea.l	a4,a6
 	jsr	(_LVOCloseLibrary,a6)
-lbC02047E	move.l	(gadtoolsbase-ds,a5),d0
+.noasl	move.l	(gadtoolsbase-ds,a5),d0
 	beq.b	lbC02049A
 	movea.l	d0,a6
 	move.l	(visualinfo-ds,a5),d0
@@ -39913,39 +38644,39 @@ lbC020560	movem.l	(sp)+,a3/a5/a6
 	rts
 
 requestfile	tst.b	(lbB02EB41-ds,a6)
-	bne.w	lbC026C74
-	move.l	d0,(requestfile_defname-ds,a6)
+	bne.w	StringRequest240
+	move.l	d0,(requestfile_titlename-ds,a6)
 	move.l	d1,(requestfile_buffer-ds,a6)
 	clr.b	(aslfr_initialfile-ds,a6)
 	clr.b	(aslfr_initialdrawer-ds,a6)
 	movea.l	d1,a0
 	move.l	d1,d0
 	tst.b	(a0)
-	beq.b	lbC0205BA
-lbC020586	tst.b	(a0)+
-	bne.b	lbC020586
+	beq.b	.empty
+.searchend	tst.b	(a0)+
+	bne.b	.searchend
 	subq.w	#1,a0
-lbC02058C	cmpi.b	#$2F,-(a0)
-	beq.b	lbC02059E
-	cmpi.b	#$3A,(a0)
-	beq.b	lbC02059E
+.searchdrawerend	cmpi.b	#'/',-(a0)
+	beq.b	.drawerend
+	cmpi.b	#':',(a0)
+	beq.b	.drawerend
 	cmp.l	a0,d0
-	bne.b	lbC02058C
+	bne.b	.searchdrawerend
 	subq.w	#1,a0
-lbC02059E	addq.w	#1,a0
+.drawerend	addq.w	#1,a0
 	move.l	a0,d1
 	lea	(aslfr_initialfile-ds,a6),a1
-lbC0205A6	move.b	(a0)+,(a1)+
-	bne.b	lbC0205A6
+.copyfile	move.b	(a0)+,(a1)+
+	bne.b	.copyfile
 	movea.l	d0,a0
 	lea	(aslfr_initialdrawer-ds,a6),a1
-lbC0205B0	cmp.l	a0,d1
-	beq.b	lbC0205B8
+.copydrawer	cmp.l	a0,d1
+	beq.b	.copied
 	move.b	(a0)+,(a1)+
-	bra.b	lbC0205B0
+	bra.b	.copydrawer
 
-lbC0205B8	clr.b	(a1)
-lbC0205BA	tst.b	(lbB02EB41-ds,a6)
+.copied	clr.b	(a1)
+.empty	tst.b	(lbB02EB41-ds,a6)
 	beq.w	requestfile_doreq
 	tst.b	(lbB02B422-ds,a6)
 	bne.w	requestfile_doreq
@@ -40006,16 +38737,16 @@ lbC020648	move.b	(a0)+,(a1)+
 
 requestfile_doreq	move.l	a2,-(sp)
 	clr.l	-(sp)
-	pea	($40).w
-	move.l	#$80080014,-(sp)
-	pea	(lbC020704,pc)
-	move.l	#$80080007,-(sp)
+	pea	(FRF_DOMSGFUNC).w
+	move.l	#ASLFR_Flags1,-(sp)
+	pea	(aslfr_hookfunc,pc)
+	move.l	#ASLFR_HookFunc,-(sp)
 	pea	(aslfr_initialfile-ds,a6)
-	move.l	#$80080008,-(sp)
+	move.l	#ASLFR_InitialFile,-(sp)
 	pea	(aslfr_initialdrawer-ds,a6)
-	move.l	#$80080009,-(sp)
-	move.l	(requestfile_defname-ds,a6),-(sp)
-	move.l	#$80080001,-(sp)
+	move.l	#ASLFR_InitialDrawer,-(sp)
+	move.l	(requestfile_titlename-ds,a6),-(sp)
+	move.l	#ASLFR_TitleText,-(sp)
 	movea.l	sp,a1
 	movea.l	(aslfr-ds,a6),a2
 	movea.l	a2,a0
@@ -40026,36 +38757,36 @@ requestfile_doreq	move.l	a2,-(sp)
 	lea	($2C,sp),sp
 	movea.l	d0,a0
 	tst.b	(lbB02EB4B-ds,a6)
-	bne.b	lbC0206B6
+	bne.b	.ignfailed
 	tst.l	d0
-	beq.b	lbC0206F6
-lbC0206B6	movea.l	(fr_File,a2),a0
+	beq.b	.failed
+.ignfailed	movea.l	(fr_File,a2),a0
 	movea.l	(requestfile_buffer-ds,a6),a1
 	cmpi.b	#'*',(a0)
-	beq.b	lbC0206EC
+	beq.b	.copyfile
 	movea.l	(fr_Drawer,a2),a0
-lbC0206C8	move.b	(a0)+,(a1)+
-	bne.b	lbC0206C8
+.copydrawer	move.b	(a0)+,(a1)+
+	bne.b	.copydrawer
 	subq.l	#1,a1
 	cmpa.l	(requestfile_buffer-ds,a6),a1
-	beq.b	lbC0206E8
+	beq.b	.drawerok
 	cmpi.b	#':',(-1,a1)
-	beq.b	lbC0206E8
+	beq.b	.drawerok
 	cmpi.b	#'/',(-1,a1)
-	beq.b	lbC0206E8
+	beq.b	.drawerok
 	move.b	#'/',(a1)+
-lbC0206E8	movea.l	(4,a2),a0
-lbC0206EC	move.b	(a0)+,(a1)+
-	bne.b	lbC0206EC
+.drawerok	movea.l	(fr_File,a2),a0
+.copyfile	move.b	(a0)+,(a1)+
+	bne.b	.copyfile
 	movea.l	(requestfile_buffer-ds,a6),a0
 	move.l	a0,d0
-lbC0206F6	bsr.w	lbC027E00
+.failed	bsr.w	lbC027E00
 	jsr	(lbC028CFC-ds,a6)
 	tst.l	d0
 	movea.l	(sp)+,a2
 	rts
 
-lbC020704	move.l	a6,-(sp)
+aslfr_hookfunc	move.l	a6,-(sp)
 	moveq	#$40,d0
 	cmp.l	(8,sp),d0
 	bne.b	lbC02074A
@@ -40540,11 +39271,11 @@ lbC020C9C	st	(lbB02EB79-ds,a6)
 	clr.b	(lbB02EB79-ds,a6)
 	rts
 
-lbC020CB8	lea	(stringbuffer).l,a4
+lbC020CB8	lea	(currentDrawerBuf).l,a4
 	st	(lbB02EB63-ds,a6)
 	bra.b	lbC020CC8
 
-lbC020CC4	lea	(lbB031E00-ds,a6),a4
+lbC020CC4	lea	(miscBuffer-ds,a6),a4
 lbC020CC8	clr.b	(lbB02EAD3-ds,a6)
 	clr.w	(lbB02EAD0-ds,a6)
 	move.b	(lbB02D39B-ds,a6),(lbB02D39A).l
@@ -43663,10 +42394,10 @@ lbC02336E	eor.b	d2,d1
 	dbra	d3,lbC02336E
 	eor.b	d2,d1
 	rol.b	#1,d1
-	lea	(lbL02FA00-ds,a6),a0
+	lea	(hashtable2-ds,a6),a0
 	lsl.w	#2,d1
 	move.l	(a0,d1.w),d2
-	movea.l	(lbL02D14C-ds,a6),a0
+	movea.l	(stringPointer-ds,a6),a0
 	cmp.l	(8,a0,d2.l),d0
 	beq.b	lbC02339A
 lbC023390	move.l	(a0,d2.l),d2
@@ -43676,7 +42407,7 @@ lbC02339A	move.l	(4,a0,d2.l),d0
 	moveq	#0,d1
 	move.b	d0,d1
 	lsr.l	#8,d0
-	movea.l	(lbL02D158-ds,a6),a0
+	movea.l	(strings-ds,a6),a0
 	adda.l	d0,a0
 	movem.l	(sp)+,d2/d3
 	rts
@@ -48187,7 +46918,7 @@ lbC026490	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
-	lea	(ascii.MSG5-ds,a6),a0
+	lea	(lbW02AC5A-ds,a6),a0
 	adda.w	d0,a0
 	tst.b	(a0)
 	beq.b	lbC0264AC
@@ -48897,22 +47628,22 @@ lbC026C44	bsr.w	saveregs_all
 	bsr.w	_FreeMem
 	bra.w	lbC0273CA
 
-lbC026C6C	lea	(displayid-ds,a6),a0
+StringRequest240nb	lea	(displayid-ds,a6),a0
 	clr.b	(a0)
 	move.l	a0,d1
-lbC026C74	move.l	d0,(lbL02D1D4-ds,a6)
-	move.w	#$F0,d0
-	bra.b	_savecommonregs
+StringRequest240	move.l	d0,(stringRequestTitle-ds,a6)
+	move.w	#240,d0
+	bra.b	StringRequest
 
-lbC026C7E	move.l	d0,(lbL02D1D4-ds,a6)
+StringRequest24	move.l	d0,(stringRequestTitle-ds,a6)
 	lea	(displayid-ds,a6),a0
 	moveq	#$3F,d0
-lbC026C88	clr.l	(a0)+
-	dbra	d0,lbC026C88
-	moveq	#$18,d0
-_savecommonregs	bsr.w	saveregs_nod0d1a0a1
+.clr	clr.l	(a0)+
+	dbra	d0,.clr
+	moveq	#24,d0
+StringRequest	bsr.w	saveregs_nod0d1a0a1
 	lea	(win1_gg1_StringInfo,pc),a0
-	move.w	d0,(10,a0)
+	move.w	d0,(si_MaxChars,a0)
 	move.l	d1,(lbL02D1D8-ds,a6)
 	tst.b	(lbB02EB41-ds,a6)
 	beq.w	lbC026D94
@@ -48968,7 +47699,7 @@ lbC026D32	movea.l	d1,a1
 	move.l	a0,(lbL02D0FC-ds,a6)
 	cmpi.w	#$7FFF,d0
 	bne.b	lbC026D68
-lbC026D46	move.l	(lbL02D1D4-ds,a6),d0
+lbC026D46	move.l	(stringRequestTitle-ds,a6),d0
 	move.l	(lbL02D1D8-ds,a6),d1
 	bsr.b	lbC026D94
 	bcc.b	lbC026D5C
@@ -49059,7 +47790,7 @@ _gettextbynum0	bsr.w	gettextbynum
 	move.w	d1,(4,a1)
 	move.l	a0,(12,a1)
 	lea	(nw_win1,pc),a0
-	move.l	(lbL02D1D4-ds,a6),(nw_Title,a0)
+	move.l	(stringRequestTitle-ds,a6),(nw_Title,a0)
 	move.l	(screenptr-ds,a6),(nw_Screen,a0)
 	move.l	a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
@@ -49424,119 +48155,119 @@ lbC027274	cmp.b	d0,d0
 	movem.l	(sp)+,a0/a1
 	rts
 
-lbC02727C	tst.b	(lbB02EB82-ds,a6)
-	bne.w	lbC027398
+BuildAllFileNames	tst.b	(allFileNamesBuild-ds,a6)
+	bne.w	.done
 	movem.l	d0-d4/a0/a1,-(sp)
 	lea	(work_data_spec_str-ds,a6),a0
-	move.l	a0,d3
-lbC02728E	tst.b	(a0)+
-	bne.b	lbC02728E
+	move.l	a0,d3	;d3 = start all
+.findend	tst.b	(a0)+
+	bne.b	.findend
 	subq.l	#1,a0
-lbC027294	cmpi.b	#$2F,-(a0)
-	beq.b	lbC0272A6
-	cmpi.b	#$3A,(a0)
-	beq.b	lbC0272A6
+.searchsep	cmpi.b	#'/',-(a0)
+	beq.b	.sepfound
+	cmpi.b	#':',(a0)
+	beq.b	.sepfound
 	cmp.l	a0,d3
-	bne.b	lbC027294
+	bne.b	.searchsep
 	subq.l	#1,a0
-lbC0272A6	addq.l	#1,a0
-	move.l	a0,d4
-	lea	(lbL034400).l,a1
+.sepfound	addq.l	#1,a0
+	move.l	a0,d4	;d4 = start file
+	lea	(fileName).l,a1
 	move.l	a1,d2
-lbC0272B2	move.b	(a0)+,(a1)+
-	bne.b	lbC0272B2
+.copy	move.b	(a0)+,(a1)+
+	bne.b	.copy
 	subq.l	#4,a1
 	cmp.l	a1,d2
-	bhi.b	lbC0272DA
-	cmpi.b	#$2E,(a1)+
-	bne.b	lbC0272DA
+	bhi.b	.noext
+	cmpi.b	#'.',(a1)+
+	bne.b	.noext
+	moveq	#$20,d0
+	or.b	(a1)+,d0	;make lower case
+	cmpi.b	#'r',d0
+	bne.b	.noext
 	moveq	#$20,d0
 	or.b	(a1)+,d0
-	cmpi.b	#$72,d0
-	bne.b	lbC0272DA
-	moveq	#$20,d0
-	or.b	(a1)+,d0
-	cmpi.b	#$73,d0
-	bne.b	lbC0272DA
-	clr.b	(-3,a1)
-lbC0272DA	movea.l	d3,a0
-	lea	(lbB031E00-ds,a6),a1
-lbC0272E0	cmp.l	a0,d4
-	beq.b	lbC0272E8
+	cmpi.b	#'s',d0
+	bne.b	.noext
+	clr.b	(-3,a1)	;cut .rs
+.noext	movea.l	d3,a0
+	lea	(miscBuffer-ds,a6),a1
+.copydrawer	cmp.l	a0,d4
+	beq.b	.drawerend
 	move.b	(a0)+,(a1)+
-	bne.b	lbC0272E0
-lbC0272E8	clr.b	(a1)
-	lea	(stringbuffer).l,a0
+	bne.b	.copydrawer
+.drawerend	clr.b	(a1)
+	lea	(currentDrawerBuf).l,a0
 	clr.b	(a0)
-	lea	(lbL02DFC8-ds,a6),a1
-	tst.b	(lbB02B439-ds,a6)
-	bne.b	lbC02730A
-	lea	(lbL02E0C8-ds,a6),a0
-	tst.b	(lbB02B43A-ds,a6)
-	bne.b	lbC02730A
-	lea	(lbB031E00-ds,a6),a0
-lbC02730A	bsr.w	lbC02739E
-	lea	(stringbuffer).l,a0
-	lea	(lbL02E5C8-ds,a6),a1
-	tst.b	(lbB02B43F-ds,a6)
-	bne.b	lbC02732C
-	lea	(lbL02E6C8-ds,a6),a0
-	tst.b	(lbB02B440-ds,a6)
-	bne.b	lbC02732C
-	lea	(lbB031E00-ds,a6),a0
-lbC02732C	bsr.b	lbC02739E
-	lea	(stringbuffer).l,a0
-	lea	(lbL02E1C8-ds,a6),a1
-	tst.b	(lbB02B43C-ds,a6)
-	bne.b	lbC02734C
-	lea	(lbL02E2C8-ds,a6),a0
-	tst.b	(lbB02B43D-ds,a6)
-	bne.b	lbC02734C
-	lea	(lbB031E00-ds,a6),a0
-lbC02734C	bsr.b	lbC02739E
-	move.b	#$2E,(a1)+
-	move.b	#$61,(a1)+
-	move.b	#$73,(a1)+
-	move.b	#$6D,(a1)+
+	lea	(fileNameSaveBin-ds,a6),a1
+	tst.b	(saveBinCurrent-ds,a6)
+	bne.b	.setbin
+	lea	(saveBinSpecifyBuf-ds,a6),a0
+	tst.b	(saveBinSpecify-ds,a6)
+	bne.b	.setbin
+	lea	(miscBuffer-ds,a6),a0
+.setbin	bsr.w	AppendFileName
+	lea	(currentDrawerBuf).l,a0
+	lea	(fileNameSaveExe-ds,a6),a1
+	tst.b	(saveExeCurrent-ds,a6)
+	bne.b	.setexe
+	lea	(saveExeSpecifyBuf-ds,a6),a0
+	tst.b	(saveExeSpecify-ds,a6)
+	bne.b	.setexe
+	lea	(miscBuffer-ds,a6),a0
+.setexe	bsr.b	AppendFileName
+	lea	(currentDrawerBuf).l,a0
+	lea	(fileNameSaveAsm-ds,a6),a1
+	tst.b	(saveAsmCurrent-ds,a6)
+	bne.b	.setasm
+	lea	(saveAsmSpecifyBuf-ds,a6),a0
+	tst.b	(saveAsmSpecify-ds,a6)
+	bne.b	.setasm
+	lea	(miscBuffer-ds,a6),a0
+.setasm	bsr.b	AppendFileName
+	move.b	#'.',(a1)+
+	move.b	#'a',(a1)+
+	move.b	#'s',(a1)+
+	move.b	#'m',(a1)+
 	clr.b	(a1)
-	lea	(lbL02E3C8-ds,a6),a1
-	tst.b	(lbB02EB85-ds,a6)
-	bne.b	lbC027380
-	lea	(stringbuffer).l,a0
-	tst.b	(lbB02B3E3-ds,a6)
-	bne.b	lbC027384
-	lea	(lbL02E4C8-ds,a6),a0
-	tst.b	(lbB02B3E4-ds,a6)
-	bne.b	lbC027384
-lbC027380	lea	(lbB031E00-ds,a6),a0
-lbC027384	bsr.b	lbC02739E
-	move.b	#$2E,(a1)+
-	move.b	#$72,(a1)+
-	move.b	#$73,(a1)+
+	lea	(fileNameSaveRs-ds,a6),a1
+	tst.b	(saveRsOriginal-ds,a6)
+	bne.b	.originalrs
+	lea	(currentDrawerBuf).l,a0
+	tst.b	(saveRsCurrent-ds,a6)
+	bne.b	.setrs
+	lea	(saveRsSpecifyBuf-ds,a6),a0
+	tst.b	(saveRsSpecify-ds,a6)
+	bne.b	.setrs
+.originalrs	lea	(miscBuffer-ds,a6),a0
+.setrs	bsr.b	AppendFileName
+	move.b	#'.',(a1)+
+	move.b	#'r',(a1)+
+	move.b	#'s',(a1)+
 	clr.b	(a1)
 	movem.l	(sp)+,d0-d4/a0/a1
-lbC027398	st	(lbB02EB82-ds,a6)
+.done	st	(allFileNamesBuild-ds,a6)
 	rts
 
-lbC02739E	tst.b	(a0)
-	beq.b	lbC0273BC
-lbC0273A2	move.b	(a0)+,(a1)+
-	bne.b	lbC0273A2
+AppendFileName	tst.b	(a0)	;a0=path a1=dest
+	beq.b	.sepfound
+.copy	move.b	(a0)+,(a1)+
+	bne.b	.copy
 	subq.l	#1,a1
-	cmpi.b	#$2F,(-1,a1)
-	beq.b	lbC0273BC
-	cmpi.b	#$3A,(-1,a1)
-	beq.b	lbC0273BC
-	move.b	#$2F,(a1)+
-lbC0273BC	lea	(lbL034400).l,a0
-lbC0273C2	move.b	(a0)+,(a1)+
-	bne.b	lbC0273C2
+	cmpi.b	#'/',(-1,a1)
+	beq.b	.sepfound
+	cmpi.b	#':',(-1,a1)
+	beq.b	.sepfound
+	move.b	#'/',(a1)+
+.sepfound	lea	(fileName).l,a0
+.copy2	move.b	(a0)+,(a1)+
+	bne.b	.copy2
 	subq.l	#1,a1
 	rts
 
 lbC0273CA	move.l	d0,-(sp)
-	move.l	(lbB02D0E0-ds,a6),d1
-	clr.l	(lbB02D0E0-ds,a6)
+	move.l	(saveFH-ds,a6),d1
+	clr.l	(saveFH-ds,a6)
 	bsr.w	dosclose
 	move.l	(sp)+,d0
 	rts
@@ -49694,7 +48425,7 @@ lbC027588	moveq	#2,d1
 	bne.w	lbC0274BE
 lbC02758E	move.w	#$2713,d0
 	jsr	(gettextbynum-ds,a6)
-	jsr	(lbC026C6C-ds,a6)
+	jsr	(StringRequest240nb-ds,a6)
 	bne.b	lbC02759E
 	rts
 
@@ -49709,7 +48440,7 @@ lbC0275A2	movem.l	d0-d7/a0-a5,-(sp)
 	move.l	(lbL02D378-ds,a6),d7
 	movea.l	d0,a1
 	bsr.w	lbC027DC2
-	lea	(lbL02F600-ds,a6),a0
+	lea	(hashtable1-ds,a6),a0
 	moveq	#0,d2
 	move.b	d1,d2
 	lsl.l	#8,d2
@@ -49720,7 +48451,7 @@ lbC0275A2	movem.l	d0-d7/a0-a5,-(sp)
 	adda.l	d3,a0
 	move.l	(a0),d1
 	beq.w	cceq
-	movea.l	(lbL02D14C-ds,a6),a3
+	movea.l	(stringPointer-ds,a6),a3
 	cmp.l	(8,a3,d1.l),d0
 	bne.b	lbC0275F4
 	cmp.l	(4,a3,d1.l),d7
@@ -49746,7 +48477,7 @@ lbC027614	move.l	(4,a3,d1.l),d6
 	move.l	d7,(a3,d1.l)
 	move.l	d7,(4,a3,d1.l)
 	move.l	d7,(8,a3,d1.l)
-	movea.l	(lbL02D158-ds,a6),a5
+	movea.l	(strings-ds,a6),a5
 	move.b	d6,d0
 	move.l	d6,d4
 	lsr.l	#8,d4
@@ -49804,7 +48535,7 @@ lbC0276BA	move.l	d7,(a3)
 	moveq	#-1,d7
 	movea.l	d0,a1
 	bsr.w	lbC027DC2
-	lea	(lbL02F600-ds,a6),a0
+	lea	(hashtable1-ds,a6),a0
 	moveq	#0,d2
 	move.b	d1,d2
 	lsl.l	#8,d2
@@ -49815,7 +48546,7 @@ lbC0276BA	move.l	d7,(a3)
 	adda.l	d3,a0
 	move.l	(a0),d1
 	beq.w	dummy_setflags_d0
-	movea.l	(lbL02D14C-ds,a6),a3
+	movea.l	(stringPointer-ds,a6),a3
 	cmp.l	(8,a3,d1.l),d0
 	bne.b	lbC0276F2
 	move.l	(a3,d1.l),d6
@@ -49836,7 +48567,7 @@ lbC02770E	move.l	(4,a3,d1.l),d6
 	move.l	d7,(a3,d1.l)
 	move.l	d7,(4,a3,d1.l)
 	move.l	d7,(8,a3,d1.l)
-	movea.l	(lbL02D158-ds,a6),a5
+	movea.l	(strings-ds,a6),a5
 	move.b	d6,d0
 	move.l	d6,d4
 	lsr.l	#8,d4
@@ -49884,11 +48615,11 @@ lbC027786	eor.b	d2,d3
 	lsl.w	#8,d4
 	add.l	d4,d4
 	add.l	d3,d4
-	lea	(lbL02FA00-ds,a6),a0
+	lea	(hashtable2-ds,a6),a0
 	lsl.l	#2,d4
 	move.l	(a0,d4.l),d2
 	beq.b	lbC0277DA
-	movea.l	(lbL02D14C-ds,a6),a0
+	movea.l	(stringPointer-ds,a6),a0
 lbC0277AC	cmp.l	(8,a0,d2.l),d0
 	beq.b	lbC0277BA
 lbC0277B2	move.l	(a0,d2.l),d2
@@ -49901,7 +48632,7 @@ lbC0277BA	tst.b	(lbB02EB4D-ds,a6)
 	move.l	(4,a0,d2.l),d0
 	move.b	d0,d1
 	lsr.l	#8,d0
-	add.l	(lbL02D158-ds,a6),d0
+	add.l	(strings-ds,a6),d0
 	movem.l	(sp)+,d2-d4/a0
 	rts
 
@@ -49929,7 +48660,7 @@ lbC0277FA	addq.l	#4,a3
 	lsr.l	#2,d6
 	lsl.w	#8,d1
 	lsl.l	#3,d1
-	lea	(lbL02F600-ds,a6),a1
+	lea	(hashtable1-ds,a6),a1
 	adda.l	d1,a1
 	move.l	d0,d4
 	move.l	a0,d2
@@ -49944,8 +48675,8 @@ lbC027826	dbra	d4,lbC027820
 	lsl.l	#2,d3
 	move.l	(a1,d3.l),d3
 	beq.b	lbC02786E
-	movea.l	(lbL02D14C-ds,a6),a3
-	movea.l	(lbL02D158-ds,a6),a4
+	movea.l	(stringPointer-ds,a6),a3
+	movea.l	(strings-ds,a6),a4
 lbC02783C	move.l	(8,a3,d3.l),d4
 	cmp.b	d4,d0
 	bne.b	lbC027868
@@ -49981,7 +48712,7 @@ lbC027884	movem.l	d1-d6/a1/a3-a5,-(sp)
 	lsr.l	#2,d6
 	lsl.w	#8,d1
 	lsl.l	#3,d1
-	lea	(lbL02F600-ds,a6),a1
+	lea	(hashtable1-ds,a6),a1
 	adda.l	d1,a1
 	move.l	d0,d4
 	move.l	a0,d2
@@ -49996,8 +48727,8 @@ lbC0278AA	dbra	d4,lbC0278A4
 	lsl.l	#2,d3
 	move.l	(a1,d3.l),d3
 	beq.b	lbC0278F2
-	movea.l	(lbL02D14C-ds,a6),a3
-	movea.l	(lbL02D158-ds,a6),a4
+	movea.l	(stringPointer-ds,a6),a3
+	movea.l	(strings-ds,a6),a4
 lbC0278C0	move.l	(8,a3,d3.l),d4
 	cmp.b	d4,d0
 	bne.b	lbC0278EC
@@ -50029,7 +48760,7 @@ lbC0278FC	move.l	d5,d0
 lbC027906	movem.l	d1-d4/a1/a3-a5,-(sp)
 	lsl.w	#8,d1
 	lsl.l	#3,d1
-	lea	(lbL02F600-ds,a6),a1
+	lea	(hashtable1-ds,a6),a1
 	adda.l	d1,a1
 	move.l	d0,d4
 	move.l	a0,d2
@@ -50044,8 +48775,8 @@ lbC027922	dbra	d4,lbC02791C
 	lsl.l	#2,d3
 	move.l	(a1,d3.l),d3
 	beq.b	lbC02796C
-	movea.l	(lbL02D14C-ds,a6),a3
-	movea.l	(lbL02D158-ds,a6),a4
+	movea.l	(stringPointer-ds,a6),a3
+	movea.l	(strings-ds,a6),a4
 lbC027938	move.l	(8,a3,d3.l),d4
 	cmp.b	d4,d0
 	bne.b	lbC027966
@@ -50085,7 +48816,7 @@ _savecommonregs0	bsr.w	saveregs_nod0d1a0a1
 	move.b	d1,d3
 	bsr.w	lbC027C5C
 	beq.w	dummy_setflags_d0
-	lea	(lbL02F600-ds,a6),a0
+	lea	(hashtable1-ds,a6),a0
 	lsl.l	#8,d3
 	lsl.l	#3,d3
 	adda.l	d3,a0
@@ -50126,7 +48857,7 @@ lbC0279FA	subq.b	#1,d5
 lbC027A08	andi.b	#$FB,ccr
 	rts
 
-lbC027A0E	movea.l	(lbL02D158-ds,a6),a0
+lbC027A0E	movea.l	(strings-ds,a6),a0
 	move.l	d1,d0
 	lsr.l	#8,d1
 	andi.w	#$FF,d1
@@ -50147,16 +48878,16 @@ lbC027A32	move.b	(a0)+,d1
 	eor.b	d1,d3
 	rol.b	#1,d3
 lbC027A38	dbra	d4,lbC027A32
-	lea	(lbL02F600-ds,a6),a0
+	lea	(hashtable1-ds,a6),a0
 	lsl.l	#2,d3
 	move.l	(a0,d3.l),d3
 	beq.b	lbC027A70
-	movea.l	(lbL02D14C-ds,a6),a2
+	movea.l	(stringPointer-ds,a6),a2
 lbC027A4C	move.l	(8,a2,d3.l),d4
 	cmp.b	d4,d0
 	bne.b	lbC027A6A
 	lsr.l	#8,d4
-	movea.l	(lbL02D158-ds,a6),a1
+	movea.l	(strings-ds,a6),a1
 	adda.l	d4,a1
 	move.l	d0,d1
 	movea.l	d2,a0
@@ -50183,7 +48914,7 @@ lbC027A90	move.b	(a0)+,d0
 	eor.b	d0,d2
 	rol.b	#1,d2
 	dbra	d3,lbC027A90
-	lea	(lbL02F600-ds,a6),a0
+	lea	(hashtable1-ds,a6),a0
 	lsl.w	#2,d2
 	adda.w	d2,a0
 	move.l	a1,d0
@@ -50196,7 +48927,7 @@ lbC027AB0	eor.b	d2,d3
 	rol.b	#1,d3
 	rol.l	#6,d2
 	dbra	d4,lbC027AB0
-	lea	(lbL02FA00-ds,a6),a0
+	lea	(hashtable2-ds,a6),a0
 	lsl.l	#2,d3
 	adda.l	d3,a0
 	exg	d0,d1
@@ -50212,7 +48943,7 @@ lbC027AB0	eor.b	d2,d3
 lbC027ADA	movem.l	(sp)+,d2-d4
 	rts
 
-lbC027AE0	movea.l	(lbL02D158-ds,a6),a0
+lbC027AE0	movea.l	(strings-ds,a6),a0
 	move.l	d1,d0
 	lsr.l	#8,d1
 	andi.w	#$FF,d1
@@ -50226,7 +48957,7 @@ lbC027AF2	dbra	d1,lbC027AF0
 
 lbC027AFC	movem.l	d0-d6/a0-a4,-(sp)
 	lea	(lbL02D148-ds,a6),a2
-	movea.l	(lbL02D14C-ds,a6),a3
+	movea.l	(stringPointer-ds,a6),a3
 	move.l	(a0),d3
 	move.l	d3,d2
 	beq.b	lbC027B16
@@ -50256,7 +48987,7 @@ lbC027B32	adda.l	d4,a3
 
 lbC027B42	movem.l	d0-d6/a0-a4,-(sp)
 	lea	(lbL02D148-ds,a6),a2
-	movea.l	(lbL02D14C-ds,a6),a3
+	movea.l	(stringPointer-ds,a6),a3
 	move.l	(a0),d3
 	move.l	d3,d2
 	beq.b	lbC027B5C
@@ -50264,7 +48995,7 @@ lbC027B54	move.l	d2,d3
 	move.l	(a3,d2.l),d2
 	bne.b	lbC027B54
 lbC027B5C	move.l	(a2),d4
-	move.l	(lbL02B4BC-ds,a6),d5
+	move.l	(stringPointerSz-ds,a6),d5
 	moveq	#$18,d6
 	sub.l	d6,d5
 	moveq	#-1,d6
@@ -50323,15 +49054,15 @@ lbC027BF0	move.l	d0,(a4)+
 	dbra	d5,lbC027BF0
 	subi.l	#$10000,d5
 	bpl.b	lbC027BF0
-	move.l	(lbL02B4BC-ds,a6),d0
-	movea.l	(lbL02D14C-ds,a6),a0
+	move.l	(stringPointerSz-ds,a6),d0
+	movea.l	(stringPointer-ds,a6),a0
 	movem.l	d0/a0,-(sp)
 	bsr.w	_CopyMemQuick
 	movem.l	(sp)+,d0/a1
 	bsr.w	_FreeMem
 	movea.l	(lbL02D150-ds,a6),a3
-	move.l	a3,(lbL02D14C-ds,a6)
-	move.l	(lbL02B4C4-ds,a6),(lbL02B4BC).l
+	move.l	a3,(stringPointer-ds,a6)
+	move.l	(lbL02B4C4-ds,a6),(stringPointerSz).l
 	movem.l	(sp)+,d0-d6/a0-a4
 	bra.w	lbC027B42
 
@@ -50372,7 +49103,7 @@ lbC027C86	cmp.l	a0,d2
 	move.l	a0,(lbL02D160-ds,a6)
 	movem.l	(sp)+,d0-d3/a0-a3
 	movea.l	d4,a1
-	move.l	(lbL02D158-ds,a6),d0
+	move.l	(strings-ds,a6),d0
 	sub.l	d0,d4
 	rol.l	#8,d4
 	add.l	d1,d4
@@ -50396,9 +49127,9 @@ lbC027CBE	movem.l	(sp)+,d0-d3/a0-a3
 	movea.l	(sp)+,a4
 	movem.l	d1/a0,-(sp)
 	move.l	(lbL02D154-ds,a6),d2
-	move.l	(lbL02D158-ds,a6),d3
+	move.l	(strings-ds,a6),d3
 	sub.l	d3,d2
-	move.l	(lbL02B4B4-ds,a6),d0
+	move.l	(stringsSz-ds,a6),d0
 	add.l	d0,d0
 	move.l	d0,(lbL02B4B8-ds,a6)
 	move.l	d0,d5
@@ -50411,7 +49142,7 @@ lbC027CBE	movem.l	(sp)+,d0-d3/a0-a3
 	bsr.w	_AvailMemLargest
 	subi.l	#$A000,d0
 	bls.w	__Permit0
-	cmp.l	(lbL02B4B4-ds,a6),d0
+	cmp.l	(stringsSz-ds,a6),d0
 	bls.w	__Permit0
 	move.l	d0,(lbL02B4B8-ds,a6)
 	move.l	d0,d5
@@ -50423,7 +49154,7 @@ lbC027CBE	movem.l	(sp)+,d0-d3/a0-a3
 	beq.b	lbC027D9E
 lbC027D2E	movea.l	d3,a0
 	move.l	d5,d0
-	sub.l	(lbL02B4B4-ds,a6),d0
+	sub.l	(stringsSz-ds,a6),d0
 	add.l	d0,(lbL02B4C0-ds,a6)
 	movem.l	d0/a0,-(sp)
 	bsr.w	_CopyMemQuick
@@ -50431,8 +49162,8 @@ lbC027D2E	movea.l	d3,a0
 	bsr.w	_FreeMem
 	adda.l	d2,a2
 	move.l	a2,(lbL02D154-ds,a6)
-	move.l	(lbL02B4B8-ds,a6),(lbL02B4B4).l
-	move.l	(lbL02D15C-ds,a6),(lbL02D158).l
+	move.l	(lbL02B4B8-ds,a6),(stringsSz).l
+	move.l	(lbL02D15C-ds,a6),(strings).l
 	move.l	(lbL02D15C-ds,a6),(lbL02D160).l
 	movem.l	(sp)+,d1/a0
 	movem.l	(sp)+,d0/d2-d6/a0-a2
@@ -50441,7 +49172,7 @@ lbC027D2E	movea.l	d3,a0
 lbC027D74	sub.l	d1,(lbL02B4C0-ds,a6)
 	move.l	(lbL02D154-ds,a6),d4
 	movea.l	d4,a1
-	move.l	(lbL02D158-ds,a6),d0
+	move.l	(strings-ds,a6),d0
 	sub.l	d0,d4
 	rol.l	#8,d4
 	move.b	d1,d4
@@ -50521,7 +49252,7 @@ lbC027E3E	lea	(lbL02C1D4-ds,a6),a4
 	bra.b	lbC027E7A
 
 lbC027E44	move.l	(a3),d1
-	lea	(SBDCRFLSFEPIL.MSG-ds,a6),a0
+	lea	(titlebar_attrib-ds,a6),a0
 	lea	(screen_pubname-ds,a6),a4
 	move.l	a4,-(sp)
 lbC027E50	move.b	(a0)+,d0
@@ -50696,12 +49427,12 @@ lbC028048	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC028052
 	bsr.w	lbC027E00
 lbC028052	movem.l	d0-d6/a0-a4,-(sp)
-	lea	(lbB031E00-ds,a6),a0
+	lea	(miscBuffer-ds,a6),a0
 	bra.b	lbC028060
 
 print_text_a0	movem.l	d0-d6/a0-a4,-(sp)
 lbC028060	clr.b	(lbB02EB6A-ds,a6)
-	lea	(lbB02CF10-ds,a6),a2
+	lea	(unknown_bitmap-ds,a6),a2
 	moveq	#0,d5
 	move.w	(a2),d5
 	movea.l	(8,a2),a2
@@ -50856,7 +49587,7 @@ lbC0281CE	move.l	a2,-(sp)
 	beq.b	lbC02821C
 	cmp.l	(a0),d0
 	beq.b	lbC02821C
-lbC0281F0	jsr	(lbC02A4BE-ds,a6)
+lbC0281F0	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC028204
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	lbC028210
@@ -50881,7 +49612,7 @@ _savecommonregs2	bsr.w	saveregs_nod0d1a0a1
 	move.l	a0,d1
 	move.w	#$2762,d0
 	jsr	(gettextbynum-ds,a6)
-	bsr.w	lbC026C74
+	bsr.w	StringRequest240
 	beq.w	cceq
 	jmp	(lbC02A422-ds,a6)
 
@@ -50899,7 +49630,7 @@ lbC028268	lea	(lbB02D9C8-ds,a6),a0
 	move.l	a0,d1
 	move.w	#$2762,d0
 	jsr	(gettextbynum-ds,a6)
-	bsr.w	lbC026C74
+	bsr.w	StringRequest240
 	beq.w	cceq
 	movea.l	a0,a2
 lbC028280	tst.b	(a0)+
@@ -51015,8 +49746,8 @@ lbC0283C2	move.l	(lbL02D0A8-ds,a6),d0
 	jsr	(lbC01FA52).l
 	beq.w	lbC028458
 	move.l	a2,(lbL02D0A8-ds,a6)
-lbC0283DE	lea	(lbB031E00-ds,a6),a4
-	jsr	(lbC02A4BE-ds,a6)
+lbC0283DE	lea	(miscBuffer-ds,a6),a4
+	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC0283F6
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	lbC028458
@@ -51041,7 +49772,7 @@ lbC0283FC	move.l	a2,-(sp)
 	lea	(lbL02DBC8-ds,a6),a0
 lbC028422	tst.b	(a0)
 	beq.b	lbC028458
-	lea	(lbB031E00-ds,a6),a1
+	lea	(miscBuffer-ds,a6),a1
 lbC02842A	cmp.l	a1,d2
 	beq.w	lbC02835E
 	tst.b	(lbB02EB44-ds,a6)
@@ -51144,7 +49875,7 @@ lbC02852E	bsr.w	_SetPointerAll
 	movea.l	d0,a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
-lbC028556	jsr	(lbC02A4BE-ds,a6)
+lbC028556	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC028564
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.b	lbC028520
@@ -51232,7 +49963,7 @@ lbC02865C	move.l	(a0),d1
 	beq.b	lbC02866C
 	btst	#9,d1
 	beq.w	lbC028588
-lbC02866C	lea	(lbB031E00-ds,a6),a4
+lbC02866C	lea	(miscBuffer-ds,a6),a4
 	move.w	#$FFFF,(lbB02D39A-ds,a6)
 	bsr.w	put_adr_d0
 	clr.w	(lbB02D39A-ds,a6)
@@ -51329,7 +50060,7 @@ lbC028780	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
 	move.l	(workdata_end-ds,a6),(lbL02D140-ds,a6)
 lbC02878C	move.w	#$2714,d0
 	jsr	(gettextbynum-ds,a6)
-	bsr.w	lbC026C6C
+	bsr.w	StringRequest240nb
 	bne.b	lbC02879E
 	bra.w	term2
 
@@ -51758,20 +50489,20 @@ lbC028CEE	movea.l	(execbase-ds,a5),a6
 	rts
 
 lbC028CFC	movem.l	d0-d6/a0/a1/a6,-(sp)
-	lea	(lbB02CF10-ds,a6),a0
+	lea	(unknown_bitmap-ds,a6),a0
 	moveq	#0,d0
 	moveq	#12,d1
 	movea.l	(window1ptr-ds,a6),a1
 	movea.l	(wd_RPort,a1),a1
 	moveq	#0,d2
 	moveq	#12,d3
-	moveq	#0,d4
-	move.w	(a0),d4
+	moveq	#bm_BytesPerRow,d4
+	move.w	(bm_BytesPerRow,a0),d4
 	lsl.l	#3,d4
 	moveq	#0,d5
-	move.w	(2,a0),d5
+	move.w	(bm_Rows,a0),d5
 	subi.w	#$24,d5
-	move.w	#$CA,d6
+	move.w	#$CA,d6	;minterm
 	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOBltBitMapRastPort,a6)
 	movem.l	(sp)+,d0-d6/a0/a1/a6
@@ -51786,7 +50517,7 @@ lbC028D3E	move.l	#Macros2.MSG,d1
 lbC028D46	move.l	#Macros1.MSG,d1
 lbC028D4C	move.w	#$2741,d0
 	jsr	(gettextbynum-ds,a6)
-lbC028D54	bra.w	lbC026C7E
+lbC028D54	bra.w	StringRequest24
 
 lbC028D58	bsr.b	lbC028D6C
 	dw	$100
@@ -51853,7 +50584,7 @@ lbC028DD4	clr.l	(lbB02D118-ds,a6)
 
 lbC028DFE	move.w	#$2715,d0
 	jsr	(gettextbynum-ds,a6)
-	bsr.w	lbC026C6C
+	bsr.w	StringRequest240nb
 	beq.w	term2
 	lea	(lbL02C1D4-ds,a6),a1
 	moveq	#0,d0
@@ -51894,7 +50625,7 @@ lbC028E5A	lea	(lbL02C1D4-ds,a6),a0
 	move.l	a0,-(sp)
 	move.w	#$2715,d0
 	jsr	(gettextbynum-ds,a6)
-	bsr.w	lbC026C6C
+	bsr.w	StringRequest240nb
 	movea.l	(sp)+,a1
 	beq.w	term2
 	tst.b	(a0)
@@ -51922,7 +50653,7 @@ lbC028EAE	lea	(lbL02C1D4-ds,a6),a0
 	movem.l	d0/a0,-(sp)
 	move.w	#$2716,d0
 	jsr	(gettextbynum-ds,a6)
-	bsr.w	lbC026C6C
+	bsr.w	StringRequest240nb
 	movem.l	(sp)+,d1/a1
 	rts
 
@@ -52032,10 +50763,10 @@ lbC028FF8	bsr.b	lbC029010
 	dl	path_keytable
 
 lbC028FFE	bsr.b	lbC029010
-	dl	lbL02E1C8
+	dl	fileNameSaveAsm
 
 lbC029004	bsr.b	lbC029010
-	dl	lbL02E3C8
+	dl	fileNameSaveRs
 
 lbC02900A	bsr.b	lbC029010
 	dl	path_macros
@@ -52086,7 +50817,7 @@ lbC029076	move.l	(sp)+,d1
 	addi.l	#lbL02B4D4,d1
 	move.w	#$273F,d0
 	jsr	(gettextbynum-ds,a6)
-lbC02908E	bsr.w	lbC026C74
+lbC02908E	bsr.w	StringRequest240
 	st	(lbB02EB45-ds,a6)
 	st	(lbB02EB48-ds,a6)
 	rts
@@ -52483,7 +51214,7 @@ lbC029476	move.w	d0,d1
 	and.w	d0,d1
 	move.b	(a0,d1.w),(a4)+
 lbC02948A	clr.b	(a4)+
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	jmp	(lbC02A422-ds,a6)
 
 lbC029494	jsr	(lbC014DDC).l
@@ -52499,18 +51230,18 @@ lbC0294B2	lea	(lbL02C1D4-ds,a6),a0
 	move.l	d0,d1
 	bra.w	lbC0293C2
 
-lbC0294C0	move.w	#$273E,d0
+lbC0294C0	move.w	#$273E,d0	;file to load into buffer?
 	jsr	(gettextbynum-ds,a6)
 	move.l	#lbL02C1D4,d1
 	clr.b	(lbL02C1D4-ds,a6)
 	jsr	(requestfile).l
 	beq.w	term2
-	move.l	a0,(lbB02D0E8-ds,a6)
+	move.l	a0,(SaveFileName-ds,a6)
 	move.l	a0,d1
-	bsr.w	lbC02A272
+	bsr.w	OpenOldFile
 	tst.l	d0
 	beq.w	term2
-	move.l	d0,(lbB02D0E0-ds,a6)
+	move.l	d0,(saveFH-ds,a6)
 	move.l	d0,d1
 	move.l	#lbL02C1D4,d2
 	move.l	#$F0,d3
@@ -52518,8 +51249,8 @@ lbC0294C0	move.w	#$273E,d0
 	lea	(lbL02C1D4-ds,a6),a0
 	adda.l	d0,a0
 	clr.b	(a0)
-	move.l	(lbB02D0E0-ds,a6),d1
-	clr.l	(lbB02D0E0-ds,a6)
+	move.l	(saveFH-ds,a6),d1
+	clr.l	(saveFH-ds,a6)
 	bsr.w	dosclose
 	jmp	(lbC02A422-ds,a6)
 
@@ -52572,7 +51303,7 @@ lbC029572	clr.l	(lbB02D118-ds,a6)
 lbC0295A2	st	(lbB02B426-ds,a6)
 	clr.b	(lbB02B427-ds,a6)
 	clr.b	(lbB02B428-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$25D,(a0)+
 	move.w	#1,(a0)+
 	move.w	#$25E,(a0)+
@@ -52585,7 +51316,7 @@ lbC0295A2	st	(lbB02B426-ds,a6)
 lbC0295CE	clr.b	(lbB02B426-ds,a6)
 	st	(lbB02B427-ds,a6)
 	clr.b	(lbB02B428-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$25D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$25E,(a0)+
@@ -52598,7 +51329,7 @@ lbC0295CE	clr.b	(lbB02B426-ds,a6)
 lbC0295FA	clr.b	(lbB02B426-ds,a6)
 	clr.b	(lbB02B427-ds,a6)
 	st	(lbB02B428-ds,a6)
-	lea	(lbB02CFB4-ds,a6),a0
+	lea	(menuModifyList-ds,a6),a0
 	move.w	#$25D,(a0)+
 	move.w	#0,(a0)+
 	move.w	#$25E,(a0)+
@@ -52606,7 +51337,7 @@ lbC0295FA	clr.b	(lbB02B426-ds,a6)
 	move.w	#$25F,(a0)+
 	move.w	#1,(a0)+
 	clr.w	(a0)
-lbC029624	lea	(lbB02CFB4-ds,a6),a0
+lbC029624	lea	(menuModifyList-ds,a6),a0
 	jsr	(lbC02A686-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -52646,14 +51377,14 @@ lbC02965E	movea.l	(sp)+,a0
 lbC02967E	clr.b	(lbB02EB46-ds,a6)
 	st	(lbL02D128-ds,a6)
 	jsr	(lbC029A66-ds,a6)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	movem.l	a2/a3,-(sp)
 	jsr	(lbC020D16).l
 	movem.l	(sp)+,a2/a3
 	clr.b	-(a4)
 	clr.b	(1,a4)
 	move.l	a4,d2
-	lea	(lbB031E00-ds,a6),a1
+	lea	(miscBuffer-ds,a6),a1
 lbC0296A8	lea	(lbL02D8C8-ds,a6),a0
 	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC0296C0
@@ -52783,7 +51514,7 @@ lbC0297D8	bsr.b	lbC0297DC
 lbC0297DA	nop
 lbC0297DC	lea	(lbC0297DA,pc),a0
 	suba.l	(sp)+,a0
-	jsr	(lbC02A502-ds,a6)
+	jsr	(DisableMacros-ds,a6)
 	move.l	a0,d0
 	lsr.w	#1,d0
 	lea	(lbL02B370,pc),a0
@@ -52827,7 +51558,7 @@ lbC02985C	st	(lbB02EB48-ds,a6)
 	move.w	(lbW02B4D2-ds,a6),-(sp)
 lbC029870	move.w	#$7FED,(lbW02B4D2-ds,a6)
 lbC029876	moveq	#0,d0
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC029888
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	bra.w	_clear_ccr0
@@ -52931,7 +51662,7 @@ lbC029998	tst.b	(lbB02B41B-ds,a6)
 
 lbC0299AA	movem.l	d0-d7/a0-a6,-(sp)
 lbC0299AE	bsr.w	lbC028982
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC0299C4
 	movem.l	(sp)+,d0-d7/a0-a6
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
@@ -53101,7 +51832,7 @@ lbC029B86	move.l	(ds-ds,a6),d0
 lbC029B8A	bsr.w	lbC022518
 	clr.b	(a4)
 	movem.l	(sp)+,d0/d1/a4
-	bsr.w	lbC026C74
+	bsr.w	StringRequest240
 	beq.w	term2
 	bsr.w	atoi
 	beq.w	cceq
@@ -53122,7 +51853,7 @@ lbC029BBA	moveq	#$19,d2
 lbC029BBC	cmpa.l	(ds-ds,a6),a2
 	beq.w	cceq
 	move.l	a3,d3
-lbC029BC6	jsr	(lbC02A4BE-ds,a6)
+lbC029BC6	jsr	(CheckAbort-ds,a6)
 	beq.b	lbC029BD8
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	jmp	(lbC01C73E).l
@@ -53140,7 +51871,7 @@ lbC029BEA	bsr.w	lbC02A3E6
 
 lbC029BF2	move.w	#$2718,d0
 	jsr	(gettextbynum-ds,a6)
-	bsr.w	lbC026C6C
+	bsr.w	StringRequest240nb
 	beq.w	cceq
 	move.l	a0,d1
 	moveq	#0,d2
@@ -53200,7 +51931,7 @@ lbC029C98	addq.l	#8,a5
 
 UNNAMED.MSG	db	'    -UNNAMED-           ',0,0
 trackdiskdevi.MSG	db	'trackdisk.device',0
-SBDCRFLSFEPIL.MSG	db	'S BDC RF LSFE PIL ABD FC----U H CDDDD S',0
+titlebar_attrib	db	'S BDC RF LSFE PIL ABD FC----U H CDDDD S',0
 AFLINEmacrodw.MSG	db	'AFLINE'
 	db	9
 	db	'macro',$A
@@ -53676,23 +52407,23 @@ _UnLoadSeg	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOUnLoadSeg,a6)
 	bra.b	inita6
 
-lbC02A272	move.w	#$1F41,d0
+OpenOldFile	move.w	#$1F41,d0
 	bsr.w	gettextbynum
 	move.l	d0,(error_text-ds,a6)
 	move.l	#MODE_OLDFILE,d2
 	bra.b	lbC02A28C
 
-lbC02A286	move.l	#MODE_NEWFILE,d2
-lbC02A28C	move.l	d1,(lbB02D2B4-ds,a6)
+OpenNewFile	move.l	#MODE_NEWFILE,d2
+lbC02A28C	move.l	d1,(openFileName-ds,a6)
 	clr.b	(lbB02EB62-ds,a6)
 lbC02A294	movea.l	d1,a0
-	cmpi.b	#$2A,(a0)
+	cmpi.b	#'*',(a0)
 	bne.b	lbC02A2B6
-	cmpi.b	#$3E,(1,a0)
+	cmpi.b	#'>',(1,a0)
 	bne.b	lbC02A2B6
 	lea	(2,a0),a1
 	st	(lbB02EB62-ds,a6)
-	move.l	#$3ED,d2
+	move.l	#MODE_OLDFILE,d2
 lbC02A2B2	move.b	(a1)+,(a0)+
 lbC02A2B4	bne.b	lbC02A2B2
 lbC02A2B6	move.l	a6,-(sp)
@@ -53703,14 +52434,14 @@ lbC02A2C0	movea.l	(sp)+,a6
 	beq.b	lbC02A2EE
 	tst.l	d0
 	bne.b	lbC02A2D8
-lbC02A2CC	move.l	#$3EE,d2
-	move.l	(lbB02D2B4-ds,a6),d1
+lbC02A2CC	move.l	#MODE_NEWFILE,d2
+	move.l	(openFileName-ds,a6),d1
 	bra.b	lbC02A294
 
 lbC02A2D8	movem.l	d0/d3/a6,-(sp)
 lbC02A2DC	move.l	d0,d1
 	moveq	#0,d2
-	moveq	#1,d3
+	moveq	#OFFSET_END,d3
 	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOSeek,a6)
 	movem.l	(sp)+,d0/d3/a6
@@ -53883,10 +52614,10 @@ lbC02A4B2	bsr.w	lbC02A1CA
 lbC02A4B6	move.w	#$7FFE,(lbW02EAC8-ds,a6)
 	rts
 
-lbC02A4BE	move.l	a0,-(sp)
+CheckAbort	move.l	a0,-(sp)
 	movea.l	(menustrip-ds,a6),a0
-	movea.l	($12,a0),a0
-	btst	#0,(12,a0)
+	movea.l	(mu_FirstItem,a0),a0
+	btst	#HIGHIMAGE,(mi_Flags,a0)
 	sne	(lbB02EB45-ds,a6)
 	movea.l	(sp)+,a0
 	rts
@@ -53902,16 +52633,16 @@ __ClearMenuStrip	move.l	a0,-(sp)
 lbC02A4EA	movem.l	d0-d2/a0-a3,-(sp)
 	moveq	#1,d2
 	move.b	d2,(lbB02EB4B-ds,a6)
-	bsr.b	lbC02A52A
+	bsr.b	DisableMacros1
 	move.l	(lbL02CF86-ds,a6),d0
 	bsr.b	lbC02A562
 	movem.l	(sp)+,d0-d2/a0-a3
 	rts
 
-lbC02A502	movem.l	d0-d2/a0-a3,-(sp)
+DisableMacros	movem.l	d0-d2/a0-a3,-(sp)
 	moveq	#0,d2
 	move.b	d2,(lbB02EB4B-ds,a6)
-	bsr.b	lbC02A52A
+	bsr.b	DisableMacros1
 	lea	(WindowMacros1Ptr-ds,a6),a0
 	move.w	(macros_num-ds,a6),d0
 	lsl.w	#2,d0
@@ -53922,32 +52653,32 @@ lbC02A502	movem.l	d0-d2/a0-a3,-(sp)
 	movem.l	(sp)+,d0-d2/a0-a3
 	rts
 
-lbC02A52A	move.l	(WindowMacros1Ptr-ds,a6),d0
-	bsr.b	lbC02A53A
+DisableMacros1	move.l	(WindowMacros1Ptr-ds,a6),d0
+	bsr.b	.disable
 	move.l	(WindowMacros2Ptr-ds,a6),d0
-	bsr.b	lbC02A53A
+	bsr.b	.disable
 	move.l	(WindowMacros3Ptr-ds,a6),d0
-lbC02A53A	beq.b	lbC02A560
+.disable	beq.b	.notopen
 	movea.l	d0,a3
-	movea.l	($78,a3),a0
+	movea.l	(wd_UserData,a3),a0
 	lea	($2A,a0),a0
 	movea.l	(4,a0),a0
 	clr.l	-(sp)
 	move.l	d2,-(sp)
-	move.l	#$8003000E,-(sp)
+	move.l	#GA_Disabled,-(sp)
 	movea.l	sp,a1
 	jsr	(SetGadgetAttrs).l
 	lea	(12,sp),sp
-lbC02A560	rts
+.notopen	rts
 
 lbC02A562	beq.b	lbC02A588
 	movea.l	d0,a3
-	movea.l	($78,a3),a0
+	movea.l	(wd_UserData,a3),a0
 	lea	($2A,a0),a0
 	movea.l	(8,a0),a0
 	clr.l	-(sp)
 	move.l	d2,-(sp)
-	move.l	#$8003000E,-(sp)
+	move.l	#GA_Disabled,-(sp)
 	movea.l	sp,a1
 	jsr	(SetGadgetAttrs).l
 	lea	(12,sp),sp
@@ -54210,15 +52941,15 @@ Macros3.MSG	db	'     - Macros 3 -       ',0,0
 
 lbC02A830	jmp	(lbC01C2A4).l
 
-lbC02A836	jmp	(lbC0142B8).l
+_Relocating	jmp	(Relocating).l
 
-lbC02A83C	jmp	(lbC013BD0).l
+_Decompressing	jmp	(Decompressing).l
 
 lbC02A842	jmp	(lbC015490).l
 
 lbC02A848	jmp	(lbC015470).l
 
-lbC02A84E	jmp	(lbC01E368).l
+lbC02A84E	jmp	(.nofilespec).l
 
 lbC02A854	jmp	(lbC015E8E).l
 
@@ -54424,8 +53155,7 @@ T.MSG	db	'T',0
 	db	'F',0
 	db	'HILS'
 CCCSNEEQVCVSP.MSG	db	'CCCSNEEQVCVSPLMIGELTGTLE'
-ascii.MSG5	db	0
-	db	0
+lbW02AC5A	dw	0
 	db	'RAHILS'
 CCCSNEEQVCVSP.MSG0	db	'CCCSNEEQVCVSPLMIGELTGTLE'
 RASRHILS.MSG	db	'RASRHILS'
@@ -54518,7 +53248,7 @@ lbC02AD92	movea.l	(4).w,a6
 	bra.w	inita6
 
 lbC02ADA2	move.l	a4,-(sp)
-	lea	(lbB031E00-ds,a6),a4
+	lea	(miscBuffer-ds,a6),a4
 	move.l	a4,-(sp)
 	move.l	d1,-(sp)
 	jsr	(lbC022542).l
@@ -54531,7 +53261,7 @@ lbC02ADA2	move.l	a4,-(sp)
 lbC02ADBC	move.l	(lbL02B480-ds,a6),d1
 	movea.l	d1,a0
 	clr.b	(a0)
-lbC02ADC4	bsr.w	lbC026C74
+lbC02ADC4	bsr.w	StringRequest240
 	bne.b	atoi
 	moveq	#0,d1
 	rts
@@ -54676,7 +53406,7 @@ lbC02AF24	bclr	#7,(a3)
 	clr.b	(lbB02EB63-ds,a6)
 	cmpa.l	(4,sp),a2
 	bcc.b	lbC02AF58
-	jsr	(lbC02A4BE-ds,a6)
+	jsr	(CheckAbort-ds,a6)
 	bne.b	lbC02AF58
 	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC02AF24
@@ -55043,9 +53773,9 @@ lbB02B3DE	db	0
 lbB02B3DF	db	0
 lbB02B3E0	db	0
 lbB02B3E1	db	0
-lbB02B3E2	db	0
-lbB02B3E3	db	1
-lbB02B3E4	db	0
+saveRsOriginal_	db	0
+saveRsCurrent	db	1
+saveRsSpecify	db	0
 lbB02B3E5	db	0
 lbB02B3E6	db	0
 lbB02B3E7	db	0
@@ -55129,15 +53859,15 @@ lbB02B434	db	0
 lbB02B435	db	0
 lbC02B436	db	0
 lbB02B437	db	1
-lbB02B438	db	1
-lbB02B439	db	0
-lbB02B43A	db	0
-lbB02B43B	db	0
-lbB02B43C	db	1
-lbB02B43D	db	0
-lbB02B43E	db	0
-lbB02B43F	db	1
-lbB02B440	db	0
+saveBinOriginal	db	1
+saveBinCurrent	db	0
+saveBinSpecify	db	0
+saveAsmOriginal	db	0
+saveAsmCurrent	db	1
+saveAsmSpecify	db	0
+saveExeOriginal	db	0
+saveExeCurrent	db	1
+saveExeSpecify	db	0
 lbB02B441	db	1
 lbB02B442	db	0
 lbB02B443	db	0
@@ -55194,7 +53924,7 @@ lbW02B476	dw	$34
 lbW02B478	dw	$1B
 lbW02B47A	dw	$12
 examine_buffer_ptr	dl	examine_buffer
-lbL02B480	dl	lbB031E00
+lbL02B480	dl	miscBuffer
 lbL02B484	dl	lbL01C2C8
 lbL02B488	dl	lbL01C3E8
 lbL02B48C	dl	lbL018174
@@ -55207,9 +53937,9 @@ lbL02B4A4	dx.l	1
 workdata_length	dx.b	4
 workdata_struct_sz	dx.l	1
 lbL02B4B0	dx.l	1
-lbL02B4B4	dx.l	1
+stringsSz	dx.l	1
 lbL02B4B8	dx.l	1
-lbL02B4BC	dx.l	1
+stringPointerSz	dx.l	1
 lbL02B4C0	dx.l	1
 lbL02B4C4	dx.l	1
 lbL02B4C8	dx.l	1
@@ -55274,7 +54004,8 @@ findmenu_sub	dx.l	1
 gfxbase	dx.l	1
 aslbase	dx.l	1
 aslfr	dx.l	1	;file requester
-requestfile_defname	dx.l	1
+requestfile_titlename
+	dx.l	1
 gadtoolsbase	dx.l	1
 mathieeedoubbase	dx.l	1
 fpsupportbase	dx.l	1
@@ -55288,7 +54019,7 @@ lbL02CEE0	dx.l	1
 visualinfo	dx.b	4
 screen_bitmap	dx.w	1
 lbB02CEEA	dx.b	$26
-lbB02CF10	dx.b	$28
+unknown_bitmap	dx.b	$28
 lbB02CF38	dx.b	4
 displaywidth_rounddown
 	dx.b	2
@@ -55313,7 +54044,7 @@ lbB02CF8C	dx.b	2
 _RawDoFmt_args	dx.b	$10
 lbL02CF9E	dx.l	5
 lbW02CFB2	dx.w	1
-lbB02CFB4	dx.b	$1A
+menuModifyList	dx.b	$1A
 lbB02CFCE	dx.b	2
 lbB02CFD0	dx.b	2
 lbB02CFD2	dx.b	2
@@ -55371,9 +54102,9 @@ lbL02D0D0	dx.l	1
 lbL02D0D4	dx.l	1
 lbL02D0D8	dx.l	1
 lbL02D0DC	dx.l	1
-lbB02D0E0	dx.b	4
+saveFH	dx.b	4
 parseargs_lock	dx.l	1
-lbB02D0E8	dx.b	4
+SaveFileName	dx.b	4
 lbB02D0EC	dx.b	1
 lbB02D0ED	dx.b	1
 lbW02D0EE	dx.w	1
@@ -55399,33 +54130,33 @@ lbL02D13C	dx.l	1
 lbL02D140	dx.l	1
 lbL02D144	dx.l	1
 lbL02D148	dx.l	1
-lbL02D14C	dx.l	1
+stringPointer	dx.l	1
 lbL02D150	dx.l	1
 lbL02D154	dx.l	1
-lbL02D158	dx.l	1
+strings	dx.l	1
 lbL02D15C	dx.l	1
 lbL02D160	dx.l	1
 lbL02D164	dx.l	1
 lbL02D168	dx.l	1
 lbL02D16C	dx.l	1
 lbL02D170	dx.l	1
-lbL02D174	dx.l	2
+fflag	dx.l	2
 lbB02D17C	dx.b	4
 lbB02D180	dx.b	$3C
 lbL02D1BC	dx.l	2
 lbL02D1C4	dx.l	2
 lbL02D1CC	dx.l	1
 lbL02D1D0	dx.l	1
-lbL02D1D4	dx.l	1
+stringRequestTitle	dx.l	1
 lbL02D1D8	dx.l	1
 workdata_strt_plus1	dx.l	1
 lbL02D1E0	dx.l	1
 lbL02D1E4	dx.l	1
 lbL02D1E8	dx.l	1
 lbL02D1EC	dx.l	1
-lbL02D1F0	dx.l	1
+binaryImageStrt	dx.l	1
 lbL02D1F4	dx.l	1
-lbL02D1F8	dx.l	1
+binaryImageEnd	dx.l	1
 saved_pr_window	dx.l	1
 lbL02D200	dx.l	1
 lbL02D204	dx.l	1
@@ -55472,7 +54203,7 @@ lbL02D294	dx.l	1
 lbL02D298	dx.l	1
 lbL02D29C	dx.l	3
 lbL02D2A8	dx.l	3
-lbB02D2B4	dx.b	4
+openFileName	dx.b	4
 lbL02D2B8	dx.l	1
 lbL02D2BC	dx.l	1
 lbL02D2C0	dx.l	1
@@ -55562,14 +54293,14 @@ lbB02DDC8	dx.b	1
 lbB02DDC9	dx.b	$FF
 lbB02DEC8	dx.b	$80
 lbB02DF48	dx.b	$80
-lbL02DFC8	dx.l	$40
-lbL02E0C8	dx.l	$40
-lbL02E1C8	dx.l	$40
-lbL02E2C8	dx.l	$40
-lbL02E3C8	dx.l	$40
-lbL02E4C8	dx.l	$40
-lbL02E5C8	dx.l	$40
-lbL02E6C8	dx.l	$40
+fileNameSaveBin	dx.l	$40
+saveBinSpecifyBuf	dx.l	$40
+fileNameSaveAsm	dx.l	$40
+saveAsmSpecifyBuf	dx.l	$40
+fileNameSaveRs	dx.l	$40
+saveRsSpecifyBuf	dx.l	$40
+fileNameSaveExe	dx.l	$40
+saveExeSpecifyBuf	dx.l	$40
 aslfr_initialfile	dx.l	$40
 work_data_spec_str	dx.l	$40
 aslfr_initialdrawer	dx.l	$40
@@ -55675,10 +54406,10 @@ lbB02EB7D	dx.b	1
 lbW02EB7E	dx.b	1
 lbB02EB7F	dx.b	1
 lbL02EB80	dx.w	1
-lbB02EB82	dx.b	1
+allFileNamesBuild	dx.b	1
 lbB02EB83	dx.b	1
 lbB02EB84	dx.b	1
-lbB02EB85	dx.b	1
+saveRsOriginal	dx.b	1
 lbB02EB86	dx.b	1
 lbB02EB87	dx.b	1
 lbW02EB88	dx.b	1
@@ -55707,9 +54438,9 @@ lbL02EBFC	dx.l	1
 lbL02EC00	dx.l	$200
 lbL02F400	dx.l	$60
 lbL02F580	dx.l	$20
-lbL02F600	dx.l	$100
-lbL02FA00	dx.l	$900
-lbB031E00	dx.b	$14
+hashtable1	dx.l	$100
+hashtable2	dx.l	$900
+miscBuffer	dx.b	$14
 lbB031E14	dx.b	$A7B
 lbB03288F	dx.b	$D71
 lbW033600	dx.w	1
@@ -55717,9 +54448,9 @@ lbL033602	dx.l	$7F
 	dx.w	1
 lbL033800	dx.l	$20
 lbL033880	dx.l	$E0
-stringbuffer	dx.l	$180
+currentDrawerBuf	dx.l	$180
 lbL034200	dx.l	$80
-lbL034400	dx.l	$40
+fileName	dx.l	$40
 lbL034500	dx.l	$208
 lbL034D20	dx.l	$100
 lbL035120	dx.l	2
@@ -55803,7 +54534,7 @@ lbB039E88	dx.b	$1A
 Macros3String19	dx.b	$22
 DxAreaEnd
 
-	SECTION	ReSource17rs039EC4,DATA,CHIP
+	SECTION	ReSource18rs039EC4,DATA,CHIP
 pointerdata	dl	0
 	dl	$40007C0
 	dl	$7C0
@@ -55894,7 +54625,7 @@ GadgetImageData	dl	0
 	dl	0
 
 
-	SECTION	ReSource17rs03A024,CODE
+	SECTION	ReSource18rs03A024,CODE
 copyhunk2	movem.l	a2-a4,-(sp)
 	lea	(lbL03A400,pc),a0
 	lea	(lbL03576C).l,a1
