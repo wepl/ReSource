@@ -6046,13 +6046,13 @@ textstrings	dw	1
 	db	'Strict Mnemonics',0,0
 	dw	$C4E
 	dw	$10
-	db	'Ref recognition',0,$C
-	dw	$4F00
-	dw	$C41
-	db	'uto labels',0,$C
-	dw	$5000
-	dw	$1245
-	db	'QU value checks',0,0
+	db	'Ref recognition',0
+	dw	$C4F
+	dw	12
+	db	'Auto labels',0
+	dw	$C50
+	dw	$12
+	db	'EQU value checks',0,0
 	dw	$C51
 	dw	$10
 	db	'Error comments',0,0
@@ -36456,23 +36456,23 @@ lbC01E28A	move.w	d0,(lbW02D3A8-ds,a6)
 	move.l	d0,(error_text-ds,a6)
 	lea	(miscBuffer-ds,a6),a4
 	tst.b	(work_data_spec_str-ds,a6)
-	beq.b	.nofilespec
+	beq.b	_nofilespec
 	jsr	(parseargs).l
-	bne.b	.filespecok
+	bne.b	_filespecok
 	move.l	a4,-(sp)
 	movea.l	(error_text-ds,a6),a4
 	jsr	(SetWindowTitle-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#60,d1
 	jsr	(dosdelay-ds,a6)
-.nofilespec	lea	(_RawDoFmt_args-ds,a6),a1
+_nofilespec	lea	(_RawDoFmt_args-ds,a6),a1
 	move.l	#example_code_strt,(a1)+
 	move.l	#example_code_end,(a1)
 	lea	(work_data_spec_str-ds,a6),a2
 	lea	(mlxlx.MSG,pc),a0
 	jsr	(_RawDoFmt-ds,a6)
 	jsr	(parseargs).l
-	bne.b	.filespecok
+	bne.b	_filespecok
 	move.l	a4,-(sp)
 	movea.l	(error_text-ds,a6),a4
 	jsr	(SetWindowTitle-ds,a6)
@@ -36481,7 +36481,7 @@ lbC01E28A	move.w	d0,(lbW02D3A8-ds,a6)
 	jsr	(dosdelay-ds,a6)
 	bra.w	nomemory
 
-.filespecok	clr.b	(lbB02EB69-ds,a6)
+_filespecok	clr.b	(lbB02EB69-ds,a6)
 	jsr	(lbC0297B4-ds,a6)
 	jsr	(DropIMsgAll-ds,a6)
 	bsr.w	lbC020BBE
@@ -52949,7 +52949,7 @@ lbC02A842	jmp	(lbC015490).l
 
 lbC02A848	jmp	(lbC015470).l
 
-lbC02A84E	jmp	(.nofilespec).l
+lbC02A84E	jmp	(_nofilespec).l
 
 lbC02A854	jmp	(lbC015E8E).l
 
