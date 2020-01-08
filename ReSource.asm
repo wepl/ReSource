@@ -19,8 +19,14 @@ SCREENHEIGHTTRIG = 512		;required screen height for Symbols/Macros window enlarg
 SYMWINHEIGHTADD = -2+26*8	;enlargement for symbols window
 MACWINHEIGHTADD = 5*8		;enlargement for macros windows
 
-AFB_68060	equ	7
-sc_Height	equ	14
+AFB_68060		equ	7
+sc_Height		equ	14
+_LVOSystemTagList	equ	-606
+_LVOPathPart		equ	-876
+_LVOSetVar		equ	-900
+_LVOGetVar		equ	-906
+ACCESS_READ		equ	-2
+GVF_GLOBAL_ONLY		equ	1<<8
 
 * here starts the normal ReSource output
 
@@ -23397,6 +23403,10 @@ lbC013F20	clr.b	(allFileNamesBuild-ds,a6)
 	jsr	(BuildAllFileNames-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
+env_lastfilename db "ReSourceLastFileName",0
+cpy_lastfilename db "Echo $ReSourceLastFileName NoLine >ENVARC:ReSourceLastFileName",0
+	EVEN
+
 lbC013F2C	bsr.w	lbC014DB2
 	bne.b	lbC013F34
 	rts
@@ -23424,6 +23434,22 @@ lbC013F70	pea	(clear_ccr-ds,a6)
 	beq.w	lbC014364
 	move.l	a0,(SaveFileName-ds,a6)
 	jsr	(_SetPointerAll-ds,a6)
+
+	;addition: remember filename in environment variable
+	movem.l	d2-d4/a6,-(a7)
+	move.l	a0,d2
+	moveq	#-1,d3
+	move.l	#GVF_GLOBAL_ONLY,d4
+	lea	env_lastfilename,a0
+	move.l	a0,d1
+	move.l	(dosbase-ds,a6),a6
+	jsr	(_LVOSetVar,a6)
+	lea	cpy_lastfilename,a0
+	move.l	a0,d1
+	moveq	#0,d2	;tags
+	jsr	(_LVOSystemTagList,a6)
+	movem.l	(a7)+,d2-d4/a6
+
 	move.l	(kickstart_adr-ds,a6),d0
 	cmp.l	(ds-ds,a6),d0
 	bne.b	lbC013FA8
@@ -36519,7 +36545,7 @@ lbC01E28A	move.w	d0,(lbW02D3A8-ds,a6)
 	tst.b	(work_data_spec_str-ds,a6)
 	beq.b	_nofilespec
 	jsr	(parseargs).l
-	bne.b	_filespecok
+	bne	_filespecok
 	move.l	a4,-(sp)
 	movea.l	(error_text-ds,a6),a4
 	jsr	(SetWindowTitle-ds,a6)
@@ -36533,7 +36559,7 @@ _nofilespec	lea	(_RawDoFmt_args-ds,a6),a1
 	lea	(mlxlx.MSG,pc),a0
 	jsr	(_RawDoFmt-ds,a6)
 	jsr	(parseargs).l
-	bne.b	_filespecok
+	bne.b	_getenvlastfilename
 	move.l	a4,-(sp)
 	movea.l	(error_text-ds,a6),a4
 	jsr	(SetWindowTitle-ds,a6)
@@ -36542,6 +36568,61 @@ _nofilespec	lea	(_RawDoFmt_args-ds,a6),a1
 	jsr	(dosdelay-ds,a6)
 	bra.w	nomemory
 
+	;addition: set default name to last .rs written
+_getenvlastfilename
+	movem.l	d2-d4/a2/a6,-(a7)
+	lea	env_lastfilename,a0
+	move.l	a0,d1
+	lea	(work_data_spec_str-ds,a6),a2
+	move.l	a2,d2
+	move.l	#$100,d3	;buffer size
+	move.l	#GVF_GLOBAL_ONLY,d4
+	move.l	(dosbase-ds,a6),a6
+	jsr	(_LVOGetVar,a6)
+	tst.l	d0
+	ble	.novar
+	;we check if directory still exists
+	;if not we remove the last part of the path
+	;until it exists and then append the file name again
+	;separate path from filename
+	move.l	a2,d1
+	jsr	(_LVOPathPart,a6)
+	cmp.l	d0,a2		;if there is no path leave
+	beq	.novar
+	move.l	d0,a0
+	move.b	(a0),d3		;d3 = / or first char of file name
+	clr.b	(a0)+
+	move.l	a0,d4		;d4 = file name start
+	;check if path exists
+.lock	move.l	a2,d1
+	move.l	#ACCESS_READ,d2
+	jsr	(_LVOLock,a6)
+	move.l	d0,d1
+	bne	.unlock
+	;remove last part of path and retry
+	move.l	a2,d1
+	jsr	(_LVOPathPart,a6)
+	move.l	d0,a0
+	clr.b	(a0)
+	cmp.l	d0,a2
+	bne	.lock
+	bra	.append
+.unlock	jsr	(_LVOUnLock,a6)
+	;append filename
+.search	tst.b	(a2)+
+	bne	.search
+	subq.l	#1,a2
+	cmp.b	#":",(-1,a2)
+	beq	.append
+	move.b	#"/",(a2)+
+.append	cmp.b	#"/",d3
+	beq	.copy
+	move.b	d3,(a2)+
+.copy	move.l	d4,a0
+.cpy	move.b	(a0)+,(a2)+
+	bne	.cpy
+.novar	movem.l	(a7)+,d2-d4/a2/a6
+	
 _filespecok	clr.b	(lbB02EB69-ds,a6)
 	jsr	(lbC0297B4-ds,a6)
 	jsr	(DropIMsgAll-ds,a6)
