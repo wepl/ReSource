@@ -212,6 +212,7 @@ SA_Left	equ	$80000021
 TC_SIZE	equ	$5C
 ASLSM_InitialDisplayHeight	equ	$80080066
 im_Qualifier	equ	$1A
+wd_NextWindow	equ	$0
 WA_CustomScreen	equ	$80000070
 WA_Left	equ	$80000064
 FRF_DOMSGFUNC	equ	$40
@@ -1721,7 +1722,7 @@ lbC001000	movem.l	d1-d3/a2-a5,-(sp)
 	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC001012
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
+	movea.l	(wd_UserData,a3),a5
 	bsr.b	lbC001018
 lbC001012	movem.l	(sp)+,d1-d3/a2-a5
 	rts
@@ -3054,7 +3055,7 @@ lbC001EC4	movem.l	a2-a5,-(sp)
 	move.l	(window6ptr-ds,a6),d0
 	beq.b	lbC001ED6
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
+	movea.l	(wd_UserData,a3),a5
 	bsr.b	lbC001EDC
 lbC001ED6	movem.l	(sp)+,a2-a5
 	rts
@@ -3705,7 +3706,7 @@ lbC0025B6	movem.l	a2-a5,-(sp)
 	move.l	(window7ptr-ds,a6),d0
 	beq.b	lbC0025C8
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
+	movea.l	(wd_UserData,a3),a5
 	bsr.b	lbC0025CE
 lbC0025C8	movem.l	(sp)+,a2-a5
 	rts
@@ -4307,7 +4308,7 @@ lbC002BD0	clr.l	($56,a3)
 	movem.l	(sp)+,d2/a5/a6
 	rts
 
-lbC002BFE	movem.l	d2/a2/a3/a6,-(sp)
+LoadMenuDefaults	movem.l	d2/a2/a3/a6,-(sp)
 	lea	(miscBuffer-ds,a6),a3
 	movea.l	a3,a0
 	move.w	#$36C,(a0)+
@@ -4592,108 +4593,108 @@ lbC002BFE	movem.l	d2/a2/a3/a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOClearMenuStrip,a6)
 	movea.l	(sp)+,a6
-lbC002FB2	movea.l	(menustrip-ds,a6),a2
+.looplist	movea.l	(menustrip-ds,a6),a2
 	move.w	(a3)+,d2
-	beq.b	lbC003016
-	bra.b	lbC002FC2
+	beq.b	.listend
+	bra.b	.firstitem
 
-lbC002FBC	move.l	(a2),d1
-	beq.b	lbC002FB2
+.nextmenu	move.l	(mu_NextMenu,a2),d1
+	beq.b	.looplist
 	movea.l	d1,a2
-lbC002FC2	movea.l	($12,a2),a1
-	bra.b	lbC002FCE
+.firstitem	movea.l	(mu_FirstItem,a2),a1
+	bra.b	.checkitem
 
-lbC002FC8	move.l	(a1),d1
-	beq.b	lbC002FBC
+.nextitem	move.l	(mi_NextItem,a1),d1
+	beq.b	.nextmenu
 	movea.l	d1,a1
-lbC002FCE	cmp.w	($22,a1),d2
-	bne.b	lbC002FEA
+.checkitem	cmp.w	(mi_SIZEOF,a1),d2
+	bne.b	.firstsub
+	move.w	(a3)+,d0	;value
+	bne.b	.set
+	bclr	#HIGHIMAGE,(mi_Flags,a1)
+	bra.b	.next
+
+.set	bset	#HIGHIMAGE,(mi_Flags,a1)
+.next	move.w	(a3)+,d2
+	beq.b	.listend
+.firstsub	move.l	(mi_SubItem,a1),d1
+	beq.b	.nextitem
+	bra.b	.subitem
+
+.subnomatch	move.l	(a0),d1
+	beq.b	.nextitem
+.subitem	movea.l	d1,a0
+	cmp.w	(mi_SIZEOF,a0),d2
+	bne.b	.subnomatch
 	move.w	(a3)+,d0
-	bne.b	lbC002FE0
-	bclr	#0,(12,a1)
-	bra.b	lbC002FE6
+	bne.b	.subset
+	bclr	#HIGHIMAGE,(mi_Flags,a0)
+	bra.b	.subnext
 
-lbC002FE0	bset	#0,(12,a1)
-lbC002FE6	move.w	(a3)+,d2
-	beq.b	lbC003016
-lbC002FEA	move.l	($1C,a1),d1
-	beq.b	lbC002FC8
-	bra.b	lbC002FF6
+.subset	bset	#HIGHIMAGE,(12,a0)
+.subnext	move.w	(a3)+,d2
+	beq.b	.listend
+	bra.b	.subnomatch
 
-lbC002FF2	move.l	(a0),d1
-	beq.b	lbC002FC8
-lbC002FF6	movea.l	d1,a0
-	cmp.w	($22,a0),d2
-	bne.b	lbC002FF2
-	move.w	(a3)+,d0
-	bne.b	lbC00300A
-	bclr	#0,(12,a0)
-	bra.b	lbC003010
-
-lbC00300A	bset	#0,(12,a0)
-lbC003010	move.w	(a3)+,d2
-	beq.b	lbC003016
-	bra.b	lbC002FF2
-
-lbC003016	move.w	#$1A2,d0
+.listend	move.w	#$1A2,d0
 	jsr	(findmenu-ds,a6)
-	beq.b	lbC00303E
+	beq.b	.nocode
 	movea.l	d0,a1
 	movea.l	($12,a1),a1
-	move.w	#$4E5,d0
-	cmpi.b	#$78,(XEFM.MSG-ds,a6)
-	beq.b	lbC003036
-	move.w	#$4E4,d0
-lbC003036	jsr	(gettextbynum-ds,a6)
-	move.l	d0,(12,a1)
-lbC00303E	move.w	#$1A3,d0
+	move.w	#$4E5,d0	;code
+	cmpi.b	#'x',(flagCaseCode-ds,a6)
+	beq.b	.codeget
+	move.w	#$4E4,d0	;CODE
+.codeget	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(mi_Flags,a1)
+.nocode	move.w	#$1A3,d0
 	jsr	(findmenu-ds,a6)
-	beq.b	lbC003066
+	beq.b	.nodata
+	movea.l	d0,a1
+	movea.l	(mi_ItemFill,a1),a1
+	move.w	#$4E7,d0	;data
+	cmpi.b	#'x',(flagCaseData-ds,a6)
+	beq.b	.dataget
+	move.w	#$4E6,d0	;DATA
+.dataget	jsr	(gettextbynum-ds,a6)
+	move.l	d0,(12,a1)
+.nodata	move.w	#$314,d0
+	jsr	(findmenu-ds,a6)
+	beq.b	.noreg
 	movea.l	d0,a1
 	movea.l	($12,a1),a1
-	move.w	#$4E7,d0
-	cmpi.b	#$78,(xpsc.MSG-ds,a6)
-	beq.b	lbC00305E
-	move.w	#$4E6,d0
-lbC00305E	jsr	(gettextbynum-ds,a6)
+	move.w	#$4E9,d0	;registers
+	cmpi.b	#'a',(flagCaseRegs-ds,a6)
+	beq.b	.regget
+	move.w	#$4E8,d0	;REGISTERS
+.regget	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
-lbC003066	move.w	#$314,d0
+.noreg	move.w	#$366,d0
 	jsr	(findmenu-ds,a6)
-	beq.b	lbC00308E
+	beq.b	.nosize
 	movea.l	d0,a1
 	movea.l	($12,a1),a1
-	move.w	#$4E9,d0
-	cmpi.b	#$61,(ADUSPUSPMMUMM.MSG-ds,a6)
-	beq.b	lbC003086
-	move.w	#$4E8,d0
-lbC003086	jsr	(gettextbynum-ds,a6)
+	move.w	#$4EB,d0	;size specifieres
+	cmpi.b	#'w',(flagCaseSizeSpec-ds,a6)
+	beq.b	.sizeget
+	move.w	#$4EA,d0	;SIZE SPECIFIERES
+.sizeget	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
-lbC00308E	move.w	#$366,d0
+.nosize	move.w	#$277,d0
 	jsr	(findmenu-ds,a6)
-	beq.b	lbC0030B6
-	movea.l	d0,a1
-	movea.l	($12,a1),a1
-	move.w	#$4EB,d0
-	cmpi.b	#$77,(WL.MSG-ds,a6)
-	beq.b	lbC0030AE
-	move.w	#$4EA,d0
-lbC0030AE	jsr	(gettextbynum-ds,a6)
-	move.l	d0,(12,a1)
-lbC0030B6	move.w	#$277,d0
-	jsr	(findmenu-ds,a6)
-	beq.b	lbC0030E4
+	beq.b	.noconv
 	movea.l	d0,a1
 	movea.l	(a1),a1
 	movea.l	(a1),a1
 	movea.l	($12,a1),a1
 	moveq	#0,d0
-	move.b	(lbB02EB6B-ds,a6),d0
+	move.b	(convert_anea_regnum-ds,a6),d0
 	add.w	d0,d0
-	lea	(lbW0292FE).l,a0
+	lea	(convert_anea_strval).l,a0
 	move.w	(a0,d0.w),d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(12,a1)
-lbC0030E4	movea.l	(window1ptr-ds,a6),a0
+.noconv	movea.l	(window1ptr-ds,a6),a0
 	movea.l	(menustrip-ds,a6),a1
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOResetMenuStrip,a6)
@@ -12005,7 +12006,7 @@ lbC00C80E	jsr	(lbC02A842-ds,a6)
 lbC00C812	move.b	(a5)+,d0
 	addq.b	#4,d0
 	andi.b	#7,d0
-	move.b	d0,(lbB02EB6B-ds,a6)
+	move.b	d0,(convert_anea_regnum-ds,a6)
 	addq.l	#1,a5
 	move.l	(a5)+,(workdata_strt_plus1-ds,a6)
 	move.l	(a5)+,d1
@@ -16900,7 +16901,7 @@ default_func	dl	term1-default_func
 	dl	lbC014360-*
 	dw	$3B6
 	dl	0
-	dl	lbC01BAB6-*
+	dl	SaveMacros-*
 	dw	$16E
 	dl	0
 	dl	lbC01D0C6-*
@@ -17998,7 +17999,7 @@ default_func	dl	term1-default_func
 	dl	lbC01BC5C-*
 	dw	$638
 	dl	0
-	dl	lbC01BBDA-*
+	dl	SaveKeyTable-*
 	dw	$54
 	dl	0
 	dl	lbC01C69E-*
@@ -23535,7 +23536,7 @@ lbC0140B6	tst.b	(lbB02B42E-ds,a6)
 	beq.b	lbC0140C0
 	bset	#0,d0
 lbC0140C0	move.b	d0,(a4)+
-	move.b	(lbB02EB6B-ds,a6),d0
+	move.b	(convert_anea_regnum-ds,a6),d0
 	subq.b	#4,d0
 	andi.b	#7,d0
 	move.b	d0,(a4)+
@@ -25045,10 +25046,10 @@ lbC015222	jsr	(clear_ccr-ds,a6)
 	rts
 
 help	tst.b	(lbB02EB41-ds,a6)
-	bne.w	lbC01529A
+	bne.w	_LoadMenuDefaults0
 	tst.b	(lbW02EB7E-ds,a6)
 	bne.b	lbC015252
-	move.w	#$2754,d0
+	move.w	#$2754,d0	;help is available for all functions...
 	jsr	(gettextbynum-ds,a6)
 	movea.l	d0,a0
 	jsr	(print_text_a0).l
@@ -25056,14 +25057,14 @@ help	tst.b	(lbB02EB41-ds,a6)
 	jsr	(lbC028982-ds,a6)
 lbC015252	clr.b	(lbW02EB7E-ds,a6)
 	tst.w	(lbB02EACC-ds,a6)
-	beq.b	lbC01529A
+	beq.b	_LoadMenuDefaults0
 	lea	(ReSourcehelpl.MSG,pc),a1
 	move.l	#$20006,d0
 	jsr	(_openlib-ds,a6)
 	tst.l	d0
-	beq.b	lbC01529A
+	beq.b	_LoadMenuDefaults0
 	movea.l	d0,a1
-	bsr.b	lbC0152C4
+	bsr.b	SetSmartRefresh
 	moveq	#0,d0
 	move.w	(lbB02EACC-ds,a6),d0
 	lea	(lbL0153A0,pc),a0
@@ -25072,58 +25073,58 @@ lbC015252	clr.b	(lbW02EB7E-ds,a6)
 	movea.l	(sp)+,a1
 	move.w	d0,-(sp)
 	jsr	(_CloseLibrary-ds,a6)
-	bsr.w	lbC015332
+	bsr.w	SetNoSmartRefresh
 	move.w	(sp)+,d0
 	cmpi.b	#2,d0
 	beq.w	help
-	bra.b	lbC01529E
+	bra.b	_LoadMenuDefaults1
 
-lbC01529A	moveq	#0,d0
-	bra.b	lbC0152A0
+_LoadMenuDefaults0	moveq	#0,d0
+	bra.b	_LoadMenuDefaults
 
-lbC01529E	moveq	#1,d0
-lbC0152A0	move.l	d0,-(sp)
+_LoadMenuDefaults1	moveq	#1,d0
+_LoadMenuDefaults	move.l	d0,-(sp)
 	move.b	#$FF,(lbB02EB48-ds,a6)
 	jsr	(lbC001000).l
 	jsr	(lbC001EC4).l
 	jsr	(lbC0025B6).l
-	jsr	(lbC002BFE).l
+	jsr	(LoadMenuDefaults).l
 	move.l	(sp)+,d0
 	rts
 
-lbC0152C4	movea.l	(window1ptr-ds,a6),a0
-	bset	#0,($19,a0)
+SetSmartRefresh	movea.l	(window1ptr-ds,a6),a0
+	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
 	move.l	(symwindowptr-ds,a6),d0
 	beq.b	lbC0152DC
 	movea.l	d0,a0
-	bset	#0,($19,a0)
+	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
 lbC0152DC	move.l	(window2ptr-ds,a6),d0
 	beq.b	lbC0152EA
 	movea.l	d0,a0
-	bset	#0,($19,a0)
+	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
 lbC0152EA	move.l	(WindowMacros1Ptr-ds,a6),d0
 	beq.b	lbC0152F8
 	movea.l	d0,a0
-	bset	#0,($19,a0)
+	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
 lbC0152F8	move.l	(WindowMacros2Ptr-ds,a6),d0
 	beq.b	lbC015306
 	movea.l	d0,a0
-	bset	#0,($19,a0)
+	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
 lbC015306	move.l	(WindowMacros3Ptr-ds,a6),d0
 	beq.b	lbC015314
 	movea.l	d0,a0
-	bset	#0,($19,a0)
+	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
 lbC015314	move.l	(window6ptr-ds,a6),d0
 	beq.b	lbC015322
 	movea.l	d0,a0
-	bset	#0,($19,a0)
+	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
 lbC015322	move.l	(window7ptr-ds,a6),d0
 	beq.b	lbC015330
 	movea.l	d0,a0
-	bset	#0,($19,a0)
+	bset	#wd_NextWindow,(wd_Flags+1,a0)
 lbC015330	rts
 
-lbC015332	movea.l	(window1ptr-ds,a6),a0
+SetNoSmartRefresh	movea.l	(window1ptr-ds,a6),a0
 	bclr	#0,($19,a0)
 	move.l	(symwindowptr-ds,a6),d0
 	beq.b	lbC01534A
@@ -26453,7 +26454,7 @@ lbC016240	lea	(endbdlw.MSG-ds,a6),a0
 	jsr	(lbC02A58A-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
-lbC016252	lea	(WL.MSG-ds,a6),a0
+lbC016252	lea	(flagCaseSizeSpec-ds,a6),a0
 	bsr.b	lbC0162BC
 	move.w	#$366,d0
 	jsr	(lbC02A58A-ds,a6)
@@ -33176,21 +33177,21 @@ lbC01BAA0	addq.l	#1,d4
 	andi.b	#$FB,ccr
 	rts
 
-lbC01BAB6	tst.b	(lbB02EB41-ds,a6)
-	beq.b	lbC01BAC0
+SaveMacros	tst.b	(lbB02EB41-ds,a6)	;Save Configuration
+	beq.b	.go
 	jmp	(term2-ds,a6)
 
-lbC01BAC0	clr.b	(lbB02EB49-ds,a6)
+.go	clr.b	(lbB02EB49-ds,a6)
 	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2747,d0	;save macros to...
 	jsr	(gettextbynum-ds,a6)
 	lea	(path_macros-ds,a6),a0
 	move.l	a0,d1
 	bsr.w	requestfile
-	bne.b	lbC01BADE
+	bne.b	.go2
 	rts
 
-lbC01BADE	jsr	(_SetPointerAll-ds,a6)
+.go2	jsr	(_SetPointerAll-ds,a6)
 	move.l	a0,(SaveFileName-ds,a6)
 	move.l	a0,d1
 	jsr	(OpenNewFile-ds,a6)
@@ -33276,16 +33277,16 @@ lbC01BBC8	move.l	(saveFH-ds,a6),d1
 	andi.b	#$FB,ccr
 	rts
 
-lbC01BBDA	jsr	(saveregs_nod0d1a0a1-ds,a6)
+SaveKeyTable	jsr	(saveregs_nod0d1a0a1-ds,a6)
 	move.w	#$2745,d0	;save keybinding table to...
 	jsr	(gettextbynum-ds,a6)
 	lea	(path_keytable-ds,a6),a0
 	move.l	a0,d1
 	bsr.w	requestfile
-	bne.b	lbC01BBF4
+	bne.b	.go
 	rts
 
-lbC01BBF4	jsr	(_SetPointerAll-ds,a6)
+.go	jsr	(_SetPointerAll-ds,a6)
 	move.l	a0,(SaveFileName-ds,a6)
 	move.l	a0,d1
 	jsr	(OpenNewFile-ds,a6)
@@ -33774,7 +33775,7 @@ lbC01C27E	move.b	(a0)+,d1
 	addq.w	#1,a0
 	move.b	d1,(a1)+
 	moveq	#$30,d1
-	add.b	(lbB02EB6B-ds,a6),d1
+	add.b	(convert_anea_regnum-ds,a6),d1
 lbC01C298	move.b	d1,(a1)+
 	bra.b	lbC01C27E
 
@@ -34244,16 +34245,16 @@ lbC01C8AE	move.w	#$1A7,d1
 	tst.b	(lbB02B403-ds,a6)
 	beq.b	lbC01C8CE
 lbC01C8CC	move.w	d1,(a5)+
-lbC01C8CE	cmpi.b	#$58,(XEFM.MSG-ds,a6)
+lbC01C8CE	cmpi.b	#$58,(flagCaseCode-ds,a6)
 	beq.b	lbC01C8DA
 	move.w	#$1A2,(a5)+
-lbC01C8DA	cmpi.b	#$78,(xpsc.MSG-ds,a6)
+lbC01C8DA	cmpi.b	#$78,(flagCaseData-ds,a6)
 	beq.b	lbC01C8E6
 	move.w	#$1A3,(a5)+
-lbC01C8E6	cmpi.b	#$41,(ADUSPUSPMMUMM.MSG-ds,a6)
+lbC01C8E6	cmpi.b	#$41,(flagCaseRegs-ds,a6)
 	beq.b	lbC01C8F2
 	move.w	#$314,(a5)+
-lbC01C8F2	cmpi.b	#$57,(WL.MSG-ds,a6)
+lbC01C8F2	cmpi.b	#$57,(flagCaseSizeSpec-ds,a6)
 	beq.b	lbC01C8FE
 	move.w	#$366,(a5)+
 lbC01C8FE	moveq	#$36,d1
@@ -34313,7 +34314,7 @@ lbC01C988	move.w	#$29D,d1
 	beq.b	lbC01C99C
 lbC01C99A	move.w	d1,(a5)+
 lbC01C99C	moveq	#0,d0
-	move.b	(lbB02EB6B-ds,a6),d0
+	move.b	(convert_anea_regnum-ds,a6),d0
 	cmpi.w	#4,d0
 	beq.b	lbC01C9B0
 	move.w	#$2D3,d1
@@ -34442,7 +34443,7 @@ lbC01CAF0	move.w	(a0)+,(a1)+
 	subq.l	#2,d0
 	bne.b	lbC01CAF0
 	movem.l	(sp)+,d2-d7/a2-a5
-	bsr.w	lbC01BAB6
+	bsr.w	SaveMacros
 	jmp	(lbC02A422-ds,a6)
 
 lbC01CB02	clr.l	(4,a5)
@@ -35775,7 +35776,7 @@ Start2	move.b	#$14,(lbL02D114-ds,a6)
 	addq.w	#1,d0
 	move.w	d0,($9C,a1)
 	move.w	#$357,($BE,a1)
-	addq.b	#4,(lbB02EB6B-ds,a6)
+	addq.b	#4,(convert_anea_regnum-ds,a6)
 	move.l	#lbL01A840,(lbL02D164-ds,a6)
 	move.l	#lbL03576C,(lbL02D168-ds,a6)
 	st	(lbB02EB69-ds,a6)
@@ -37548,7 +37549,7 @@ lbC01F204	tst.b	(lbB02B451-ds,a6)
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
 lbC01F210	bsr.w	lbC020C02
-	move.b	(XEFM.MSG-ds,a6),(a4)+
+	move.b	(flagCaseCode-ds,a6),(a4)+
 	move.b	(RS.MSG-ds,a6),(a4)+
 	move.b	(EF.MSG-ds,a6),(a4)+
 	move.b	(FM.MSG-ds,a6),(a4)+
@@ -40056,7 +40057,7 @@ lbC021404	move.b	(dl.MSG-ds,a6),(a4)+
 	move.b	(cx.MSG-ds,a6),(a4)+
 	move.b	(bd.MSG-ds,a6),(a4)+
 	move.b	#$2E,(a4)+
-	move.b	(xpsc.MSG-ds,a6),d0
+	move.b	(flagCaseData-ds,a6),d0
 	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC021424
 	move.b	(ps.MSG-ds,a6),d0
@@ -40072,7 +40073,7 @@ lbC021424	move.b	d0,(a4)+
 	bra.w	lbC02233E
 
 lbC021448	move.b	#$30,(lbB02EAD2-ds,a6)
-	move.b	(xpsc.MSG-ds,a6),d0
+	move.b	(flagCaseData-ds,a6),d0
 	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC02145E
 	move.b	(ps.MSG-ds,a6),d0
@@ -40186,7 +40187,7 @@ lbC021570	btst	#0,($1E,a3)
 	beq.b	lbC0215B2
 	addq.l	#1,(lbL02D258-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
-lbC0215B2	move.b	(xpsc.MSG-ds,a6),d0
+lbC0215B2	move.b	(flagCaseData-ds,a6),d0
 	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC0215C2
 	move.b	(ps.MSG-ds,a6),d0
@@ -43389,7 +43390,7 @@ lbC023D46	move.b	#'(',(a4)+
 lbC023D56	moveq	#0,d0
 	move.w	(a2)+,d0
 	addq.l	#8,a3
-	cmp.b	(lbB02EB6B-ds,a6),d3
+	cmp.b	(convert_anea_regnum-ds,a6),d3
 	bne.w	lbC023DEC
 	tst.b	(lbB02EB40-ds,a6)
 	beq.w	lbC023DEC
@@ -43478,7 +43479,7 @@ lbC023E44	btst	#0,(a3)
 lbC023E50	moveq	#0,d0
 	move.w	(a2)+,d0
 	addq.l	#8,a3
-	cmp.b	(lbB02EB6B-ds,a6),d3
+	cmp.b	(convert_anea_regnum-ds,a6),d3
 	bne.w	lbC023EE6
 	tst.b	(lbB02EB40-ds,a6)
 	beq.w	lbC023EE6
@@ -43553,7 +43554,7 @@ lbC023F20	moveq	#0,d0
 	addq.l	#2,a2
 	addq.l	#8,a3
 	bne.w	lbC023FC4
-	cmp.b	(lbB02EB6B-ds,a6),d3
+	cmp.b	(convert_anea_regnum-ds,a6),d3
 	bne.b	lbC023FB8
 	moveq	#0,d0
 	move.b	(-1,a2),d0
@@ -43637,7 +43638,7 @@ lbC024004	move.b	#$28,(a4)+
 	addq.l	#2,a2
 	addq.l	#8,a3
 	bne.w	lbC0240C6
-	cmp.b	(lbB02EB6B-ds,a6),d3
+	cmp.b	(convert_anea_regnum-ds,a6),d3
 	bne.w	lbC0240BA
 	moveq	#0,d0
 	move.b	(-1,a2),d0
@@ -43769,7 +43770,7 @@ lbC024172	bsr.w	lbC0234F4
 	addq.l	#2,a2
 	addq.l	#8,a3
 	bne.w	lbC0242D6
-	cmp.b	(lbB02EB6B-ds,a6),d3
+	cmp.b	(convert_anea_regnum-ds,a6),d3
 	bne.b	lbC0241F6
 	tst.b	d4
 	bmi.b	lbC0241F6
@@ -43825,7 +43826,7 @@ lbC02420A	bsr.w	lbC023464
 	beq.w	lbC0242BE
 	btst	#5,(lbW02D0EE-ds,a6)
 	bne.w	lbC0242BE
-	cmp.b	(lbB02EB6B-ds,a6),d3
+	cmp.b	(convert_anea_regnum-ds,a6),d3
 	bne.w	lbC0242BE
 	move.l	(lbL02D0F0-ds,a6),d1
 	sub.l	(ds-ds,a6),d1
@@ -44067,7 +44068,7 @@ lbC0244C6	bsr.b	lbC02449E
 	tst.b	(lbB02B470-ds,a6)
 	beq.b	lbC0244D6
 	move.b	#$2E,(a4)+
-	move.b	(WL.MSG-ds,a6),(a4)+
+	move.b	(flagCaseSizeSpec-ds,a6),(a4)+
 lbC0244D6	rts
 
 lbC0244D8	move.b	#$28,(a4)+
@@ -44076,7 +44077,7 @@ lbC0244D8	move.b	#$28,(a4)+
 	tst.b	(lbB02B470-ds,a6)
 	beq.b	lbC0244F0
 	move.b	#$2E,(a4)+
-	move.b	(WL.MSG-ds,a6),(a4)+
+	move.b	(flagCaseSizeSpec-ds,a6),(a4)+
 lbC0244F0	rts
 
 lbC0244F2	tst.b	(lbB02B472-ds,a6)
@@ -44916,7 +44917,7 @@ lbC024D9E	subq.l	#1,a4
 lbC024DAC	lea	(lbW00CBF4).l,a0
 	add.w	d1,d1
 	adda.w	(a0,d1.w),a0
-	move.b	(ADUSPUSPMMUMM.MSG-ds,a6),d0
+	move.b	(flagCaseRegs-ds,a6),d0
 lbC024DBC	move.b	(a0)+,(a4)+
 	bgt.b	lbC024DBC
 	beq.b	lbC024DC8
@@ -45008,7 +45009,7 @@ lbC024E8C	subq.l	#1,a4
 lbC024E9A	lea	(lbW00CBF4).l,a0
 	add.w	d1,d1
 	adda.w	(a0,d1.w),a0
-	move.b	(ADUSPUSPMMUMM.MSG-ds,a6),d0
+	move.b	(flagCaseRegs-ds,a6),d0
 lbC024EAA	move.b	(a0)+,(a4)+
 	bgt.b	lbC024EAA
 	beq.b	lbC024EB6
@@ -45753,7 +45754,7 @@ MC68851MC6803.MSG	db	'MC68851/MC68030',0
 lbC02564C	move.b	#$2E,(a4)+
 	btst	#14,d5
 	bne.b	lbC025676
-	move.b	(XEFM.MSG-ds,a6),(a4)+
+	move.b	(flagCaseCode-ds,a6),(a4)+
 	move.b	#$58,(lbB02EAD2-ds,a6)
 	addq.w	#2,d6
 	jsr	(setspacepostopcode-ds,a6)
@@ -46335,7 +46336,7 @@ lbC025CD0	movea.l	(a0,d0.w),a0
 	jsr	(a0)
 	bra.b	lbC025CE6
 
-lbC025CD8	move.b	(XEFM.MSG-ds,a6),(a4)+
+lbC025CD8	move.b	(flagCaseCode-ds,a6),(a4)+
 	addq.w	#2,d6
 	jsr	(setspacepostopcode-ds,a6)
 	bsr.w	lbC0256D6
@@ -51246,7 +51247,7 @@ lbC0292A2	bsr.w	lbC02904E
 	sne	(lbB02EB6D-ds,a6)
 	cmpi.l	#7,d1
 	bhi.w	term2
-lbC0292C4	move.b	d1,(lbB02EB6B-ds,a6)
+lbC0292C4	move.b	d1,(convert_anea_regnum-ds,a6)
 	addi.b	#$30,d1
 	move.b	d1,(conversions.MSG).l
 	move.w	#$277,d0
@@ -51257,14 +51258,14 @@ lbC0292C4	move.b	d1,(lbB02EB6B-ds,a6)
 	movea.l	(a1),a1
 	movea.l	($12,a1),a1
 	moveq	#0,d0
-	move.b	(lbB02EB6B-ds,a6),d0
+	move.b	(convert_anea_regnum-ds,a6),d0
 	add.w	d0,d0
-	move.w	(lbW0292FE,pc,d0.w),d0
+	move.w	(convert_anea_strval,pc,d0.w),d0
 	bsr.w	gettextbynum
 	bsr.w	lbC02A600
 lbC0292FA	jmp	(lbC02A422-ds,a6)
 
-lbW0292FE	dw	$841
+convert_anea_strval	dw	$841	;convert (xx,a0) ea's
 	dw	$842
 	dw	$843
 	dw	$844
@@ -52357,7 +52358,7 @@ lbC029FE8	move.b	(dl.MSG-ds,a6),(a4)+
 	beq.b	lbC02A00A
 	cmp.b	(dl.MSG-ds,a6),d0
 	beq.b	lbC02A00A
-	cmp.b	(xpsc.MSG-ds,a6),d0
+	cmp.b	(flagCaseData-ds,a6),d0
 	beq.b	lbC02A00A
 	cmp.b	(ps.MSG-ds,a6),d0
 	beq.b	lbC02A00A
@@ -53213,7 +53214,7 @@ simpleasmbase	dl	0
 	dw	$FEFF
 lbL02A9A4	dl	lbL034D20
 lbL02A9A8	dl	lbL035128
-WL.MSG	db	'W'
+flagCaseSizeSpec	db	'W'
 L.MSG	db	'L',0
 D0D1D2D3D4D5D.MSG0	db	'(D0)(D1)(D2)(D3)(D4)(D5)(D6)(D7)'
 A0A1A2A3A4A5A.MSG0	db	'(A0)(A1)(A2)(A3)(A4)(A5)(A6)(SP)'
@@ -53228,7 +53229,7 @@ Scale.MSG	db	'*1*2*4*8'
 ZP.MSG	db	'Z'
 PC.MSG1	db	'P'
 CA.MSG	db	'C'
-ADUSPUSPMMUMM.MSG	db	'A'
+flagCaseRegs	db	'A'
 DUSP.MSG	db	'D'
 USP.MSG0	db	',USP'
 USP.MSG1	db	'USP,'
@@ -53331,7 +53332,7 @@ bd.MSG	db	'b'
 dl.MSG	db	'd'
 lw.MSG	db	'l'
 wx.MSG	db	'w'
-xpsc.MSG	db	'x'
+flagCaseData	db	'x'
 ps.MSG	db	'p'
 sc.MSG	db	's'
 cx.MSG	db	'c'
@@ -53400,7 +53401,7 @@ TU.MSG	db	'T'
 UW.MSG	db	'U'
 WFD.MSG	db	'W'
 FD.MSG	db	'FD'
-XEFM.MSG	db	'X'
+flagCaseCode	db	'X'
 EF.MSG	db	'E'
 FM.MSG	db	'F'
 M.MSG	db	'M'
@@ -54577,7 +54578,7 @@ lbB02EB67	dx.b	1
 lbB02EB68	dx.b	1
 lbB02EB69	dx.b	1
 lbB02EB6A	dx.b	1
-lbB02EB6B	dx.b	1
+convert_anea_regnum	dx.b	1	;register number for: Convert (xx,An) EA's
 lbB02EB6C	dx.b	1
 lbB02EB6D	dx.b	1
 lbW02EB6E	dx.b	1
@@ -54727,7 +54728,7 @@ lbB039E88	dx.b	$1A
 Macros3String19	dx.b	$22
 DxAreaEnd
 
-	SECTION	ReSource18rs039EC4,DATA,CHIP
+	SECTION	ReSource19rs039EC4,DATA,CHIP
 pointerdata	dl	0
 	dl	$40007C0
 	dl	$7C0
@@ -54818,7 +54819,7 @@ GadgetImageData	dl	0
 	dl	0
 
 
-	SECTION	ReSource18rs03A024,CODE
+	SECTION	ReSource19rs03A024,CODE
 copyhunk2	movem.l	a2-a4,-(sp)
 	lea	(lbL03A400,pc),a0
 	lea	(lbL03576C).l,a1
