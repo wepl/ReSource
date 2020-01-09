@@ -36508,8 +36508,11 @@ lbC01E28A	move.w	d0,(lbW02D3A8-ds,a6)
 	jsr	(easyrequest_35-ds,a6)
 	bra.w	nomemory
 
-.menustrip_ok	movea.l	a2,a0
-	movea.l	d0,a1
+.menustrip_ok
+	move.l	d0,-(a7)
+	jsr	LoadMenuDefaults
+	move.l	(a7)+,a1
+	movea.l	a2,a0
 	move.l	a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
@@ -53966,8 +53969,8 @@ lbB02B3DE	db	0
 lbB02B3DF	db	0
 lbB02B3E0	db	0
 lbB02B3E1	db	0
-saveRsOriginal_	db	0
-saveRsCurrent	db	1
+saveRsOriginal_	db	1
+saveRsCurrent	db	0
 saveRsSpecify	db	0
 lbB02B3E5	db	0
 lbB02B3E6	db	0
@@ -54055,11 +54058,11 @@ lbB02B437	db	1
 saveBinOriginal	db	1
 saveBinCurrent	db	0
 saveBinSpecify	db	0
-saveAsmOriginal	db	0
-saveAsmCurrent	db	1
+saveAsmOriginal	db	1
+saveAsmCurrent	db	0
 saveAsmSpecify	db	0
-saveExeOriginal	db	0
-saveExeCurrent	db	1
+saveExeOriginal	db	1
+saveExeCurrent	db	0
 saveExeSpecify	db	0
 lbB02B441	db	1
 lbB02B442	db	0
