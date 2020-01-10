@@ -4312,7 +4312,7 @@ LoadMenuDefaults	movem.l	d2/a2/a3/a6,-(sp)
 	lea	(miscBuffer-ds,a6),a3
 	movea.l	a3,a0
 	move.w	#$36C,(a0)+
-	move.b	(saveRsOriginal_-ds,a6),(a0)+
+	move.b	(saveRsOriginal-ds,a6),(a0)+
 	clr.b	(a0)+
 	move.w	#$370,(a0)+
 	move.b	(saveRsCurrent-ds,a6),(a0)+
@@ -23224,7 +23224,7 @@ lbC013C90	move.l	d1,(a0)+
 	dbra	d0,lbC013C90
 	rts
 
-SaveRsOriginal	st	(saveRsOriginal_-ds,a6)
+SaveRsOriginal	st	(saveRsOriginal-ds,a6)
 	clr.b	(saveRsCurrent-ds,a6)
 	clr.b	(saveRsSpecify-ds,a6)
 	lea	(menuModifyList-ds,a6),a0
@@ -23237,7 +23237,7 @@ SaveRsOriginal	st	(saveRsOriginal_-ds,a6)
 	clr.w	(a0)
 	bra.w	ModifyFileNames
 
-SaveRsCurrent	clr.b	(saveRsOriginal_-ds,a6)
+SaveRsCurrent	clr.b	(saveRsOriginal-ds,a6)
 	st	(saveRsCurrent-ds,a6)
 	clr.b	(saveRsSpecify-ds,a6)
 	lea	(menuModifyList-ds,a6),a0
@@ -23255,7 +23255,7 @@ SaveRsSpecify	move.w	#$2719,d0	;new default path?
 	move.l	#saveRsSpecifyBuf,d1
 	jsr	(StringRequest240).l
 	jsr	(term2_if_cceq-ds,a6)
-	clr.b	(saveRsOriginal_-ds,a6)
+	clr.b	(saveRsOriginal-ds,a6)
 	clr.b	(saveRsCurrent-ds,a6)
 	st	(saveRsSpecify-ds,a6)
 	lea	(menuModifyList-ds,a6),a0
@@ -35807,10 +35807,7 @@ routines_68020	dl	extract_ea_68020-ds
 	dl	0
 
 Start3	movea.l	(execbase-ds,a6),a1
-	btst	#AFB_68881,(AttnFlags+1,a1)
-	sne	(fpu_available-ds,a6)
 	btst	#AFB_68020,(AttnFlags+1,a1)
-	sne	(mc68020_available-ds,a6)
 	beq.b	.no68020
 	lea	(routines_68020,pc),a0
 .loop	move.l	(a0)+,d0
@@ -53969,7 +53966,7 @@ lbB02B3DE	db	0
 lbB02B3DF	db	0
 lbB02B3E0	db	0
 lbB02B3E1	db	0
-saveRsOriginal_	db	1
+saveRsOriginal	db	1
 saveRsCurrent	db	0
 saveRsSpecify	db	0
 lbB02B3E5	db	0
@@ -54606,17 +54603,12 @@ lbL02EB80	dx.w	1
 allFileNamesBuild	dx.b	1
 lbB02EB83	dx.b	1
 lbB02EB84	dx.b	1
-saveRsOriginal	dx.b	1
 lbB02EB86	dx.b	1
 lbB02EB87	dx.b	1
 lbW02EB88	dx.b	1
 lbB02EB89	dx.b	1
 lbB02EB8A	dx.b	1
-mc68020_available	dx.b	1
-fpu_available	dx.b	2
-lbL02EB8E	dx.l	3
-	dx.w	1
-	dx.b	1
+lbL02EB8E	dx.b	15
 lbB02EB9D	dx.b	1
 lbB02EB9E	dx.b	1
 lbB02EB9F	dx.b	$50
@@ -54630,6 +54622,7 @@ lbB02EBF5	dx.b	1
 lbB02EBF6	dx.b	1
 pubscreen_private_flag
 	dx.b	1
+	CNOP 0,4
 lbL02EBF8	dx.l	1
 lbL02EBFC	dx.l	1
 lbL02EC00	dx.l	$200
