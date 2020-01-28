@@ -125,6 +125,7 @@ im_MouseX	equ	$20
 _LVOFreeMem	equ	-$D2
 WFLG_NOCAREREFRESH	equ	$20000
 GMORE_GADGETHELP	equ	$2
+LN_SUCC	equ	$0
 _LVOCloseLibrary	equ	-$19E
 GMR_REUSE	equ	$4
 IS_CODE	equ	$12
@@ -267,6 +268,7 @@ ASLSM_InitialDisplayWidth	equ	$80080065
 WA_Activate	equ	$80000089
 GTLV_Selected	equ	$80080036
 TC_MEMENTRY	equ	$4A
+cli_Result2	equ	$0
 _LVOSetBPen	equ	-$15C
 _LVOMove	equ	-$F0
 ASLFR_InitialFile	equ	$80080008
@@ -891,7 +893,7 @@ GadgetRender	dl	0	;Left Top
 	dl	0	;NextImage
 
 openwindow_symbols	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(symwindowptr-ds,a6),d0
+	move.l	(symbolsWindowPtr-ds,a6),d0
 	beq.b	lbC000602
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -965,7 +967,7 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(symwindowptr-ds,a6)
+	move.l	d0,(symbolsWindowPtr-ds,a6)
 	beq.w	syms_nowin
 	movea.l	d0,a3
 	move.l	#$400778,d0
@@ -1317,7 +1319,7 @@ gadcode_sym_load	move.w	($C8,a5),d0
 lbC000B1C	move.w	(4,a3),(lbB02CFCE-ds,a6)
 	move.w	(6,a3),(lbB02CFD0-ds,a6)
 	bsr.w	lbC002B98
-	clr.l	(symwindowptr-ds,a6)
+	clr.l	(symbolsWindowPtr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
@@ -1577,7 +1579,7 @@ lbC000E2A	moveq	#0,d5
 	rts
 
 openwindow_search	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(window2ptr-ds,a6),d0
+	move.l	(searchWindowPtr-ds,a6),d0
 	beq.b	lbC000E44
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -1676,7 +1678,7 @@ lbC000F44	move.l	d0,-(sp)
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(window2ptr-ds,a6)
+	move.l	d0,(searchWindowPtr-ds,a6)
 	beq.w	lbC000FCE
 	movea.l	d0,a3
 	move.l	#$40760,d0
@@ -1719,7 +1721,7 @@ lbC000FFA	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
 lbC001000	movem.l	d1-d3/a2-a5,-(sp)
-	move.l	(window2ptr-ds,a6),d0
+	move.l	(searchWindowPtr-ds,a6),d0
 	beq.b	lbC001012
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
@@ -2307,7 +2309,7 @@ lbW001668	dw	$4D
 	dw	$354
 
 lbC001674	movem.l	d0/d1/a0-a3,-(sp)
-	move.l	(window2ptr-ds,a6),d0
+	move.l	(searchWindowPtr-ds,a6),d0
 	beq.b	lbC0016A0
 	movea.l	d0,a3
 	movea.l	($78,a3),a0
@@ -2325,7 +2327,7 @@ lbC0016A0	clr.b	(lbB02B415-ds,a6)
 	rts
 
 lbC0016AE	movem.l	a2/a6,-(sp)
-	move.l	(window2ptr-ds,a6),d0
+	move.l	(searchWindowPtr-ds,a6),d0
 	beq.b	lbC0016D0
 	movea.l	d0,a1
 	movea.l	($78,a1),a0
@@ -2340,7 +2342,7 @@ lbC0016D0	movem.l	(sp)+,a2/a6
 lbC0016D6	move.w	(4,a3),(lbB02CFE2-ds,a6)
 	move.w	(6,a3),(lbB02CFE4-ds,a6)
 	bsr.w	lbC002B98
-	clr.l	(window2ptr-ds,a6)
+	clr.l	(searchWindowPtr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
@@ -2371,7 +2373,7 @@ openwindow_macros2	moveq	#1,d0
 openwindow_macros3	moveq	#2,d0
 openwindow_macros	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	d0,d6	;d6 = macros number
-	lea	(WindowMacros1Ptr-ds,a6),a0
+	lea	(windowMacros1Ptr-ds,a6),a0
 	lsl.w	#2,d0
 	move.l	(a0,d0.w),d0
 	beq.b	.notyetopen
@@ -2475,7 +2477,7 @@ lbC00185E	move.l	d0,-(sp)
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	lea	(WindowMacros1Ptr-ds,a6),a0
+	lea	(windowMacros1Ptr-ds,a6),a0
 	move.l	d6,d1
 	lsl.w	#2,d1
 	move.l	d0,(a0,d1.w)
@@ -2852,10 +2854,10 @@ lbC001C32	movea.l	($2A,a5),a0
 	movea.l	(sp)+,a6
 	clr.l	(a5)
 lbC001C4E	lea	(Macros1Strings).l,a0
-	cmpa.l	(WindowMacros1Ptr-ds,a6),a3
+	cmpa.l	(windowMacros1Ptr-ds,a6),a3
 	beq.b	lbC001C68
 	lea	($4C,a0),a0
-	cmpa.l	(WindowMacros2Ptr-ds,a6),a3
+	cmpa.l	(windowMacros2Ptr-ds,a6),a3
 	beq.b	lbC001C68
 	lea	($4C,a0),a0
 lbC001C68	bsr.b	MacrosAllocStructs
@@ -2916,17 +2918,17 @@ lbC001CFC	movem.l	(sp)+,d2/a2/a3
 
 Macros1Dealloc	move.w	(4,a3),(lbB02CFD6-ds,a6)
 	move.w	(6,a3),(lbB02CFD8-ds,a6)
-	clr.l	(WindowMacros1Ptr-ds,a6)
+	clr.l	(windowMacros1Ptr-ds,a6)
 	bra.b	lbC001D36
 
 Macros2Dealloc	move.w	(4,a3),(lbB02CFDA-ds,a6)
 	move.w	(6,a3),(lbB02CFDC-ds,a6)
-	clr.l	(WindowMacros2Ptr-ds,a6)
+	clr.l	(windowMacros2Ptr-ds,a6)
 	bra.b	lbC001D36
 
 Macros3Dealloc	move.w	(4,a3),(lbB02CFDE-ds,a6)
 	move.w	(6,a3),(lbB02CFE0-ds,a6)
-	clr.l	(WindowMacros3Ptr-ds,a6)
+	clr.l	(windowMacros3Ptr-ds,a6)
 lbC001D36	lea	(lbL02CF86-ds,a6),a0
 	cmpa.l	(a0),a3
 	bne.b	lbC001D40
@@ -2953,13 +2955,13 @@ lbC001D68	movea.l	a5,a1
 	rts
 
 openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(window6ptr-ds,a6),d0
-	beq.b	lbC001D8C
+	move.l	(windowOptions1Ptr-ds,a6),d0
+	beq.b	.open
 	movea.l	d0,a0
 	bsr.w	windowtofront
 	bra.w	lbC001E8C
 
-lbC001D8C	move.l	#$10000,d1
+.open	move.l	#$10000,d1
 	move.l	#$CA,d0
 	move.l	a6,-(sp)
 	movea.l	(execbase-ds,a6),a6
@@ -3009,7 +3011,7 @@ lbC001D8C	move.l	#$10000,d1
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(window6ptr-ds,a6)
+	move.l	d0,(windowOptions1Ptr-ds,a6)
 	beq.w	lbC001E92
 	movea.l	d0,a3
 	move.l	#$740,d0
@@ -3052,7 +3054,7 @@ lbC001EBE	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
 lbC001EC4	movem.l	a2-a5,-(sp)
-	move.l	(window6ptr-ds,a6),d0
+	move.l	(windowOptions1Ptr-ds,a6),d0
 	beq.b	lbC001ED6
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
@@ -3590,7 +3592,7 @@ lbW002432	dw	$294
 lbC002438	move.w	(4,a3),(lbB02CFE6-ds,a6)
 	move.w	(6,a3),(lbB02CFE8-ds,a6)
 	bsr.w	lbC002B98
-	clr.l	(window6ptr-ds,a6)
+	clr.l	(windowOptions1Ptr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
@@ -3604,7 +3606,7 @@ lbC002438	move.w	(4,a3),(lbB02CFE6-ds,a6)
 	rts
 
 openwindow_options2	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(window7ptr-ds,a6),d0
+	move.l	(windowOptions2Ptr-ds,a6),d0
 	beq.b	lbC002480
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -3660,7 +3662,7 @@ lbC002480	move.l	#$10000,d1
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(window7ptr-ds,a6)
+	move.l	d0,(windowOptions2Ptr-ds,a6)
 	beq.b	lbC002584
 	movea.l	d0,a3
 	move.l	#$740,d0
@@ -3703,7 +3705,7 @@ lbC0025B0	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
 lbC0025B6	movem.l	a2-a5,-(sp)
-	move.l	(window7ptr-ds,a6),d0
+	move.l	(windowOptions2Ptr-ds,a6),d0
 	beq.b	lbC0025C8
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
@@ -4074,7 +4076,7 @@ lbC002962	rts
 lbC002964	move.w	(4,a3),(lbB02CFEA-ds,a6)
 	move.w	(6,a3),(lbB02CFEC-ds,a6)
 	bsr.w	lbC002B98
-	clr.l	(window7ptr-ds,a6)
+	clr.l	(windowOptions2Ptr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
@@ -4701,118 +4703,119 @@ LoadMenuDefaults	movem.l	d2/a2/a3/a6,-(sp)
 	movem.l	(sp)+,d2/a2/a3/a6
 	rts
 
-lbC0030FA	st	(lbB02B446-ds,a6)
+lbC0030FA	st	(opt1_show_offsets-ds,a6)
 	bra.w	lbC003634
 
-lbC003102	clr.b	(lbB02B446-ds,a6)
+lbC003102	clr.b	(opt1_show_offsets-ds,a6)
 	bra.w	lbC003634
 
-lbC00310A	st	(lbB02B447-ds,a6)
+opt1_show_labels	st	(lbB02B447-ds,a6)
 	bra.w	lbC003634
 
 lbC003112	clr.b	(lbB02B447-ds,a6)
 	bra.w	lbC003634
 
-lbC00311A	st	(lbB02B448-ds,a6)
+lbC00311A	st	(opt1_show_hlabels-ds,a6)
 	bra.w	lbC003634
 
-lbC003122	clr.b	(lbB02B448-ds,a6)
+lbC003122	clr.b	(opt1_show_hlabels-ds,a6)
 	bra.w	lbC003634
 
-lbC00312A	st	(lbB02B449-ds,a6)
+lbC00312A	st	(opt1_show_symbols-ds,a6)
 	bra.w	lbC003634
 
-lbC003132	clr.b	(lbB02B449-ds,a6)
+lbC003132	clr.b	(opt1_show_symbols-ds,a6)
 	bra.w	lbC003634
 
-lbC00313A	st	(lbB02B44A-ds,a6)
+lbC00313A	st	(opt1_show_eolcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC003142	clr.b	(lbB02B44A-ds,a6)
+lbC003142	clr.b	(opt1_show_eolcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC00314A	st	(lbB02B44B-ds,a6)
+lbC00314A	st	(opt1_show_flcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC003152	clr.b	(lbB02B44B-ds,a6)
+lbC003152	clr.b	(opt1_show_flcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC00315A	st	(lbB02B44C-ds,a6)
+lbC00315A	st	(opt1_show_chipload-ds,a6)
 	bra.w	lbC003634
 
-lbC003162	clr.b	(lbB02B44C-ds,a6)
+lbC003162	clr.b	(opt1_show_chipload-ds,a6)
 	bra.w	lbC003634
 
-lbC00316A	st	(lbB02B44D-ds,a6)
+lbC00316A	st	(opt1_show_sections-ds,a6)
 	bra.w	lbC003634
 
-lbC003172	clr.b	(lbB02B44D-ds,a6)
+lbC003172	clr.b	(opt1_show_sections-ds,a6)
 	bra.w	lbC003634
 
-lbC00317A	st	(lbB02B44E-ds,a6)
+lbC00317A	st	(opt1_show_end-ds,a6)
 	bra.w	lbC003634
 
-lbC003182	clr.b	(lbB02B44E-ds,a6)
+lbC003182	clr.b	(opt1_show_end-ds,a6)
 	bra.w	lbC003634
 
 lbC00318A	jsr	(lbC02AF7E-ds,a6)
-	st	(lbB02B44F-ds,a6)
+	st	(opt1_show_dcb-ds,a6)
 	bra.w	lbC003634
 
 lbC003196	jsr	(lbC02AF7E-ds,a6)
-	clr.b	(lbB02B44F-ds,a6)
+	clr.b	(opt1_show_dcb-ds,a6)
 	bra.w	lbC003634
 
-lbC0031A2	st	(lbB02B450-ds,a6)
+lbC0031A2	st	(opt1_show_seplabels-ds,a6)
 	bra.w	lbC003634
 
-lbC0031AA	clr.b	(lbB02B450-ds,a6)
+lbC0031AA	clr.b	(opt1_show_seplabels-ds,a6)
 	bra.w	lbC003634
 
-lbC0031B2	st	(lbB02B451-ds,a6)
+lbC0031B2	st	(opt1_show_colons-ds,a6)
 	bra.w	lbC003634
 
-lbC0031BA	clr.b	(lbB02B451-ds,a6)
+lbC0031BA	clr.b	(opt1_show_colons-ds,a6)
 	bra.w	lbC003634
 
-lbC0031C2	st	(lbB02B452-ds,a6)
+lbC0031C2	st	(opt1_show_zeros-ds,a6)
 	bra.w	lbC003634
 
-lbC0031CA	clr.b	(lbB02B452-ds,a6)
+lbC0031CA	clr.b	(opt1_show_zeros-ds,a6)
 	bra.w	lbC003634
 
 lbC0031D2	jsr	(lbC02AF7E-ds,a6)
-	st	(lbB02B453-ds,a6)
+	st	(opt1_show_constants-ds,a6)
 	bra.w	lbC003634
 
 lbC0031DE	jsr	(lbC02AF7E-ds,a6)
-	clr.b	(lbB02B453-ds,a6)
+	clr.b	(opt1_show_constants-ds,a6)
 	bra.w	lbC003634
 
-lbC0031EA	st	(lbB02B454-ds,a6)
+lbC0031EA	st	(opt1_show_dcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC0031F2	clr.b	(lbB02B454-ds,a6)
+lbC0031F2	clr.b	(opt1_show_dcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC0031FA	move.l	#lbL01A840,(lbL02D164-ds,a6)
+lbC0031FA	move.l	#opCodeTabNewSyntax,(_opCodeTab-ds,a6)
 	move.l	#lbL03576C,(lbL02D168-ds,a6)
 	jsr	(lbC02AFC0-ds,a6)
 	jsr	(lbC02AF7E-ds,a6)
-	st	(lbB02B455-ds,a6)
+	st	(opt1_show_newsyntax-ds,a6)
 	bra.w	lbC003634
 
-lbC00321A	move.l	#lbL01AFD0,(lbL02D164-ds,a6)
+lbC00321A	move.l	#opCodeTabOldSyntax,(_opCodeTab-ds,a6)
 	move.l	#lbL03776C,(lbL02D168-ds,a6)
 	jsr	(lbC02AFC0-ds,a6)
 	jsr	(lbC02AF7E-ds,a6)
-	clr.b	(lbB02B455-ds,a6)
+	clr.b	(opt1_show_newsyntax-ds,a6)
 	bra.w	lbC003634
 
-lbC00323A	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	tst.b	(lbL02EB80-ds,a6)
+Opt1_show_strict_off
+	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	tst.b	(opt1_show_strict-ds,a6)
 	beq.b	lbC0032A6
-	clr.b	(lbL02EB80-ds,a6)
+	clr.b	(opt1_show_strict-ds,a6)
 	moveq	#0,d0
 	lea	(lbW013A52).l,a0
 	lea	(i_orib).l,a1
@@ -4859,10 +4862,10 @@ lbC0032A6	andi.b	#$FB,ccr
 lbC0032AC	st	(lbB02B456-ds,a6)
 	bra.w	lbC003634
 
-lbC0032B4	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	tst.b	(lbL02EB80-ds,a6)
+Opt1_show_strict_on	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	tst.b	(opt1_show_strict-ds,a6)
 	bne.b	lbC0032FA
-	st	(lbL02EB80-ds,a6)
+	st	(opt1_show_strict-ds,a6)
 	moveq	#0,d0
 	lea	(lbW013A52).l,a0
 	lea	(i_orib).l,a1
@@ -4893,48 +4896,50 @@ lbC0032FA	rts
 lbC0032FC	clr.b	(lbB02B456-ds,a6)
 	bra.w	lbC003634
 
-lbC003304	jsr	(lbC02AFC0-ds,a6)
-	st	(lbB02B457-ds,a6)
+Opt1_allow_refrecog_on
+	jsr	(lbC02AFC0-ds,a6)
+	st	(opt1_allow_refrecog-ds,a6)
 	bra.w	lbC003634
 
-lbC003310	jsr	(lbC02AFC0-ds,a6)
-	clr.b	(lbB02B457-ds,a6)
+Opt1_allow_refrecog_off
+	jsr	(lbC02AFC0-ds,a6)
+	clr.b	(opt1_allow_refrecog-ds,a6)
 	bra.w	lbC003634
 
-lbC00331C	st	(lbB02B458-ds,a6)
+lbC00331C	st	(opt1_allow_autolabels-ds,a6)
 	bra.w	lbC003634
 
-lbC003324	clr.b	(lbB02B458-ds,a6)
+lbC003324	clr.b	(opt1_allow_autolabels-ds,a6)
 	bra.w	lbC003634
 
-lbC00332C	st	(lbB02B459-ds,a6)
+lbC00332C	st	(opt1_allow_equ-ds,a6)
 	bra.w	lbC003634
 
-lbC003334	clr.b	(lbB02B459-ds,a6)
+lbC003334	clr.b	(opt1_allow_equ-ds,a6)
 	bra.w	lbC003634
 
-lbC00333C	st	(lbB02B45A-ds,a6)
+lbC00333C	st	(opt1_allow_ecomments-ds,a6)
 	bra.w	lbC003634
 
-lbC003344	clr.b	(lbB02B45A-ds,a6)
+lbC003344	clr.b	(opt1_allow_ecomments-ds,a6)
 	bra.w	lbC003634
 
-lbC00334C	st	(lbB02B470-ds,a6)
+lbC00334C	st	(opt1_size_absword-ds,a6)
 	bra.w	lbC003634
 
-lbC003354	clr.b	(lbB02B470-ds,a6)
+lbC003354	clr.b	(opt1_size_absword-ds,a6)
 	bra.w	lbC003634
 
-lbC00335C	st	(lbB02B471-ds,a6)
+lbC00335C	st	(opt1_size_abslong-ds,a6)
 	bra.w	lbC003634
 
-lbC003364	clr.b	(lbB02B471-ds,a6)
+lbC003364	clr.b	(opt1_size_abslong-ds,a6)
 	bra.w	lbC003634
 
-lbC00336C	st	(lbB02B472-ds,a6)
+lbC00336C	st	(opt1_size_optimize-ds,a6)
 	bra.w	lbC003634
 
-lbC003374	clr.b	(lbB02B472-ds,a6)
+lbC003374	clr.b	(opt1_size_optimize-ds,a6)
 	bra.w	lbC003634
 
 lbC00337C	move.l	#$3F,(lbL02B49C-ds,a6)
@@ -4970,39 +4975,40 @@ lbC0033D4	move.l	#$FFFFFFFF,(lbL02B49C-ds,a6)
 	st	(lbB02B46F-ds,a6)
 	bra.w	lbC003634
 
-lbC003400	st	(lbB02B45B-ds,a6)
-	clr.b	(lbB02EB43-ds,a6)
+lbC003400	st	(opt2_int_beep-ds,a6)
+	clr.b	(opt2_int_beep_inv-ds,a6)
 	bra.w	lbC003634
 
-lbC00340C	clr.b	(lbB02B45B-ds,a6)
-	st	(lbB02EB43-ds,a6)
+lbC00340C	clr.b	(opt2_int_beep-ds,a6)
+	st	(opt2_int_beep_inv-ds,a6)
 	bra.w	lbC003634
 
-lbC003418	st	(lbB02B45C-ds,a6)
+lbC003418	st	(opt2_int_feedback-ds,a6)
 	bra.w	lbC003634
 
-lbC003420	clr.b	(lbB02B45C-ds,a6)
+lbC003420	clr.b	(opt2_int_feedback-ds,a6)
 	bra.w	lbC003634
 
-lbC003428	st	(lbB02B45D-ds,a6)
+lbC003428	st	(opt2_int_delays-ds,a6)
 	bra.w	lbC003634
 
-lbC003430	clr.b	(lbB02B45D-ds,a6)
+lbC003430	clr.b	(opt2_int_delays-ds,a6)
 	bra.w	lbC003634
 
-lbC003438	st	(lbB02B45E-ds,a6)
+lbC003438	st	(opt2_int_verbose-ds,a6)
 	bra.w	lbC003634
 
-lbC003440	clr.b	(lbB02B45E-ds,a6)
+lbC003440	clr.b	(opt2_int_verbose-ds,a6)
 	bra.w	lbC003634
 
-lbC003448	st	(lbB02B45F-ds,a6)
+lbC003448	st	(opt2_int_refresh-ds,a6)
 	bra.w	lbC003634
 
-lbC003450	clr.b	(lbB02B45F-ds,a6)
+lbC003450	clr.b	(opt2_int_refresh-ds,a6)
 	bra.w	lbC003634
 
-lbC003458	st	(lbB02B46A-ds,a6)
+Opt2_pseudo_pushpop_on
+	st	(opt2_pseudo_pushpop-ds,a6)
 	move.l	#i_pop,(lbL01A934).l
 	move.l	#i_pop,(lbL01B0C4).l
 	move.l	#i_push,(lbL01A944).l
@@ -5011,7 +5017,8 @@ lbC003458	st	(lbB02B46A-ds,a6)
 	move.l	#i_pop2,(lbL01B0DC).l
 	bra.w	lbC003634
 
-lbC00349C	clr.b	(lbB02B46A-ds,a6)
+Opt2_pseudo_pushpop_off
+	clr.b	(opt2_pseudo_pushpop-ds,a6)
 	move.l	#i_moveal,(lbL01A934).l
 	move.l	#i_moveal2,(lbL01B0C4).l
 	move.l	#i_movel,d0
@@ -5022,14 +5029,16 @@ lbC00349C	clr.b	(lbB02B46A-ds,a6)
 	move.l	d0,(lbL01B0DC).l
 	bra.w	lbC003634
 
-lbC0034DC	st	(lbB02B46B-ds,a6)
+Opt2_pseudo_pushmpopm_on
+	st	(opt2_pseudo_pushmpopm-ds,a6)
 	move.l	#i_pushm,(lbL01A9F4).l
 	move.l	#i_popm,(lbL01A9FC).l
 	move.l	#i_pushm,(lbL01B184).l
 	move.l	#i_popm,(lbL01B18C).l
 	bra.w	lbC003634
 
-lbC00350C	clr.b	(lbB02B46B-ds,a6)
+Opt2_pseudo_pushmpopm_off
+	clr.b	(opt2_pseudo_pushmpopm-ds,a6)
 	move.l	#i_movem,d0
 	move.l	d0,(lbL01A9F4).l
 	move.l	d0,(lbL01A9FC).l
@@ -5038,11 +5047,13 @@ lbC00350C	clr.b	(lbB02B46B-ds,a6)
 	move.l	d0,(lbL01B18C).l
 	bra.w	lbC003634
 
-lbC003538	st	(lbB02B46C-ds,a6)
+Opt2_pseudo_blobhs_on
+	st	(opt2_pseudo_blobhs-ds,a6)
 	lea	(HSLO.MSG,pc),a0
 	bra.b	lbC00354A
 
-lbC003542	clr.b	(lbB02B46C-ds,a6)
+Opt2_pseudo_blobhs_off
+	clr.b	(opt2_pseudo_blobhs-ds,a6)
 	lea	(CCCS.MSG,pc),a0
 lbC00354A	lea	(CCCSNEEQVCVSP.MSG-ds,a6),a1
 	bsr.b	lbC003560
@@ -5064,86 +5075,86 @@ lbC003562	moveq	#$20,d1
 HSLO.MSG	db	'HSLO'
 CCCS.MSG	db	'CCCS'
 
-lbC00357A	st	(lbB02B460-ds,a6)
+lbC00357A	st	(opt2_error_code-ds,a6)
 	moveq	#8,d1
 	bra.w	lbC003618
 
-lbC003584	clr.b	(lbB02B460-ds,a6)
+lbC003584	clr.b	(opt2_error_code-ds,a6)
 	moveq	#8,d1
 	bra.w	lbC00362A
 
-lbC00358E	st	(lbB02B461-ds,a6)
+lbC00358E	st	(opt2_error_missing-ds,a6)
 	moveq	#9,d1
 	bra.w	lbC003618
 
-lbC003598	clr.b	(lbB02B461-ds,a6)
+lbC003598	clr.b	(opt2_error_missing-ds,a6)
 	moveq	#9,d1
 	bra.w	lbC00362A
 
-lbC0035A2	st	(lbB02B462-ds,a6)
+lbC0035A2	st	(opt2_error_badalign-ds,a6)
 	moveq	#10,d1
 	bra.b	lbC003618
 
-lbC0035AA	clr.b	(lbB02B462-ds,a6)
+lbC0035AA	clr.b	(opt2_error_badalign-ds,a6)
 	moveq	#10,d1
 	bra.b	lbC00362A
 
-lbC0035B2	st	(lbB02B463-ds,a6)
+lbC0035B2	st	(opt2_error_coderef-ds,a6)
 	moveq	#11,d1
 	bra.b	lbC003618
 
-lbC0035BA	clr.b	(lbB02B463-ds,a6)
+lbC0035BA	clr.b	(opt2_error_coderef-ds,a6)
 	moveq	#11,d1
 	bra.b	lbC00362A
 
-lbC0035C2	st	(lbB02B464-ds,a6)
+lbC0035C2	st	(opt2_error_dataref-ds,a6)
 	moveq	#12,d1
 	bra.b	lbC003618
 
-lbC0035CA	clr.b	(lbB02B464-ds,a6)
+lbC0035CA	clr.b	(opt2_error_dataref-ds,a6)
 	moveq	#12,d1
 	bra.b	lbC00362A
 
-lbC0035D2	st	(lbB02B465-ds,a6)
+lbC0035D2	st	(opt2_error_startplus-ds,a6)
 	moveq	#13,d1
 	bra.b	lbC003618
 
-lbC0035DA	clr.b	(lbB02B465-ds,a6)
+lbC0035DA	clr.b	(opt2_error_startplus-ds,a6)
 	moveq	#13,d1
 	bra.b	lbC00362A
 
-lbC0035E2	st	(lbB02B466-ds,a6)
+lbC0035E2	st	(opt2_error_afline-ds,a6)
 	moveq	#14,d1
 	bra.b	lbC003618
 
-lbC0035EA	clr.b	(lbB02B466-ds,a6)
+lbC0035EA	clr.b	(opt2_error_afline-ds,a6)
 	moveq	#14,d1
 	bra.b	lbC00362A
 
-lbC0035F2	st	(lbB02B467-ds,a6)
+lbC0035F2	st	(opt2_error_libcalls-ds,a6)
 	moveq	#15,d1
 	bra.b	lbC003618
 
-lbC0035FA	clr.b	(lbB02B467-ds,a6)
+lbC0035FA	clr.b	(opt2_error_libcalls-ds,a6)
 	moveq	#15,d1
 	bra.b	lbC00362A
 
-lbC003602	st	(lbB02B468-ds,a6)
+lbC003602	st	(opt2_error_illegal-ds,a6)
 	moveq	#0,d1
 	bra.b	lbC003618
 
-lbC00360A	clr.b	(lbB02B468-ds,a6)
+lbC00360A	clr.b	(opt2_error_illegal-ds,a6)
 	moveq	#0,d1
 	bra.b	lbC00362A
 
-lbC003612	st	(lbB02B469-ds,a6)
+lbC003612	st	(opt2_error_symequ-ds,a6)
 	moveq	#1,d1
 lbC003618	move.w	(lbB02D3A6-ds,a6),d0
 	bset	d1,d0
 	move.w	d0,(lbB02D3A6-ds,a6)
 	bra.b	lbC003634
 
-lbC003624	clr.b	(lbB02B469-ds,a6)
+lbC003624	clr.b	(opt2_error_symequ-ds,a6)
 	moveq	#1,d1
 lbC00362A	move.w	(lbB02D3A6-ds,a6),d0
 	bclr	d1,d0
@@ -5423,7 +5434,7 @@ lbC00397A	move.w	($AA,a5),d1
 	cmp.w	d1,d0
 	beq.b	lbC0039AC
 	movem.l	d0/a0,-(sp)
-	lea	(_RawDoFmt_args-ds,a6),a1
+	lea	(rawDoFmt_args-ds,a6),a1
 	move.w	d1,(a1)
 	move.w	d0,(2,a1)
 	move.w	#$AFC9,d0
@@ -5748,7 +5759,7 @@ lbC003CEA	move.l	(a0),d0
 	andi.w	#$FF,d0
 lbC003D00	move.l	a4,-(sp)
 	movea.l	a2,a4
-	jsr	(lbC02255A).l
+	jsr	(put_hex_d0).l
 	clr.b	(a4)
 	movea.l	(sp)+,a4
 lbC003D0E	lea	($2A,a5),a0
@@ -11709,7 +11720,7 @@ lbC00C460	move.l	a1,d1
 	sub.l	(ds-ds,a6),d1
 	jsr	(lbC02A830-ds,a6)
 lbC00C46A	andi.w	#$FFDF,(a3)
-	tst.b	(lbB02B458-ds,a6)
+	tst.b	(opt1_allow_autolabels-ds,a6)
 	beq.b	lbC00C47E
 	tst.b	(lbB02EB59-ds,a6)
 	beq.b	lbC00C47E
@@ -15041,7 +15052,7 @@ lbB00D7AE	db	$80
 	db	$37
 	db	0
 	CNOP 0,4
-CmpTab1	dl	$FFFF0000
+CmpTab00	dl	$FFFF0000
 	dl	$3C0000
 CmpTabRefPlus8	dl	$FFFF0000
 	dl	$7C0000
@@ -15053,7 +15064,7 @@ CmpTabRefPlus8	dl	$FFFF0000
 	dl	$C00000
 	dl	$F9C00FFF
 	dl	$C00800
-CmpTab2	dl	$F1380000
+CmpTab08	dl	$F1380000
 	dl	$1080000
 	dl	$FF000000
 	dl	0
@@ -15099,13 +15110,13 @@ CmpTab2	dl	$F1380000
 	dl	$C000000
 	dl	$FF0007FF
 	dl	$E000000
-CmpTab3	dl	$F0000000
+CmpTab1018	dl	$F0000000
 	dl	$10000000
-CmpTab4	dl	$F1FF0000
+CmpTab2028	dl	$F1FF0000
 	dl	$205F0000
 	dl	$F1C00000
 	dl	$20400000
-CmpTab5	dl	$FFC00000
+CmpTab3038	dl	$FFC00000
 	dl	$2F000000
 	dl	$F03F0000
 	dl	$201F0000
@@ -15115,9 +15126,9 @@ CmpTab5	dl	$FFC00000
 	dl	$30400000
 	dl	$F0000000
 	dl	$30000000
-CmpTab6	dl	$FFC00000
+CmpTab40	dl	$FFC00000
 	dl	$40C00000
-CmpTab7	dl	$F1400000
+CmpTab48	dl	$F1400000
 	dl	$41000000
 	dl	$FF000000
 	dl	$40000000
@@ -15199,9 +15210,9 @@ CmpTab7	dl	$F1400000
 	dl	$4E800000
 	dl	$FFC00000
 	dl	$4EC00000
-CmpTab8	dl	$FFF80000
+CmpTab50	dl	$FFF80000
 	dl	$51C80000
-CmpTab9	dl	$F0F80000
+CmpTab58	dl	$F0F80000
 	dl	$50C80000
 	dl	$F0FF0000
 	dl	$50FA0000
@@ -15215,15 +15226,15 @@ CmpTab9	dl	$F0F80000
 	dl	$50000000
 	dl	$F1000000
 	dl	$51000000
-CmpTab10	dl	$FF000000
+CmpTab60	dl	$FF000000
 	dl	$60000000
 	dl	$FF000000
 	dl	$61000000
-CmpTab11	dl	$F0000000
+CmpTab68	dl	$F0000000
 	dl	$60000000
-CmpTab12	dl	$F1000000
+CmpTab7078	dl	$F1000000
 	dl	$70000000
-CmpTab13	dl	$F1C00000
+CmpTab8088	dl	$F1C00000
 	dl	$80C00000
 	dl	$F1C00000
 	dl	$81C00000
@@ -15235,13 +15246,13 @@ CmpTab13	dl	$F1C00000
 	dl	$81800000
 	dl	$F0000000
 	dl	$80000000
-CmpTab14	dl	$F0C00000
+CmpTab9098	dl	$F0C00000
 	dl	$90C00000
 	dl	$F1300000
 	dl	$91000000
 	dl	$F0000000
 	dl	$90000000
-CmpTab15	dl	$F0C00000
+CmpTaba0a8b0b8	dl	$F0C00000
 	dl	$B0C00000
 	dl	$F1000000
 	dl	$B0000000
@@ -15249,7 +15260,7 @@ CmpTab15	dl	$F0C00000
 	dl	$B1080000
 	dl	$F1000000
 	dl	$B1000000
-CmpTab16	dl	$F1C00000
+CmpTabc0c8	dl	$F1C00000
 	dl	$C0C00000
 	dl	$F1C00000
 	dl	$C1C00000
@@ -15261,13 +15272,13 @@ CmpTab16	dl	$F1C00000
 	dl	$C1880000
 	dl	$F0000000
 	dl	$C0000000
-CmpTab17	dl	$F0C00000
+CmpTabd0d8	dl	$F0C00000
 	dl	$D0C00000
 	dl	$F1300000
 	dl	$D1000000
 	dl	$F0000000
 	dl	$D0000000
-CmpTab18	dl	$FFC0F000
+CmpTabe0e8	dl	$FFC0F000
 	dl	$E8C00000
 	dl	$FFC08000
 	dl	$E9C00000
@@ -15299,7 +15310,7 @@ CmpTab18	dl	$FFC0F000
 	dl	$E0100000
 	dl	$F0180000
 	dl	$E0180000
-CmpTab19	dl	$FF800000
+CmpTabf0	dl	$FF800000
 	dl	$F0800000
 	dl	$FFF8FFC0
 	dl	$F0480000
@@ -15371,7 +15382,7 @@ CmpTab19	dl	$FF800000
 	dl	$F4380000
 	dl	$FF200000
 	dl	$F4000000
-CmpTab20	dl	$F1FFFC00
+CmpTabf8	dl	$F1FFFC00
 	dl	$F0005C00
 	dl	$F1C0A07F
 	dl	$F0000018
@@ -15507,153 +15518,153 @@ CmpTab20	dl	$F1FFFC00
 	dl	$F0000000
 	dl	0
 	dl	0
-lbL00DEFC	dl	0
-lbL00DF00	dl	lbC023AC0-lbL00DF00
-	dl	lbC023BB6-*
-lbL00DF08	dl	extract_ea_68000-lbL00DF08
-	dl	copy_3_a5_a4-*
-	dl	copy_2_a5_a4-*
-	dl	set_dn_f000-*
-	dl	lbC024772-*
-	dl	lbC02483A-*
-	dl	lbC0248DE-*
-lbL00DF24	dl	extract_dn_68000-lbL00DF24
-	dl	lbC024922-*
-	dl	lbC024A30-*
-	dl	lbC024AE2-*
-	dl	lbC024B0C-*
-	dl	lbC024B50-*
-lbL00DF3C	dl	extract_ea2_68000-lbL00DF3C
-lbL00DF40	dl	extract_an_68000-lbL00DF40
-	dl	lbC024CB2-*
-	dl	lbC023BDC-*
-	dl	lbC024CCA-*
-	dl	lbC024CE2-*
-	dl	lbC024D14-*
-	dl	lbC024EBA-*
-	dl	lbC024F42-*
-	dl	lbC024F70-*
-	dl	lbC024CFA-*
-	dl	lbC024FA4-*
-	dl	lbC024FCC-*
-	dl	lbC0261EA-*
-lbL00DF74	dl	extract_ea3_68000-lbL00DF74
-	dl	lbC025050-*
-	dl	lbC025072-*
-	dl	lbC0250EA-*
-	dl	lbC025172-*
-	dl	lbC0251B4-*
-	dl	lbC025204-*
-	dl	lbC025258-*
-	dl	lbC02512E-*
-	dl	lbC025322-*
-	dl	lbC025322-*
-	dl	lbC025E3C-*
-	dl	lbC025F90-*
-lbL00DFA8	dl	extract_ea4_68000-lbL00DFA8
-	dl	lbC026068-*
-	dl	lbC024EFE-*
-lbL00DFB4	dl	extract_shift_68000-lbL00DFB4
-lbL00DFB8	dl	extract_ea5_68000-lbL00DFB8
-	dl	lbC023BBE-*
-	dl	lbC024BE4-*
-	dl	extract_ea_68000-*
-	dl	set_dn_7000-*
-	dl	lbC025234-*
-	dl	extract_ea2_68000-*
-	dl	lbC02473A-*
-	dl	lbC023B8C-*
-	dl	lbC023C68-*
-	dl	lbC0247DA-*
-	dl	lbC024944-*
-	dl	lbC024BC2-*
-	dl	lbC02485C-*
-	dl	lbC024C06-*
-	dl	lbC024998-*
-	dl	lbC024C5A-*
-	dl	lbC023C46-*
-	dl	lbC024E02-*
-	dl	lbC024F20-*
-	dl	lbC024EDC-*
-	dl	lbC024A0E-*
-	dl	lbC024B2E-*
-	dl	lbC02510C-*
-	dl	lbC025150-*
-	dl	lbC024BA0-*
-	dl	lbC026162-*
-	dl	lbC025EEC-*
-	dl	lbC0249EC-*
-	dl	lbC0253D2-*
-	dl	lbC025F86-*
-	dl	lbC02616A-*
-	dl	lbC024CA0-*
-	dl	lbC024DCC-*
-	dl	lbC025698-*
-	dl	lbC02558E-*
-	dl	lbC0255AA-*
-	dl	lbC023B8C-*
-	dl	lbC0260A6-*
-	dl	lbC025412-*
-	dl	lbC023BE4-*
-lbL00E05C	dl	lbC02638A-lbL00E05C
-	dl	lbC026338-*
-	dl	lbC02636A-*
-lbL00E068	dl	extract_size_68000-lbL00E068
-	dl	lbC02642A-*
-	dl	lbC026450-*
-	dl	lbC026490-*
-	dl	lbC0264D4-*
-lbL00E07C	dl	extract_cc_68000-lbL00E07C
-	dl	lbC0267B0-*
-	dl	lbC0267D6-*
-	dl	lbC0267FE-*
-	dl	lbC0268F6-*
-	dl	lbC02692E-*
-	dl	lbC0264B4-*
-	dl	lbC026AFE-*
-	dl	lbC026B18-*
-	dl	lbC026B44-*
-	dl	lbC025DC0-*
-	dl	lbC02691C-*
-	dl	lbC0263CA-*
-	dl	lbC026652-*
-	dl	lbC0269E6-*
-	dl	lbC0269D2-*
-	dl	lbC026476-*
-	dl	lbC026AD2-*
-	dl	lbC026A8A-*
-	dl	lbC025DA0-*
-	dl	lbC02686A-*
-	dl	lbC026AAC-*
-	dl	lbC02564C-*
-	dl	lbC0254DE-*
-	dl	lbC026712-*
-	dl	lbC026774-*
-	dl	lbC025794-*
-	dl	lbC02584C-*
-	dl	lbC0259CC-*
-	dl	lbC025AE0-*
-	dl	lbC025C06-*
-	dl	lbC025C7C-*
-	dl	lbC025D1A-*
-	dl	lbC0254E6-*
-	dl	lbC0255EE-*
-	dl	lbC0255F8-*
-	dl	lbC025602-*
-	dl	lbC02560C-*
-	dl	lbC0260BC-*
-	dl	lbC0260D6-*
+operandTab	dl	0
+functiontable	dl	oper01-functiontable
+	dl	oper02-*
+lbL00DF08	dl	oper0350_ea_68000-lbL00DF08
+	dl	oper04_copy_3_a5_a4-*
+	dl	oper05_copy_2_a5_a4-*
+	dl	oper06_set_dn_f000-*
+	dl	oper07-*
+	dl	oper08-*
+	dl	oper09-*
+lbL00DF24	dl	oper10_dn_68000-lbL00DF24
+	dl	oper11-*
+	dl	oper12-*
+	dl	oper13-*
+	dl	oper14-*
+	dl	oper15-*
+lbL00DF3C	dl	oper1653_ea2_68000-lbL00DF3C
+lbL00DF40	dl	oper17_an_68000-lbL00DF40
+	dl	oper18-*
+	dl	oper19-*
+	dl	oper20-*
+	dl	oper21-*
+	dl	oper22-*
+	dl	oper23-*
+	dl	oper24-*
+	dl	oper25-*
+	dl	oper26-*
+	dl	oper27-*
+	dl	oper28-*
+	dl	oper29-*
+lbL00DF74	dl	oper30_ea3_68000-lbL00DF74
+	dl	oper31-*
+	dl	oper32-*
+	dl	oper33-*
+	dl	oper34-*
+	dl	oper35-*
+	dl	oper36-*
+	dl	oper37-*
+	dl	oper38-*
+	dl	oper3940-*
+	dl	oper3940-*
+	dl	oper41-*
+	dl	oper42-*
+lbL00DFA8	dl	oper43_ea4_68000-lbL00DFA8
+	dl	oper44-*
+	dl	oper45-*
+lbL00DFB4	dl	oper46_shift_68000-lbL00DFB4
+lbL00DFB8	dl	oper47_ea5_68000-lbL00DFB8
+	dl	oper48-*
+	dl	oper49-*
+	dl	oper0350_ea_68000-*
+	dl	oper51_set_dn_7000-*
+	dl	oper52-*
+	dl	oper1653_ea2_68000-*
+	dl	oper54-*
+	dl	oper5584_immbit-*
+	dl	oper56-*
+	dl	oper57-*
+	dl	oper58-*
+	dl	oper59-*
+	dl	oper60-*
+	dl	oper61-*
+	dl	oper62-*
+	dl	oper63-*
+	dl	oper64-*
+	dl	oper65-*
+	dl	oper66-*
+	dl	oper67-*
+	dl	oper68-*
+	dl	oper69-*
+	dl	oper70-*
+	dl	oper71-*
+	dl	oper72-*
+	dl	oper73-*
+	dl	oper74-*
+	dl	oper75-*
+	dl	oper76-*
+	dl	oper77-*
+	dl	oper78-*
+	dl	oper79-*
+	dl	oper80-*
+	dl	oper81-*
+	dl	oper82-*
+	dl	oper83-*
+	dl	oper5584_immbit-*
+	dl	oper85_immbyte-*
+	dl	oper86-*
+	dl	oper87-*
+extensionTab	dl	ext0_Rts-extensionTab
+	dl	ext1-*
+	dl	ext2-*
+lbL00E068	dl	ext3_size_68000-lbL00E068
+	dl	ext4-*
+	dl	ext5_dotwl-*
+	dl	ext6-*
+	dl	ext7-*
+lbL00E07C	dl	ext8_cc_68000-lbL00E07C
+	dl	ext9-*
+	dl	ext10-*
+	dl	ext11-*
+	dl	ext12-*
+	dl	ext13-*
+	dl	ext14-*
+	dl	ext15-*
+	dl	ext16-*
+	dl	ext17-*
+	dl	ext18-*
+	dl	ext19-*
+	dl	ext20-*
+	dl	ext21-*
+	dl	ext22-*
+	dl	ext23-*
+	dl	ext24_dotw-*
+	dl	ext25-*
+	dl	ext26-*
+	dl	ext27-*
+	dl	ext28-*
+	dl	ext29-*
+	dl	ext30-*
+	dl	ext31_badaddress-*
+	dl	ext32-*
+	dl	ext33-*
+	dl	ext34-*
+	dl	ext35-*
+	dl	ext36-*
+	dl	ext37-*
+	dl	ext38-*
+	dl	ext39-*
+	dl	ext40-*
+	dl	ext41-*
+	dl	ext42_po_mc68040-*
+	dl	ext43_po_mc68030-*
+	dl	ext44_po_mc68851-*
+	dl	ext45_po_MC68851_30-*
+	dl	ext46_add_dn-*
+	dl	ext47-*
 lbL00E11C	dl	set4q-lbL00E11C
 	dl	set4q-*
-	dl	lbC023CB8-*
+	dl	ext50_ea_d3_anind-*
 	dl	set4q-*
 	dl	set4q-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC02441E-*
 lbL00E13C	dl	set4q-lbL00E13C
 	dl	set4q-*
-	dl	lbC023CB8-*
+	dl	ext50_ea_d3_anind-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	lbC023E44-*
@@ -15661,11 +15672,11 @@ lbL00E13C	dl	set4q-lbL00E13C
 	dl	lbC02442E-*
 lbL00E15C	dl	set4q-lbL00E15C
 	dl	set4q-*
-	dl	lbC023CB8-*
+	dl	ext50_ea_d3_anind-*
 	dl	set4q-*
 	dl	set4q-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC0243FE-*
 lbL00E17C	dl	lbC02415E-lbL00E17C
 	dl	lbC0242DA-*
@@ -15687,8 +15698,8 @@ lbL00E18C	dl	lbC0243DE-lbL00E18C
 	dl	lbC0243DE-*
 	dl	lbC0243DE-*
 	dl	lbC0243DE-*
-lbL00E1CC	dl	lbC0244D8-lbL00E1CC
-	dl	lbC024528-*
+lbL00E1CC	dl	ea_absw-lbL00E1CC
+	dl	ea_absl-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
@@ -15703,49 +15714,49 @@ lbL00E1EC	dl	lbC02449E-lbL00E1EC
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
-lbL00E20C	dl	lbC0244D8-lbL00E20C
-	dl	lbC024528-*
-	dl	lbC02458E-*
-	dl	lbC0245B6-*
+lbL00E20C	dl	ea_absw-lbL00E20C
+	dl	ea_absl-*
+	dl	ea_d16pc_new-*
+	dl	ea_d8pcxn-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
 lbL00E22C	dl	lbC02449E-lbL00E22C
 	dl	lbC024514-*
-	dl	lbC0245A4-*
+	dl	ea_d16pc_old-*
 	dl	lbC024616-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
-lbL00E24C	dl	lbC0244D8-lbL00E24C
-	dl	lbC024528-*
-	dl	lbC02458E-*
-	dl	lbC0245B6-*
-	dl	lbC024568-*
+jmp_ea2ext	dl	ea_absw-jmp_ea2ext
+	dl	ea_absl-*
+	dl	ea_d16pc_new-*
+	dl	ea_d8pcxn-*
+	dl	ea_imm-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
 lbL00E26C	dl	lbC02449E-lbL00E26C
 	dl	lbC024514-*
-	dl	lbC0245A4-*
+	dl	ea_d16pc_old-*
 	dl	lbC024616-*
-	dl	lbC024568-*
+	dl	ea_imm-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
-lbL00E28C	dl	lbC0244D8-lbL00E28C
-	dl	lbC024528-*
-	dl	lbC02458E-*
-	dl	lbC0245B6-*
+lbL00E28C	dl	ea_absw-lbL00E28C
+	dl	ea_absl-*
+	dl	ea_d16pc_new-*
+	dl	ea_d8pcxn-*
 	dl	lbC024580-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
 lbL00E2AC	dl	lbC0244C6-lbL00E2AC
 	dl	lbC0244F2-*
-	dl	lbC0245A4-*
+	dl	ea_d16pc_old-*
 	dl	lbC024616-*
 	dl	lbC024580-*
 	dl	set4q-*
@@ -15763,19 +15774,19 @@ lbL00E2EC	dl	lbC0246BC-lbL00E2EC
 	dl	lbC0246DC-*
 	dl	lbC0246CE-*
 	dl	lbC0246D4-*
-lbL00E2FC	dl	lbC02487E-lbL00E2FC
+lbL00E2FC	dl	ea_d3_dn-lbL00E2FC
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC02441E-*
-lbL00E31C	dl	lbC02487E-lbL00E31C
+lbL00E31C	dl	ea_d3_dn-lbL00E31C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02442E-*
@@ -15783,165 +15794,165 @@ lbL00E33C	dl	lbC023AC4-lbL00E33C
 	dl	lbC0222FE-*
 	dl	lbC0248FA-*
 	dl	set4q-*
-lbL00E34C	dl	lbC02487E-lbL00E34C
+lbL00E34C	dl	ea_d3_dn-lbL00E34C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC0243FE-*
-lbL00E36C	dl	lbC02487E-lbL00E36C
+lbL00E36C	dl	ea_d3_dn-lbL00E36C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02440E-*
-lbL00E38C	dl	lbC02487E-lbL00E38C
+lbL00E38C	dl	ea_d3_dn-lbL00E38C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC0243FE-*
-lbL00E3AC	dl	lbC02487E-lbL00E3AC
+lbL00E3AC	dl	ea_d3_dn-lbL00E3AC
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02440E-*
-lbL00E3CC	dl	lbC02487E-lbL00E3CC
-	dl	lbC02488E-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+lbL00E3CC	dl	ea_d3_dn-lbL00E3CC
+	dl	ea_d3_an-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC0243FE-*
-lbL00E3EC	dl	lbC02487E-lbL00E3EC
-	dl	lbC02488E-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+lbL00E3EC	dl	ea_d3_dn-lbL00E3EC
+	dl	ea_d3_an-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02440E-*
 lbL00E40C	dl	set4q-lbL00E40C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC0243FE-*
 lbL00E42C	dl	set4q-lbL00E42C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02440E-*
-lbL00E44C	dl	lbC02487E-lbL00E44C
-	dl	lbC02488E-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
-	dl	lbC02443E-*
-lbL00E46C	dl	lbC02487E-lbL00E46C
-	dl	lbC02488E-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+jmp_ea2	dl	ea_d3_dn-jmp_ea2
+	dl	ea_d3_an-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
+	dl	ea_d3_ext-*
+lbL00E46C	dl	ea_d3_dn-lbL00E46C
+	dl	ea_d3_an-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02444E-*
-lbL00E48C	dl	lbC02487E-lbL00E48C
+lbL00E48C	dl	ea_d3_dn-lbL00E48C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
-	dl	lbC02443E-*
-lbL00E4AC	dl	lbC02487E-lbL00E4AC
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
+	dl	ea_d3_ext-*
+lbL00E4AC	dl	ea_d3_dn-lbL00E4AC
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02444E-*
-lbL00E4CC	dl	lbC02487E-lbL00E4CC
+jmp_ea5	dl	ea_d3_dn-jmp_ea5
 	dl	lbC0248B6-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC02445E-*
-lbL00E4EC	dl	lbC02487E-lbL00E4EC
+lbL00E4EC	dl	ea_d3_dn-lbL00E4EC
 	dl	lbC0248B6-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02446E-*
 lbL00E50C	dl	set4q-lbL00E50C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
 	dl	set4q-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC02441E-*
 lbL00E52C	dl	set4q-lbL00E52C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
 	dl	set4q-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02441E-*
 lbL00E54C	dl	set4q-lbL00E54C
 	dl	set4q-*
-	dl	lbC023CB8-*
+	dl	ext50_ea_d3_anind-*
 	dl	set4q-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC0243FE-*
 lbL00E56C	dl	set4q-lbL00E56C
 	dl	set4q-*
-	dl	lbC023CB8-*
+	dl	ext50_ea_d3_anind-*
 	dl	set4q-*
-	dl	lbC023CA0-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02440E-*
-lbL00E58C	dl	lbC02487E-lbL00E58C
+lbL00E58C	dl	ea_d3_dn-lbL00E58C
 	dl	set4q-*
-	dl	lbC023CB8-*
+	dl	ext50_ea_d3_anind-*
 	dl	set4q-*
 	dl	set4q-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC02441E-*
-lbL00E5AC	dl	lbC02487E-lbL00E5AC
+lbL00E5AC	dl	ea_d3_dn-lbL00E5AC
 	dl	set4q-*
-	dl	lbC023CB8-*
+	dl	ext50_ea_d3_anind-*
 	dl	set4q-*
 	dl	set4q-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC0243FE-*
 lbL00E5CC	dl	lbC0264EE-lbL00E5CC
 	dl	lbC0264EE-*
@@ -15951,73 +15962,73 @@ lbL00E5CC	dl	lbC0264EE-lbL00E5CC
 	dl	lbC0264EE-*
 	dl	lbC0264EE-*
 	dl	lbC0264EE-*
-lbL00E5EC	dl	lbC02487E-lbL00E5EC
+lbL00E5EC	dl	ea_d3_dn-lbL00E5EC
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02442E-*
 lbL00E60C	dl	set4q-lbL00E60C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
-	dl	lbC02443E-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
+	dl	ea_d3_ext-*
 lbL00E62C	dl	set4q-lbL00E62C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02444E-*
-lbL00E64C	dl	lbC02487E-lbL00E64C
+lbL00E64C	dl	ea_d3_dn-lbL00E64C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC02447E-*
-lbL00E66C	dl	lbC02487E-lbL00E66C
+lbL00E66C	dl	ea_d3_dn-lbL00E66C
 	dl	set4q-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02448E-*
-	dl	lbC02487E-*
+	dl	ea_d3_dn-*
 	dl	lbC0248B6-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
-	dl	lbC023D46-*
-	dl	lbC024004-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
+	dl	ext53_ea_d3_and16-*
+	dl	ea_d3_d8anxn-*
 	dl	lbC02447E-*
-	dl	lbC02487E-*
+	dl	ea_d3_dn-*
 	dl	lbC0248B6-*
-	dl	lbC023CB8-*
-	dl	lbC0248C6-*
-	dl	lbC023CA0-*
+	dl	ext50_ea_d3_anind-*
+	dl	ea_d3_anindi-*
+	dl	ea_d3_anindd-*
 	dl	lbC023E44-*
 	dl	lbC023F20-*
 	dl	lbC02448E-*
-lbL00E6CC	dl	lbC0244D8-lbL00E6CC
-	dl	lbC024528-*
-	dl	lbC02458E-*
-	dl	lbC0245B6-*
+lbL00E6CC	dl	ea_absw-lbL00E6CC
+	dl	ea_absl-*
+	dl	ea_d16pc_new-*
+	dl	ea_d8pcxn-*
 	dl	lbC02570C-*
 	dl	set4q-*
 	dl	set4q-*
 	dl	set4q-*
 lbL00E6EC	dl	lbC02449E-lbL00E6EC
 	dl	lbC024514-*
-	dl	lbC0245A4-*
+	dl	ea_d16pc_old-*
 	dl	lbC024616-*
 	dl	lbC02570C-*
 	dl	set4q-*
@@ -17516,7 +17527,7 @@ default_func	dl	term1-default_func
 	dl	lbC00363C-*
 	dw	$679
 	dl	0
-	dl	lbC014D62-*
+	dl	_ScreenToFront-*
 	dw	$22A
 	dl	0
 	dl	lbC014D70-*
@@ -17738,7 +17749,7 @@ default_func	dl	term1-default_func
 	dl	lbC003102-*
 	dw	$171
 	dl	0
-	dl	lbC00310A-*
+	dl	opt1_show_labels-*
 	dw	$17C
 	dl	0
 	dl	lbC003112-*
@@ -17828,16 +17839,16 @@ default_func	dl	term1-default_func
 	dl	lbC00321A-*
 	dw	$35D
 	dl	0
-	dl	lbC00323A-*
+	dl	Opt1_show_strict_off-*
 	dw	$360
 	dl	0
-	dl	lbC0032B4-*
+	dl	Opt1_show_strict_on-*
 	dw	$35F
 	dl	0
-	dl	lbC003304-*
+	dl	Opt1_allow_refrecog_on-*
 	dw	$218
 	dl	0
-	dl	lbC003310-*
+	dl	Opt1_allow_refrecog_off-*
 	dw	$219
 	dl	0
 	dl	lbC00331C-*
@@ -17948,22 +17959,22 @@ default_func	dl	term1-default_func
 	dl	lbC003624-*
 	dw	$3B1
 	dl	0
-	dl	lbC003458-*
+	dl	Opt2_pseudo_pushpop_on-*
 	dw	$389
 	dl	0
-	dl	lbC00349C-*
+	dl	Opt2_pseudo_pushpop_off-*
 	dw	$38A
 	dl	0
-	dl	lbC0034DC-*
+	dl	Opt2_pseudo_pushmpopm_on-*
 	dw	$38B
 	dl	0
-	dl	lbC00350C-*
+	dl	Opt2_pseudo_pushmpopm_off-*
 	dw	$38C
 	dl	0
-	dl	lbC003538-*
+	dl	Opt2_pseudo_blobhs_on-*
 	dw	$38D
 	dl	0
-	dl	lbC003542-*
+	dl	Opt2_pseudo_blobhs_off-*
 	dw	$38E
 	dl	0
 	dl	lbC00337C-*
@@ -21108,13 +21119,14 @@ default_func	dl	term1-default_func
 	dw	$361
 	dl	0
 	dl	$FFFFFFFF
-i_orib	dl	$20008
-	db	0
+i_orib	dw	2	;+a2 opcode base size
+	dw	8	;+a3
+	db	0	;???
 	db	'ORI.B',0
-	db	$19
-	db	0
-	db	1
-CCR.MSG	db	4
+	db	$19	;d6
+	db	0	;extension
+	db	1	;operand #1
+CCR.MSG	db	4	;operand #2
 CCR.MSG0	db	'CCR'
 i_oriw	dl	$20008
 	db	1
@@ -21200,27 +21212,27 @@ i_andiw	dl	$20008
 	db	2
 	db	5
 SR.MSG0	db	'SR'
-i_btst2	dl	$20008
+i_btst_dn2_new	dl	$20008
 	db	0
 	db	'BTST',0
 	db	$18
 	db	0
 	db	10
-	db	$10
-i_btst1	dl	$20008
+	db	16
+i_btst_dn1	dl	$20008
 	db	0
 	db	'BTST',0
-	db	$18
+	db	24
 	db	0
 	db	10
-	db	'T'
-i_btst3	dl	$20008
+	db	84
+i_btst_dn2_old	dl	$20008
 	db	0
 	db	'BTST',0
-	db	$18
+	db	24
 	db	0
 	db	10
-	db	';'
+	db	59
 i_bclr1	dl	$20008
 	db	0
 	db	'BCLR',0
@@ -21324,19 +21336,20 @@ i_bset5	dl	$20008
 	db	$18
 	db	0
 	db	'7:'
-i_bset4	dl	$20008
+i_btst_imm_new	dl	$20008
 	db	0
 	db	'BTST',0
-	db	$18
+	db	24
 	db	0
-	db	'7'
+	db	55
 	db	8
-i_btst4	dl	$20008
+i_btst_imm_old	dl	$20008
 	db	0
 	db	'BTST',0
-	db	$18
+	db	24
 	db	0
-	db	'7<'
+	db	55
+	db	60
 i_bclr3	dl	$20008
 	db	0
 	db	'BCLR',0
@@ -22274,7 +22287,7 @@ i_add3	dl	$20008
 	db	$17
 	db	3
 	db	'G',0,0
-i_btst	dl	$40010
+i_bftst	dl	$40010
 	db	0
 	db	'BFTST',0
 	db	$19
@@ -22857,7 +22870,7 @@ i_fsglmul	dl	$40010
 	db	$1B
 	db	$1E
 	db	'ÿ',0,0
-fsin	dl	$40010
+i_fsin	dl	$40010
 	db	0
 	db	'FSIN',0
 	db	$18
@@ -23978,7 +23991,7 @@ lbC014720	tst.b	(lbB02EB70-ds,a6)
 	move.l	(lbL02D394-ds,a6),d0
 	beq.b	lbC014740
 	move.b	#$7C,(-1,a4)
-	jsr	(lbC022518).l
+	jsr	(put_hex8_d0).l
 	addq.l	#1,a4
 	addq.b	#1,(lbB02EB70-ds,a6)
 lbC014740	move.b	#$29,(-1,a4)
@@ -24084,7 +24097,7 @@ lbC01483E	movea.l	(4,a0),a0
 lbC01484C	move.b	(a0)+,(a1)+
 	dbeq	d0,lbC01484C
 	clr.b	-(a1)
-	move.l	(symwindowptr-ds,a6),d0
+	move.l	(symbolsWindowPtr-ds,a6),d0
 	beq.b	lbC014892
 	movem.l	d1/d2/a0-a5,-(sp)
 	movea.l	d0,a3
@@ -24327,10 +24340,10 @@ lbC014ABC	bsr.w	lbC014CA6
 	beq.b	lbC014AF2
 	cmp.l	(lbL02CDF0-ds,a6),d0
 	bhi.b	lbC014AEA
-	jsr	(lbC022542).l
+	jsr	(put_dec_d0).l
 	bra.b	lbC014AF0
 
-lbC014AEA	jsr	(lbC022518).l
+lbC014AEA	jsr	(put_hex8_d0).l
 lbC014AF0	movea.l	a4,a3
 lbC014AF2	clr.b	(a3)
 	lea	(displayid-ds,a6),a0
@@ -24541,7 +24554,7 @@ lbC014CEA	and.l	(lbL02D2F8-ds,a6),d0
 	and.l	(lbL02D2F8-ds,a6),d6
 	cmp.l	d0,d6
 	beq.b	lbC014CE2
-	tst.b	(lbB02B459-ds,a6)
+	tst.b	(opt1_allow_equ-ds,a6)
 	beq.b	lbC014CE2
 	cmpi.b	#$2D,(a0)
 	beq.b	lbC014CE2
@@ -24575,7 +24588,7 @@ lbC014D46	movem.l	(sp)+,d0/d1/a1
 
 ReSourcesymsl.MSG	db	'ReSourcesyms.library',0,0
 
-lbC014D62	movea.l	(screenptr-ds,a6),a0
+_ScreenToFront	movea.l	(screenptr-ds,a6),a0
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOScreenToFront,a6)
 	bra.b	lbC014D7C
@@ -25094,31 +25107,31 @@ _LoadMenuDefaults	move.l	d0,-(sp)
 
 SetSmartRefresh	movea.l	(window1ptr-ds,a6),a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-	move.l	(symwindowptr-ds,a6),d0
+	move.l	(symbolsWindowPtr-ds,a6),d0
 	beq.b	lbC0152DC
 	movea.l	d0,a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-lbC0152DC	move.l	(window2ptr-ds,a6),d0
+lbC0152DC	move.l	(searchWindowPtr-ds,a6),d0
 	beq.b	lbC0152EA
 	movea.l	d0,a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-lbC0152EA	move.l	(WindowMacros1Ptr-ds,a6),d0
+lbC0152EA	move.l	(windowMacros1Ptr-ds,a6),d0
 	beq.b	lbC0152F8
 	movea.l	d0,a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-lbC0152F8	move.l	(WindowMacros2Ptr-ds,a6),d0
+lbC0152F8	move.l	(windowMacros2Ptr-ds,a6),d0
 	beq.b	lbC015306
 	movea.l	d0,a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-lbC015306	move.l	(WindowMacros3Ptr-ds,a6),d0
+lbC015306	move.l	(windowMacros3Ptr-ds,a6),d0
 	beq.b	lbC015314
 	movea.l	d0,a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-lbC015314	move.l	(window6ptr-ds,a6),d0
+lbC015314	move.l	(windowOptions1Ptr-ds,a6),d0
 	beq.b	lbC015322
 	movea.l	d0,a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-lbC015322	move.l	(window7ptr-ds,a6),d0
+lbC015322	move.l	(windowOptions2Ptr-ds,a6),d0
 	beq.b	lbC015330
 	movea.l	d0,a0
 	bset	#wd_NextWindow,(wd_Flags+1,a0)
@@ -25126,31 +25139,31 @@ lbC015330	rts
 
 SetNoSmartRefresh	movea.l	(window1ptr-ds,a6),a0
 	bclr	#0,($19,a0)
-	move.l	(symwindowptr-ds,a6),d0
+	move.l	(symbolsWindowPtr-ds,a6),d0
 	beq.b	lbC01534A
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC01534A	move.l	(window2ptr-ds,a6),d0
+lbC01534A	move.l	(searchWindowPtr-ds,a6),d0
 	beq.b	lbC015358
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015358	move.l	(WindowMacros1Ptr-ds,a6),d0
+lbC015358	move.l	(windowMacros1Ptr-ds,a6),d0
 	beq.b	lbC015366
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015366	move.l	(WindowMacros2Ptr-ds,a6),d0
+lbC015366	move.l	(windowMacros2Ptr-ds,a6),d0
 	beq.b	lbC015374
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015374	move.l	(WindowMacros3Ptr-ds,a6),d0
+lbC015374	move.l	(windowMacros3Ptr-ds,a6),d0
 	beq.b	lbC015382
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015382	move.l	(window6ptr-ds,a6),d0
+lbC015382	move.l	(windowOptions1Ptr-ds,a6),d0
 	beq.b	lbC015390
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC015390	move.l	(window7ptr-ds,a6),d0
+lbC015390	move.l	(windowOptions2Ptr-ds,a6),d0
 	beq.b	lbC01539E
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
@@ -26524,15 +26537,15 @@ lbC016304	bchg	#5,(a0)+
 	dbra	d0,lbC016304
 	btst	#5,(LSXPWDBLSXPWD.MSG0-ds,a6)
 	beq.b	lbC016322
-	lea	(lbL01A840,pc),a0
+	lea	(opCodeTabNewSyntax,pc),a0
 	bsr.b	ModifyListMakerLowerCase
-	lea	(lbL01AFD0,pc),a0
+	lea	(opCodeTabOldSyntax,pc),a0
 	bsr.b	ModifyListMakerLowerCase
 	bra.b	lbC01636C
 
-lbC016322	lea	(lbL01A840,pc),a0
+lbC016322	lea	(opCodeTabNewSyntax,pc),a0
 	bsr.b	ModifyListMakeUpperCase
-	lea	(lbL01AFD0,pc),a0
+	lea	(opCodeTabOldSyntax,pc),a0
 	bsr.b	ModifyListMakeUpperCase
 	bra.b	lbC01636C
 
@@ -26838,7 +26851,7 @@ lbC016684	move.l	(lbL02D344-ds,a6),d0
 	bne.b	lbC0166AC
 	jsr	(lbC02028C).l
 lbC0166AC	addq.l	#1,(lbL02D36C-ds,a6)
-	lea	(_RawDoFmt_args-ds,a6),a1
+	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	(lbL02D36C-ds,a6),(a1)
 	move.w	#$2753,d0
 	jsr	(gettextbynum-ds,a6)
@@ -27289,7 +27302,7 @@ lbC016B8C	tst.b	(a0)+
 lbC016B94	addq.l	#1,a0
 	bra.w	lbC016774
 
-lbC016B9A	tst.b	(lbB02B453-ds,a6)
+lbC016B9A	tst.b	(opt1_show_constants-ds,a6)
 	bne.b	lbC016BB8
 	bsr.w	lbC016F10
 	beq.b	lbC016BB8
@@ -27300,7 +27313,7 @@ lbC016B9A	tst.b	(lbB02B453-ds,a6)
 	movem.l	(sp)+,a0/a2/a3
 lbC016BB8	bra.w	lbC016774
 
-lbC016BBC	tst.b	(lbB02B44F-ds,a6)
+lbC016BBC	tst.b	(opt1_show_dcb-ds,a6)
 	bne.b	lbC016BDA
 	bsr.w	lbC016F10
 	beq.b	lbC016BDA
@@ -28807,16 +28820,16 @@ lbC017B3E	cmpi.b	#$30,(-8,a2)
 	beq.b	lbC017B9C
 	subq.l	#1,a2
 	subq.l	#4,a3
-lbC017B5A	move.b	(lbB02EB43-ds,a6),-(sp)
-	st	(lbB02EB43-ds,a6)
+lbC017B5A	move.b	(opt2_int_beep_inv-ds,a6),-(sp)
+	st	(opt2_int_beep_inv-ds,a6)
 	bsr.w	lbC0179E0
-	move.b	(sp)+,(lbB02EB43-ds,a6)
+	move.b	(sp)+,(opt2_int_beep_inv-ds,a6)
 	cmpa.l	(ds-ds,a6),a2
 	bne.w	lbC017AB4
-	move.b	(lbB02EB43-ds,a6),-(sp)
-	st	(lbB02EB43-ds,a6)
+	move.b	(opt2_int_beep_inv-ds,a6),-(sp)
+	st	(opt2_int_beep_inv-ds,a6)
 	bsr.w	lbC0179E0
-	move.b	(sp)+,(lbB02EB43-ds,a6)
+	move.b	(sp)+,(opt2_int_beep_inv-ds,a6)
 	cmpa.l	(ds-ds,a6),a2
 	bne.w	lbC017AB4
 lbC017B8A	bra.w	lbC017E6A
@@ -29053,12 +29066,12 @@ lbC017E6A	movem.l	(ds-ds,a6),a2/a3
 lbC017E78	movem.l	(lbL02D29C-ds,a6),a2/a3
 	move.l	(a3),d7
 	movem.l	d7/a3,-(sp)
-	move.b	(lbB02EB43-ds,a6),-(sp)
-	st	(lbB02EB43-ds,a6)
+	move.b	(opt2_int_beep_inv-ds,a6),-(sp)
+	st	(opt2_int_beep_inv-ds,a6)
 	tst.b	(lbB02EB78-ds,a6)
 	beq.b	lbC017E64
 lbC017E92	bsr.w	lbC01651C
-	move.b	(sp)+,(lbB02EB43-ds,a6)
+	move.b	(sp)+,(opt2_int_beep_inv-ds,a6)
 	movem.l	(sp)+,d0/a0
 	move.l	d0,(a0)
 	cmpa.l	(ds-ds,a6),a2
@@ -31713,7 +31726,7 @@ lbC01A5CA	tst.b	(lbB02EB63-ds,a6)
 	bne.b	lbC01A628
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC01A628
-	tst.b	(lbB02B44A-ds,a6)
+	tst.b	(opt1_show_eolcomments-ds,a6)
 	beq.b	lbC01A5F4
 	movem.l	d1-d7/a0/a1/a5,-(sp)
 	moveq	#$20,d3
@@ -31738,7 +31751,7 @@ lbC01A5FA	move.b	d3,(a4)+
 lbC01A610	move.b	d3,(a4)+
 	dbra	d2,lbC01A610
 lbC01A616	move.b	#$3B,(a4)+
-	addq.l	#1,(lbB02D240-ds,a6)
+	addq.l	#1,(count_endlinecomm-ds,a6)
 	jsr	(lbC02390A).l
 	movem.l	(sp)+,d1-d7/a0/a1/a5
 lbC01A628	rts
@@ -31872,39 +31885,39 @@ lbC01A7B2	lea	(menuModifyList-ds,a6),a0
 	jmp	(lbC02A422-ds,a6)
 
 	CNOP 0,4
-CmpTabTab	dl	CmpTab1
-	dl	CmpTab2
-	dl	CmpTab3
-	dl	CmpTab3
-	dl	CmpTab4
-	dl	CmpTab4
-	dl	CmpTab5
-	dl	CmpTab5
-	dl	CmpTab6
-	dl	CmpTab7
-	dl	CmpTab8
-	dl	CmpTab9
-	dl	CmpTab10
-	dl	CmpTab11
-	dl	CmpTab12
-	dl	CmpTab12
-	dl	CmpTab13
-	dl	CmpTab13
-	dl	CmpTab14
-	dl	CmpTab14
-	dl	CmpTab15
-	dl	CmpTab15
-	dl	CmpTab15
-	dl	CmpTab15
-	dl	CmpTab16
-	dl	CmpTab16
-	dl	CmpTab17
-	dl	CmpTab17
-	dl	CmpTab18
-	dl	CmpTab18
-	dl	CmpTab19
-	dl	CmpTab20
-lbL01A840	dl	$80000100
+CmpTabTab	dl	CmpTab00	;highest 5 bits of opcode
+	dl	CmpTab08
+	dl	CmpTab1018
+	dl	CmpTab1018
+	dl	CmpTab2028
+	dl	CmpTab2028
+	dl	CmpTab3038
+	dl	CmpTab3038
+	dl	CmpTab40
+	dl	CmpTab48
+	dl	CmpTab50
+	dl	CmpTab58
+	dl	CmpTab60
+	dl	CmpTab68
+	dl	CmpTab7078
+	dl	CmpTab7078
+	dl	CmpTab8088
+	dl	CmpTab8088
+	dl	CmpTab9098
+	dl	CmpTab9098
+	dl	CmpTaba0a8b0b8
+	dl	CmpTaba0a8b0b8
+	dl	CmpTaba0a8b0b8
+	dl	CmpTaba0a8b0b8
+	dl	CmpTabc0c8
+	dl	CmpTabc0c8
+	dl	CmpTabd0d8
+	dl	CmpTabd0d8
+	dl	CmpTabe0e8
+	dl	CmpTabe0e8
+	dl	CmpTabf0
+	dl	CmpTabf8
+opCodeTabNewSyntax	dl	$80000100	;opcode flags?
 	dl	i_orib
 	dl	$80000100
 	dl	i_oriw
@@ -31925,9 +31938,9 @@ lbL01A840	dl	$80000100
 	dl	$80000100
 	dl	i_andiw
 	dl	$80004C00
-	dl	i_btst1
+	dl	i_btst_dn1
 	dl	$80004200
-	dl	i_btst2
+	dl	i_btst_dn2_new
 	dl	$80004200
 	dl	i_bclr1
 	dl	$80004200
@@ -31943,7 +31956,7 @@ lbL01A840	dl	$80000100
 	dl	$80004200
 	dl	i_bset3
 	dl	$80004200
-	dl	i_bset4
+	dl	i_btst_imm_new
 	dl	$80004200
 	dl	i_bclr3
 	dl	$80004200
@@ -32131,7 +32144,7 @@ lbL01A9FC	dl	i_movem
 	dl	$80005A00
 	dl	i_add
 	dl	$80003000
-	dl	i_btst
+	dl	i_bftst
 	dl	$80003000
 	dl	i_bfextu
 	dl	$80003000
@@ -32335,7 +32348,7 @@ lbL01A9FC	dl	i_movem
 	dl	$80003000
 	dl	i_fsglmul
 	dl	$80003000
-	dl	fsin
+	dl	i_fsin
 	dl	$80003000
 	dl	i_fsincos
 	dl	$80003000
@@ -32388,7 +32401,7 @@ lbL01A9FC	dl	i_movem
 	dl	i_popm
 	dl	0
 	dl	0
-lbL01AFD0	dl	$80000100
+opCodeTabOldSyntax	dl	$80000100
 	dl	i_orib
 	dl	$80000100
 	dl	i_oriw
@@ -32409,9 +32422,9 @@ lbL01AFD0	dl	$80000100
 	dl	$80000100
 	dl	i_andiw
 	dl	$80004C00
-	dl	i_btst1
+	dl	i_btst_dn1
 	dl	$80004200
-	dl	i_btst3
+	dl	i_btst_dn2_old
 	dl	$80004200
 	dl	i_bclr4
 	dl	$80004200
@@ -32427,7 +32440,7 @@ lbL01AFD0	dl	$80000100
 	dl	$80004200
 	dl	i_bset5
 	dl	$80004200
-	dl	i_btst4
+	dl	i_btst_imm_old
 	dl	$80004200
 	dl	i_bclr5
 	dl	$80004200
@@ -32819,7 +32832,7 @@ lbL01B18C	dl	i_movem2
 	dl	$80003000
 	dl	i_fsglmul
 	dl	$80003000
-	dl	fsin
+	dl	i_fsin
 	dl	$80003000
 	dl	i_fsincos
 	dl	$80003000
@@ -33556,7 +33569,7 @@ _misc_FUNCTION	movem.l	d0-d2/a0/a1,-(sp)
 lbC01BFE8	move.b	(a0)+,(a4)+
 	bne.b	lbC01BFE8
 	subq.l	#1,a4
-	bsr.w	lbC022542
+	bsr.w	put_dec_d0
 	move.l	(sp),d0
 	move.b	#$3A,(a4)+
 lbC01BFF8	tst.w	d0
@@ -33645,7 +33658,7 @@ FUNCTION.MSG	db	2
 ON.MSG	db	'ON',0
 OFF.MSG	db	'OFF',0,0
 
-lbC01C0FA	lea	(lbB02D24F-ds,a6),a5
+lbC01C0FA	lea	(count_hilights_b-ds,a6),a5
 	jsr	(_SetPointerAll-ds,a6)
 	jsr	(lbC0273FC-ds,a6)
 	lea	(miscBuffer-ds,a6),a4
@@ -34546,130 +34559,130 @@ OptionTable	dw	lbB02B3E5-ds
 	dw	lbB02B441-ds
 	dw	1
 	dw	$4C
-	dw	lbB02B446-ds
+	dw	opt1_show_offsets-ds
 	dw	0
 	dw	$170
 	dw	lbB02B447-ds
 	dw	1
 	dw	$17D
-	dw	lbB02B448-ds
+	dw	opt1_show_hlabels-ds
 	dw	1
 	dw	$189
-	dw	lbB02B449-ds
+	dw	opt1_show_symbols-ds
 	dw	1
 	dw	$17F
-	dw	lbB02B44A-ds
+	dw	opt1_show_eolcomments-ds
 	dw	1
 	dw	$181
-	dw	lbB02B44B-ds
+	dw	opt1_show_flcomments-ds
 	dw	1
 	dw	$183
-	dw	lbB02B44C-ds
+	dw	opt1_show_chipload-ds
 	dw	1
 	dw	$18B
-	dw	lbB02B44D-ds
+	dw	opt1_show_sections-ds
 	dw	1
 	dw	$18D
-	dw	lbB02B44E-ds
+	dw	opt1_show_end-ds
 	dw	1
 	dw	$18F
-	dw	lbB02B44F-ds
+	dw	opt1_show_dcb-ds
 	dw	0
 	dw	$1B0
-	dw	lbB02B450-ds
+	dw	opt1_show_seplabels-ds
 	dw	0
 	dw	$2A5
-	dw	lbB02B451-ds
+	dw	opt1_show_colons-ds
 	dw	0
 	dw	$2A7
-	dw	lbB02B452-ds
+	dw	opt1_show_zeros-ds
 	dw	0
 	dw	$29B
-	dw	lbB02B453-ds
+	dw	opt1_show_constants-ds
 	dw	0
 	dw	$2C8
-	dw	lbB02B454-ds
+	dw	opt1_show_dcomments-ds
 	dw	0
 	dw	$35B
-	dw	lbB02B455-ds
+	dw	opt1_show_newsyntax-ds
 	dw	1
 	dw	$35D
 	dw	lbB02B456-ds
 	dw	1
 	dw	$35F
-	dw	lbB02B457-ds
+	dw	opt1_allow_refrecog-ds
 	dw	1
 	dw	$219
-	dw	lbB02B458-ds
+	dw	opt1_allow_autolabels-ds
 	dw	1
 	dw	$2BB
-	dw	lbB02B459-ds
+	dw	opt1_allow_equ-ds
 	dw	1
 	dw	$37C
-	dw	lbB02B45A-ds
+	dw	opt1_allow_ecomments-ds
 	dw	0
 	dw	$3B4
-	dw	lbB02B470-ds
+	dw	opt1_size_absword-ds
 	dw	1
 	dw	$3AE
-	dw	lbB02B471-ds
+	dw	opt1_size_abslong-ds
 	dw	1
 	dw	$3AF
-	dw	lbB02B472-ds
+	dw	opt1_size_optimize-ds
 	dw	0
 	dw	$364
-	dw	lbB02B45B-ds
+	dw	opt2_int_beep-ds
 	dw	1
 	dw	$173
-	dw	lbB02B45C-ds
+	dw	opt2_int_feedback-ds
 	dw	1
 	dw	$27
-	dw	lbB02B45D-ds
+	dw	opt2_int_delays-ds
 	dw	0
 	dw	$2A
-	dw	lbB02B45E-ds
+	dw	opt2_int_verbose-ds
 	dw	1
 	dw	$2B5
-	dw	lbB02B45F-ds
+	dw	opt2_int_refresh-ds
 	dw	0
 	dw	$675
-	dw	lbB02B46A-ds
+	dw	opt2_pseudo_pushpop-ds
 	dw	1
 	dw	$38A
-	dw	lbB02B46B-ds
+	dw	opt2_pseudo_pushmpopm-ds
 	dw	1
 	dw	$38C
-	dw	lbB02B46C-ds
+	dw	opt2_pseudo_blobhs-ds
 	dw	0
 	dw	$38D
-	dw	lbB02B460-ds
+	dw	opt2_error_code-ds
 	dw	1
 	dw	$3A5
-	dw	lbB02B461-ds
+	dw	opt2_error_missing-ds
 	dw	1
 	dw	$3A6
-	dw	lbB02B462-ds
+	dw	opt2_error_badalign-ds
 	dw	1
 	dw	$3A7
-	dw	lbB02B463-ds
+	dw	opt2_error_coderef-ds
 	dw	1
 	dw	$3A8
-	dw	lbB02B464-ds
+	dw	opt2_error_dataref-ds
 	dw	1
 	dw	$3A9
-	dw	lbB02B465-ds
+	dw	opt2_error_startplus-ds
 	dw	1
 	dw	$3AA
-	dw	lbB02B466-ds
+	dw	opt2_error_afline-ds
 	dw	1
 	dw	$3AB
-	dw	lbB02B467-ds
+	dw	opt2_error_libcalls-ds
 	dw	0
 	dw	$310
-	dw	lbB02B468-ds
+	dw	opt2_error_illegal-ds
 	dw	1
 	dw	$3AD
-	dw	lbB02B469-ds
+	dw	opt2_error_symequ-ds
 	dw	1
 	dw	$3B1
 	dw	0
@@ -35281,7 +35294,7 @@ lbC01D38C	move.l	d0,-(sp)
 	move.b	#$1B,(a4)+
 	move.b	#$30,(a4)+
 	move.l	(lbL02CDE0-ds,a6),d0
-	bsr.w	lbC022542
+	bsr.w	put_dec_d0
 	move.b	#$1B,(a4)+
 	tst.b	(lbB02B437-ds,a6)
 	beq.b	lbC01D40C
@@ -35289,7 +35302,7 @@ lbC01D38C	move.l	d0,-(sp)
 	move.b	#$1B,(a4)+
 	move.b	#$30,(a4)+
 	move.l	(lbL02CDE4-ds,a6),d0
-	bsr.w	lbC022542
+	bsr.w	put_dec_d0
 	move.b	#$1B,(a4)+
 lbC01D40C	clr.b	(a4)
 	lea	(miscBuffer-ds,a6),a4
@@ -35426,8 +35439,8 @@ lbC01D582	move.l	d1,(a1)+
 	moveq	#0,d0
 	moveq	#0,d1
 	jsr	(_LVOSetSignal,a6)
-	lea	(lbL00DF00).l,a1
-	move.w	#$252,d1
+	lea	(functiontable).l,a1	;manual relocation
+	move.w	#$252,d1	;operandTab, extensionTab, macros
 lbC01D5C6	move.l	a1,d0
 	add.l	d0,(a1)+
 	dbra	d1,lbC01D5C6
@@ -35777,32 +35790,32 @@ Start2	move.b	#$14,(lbL02D114-ds,a6)
 	move.w	d0,($9C,a1)
 	move.w	#$357,($BE,a1)
 	addq.b	#4,(convert_anea_regnum-ds,a6)
-	move.l	#lbL01A840,(lbL02D164-ds,a6)
+	move.l	#opCodeTabNewSyntax,(_opCodeTab-ds,a6)
 	move.l	#lbL03576C,(lbL02D168-ds,a6)
 	st	(lbB02EB69-ds,a6)
 	move.l	#$4000000,(lbL02D2E8-ds,a6)
 	jsr	(lbC029630).l
 	bra.b	Start3
 
-routines_68020	dl	extract_ea_68020-ds
+routines_68020	dl	oper0350_ea_68020-ds
 	dl	lbL00DF08-ds
-	dl	extract_dn_68020-ds
+	dl	oper10_dn_68020-ds
 	dl	lbL00DF24-ds
-	dl	extract_ea2_68020-ds
+	dl	oper1653_ea2_68020-ds
 	dl	lbL00DF3C-ds
-	dl	extract_an_68020-ds
+	dl	oper17_an_68020-ds
 	dl	lbL00DF40-ds
-	dl	extract_ea3_68020-ds
+	dl	oper30_ea3_68020-ds
 	dl	lbL00DF74-ds
-	dl	extract_ea4_68020-ds
+	dl	oper43_ea4_68020-ds
 	dl	lbL00DFA8-ds
-	dl	extract_shift_68020-ds
+	dl	oper46_shift_68020-ds
 	dl	lbL00DFB4-ds
-	dl	extract_ea5_68020-ds
+	dl	oper47_ea5_68020-ds
 	dl	lbL00DFB8-ds
-	dl	extract_size_68020-ds
+	dl	ext3_size_68020-ds
 	dl	lbL00E068-ds
-	dl	extract_cc_68020-ds
+	dl	ext8_cc_68020-ds
 	dl	lbL00E07C-ds
 	dl	0
 
@@ -35819,7 +35832,7 @@ Start3	movea.l	(execbase-ds,a6),a1
 .end68020
 	btst	#AFB_68060,(AttnFlags+1,a1)
 	beq.b	.no68020
-	lea	extract_cc_68060,a0
+	lea	ext8_cc_68060,a0
 	move.l	a0,lbL00E07C
 .no68020	jsr	(copyhunk2).l
 	lea	(lbC000000).l,a1
@@ -36245,7 +36258,7 @@ lbC01DF96	move.b	(a0)+,(a1)+
 	bra.b	lbC01DFAE
 
 lbC01DFA0	addq.w	#1,d2
-	move.w	d2,(_RawDoFmt_args-ds,a6)
+	move.w	d2,(rawDoFmt_args-ds,a6)
 	lea	(ReSourced.MSG,pc),a0
 	jsr	(_RawDoFmt-ds,a6)
 lbC01DFAE	movea.l	a2,a0
@@ -36553,7 +36566,7 @@ lbC01E28A	move.w	d0,(lbW02D3A8-ds,a6)
 	movea.l	(sp)+,a4
 	moveq	#60,d1
 	jsr	(dosdelay-ds,a6)
-_nofilespec	lea	(_RawDoFmt_args-ds,a6),a1
+_nofilespec	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	#example_code_strt,(a1)+
 	move.l	#example_code_end,(a1)
 	lea	(work_data_spec_str-ds,a6),a2
@@ -36715,7 +36728,7 @@ _help	jmp	(help).l
 
 lbC01E854	bne.b	lbC01E85A
 	jsr	(_DisplayBeep_cond-ds,a6)
-lbC01E85A	tst.b	(lbB02B45F-ds,a6)
+lbC01E85A	tst.b	(opt2_int_refresh-ds,a6)
 	bne.b	lbC01E866
 	tst.b	(lbB02EB45-ds,a6)
 	beq.b	lbC01E86A
@@ -36831,7 +36844,7 @@ lbC01E988	tst.b	(a0)+
 	movea.l	(lbL02D170-ds,a6),a4
 	move.l	(lbL02D16C-ds,a6),d0
 	addq.l	#1,(lbL02D16C-ds,a6)
-	bsr.w	lbC022542
+	bsr.w	put_dec_d0
 	clr.b	(a4)
 	movea.l	(sp)+,a4
 	bra.b	lbC01E986
@@ -37391,9 +37404,9 @@ lbC01EFF4	clr.b	(lbB02EB65-ds,a6)
 	move.l	(ds-ds,a6),(lbL02D13C-ds,a6)
 	move.l	(workdata_end-ds,a6),(lbL02D140).l
 lbC01F010	clr.w	(lbB02D3A4-ds,a6)
-	clr.l	(lbL02D0D4-ds,a6)
+	clr.l	(count_filesize-ds,a6)
 	clr.b	(lbB02EB5A-ds,a6)
-	lea	(lbL02D218-ds,a6),a0
+	lea	(count_startplusref-ds,a6),a0
 	moveq	#$20,d0
 lbC01F022	clr.l	(a0)+
 	dbra	d0,lbC01F022
@@ -37436,7 +37449,7 @@ lbC01F094	jsr	(gettextbynum-ds,a6)
 	tst.b	(lbB02EB65-ds,a6)
 	bne.w	lbC01F26E
 	move.b	#10,(a4)+
-	addq.l	#1,(lbW02D228-ds,a6)
+	addq.l	#1,(count_lines-ds,a6)
 	tst.b	(lbB02B443-ds,a6)
 	bne.w	lbC01F26E
 	tst.b	(lbL02EB36-ds,a6)
@@ -37447,7 +37460,7 @@ lbC01F094	jsr	(gettextbynum-ds,a6)
 	lea	(AFLINEmacrodc.MSG-ds,a6),a0
 lbC01F0CE	move.b	(a0)+,(a4)+
 	bne.b	lbC01F0CE
-	addq.l	#3,(lbW02D228-ds,a6)
+	addq.l	#3,(count_lines-ds,a6)
 	subq.l	#1,a4
 lbC01F0D8	lea	(hashtable1-ds,a6),a0
 	lea	($2000,a0),a0
@@ -37512,7 +37525,7 @@ lbC01F18A	move.b	(a5)+,(a4)+
 	addq.w	#1,d6
 	subq.b	#1,d2
 	bne.b	lbC01F18A
-lbC01F192	tst.b	(lbB02B451-ds,a6)
+lbC01F192	tst.b	(opt1_show_colons-ds,a6)
 	beq.b	lbC01F19E
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
@@ -37534,17 +37547,17 @@ lbC01F1CE	move.l	(4,a1),d0
 	neg.l	d0
 	move.b	#$2D,(a4)+
 lbC01F1DE	movem.l	a0/a1,-(sp)
-	bsr.w	lbC022518
+	bsr.w	put_hex8_d0
 	movem.l	(sp)+,a0/a1
 	move.b	#10,(a4)+
-	addq.l	#1,(lbW02D228-ds,a6)
+	addq.l	#1,(count_lines-ds,a6)
 	move.l	a4,d3
 	sub.l	(lbL02B480-ds,a6),d3
 	bsr.w	lbC01F38A
 	beq.w	lbC01F0F0
 	bra.w	lbC01F2F4
 
-lbC01F204	tst.b	(lbB02B451-ds,a6)
+lbC01F204	tst.b	(opt1_show_colons-ds,a6)
 	beq.b	lbC01F210
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
@@ -37561,21 +37574,21 @@ lbC01F234	move.b	(a5)+,(a4)+
 	subq.l	#1,d2
 	bne.b	lbC01F234
 	move.b	#10,(a4)+
-	addq.l	#1,(lbW02D228-ds,a6)
+	addq.l	#1,(count_lines-ds,a6)
 	move.l	a4,d3
 	sub.l	(lbL02B480-ds,a6),d3
 	bsr.w	lbC01F38A
 	beq.w	lbC01F0F0
 	bra.w	lbC01F2F4
 
-lbC01F254	move.l	(lbW02D228-ds,a6),d0
+lbC01F254	move.l	(count_lines-ds,a6),d0
 	subq.l	#1,d0
 	beq.b	lbC01F26E
 	moveq	#$4B,d0
 lbC01F25E	move.b	#$2A,(a4)+
 	dbra	d0,lbC01F25E
 	move.b	#10,(a4)+
-	addq.l	#1,(lbW02D228-ds,a6)
+	addq.l	#1,(count_lines-ds,a6)
 lbC01F26E	cmpa.l	(lbL02D140-ds,a6),a2
 	bge.w	lbC01F342
 	jsr	(CheckAbort-ds,a6)
@@ -37584,14 +37597,14 @@ lbC01F26E	cmpa.l	(lbL02D140-ds,a6),a2
 	bra.w	lbC01F34E
 
 lbC01F286	move.l	a2,(lbL02D2C4-ds,a6)
-	move.l	(lbL02D28C-ds,a6),(lbL02D2B8).l
-	move.l	(lbL02D218-ds,a6),(lbL02D2BC).l
-	move.l	(lbL02D258-ds,a6),(lbL02D2C0).l
+	move.l	(count_invcodelines-ds,a6),(lbL02D2B8).l
+	move.l	(count_startplusref-ds,a6),(lbL02D2BC).l
+	move.l	(count_oddaddrerr-ds,a6),(lbL02D2C0).l
 	bsr.w	lbC020D02
 	move.w	(lbB02D3A6-ds,a6),d0
 	and.w	(lbB02D3A4-ds,a6),d0
 	beq.b	lbC01F2D0
-	tst.b	(lbB02B45A-ds,a6)
+	tst.b	(opt1_allow_ecomments-ds,a6)
 	beq.b	lbC01F2BA
 	bsr.w	lbC01EEAC
 lbC01F2BA	clr.w	(lbB02D3A4-ds,a6)
@@ -37666,7 +37679,7 @@ lbC01F38A	cmpa.l	#currentDrawerBuf,a4
 
 lbC01F3A2	movem.l	d2-d7/a0-a3/a5,-(sp)
 	move.l	(lbL02B480-ds,a6),d2
-	add.l	d3,(lbL02D0D4-ds,a6)
+	add.l	d3,(count_filesize-ds,a6)
 	move.l	d3,d0
 	move.l	(lbL02D128-ds,a6),d1
 	cmpi.l	#1,d1
@@ -37675,7 +37688,7 @@ lbC01F3A2	movem.l	d2-d7/a0-a3/a5,-(sp)
 lbC01F3C0	movea.l	d2,a4
 	cmp.l	d0,d3
 	bne.b	lbC01F3CE
-	tst.b	(lbB02B45E-ds,a6)
+	tst.b	(opt2_int_verbose-ds,a6)
 	bne.b	lbC01F3D4
 	cmp.w	d0,d0
 lbC01F3CE	movem.l	(sp)+,d2-d7/a0-a3/a5
@@ -37684,43 +37697,43 @@ lbC01F3CE	movem.l	(sp)+,d2-d7/a0-a3/a5
 lbC01F3D4	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC01F3DE
 	jsr	(lbC027E00-ds,a6)
-lbC01F3DE	move.l	(lbW02D228-ds,a6),-(sp)
-	move.l	(lbL02D290-ds,a6),-(sp)
-	move.l	(lbL02D250-ds,a6),-(sp)
-	move.l	(lbL02D258-ds,a6),-(sp)
-	move.l	(lbL02D23C-ds,a6),-(sp)
-	move.l	(lbL02D298-ds,a6),-(sp)
-	move.l	(lbB02D240-ds,a6),-(sp)
-	move.l	(lbL02D218-ds,a6),-(sp)
-	move.l	(lbL02D27C-ds,a6),-(sp)
-	move.l	(lbL02D288-ds,a6),-(sp)
+lbC01F3DE	move.l	(count_lines-ds,a6),-(sp)
+	move.l	(count_aflines-ds,a6),-(sp)
+	move.l	(count_blanklines-ds,a6),-(sp)
+	move.l	(count_oddaddrerr-ds,a6),-(sp)
+	move.l	(count_fulllinecomm-ds,a6),-(sp)
+	move.l	(count_badref-ds,a6),-(sp)
+	move.l	(count_endlinecomm-ds,a6),-(sp)
+	move.l	(count_startplusref-ds,a6),-(sp)
+	move.l	(count_bsslines-ds,a6),-(sp)
+	move.l	(count_xanconvers-ds,a6),-(sp)
 	lea	(xxA.MSG).l,a0
 	move.l	a0,-(sp)
-	move.l	(lbL02D278-ds,a6),-(sp)
-	move.l	(lbL02D294-ds,a6),-(sp)
-	move.l	(lbL02D274-ds,a6),-(sp)
-	move.l	(lbL02D234-ds,a6),-(sp)
-	move.l	(lbL02D270-ds,a6),-(sp)
-	move.l	(lbL02D248-ds,a6),-(sp)
-	move.l	(lbL02D26C-ds,a6),-(sp)
-	move.l	(lbL02D238-ds,a6),-(sp)
-	move.l	(lbL02D268-ds,a6),-(sp)
-	move.l	(lbL02D230-ds,a6),-(sp)
-	move.l	(lbL02D264-ds,a6),-(sp)
-	move.l	(lbL02D22C-ds,a6),-(sp)
-	move.l	(lbL02D260-ds,a6),-(sp)
-	move.l	(lbW02D24C-ds,a6),-(sp)
-	move.l	(lbL02D284-ds,a6),-(sp)
-	move.l	(lbW02D224-ds,a6),-(sp)
-	move.l	(lbL02D280-ds,a6),-(sp)
-	move.l	(lbL02D244-ds,a6),-(sp)
-	move.l	(lbL02D25C-ds,a6),-(sp)
-	move.l	(lbL02D21C-ds,a6),-(sp)
-	move.l	(lbL02D28C-ds,a6),-(sp)
-	move.l	(lbL02D220-ds,a6),-(sp)
-	move.l	(lbL02D254-ds,a6),-(sp)
-	move.w	#$25,-(sp)
-	move.l	(lbL02D0D4-ds,a6),d0
+	move.l	(count_packedlines-ds,a6),-(sp)
+	move.l	(count_sections-ds,a6),-(sp)
+	move.l	(count_extendlines-ds,a6),-(sp)
+	move.l	(count_bsssections-ds,a6),-(sp)
+	move.l	(count_doublelines-ds,a6),-(sp)
+	move.l	(count_chipsections-ds,a6),-(sp)
+	move.l	(count_singelines-ds,a6),-(sp)
+	move.l	(count_uninitdatabyt-ds,a6),-(sp)
+	move.l	(count_longlines-ds,a6),-(sp)
+	move.l	(count_datasections-ds,a6),-(sp)
+	move.l	(count_wordlines-ds,a6),-(sp)
+	move.l	(count_codesections-ds,a6),-(sp)
+	move.l	(count_bytelines-ds,a6),-(sp)
+	move.l	(count_hilits-ds,a6),-(sp)
+	move.l	(count_ascii_ops-ds,a6),-(sp)
+	move.l	(count_symbols-ds,a6),-(sp)
+	move.l	(count_ascii_chars-ds,a6),-(sp)
+	move.l	(count_hiddenlabels-ds,a6),-(sp)
+	move.l	(count_ascii_lines-ds,a6),-(sp)
+	move.l	(count_customlabels-ds,a6),-(sp)
+	move.l	(count_invcodelines-ds,a6),-(sp)
+	move.l	(count_labels-ds,a6),-(sp)
+	move.l	(count_codelines-ds,a6),-(sp)
+	move.w	#'%',-(sp)
+	move.l	(count_filesize-ds,a6),d0
 	move.l	#$CF800,d1
 lbC01F478	tst.l	d1
 	bne.b	lbC01F480
@@ -37738,7 +37751,7 @@ lbC01F490	lsr.l	#2,d1
 lbC01F496	mulu.w	#$64,d0
 	divu.w	d1,d0
 lbC01F49C	move.w	d0,-(sp)
-	move.l	(lbL02D0D4-ds,a6),d1
+	move.l	(count_filesize-ds,a6),d1
 	move.l	d1,d0
 	lsr.l	#8,d0
 	lsr.l	#2,d0
@@ -37753,7 +37766,7 @@ lbC01F4BA	move.l	a0,-(sp)
 	move.l	a0,-(sp)
 	lea	(Sourceprofile.MSG,pc),a0
 	movea.l	sp,a1
-	lea	(_putcharfunc).l,a2
+	lea	(_RawDoFmt_putchar).l,a2
 	movea.l	a4,a3
 	movea.l	(4).w,a5
 	exg	a5,a6
@@ -38446,7 +38459,7 @@ lbC020172	move.l	d0,(lbL02D208-ds,a6)
 	move.b	#$6C,(a4)+
 	move.b	#$62,(a4)+
 	move.b	(lbW02EB3A-ds,a6),(a4)+
-	bsr.w	lbC02253C
+	bsr.w	put_hex6_d0
 	moveq	#9,d0
 	lea	(displayid-ds,a6),a0
 	movea.l	a2,a1
@@ -38749,37 +38762,37 @@ lbC0204D4	move.l	(sp)+,d0
 
 lbC0204DC	movem.l	a3/a5/a6,-(sp)
 	movea.l	a5,a6
-	move.l	(symwindowptr-ds,a6),d0
+	move.l	(symbolsWindowPtr-ds,a6),d0
 	beq.b	lbC0204F4
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC000B1C).l
-lbC0204F4	move.l	(window2ptr-ds,a6),d0
+lbC0204F4	move.l	(searchWindowPtr-ds,a6),d0
 	beq.b	lbC020506
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC0016D6).l
-lbC020506	move.l	(WindowMacros1Ptr-ds,a6),d0
+lbC020506	move.l	(windowMacros1Ptr-ds,a6),d0
 	beq.b	lbC020518
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(Macros1Dealloc).l
-lbC020518	move.l	(WindowMacros2Ptr-ds,a6),d0
+lbC020518	move.l	(windowMacros2Ptr-ds,a6),d0
 	beq.b	lbC02052A
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(Macros2Dealloc).l
-lbC02052A	move.l	(WindowMacros3Ptr-ds,a6),d0
+lbC02052A	move.l	(windowMacros3Ptr-ds,a6),d0
 	beq.b	lbC02053C
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(Macros3Dealloc).l
-lbC02053C	move.l	(window6ptr-ds,a6),d0
+lbC02053C	move.l	(windowOptions1Ptr-ds,a6),d0
 	beq.b	lbC02054E
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
 	jsr	(lbC002438).l
-lbC02054E	move.l	(window7ptr-ds,a6),d0
+lbC02054E	move.l	(windowOptions2Ptr-ds,a6),d0
 	beq.b	lbC020560
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
@@ -38961,7 +38974,7 @@ lbC02075A	rts
 lbC02075C	andi.b	#$FB,ccr
 	rts
 
-lbC020762	tst.b	(lbB02B44B-ds,a6)
+lbC020762	tst.b	(opt1_show_flcomments-ds,a6)
 	beq.b	lbC02075C
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
@@ -39024,7 +39037,7 @@ lbC0207FC	bsr.w	lbC020C3C
 	tst.b	(lbB02EB63-ds,a6)
 	beq.b	lbC02080A
 	movea.l	(lbL02D2D0-ds,a6),a4
-lbC02080A	addq.l	#1,(lbL02D23C-ds,a6)
+lbC02080A	addq.l	#1,(count_fulllinecomm-ds,a6)
 	addq.b	#1,(lbB02EB4E-ds,a6)
 	move.b	(lbB02EB4E-ds,a6),(lbB02EB4D).l
 	bra.b	lbC0207E2
@@ -39040,7 +39053,7 @@ lbC020838	move.b	(a0)+,(a4)+
 	bne.b	lbC020838
 	subq.l	#1,a4
 	bsr.w	lbC020C3C
-lbC020842	tst.b	(lbB02B44D-ds,a6)
+lbC020842	tst.b	(opt1_show_sections-ds,a6)
 	beq.w	lbC0209CC
 	cmpa.l	(ds-ds,a6),a2
 	beq.b	lbC020854
@@ -39049,18 +39062,18 @@ lbC020854	move.l	d7,d2
 	andi.l	#$70000000,d2
 	jsr	(lbC02A0D2-ds,a6)
 	move.l	d2,d0
-	addq.l	#1,(lbL02D294-ds,a6)
-	addq.l	#1,(lbL02D22C-ds,a6)
+	addq.l	#1,(count_sections-ds,a6)
+	addq.l	#1,(count_codesections-ds,a6)
 	move.l	#$45444F43,d2
 	cmpi.l	#$10000000,d0
 	beq.b	lbC02089C
-	subq.l	#1,(lbL02D22C-ds,a6)
-	addq.l	#1,(lbL02D230-ds,a6)
+	subq.l	#1,(count_codesections-ds,a6)
+	addq.l	#1,(count_datasections-ds,a6)
 	move.l	#$41544144,d2
 	cmpi.l	#$20000000,d0
 	beq.b	lbC02089C
-	subq.l	#1,(lbL02D230-ds,a6)
-	addq.l	#1,(lbL02D234-ds,a6)
+	subq.l	#1,(count_datasections-ds,a6)
+	addq.l	#1,(count_bsssections-ds,a6)
 	move.l	#$535342,d2
 lbC02089C	lea	(SECTION.MSG,pc),a0
 	bsr.w	lbC023AB8
@@ -39100,7 +39113,7 @@ lbC0208D4	move.b	(a0)+,d0
 
 lbC0208FA	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
-	bsr.w	lbC02253C
+	bsr.w	put_hex6_d0
 	move.b	#$2C,(a4)+
 	move.b	d2,(a4)+
 	lsr.l	#8,d2
@@ -39113,7 +39126,7 @@ lbC0208FA	move.l	a2,d0
 lbC020918	move.l	(lbB02D0EC-ds,a6),d0
 	tst.w	d0
 	bpl.b	lbC02093A
-	tst.b	(lbB02B44C-ds,a6)
+	tst.b	(opt1_show_chipload-ds,a6)
 	beq.b	lbC02093A
 	move.b	#$2C,(a4)+
 	move.b	#$46,(a4)+
@@ -39122,9 +39135,9 @@ lbC020918	move.l	(lbB02D0EC-ds,a6),d0
 	move.b	#$54,(a4)+
 lbC02093A	btst	#14,d0
 	beq.b	lbC02095E
-	tst.b	(lbB02B44C-ds,a6)
+	tst.b	(opt1_show_chipload-ds,a6)
 	beq.b	lbC02095E
-	addq.l	#1,(lbL02D248-ds,a6)
+	addq.l	#1,(count_chipsections-ds,a6)
 	move.b	#$2C,(a4)+
 	move.b	#$43,(a4)+
 	move.b	#$48,(a4)+
@@ -39143,7 +39156,7 @@ lbC02095E	bsr.w	lbC020C3C
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
 	moveq	#2,d6
-	tst.b	(lbB02B451-ds,a6)
+	tst.b	(opt1_show_colons-ds,a6)
 	beq.b	lbC020992
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
@@ -39161,7 +39174,7 @@ lbC020992	jsr	(lbC02A0D2-ds,a6)
 	bcc.b	lbC0209C4
 	neg.l	d0
 	move.b	#$2D,(-1,a4)
-lbC0209C4	bsr.w	lbC022518
+lbC0209C4	bsr.w	put_hex8_d0
 	bsr.w	lbC020C3C
 lbC0209CC	cmpa.l	(ds-ds,a6),a2
 	bne.b	lbC0209F6
@@ -39173,7 +39186,7 @@ lbC0209CC	cmpa.l	(ds-ds,a6),a2
 lbC0209E2	move.b	(a0)+,(a4)+
 	bne.b	lbC0209E2
 	subq.l	#1,a4
-	tst.b	(lbB02B451-ds,a6)
+	tst.b	(opt1_show_colons-ds,a6)
 	beq.b	lbC0209F2
 	move.b	#$3A,(a4)+
 lbC0209F2	bra.w	lbC020C3C
@@ -39270,7 +39283,7 @@ lbC020AF8	tst.b	(lbB02B3EE-ds,a6)
 	beq.b	lbC020B26
 	bclr	#4,(1,a3)
 	beq.b	lbC020B26
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#4,(a4)+
 	bsr.b	lbC020B26
 	sne	d0
@@ -39285,7 +39298,7 @@ lbC020B22	subq.l	#1,a4
 
 lbC020B26	tst.b	(lbB02B447-ds,a6)
 	beq.b	lbC020B6C
-	addq.l	#1,(lbL02D220-ds,a6)
+	addq.l	#1,(count_labels-ds,a6)
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
 	bsr.w	lbC023364
@@ -39299,11 +39312,11 @@ lbC020B4E	add.w	d1,d6
 	subq.w	#1,d1
 lbC020B52	move.b	(a0)+,(a4)+
 	dbra	d1,lbC020B52
-lbC020B58	tst.b	(lbB02B451-ds,a6)
+lbC020B58	tst.b	(opt1_show_colons-ds,a6)
 	bne.b	lbC020BB6
 lbC020B5E	cmpi.b	#$14,d6
 	bcc.b	lbC020BA4
-	tst.b	(lbB02B450-ds,a6)
+	tst.b	(opt1_show_seplabels-ds,a6)
 	bne.b	lbC020BA4
 	rts
 
@@ -39314,7 +39327,7 @@ lbC020B70	btst	#4,(1,a3)
 	beq.b	lbC020B40
 lbC020B78	cmpi.b	#2,(-1,a4)
 	beq.b	lbC020B46
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#3,(a4)+
 	bsr.b	lbC020B46
@@ -39324,14 +39337,14 @@ lbC020B78	cmpi.b	#2,(-1,a4)
 
 lbC020B96	btst	#4,(1,a3)
 	bne.b	lbC020B4E
-	addq.l	#1,(lbL02D21C-ds,a6)
+	addq.l	#1,(count_customlabels-ds,a6)
 	bra.b	lbC020B78
 
 lbC020BA4	bsr.w	lbC020C3C
 	moveq	#0,d0
 	rts
 
-lbC020BAC	addq.l	#1,(lbL02D21C-ds,a6)
+lbC020BAC	addq.l	#1,(count_customlabels-ds,a6)
 	bsr.w	lbC023954
 	bra.b	lbC020B58
 
@@ -39362,8 +39375,8 @@ lbC020BFC	andi.b	#$FB,ccr
 
 lbC020C02	tst.w	(lbW02B478-ds,a6)
 	beq.b	lbC020C1E
-	move.b	#9,(a4)+
-	moveq	#$14,d6
+	move.b	#9,(a4)+	;tab?
+	moveq	#20,d6
 	rts
 
 lbC020C10	tst.w	(lbW02B478-ds,a6)
@@ -39392,7 +39405,7 @@ lbC020C3C	moveq	#0,d6
 	addq.b	#1,(lbB02EB5F-ds,a6)
 	rts
 
-lbC020C4E	addq.l	#1,(lbW02D228-ds,a6)
+lbC020C4E	addq.l	#1,(count_lines-ds,a6)
 	rts
 
 DT.MSG0	db	'DT'
@@ -39444,7 +39457,7 @@ lbC020D12	bra.w	lbC020C3C
 lbC020D16	move.l	#lbC020D16,(lbB02D20C-ds,a6)
 	movem.l	a2/a4,(lbL02D210-ds,a6)
 	move.b	#1,(a4)+
-lbC020D28	move.l	a2,(lbL02D0F0-ds,a6)
+lbC020D28	move.l	a2,(work_actual_offset-ds,a6)
 	move.w	(lbB02EAD0-ds,a6),(lbW02D398).l
 	clr.l	(lbW02EACE-ds,a6)
 	move.l	a2,d0
@@ -39489,7 +39502,7 @@ lbC020D9C	bsr.w	lbC020AF8
 
 lbC020DA4	move.l	a2,d0
 	sub.l	(workdata_strt-ds,a6),d0
-	bsr.w	lbC02253C
+	bsr.w	put_hex6_d0
 	addq.w	#6,d6
 	bra.b	lbC020DFE
 
@@ -39497,7 +39510,7 @@ lbC020DB2	btst	#$17,d7
 	bne.b	lbC020D96
 lbC020DB8	btst	#$19,d7
 	bne.b	lbC020D9C
-lbC020DBE	tst.b	(lbB02B446-ds,a6)
+lbC020DBE	tst.b	(opt1_show_offsets-ds,a6)
 	beq.b	lbC020DE2
 	bra.b	lbC020DA4
 
@@ -39505,7 +39518,7 @@ lbC020DC6	move.w	(lbW02D398-ds,a6),d0
 	beq.b	lbC020DDA
 	tst.b	d0
 	bmi.b	lbC020DDA
-	addq.l	#1,(lbL02D28C-ds,a6)
+	addq.l	#1,(count_invcodelines-ds,a6)
 	bset	#0,(lbB02D3A4-ds,a6)
 lbC020DDA	jmp	(a0)
 
@@ -39539,19 +39552,19 @@ lbC020E22	bne.b	lbC020DC6
 	andi.b	#1,d0
 	bne.w	lbC023C8A
 	movem.l	d2-d5/a5,-(sp)
-	move.w	#$F8,d0
-	and.b	(a2),d0
+	move.w	#$F8,d0	;5 bits
+	and.b	(a2),d0	;current address
 	lsr.b	#1,d0
 	lea	(CmpTabTab,pc),a0
 	movea.l	(a0,d0.w),a0
-	move.l	(a2),d5
-lbC020E44	move.l	d5,d0
+	move.l	(a2),d5	;current address
+.cmploop	move.l	d5,d0
 	and.l	(a0)+,d0
 	cmp.l	(a0)+,d0
-	bne.b	lbC020E44
+	bne.b	.cmploop
 	move.l	a0,d0
 	sub.l	#CmpTabRefPlus8,d0
-	movea.l	(lbL02D164-ds,a6),a0
+	movea.l	(_opCodeTab-ds,a6),a0
 	adda.w	d0,a0
 	move.l	(a0)+,(lbB02EAD0-ds,a6)
 	movea.l	(a0),a5
@@ -39559,50 +39572,50 @@ lbC020E44	move.l	d5,d0
 	adda.w	(a5)+,a3
 	move.w	(a2),d4
 	move.b	(a5)+,(opcode_size-ds,a6)
-lbC020E6A	move.b	(a5)+,(a4)+
-	bne.b	lbC020E6A
+.copy	move.b	(a5)+,(a4)+
+	bne.b	.copy
 	subq.l	#1,a4
-lbC020E70	move.b	(a5)+,d6
-	beq.b	lbC020E70
+.getd6	move.b	(a5)+,d6	;skip padding
+	beq.b	.getd6
 	moveq	#0,d0
-	move.b	(a5)+,d0
-	beq.b	lbC020E88
+	move.b	(a5)+,d0	;extension
+	beq.b	.noextension
 	lsl.w	#2,d0
-	lea	(lbL00E05C).l,a0
+	lea	(extensionTab).l,a0
 	movea.l	(a0,d0.w),a0
 	jsr	(a0)
-lbC020E88	moveq	#0,d1
+.noextension	moveq	#0,d1
 	move.b	(a5)+,d1
-	ble.b	lbC020EC8
+	ble.b	.nooperand
 	jsr	(setspacepostopcode-ds,a6)
 	move.l	a5,-(sp)
-	lea	(lbL00DEFC).l,a0
+	lea	(operandTab).l,a0
 	lsl.w	#2,d1
 	movea.l	(a0,d1.w),a0
 	jsr	(a0)
 	movea.l	(sp)+,a5
 	moveq	#0,d0
 	move.b	(a5)+,d0
-	beq.b	lbC020EBE
+	beq.b	.nooperand2
 	move.b	#',',(a4)+
 	move.w	(a2),d4
-	lea	(lbL00DEFC).l,a0
+	lea	(operandTab).l,a0
 	lsl.w	#2,d0
 	movea.l	(a0,d0.w),a0
 	jsr	(a0)
-lbC020EBE	addq.l	#1,(lbL02D254-ds,a6)
+.nooperand2	addq.l	#1,(count_codelines-ds,a6)
 	movem.l	(sp)+,d2-d5/a5
 	rts
 
-lbC020EC8	blt.b	lbC020ED2
+.nooperand	blt.b	lbC020ED2
 	move.l	a4,(lbB02D37C-ds,a6)
 	move.w	d6,(lbB02D3AA-ds,a6)
-lbC020ED2	addq.l	#1,(lbL02D254-ds,a6)
+lbC020ED2	addq.l	#1,(count_codelines-ds,a6)
 	movem.l	(sp)+,d2-d5/a5
 	rts
 
 lbC020EDC	movem.l	d0/a0/a1/a3,-(sp)
-	movea.l	(lbL02D0F0-ds,a6),a0
+	movea.l	(work_actual_offset-ds,a6),a0
 	movea.l	a0,a3
 	suba.l	(ds-ds,a6),a3
 	adda.l	a3,a3
@@ -39646,7 +39659,7 @@ lbC020F38	move.l	(lbB02D20C-ds,a6),-(sp)
 	bset	#1,(3,a3)
 	rts
 
-lbC020F62	move.l	(lbL02D0F0-ds,a6),d0
+lbC020F62	move.l	(work_actual_offset-ds,a6),d0
 	sub.l	(ds-ds,a6),d0
 	bsr.w	lbC01A5CA
 	bra.b	lbC020FC2
@@ -39673,7 +39686,7 @@ lbC020F9E	movem.l	(lbB02D0EC-ds,a6),d0/d1
 	movea.l	(workdata_struct-ds,a6),a0
 	adda.l	d1,a0
 	lsr.l	#2,d1
-	tst.b	(lbB02B454-ds,a6)
+	tst.b	(opt1_show_dcomments-ds,a6)
 	beq.b	lbC020FBC
 	bsr.w	lbC020EDC
 lbC020FBC	btst	#$16,d0
@@ -39681,9 +39694,9 @@ lbC020FBC	btst	#$16,d0
 lbC020FC2	move.b	#10,(a4)+
 	tst.b	(lbB02EBF3-ds,a6)
 	beq.b	lbC020FFC
-	addq.w	#1,(lbW02D22A-ds,a6)
+	addq.w	#1,(count_lines_w-ds,a6)
 	bne.b	lbC021000
-	addq.w	#1,(lbW02D228-ds,a6)
+	addq.w	#1,(count_lines-ds,a6)
 	bra.b	lbC021000
 
 lbC020FD8	cmpa.l	(workdata_end-ds,a6),a2
@@ -39742,8 +39755,8 @@ lbC021066	bset	#7,(a3)
 	movem.l	a0/a1,-(sp)
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.w	lbC021100
-	movea.l	(lbL02D0F0-ds,a6),a5
-	btst	#0,(lbB02D0F3-ds,a6)
+	movea.l	(work_actual_offset-ds,a6),a5
+	btst	#0,(work_actual_offsetb-ds,a6)
 	bne.b	lbC021094
 	cmpi.w	#$4E75,(a5)
 	beq.b	lbC021100
@@ -39791,12 +39804,12 @@ lbC021100	movem.l	(sp)+,a0/a1
 	move.l	a3,d0
 	sub.l	a0,d0
 	lsr.l	#2,d0
-	addq.l	#1,(lbL02D244-ds,a6)
+	addq.l	#1,(count_hiddenlabels-ds,a6)
 	bsr.b	lbC02117A
 	bra.w	lbC02100E
 
 lbC021114	st	(lbB02EB5A-ds,a6)
-	tst.b	(lbB02B44E-ds,a6)
+	tst.b	(opt1_show_end-ds,a6)
 	beq.b	lbC02116C
 	move.b	#10,(a4)+
 	moveq	#0,d6
@@ -39824,8 +39837,8 @@ lbC021150	moveq	#0,d6
 	addq.b	#1,(lbB02EB5F-ds,a6)
 	rts
 
-lbC021162	addq.l	#1,(lbW02D228-ds,a6)
-	addq.l	#1,(lbL02D250-ds,a6)
+lbC021162	addq.l	#1,(count_lines-ds,a6)
+	addq.l	#1,(count_blanklines-ds,a6)
 	rts
 
 lbC02116C	andi.b	#$FB,ccr
@@ -39835,13 +39848,13 @@ lbC021172	st	(lbB02EB48-ds,a6)
 dummy_setflags_d0	cmp.l	d0,d0
 	rts
 
-lbC02117A	tst.b	(lbB02B448-ds,a6)
+lbC02117A	tst.b	(opt1_show_hlabels-ds,a6)
 	beq.w	lbC02124A
 	move.l	a0,(lbL02D0A4-ds,a6)
 	pea	(lbC020C3C,pc)
 	btst	#$17,d2
 	beq.b	lbC0211C8
-	tst.b	(lbB02B44B-ds,a6)
+	tst.b	(opt1_show_flcomments-ds,a6)
 	beq.b	lbC0211C8
 	movem.l	d0-d7/a0-a3/a5/a6,-(sp)
 	movea.l	a0,a3
@@ -39869,7 +39882,7 @@ lbC0211C8	movem.l	d0/a0,-(sp)
 	movea.l	d0,a0
 	moveq	#0,d6
 	bsr.w	lbC023954
-	tst.b	(lbB02B451-ds,a6)
+	tst.b	(opt1_show_colons-ds,a6)
 	beq.b	lbC0211F2
 	move.b	#$3A,(a4)+
 	addq.w	#1,d6
@@ -39885,7 +39898,7 @@ lbC0211F2	jsr	(lbC02A0D2-ds,a6)
 	exg	d0,d1
 	cmpi.l	#9,d0
 	bls.b	lbC021222
-	bra.w	lbC022518
+	bra.w	put_hex8_d0
 
 lbC021222	addi.l	#$30,d0
 	move.b	d0,(a4)+
@@ -39910,21 +39923,21 @@ lbC02125A	btst	#6,(a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC021274
-	addq.l	#1,(lbL02D258-ds,a6)
+	addq.l	#1,(count_oddaddrerr-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
 lbC021274	cmpi.b	#$58,(lbB02EBF1-ds,a6)
 	beq.b	lbC021282
-	addq.l	#1,(lbL02D278-ds,a6)
+	addq.l	#1,(count_packedlines-ds,a6)
 	bra.b	lbC021286
 
-lbC021282	addq.l	#1,(lbL02D274-ds,a6)
+lbC021282	addq.l	#1,(count_extendlines-ds,a6)
 lbC021286	btst	#2,(a3)
 	beq.b	lbC021298
 	btst	#2,(lbL02D2E8-ds,a6)
 	beq.b	lbC021298
-	subq.l	#1,(lbW02D24C-ds,a6)
+	subq.l	#1,(count_hilits-ds,a6)
 lbC021298	st	(lbB02EAD3-ds,a6)
-	tst.b	(lbB02B44F-ds,a6)
+	tst.b	(opt1_show_dcb-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC0212AC
@@ -40065,7 +40078,7 @@ lbC021424	move.b	d0,(a4)+
 	addq.w	#5,d6
 	jsr	(setspacepostopcode-ds,a6)
 	move.l	d2,d0
-	bsr.w	lbC022490
+	bsr.w	put_value_d0_long
 	move.b	#$2C,(a4)+
 	lea	(lbL02D078-ds,a6),a0
 	cmpi.b	#$58,(lbB02EBF1-ds,a6)
@@ -40085,7 +40098,7 @@ lbC02145E	jsr	(lbC029FE8-ds,a6)
 	move.l	d1,(lbL02D2E0-ds,a6)
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC02148C
-	tst.b	(lbB02B453-ds,a6)
+	tst.b	(opt1_show_constants-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021488
@@ -40185,7 +40198,7 @@ lbC021570	btst	#0,($1E,a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC0215B2
-	addq.l	#1,(lbL02D258-ds,a6)
+	addq.l	#1,(count_oddaddrerr-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
 lbC0215B2	move.b	(flagCaseData-ds,a6),d0
 	cmpi.b	#$58,(lbB02EBF1-ds,a6)
@@ -40259,11 +40272,11 @@ lbC02164C	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC021664
-	add.l	d3,(lbL02D238-ds,a6)
+	add.l	d3,(count_uninitdatabyt-ds,a6)
 lbC021664	lsl.l	#4,d3
 	adda.l	d3,a3
 	tst.b	d1
-	beq.w	lbC0224C0
+	beq.w	put_value_d0_word
 	rts
 
 lbC021670	btst	#6,(a3)
@@ -40271,16 +40284,16 @@ lbC021670	btst	#6,(a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC02168A
-	addq.l	#1,(lbL02D258-ds,a6)
+	addq.l	#1,(count_oddaddrerr-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
-lbC02168A	addq.l	#1,(lbL02D270-ds,a6)
+lbC02168A	addq.l	#1,(count_doublelines-ds,a6)
 	btst	#2,(a3)
 	beq.b	lbC0216A0
 	btst	#2,(lbL02D2E8-ds,a6)
 	beq.b	lbC0216A0
-	subq.l	#1,(lbW02D24C-ds,a6)
+	subq.l	#1,(count_hilits-ds,a6)
 lbC0216A0	st	(lbB02EAD3-ds,a6)
-	tst.b	(lbB02B44F-ds,a6)
+	tst.b	(opt1_show_dcb-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC0216B4
@@ -40387,7 +40400,7 @@ lbC0217B2	move.b	(dl.MSG-ds,a6),(a4)+
 	addq.w	#5,d6
 	jsr	(setspacepostopcode-ds,a6)
 	move.l	d2,d0
-	bsr.w	lbC022490
+	bsr.w	put_value_d0_long
 	move.b	#$2C,(a4)+
 	lea	(lbL02D07C-ds,a6),a0
 	bra.w	lbC022336
@@ -40402,7 +40415,7 @@ lbC0217DE	move.b	#$30,(lbB02EAD2-ds,a6)
 	move.l	d1,(lbL02D2E0-ds,a6)
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC021816
-	tst.b	(lbB02B453-ds,a6)
+	tst.b	(opt1_show_constants-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021812
@@ -40482,7 +40495,7 @@ lbC0218BA	btst	#0,(14,a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC0218FC
-	addq.l	#1,(lbL02D258-ds,a6)
+	addq.l	#1,(count_oddaddrerr-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
 lbC0218FC	move.b	(dl.MSG-ds,a6),d0
 	bsr.w	lbC022086
@@ -40537,37 +40550,37 @@ lbC021968	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC021980
-	add.l	d3,(lbL02D238-ds,a6)
+	add.l	d3,(count_uninitdatabyt-ds,a6)
 lbC021980	lsl.l	#3,d3
 	adda.l	d3,a3
 	tst.b	d1
-	beq.w	lbC0224C0
+	beq.w	put_value_d0_word
 	rts
 
-lbC02198C	move.b	#$53,(lbB02EBF1-ds,a6)
+lbC02198C	move.b	#'S',(lbB02EBF1-ds,a6)
 	bra.b	lbC02199A
 
-lbC021994	move.b	#$4C,(lbB02EBF1-ds,a6)
+lbC021994	move.b	#'L',(lbB02EBF1-ds,a6)
 lbC02199A	btst	#6,(a3)
 	bne.w	lbC021C0C
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC0219B4
-	addq.l	#1,(lbL02D258-ds,a6)
+	addq.l	#1,(count_oddaddrerr-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
-lbC0219B4	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
+lbC0219B4	cmpi.b	#'L',(lbB02EBF1-ds,a6)
 	beq.b	lbC0219C2
-	addq.l	#1,(lbL02D26C-ds,a6)
+	addq.l	#1,(count_singelines-ds,a6)
 	bra.b	lbC0219C6
 
-lbC0219C2	addq.l	#1,(lbL02D268-ds,a6)
+lbC0219C2	addq.l	#1,(count_longlines-ds,a6)
 lbC0219C6	btst	#2,(a3)
 	beq.b	lbC0219D8
 	btst	#2,(lbL02D2E8-ds,a6)
 	beq.b	lbC0219D8
-	subq.l	#1,(lbW02D24C-ds,a6)
+	subq.l	#1,(count_hilits-ds,a6)
 lbC0219D8	st	(lbB02EAD3-ds,a6)
-	tst.b	(lbB02B44F-ds,a6)
+	tst.b	(opt1_show_dcb-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC0219EC
@@ -40675,7 +40688,7 @@ lbC021AF0	move.b	d0,(a4)+
 	dl	lbC02232C
 
 lbC021B0C	bsr.w	lbC0221FE
-	dl	lbC022490
+	dl	put_value_d0_long
 
 lbC021B14	move.b	#$30,(lbB02EAD2-ds,a6)
 	move.b	(lw.MSG-ds,a6),d0
@@ -40690,7 +40703,7 @@ lbC021B2A	jsr	(lbC029FE8-ds,a6)
 	move.l	d1,(lbL02D2E0-ds,a6)
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC021B58
-	tst.b	(lbB02B453-ds,a6)
+	tst.b	(opt1_show_constants-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021B54
@@ -40773,7 +40786,7 @@ lbC021C0C	btst	#0,(6,a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC021C4E
-	addq.l	#1,(lbL02D258-ds,a6)
+	addq.l	#1,(count_oddaddrerr-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
 lbC021C4E	move.b	(lw.MSG-ds,a6),d0
 	cmpi.b	#$4C,(lbB02EBF1-ds,a6)
@@ -40816,11 +40829,11 @@ lbC021CA8	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC021CC0
-	add.l	d3,(lbL02D238-ds,a6)
+	add.l	d3,(count_uninitdatabyt-ds,a6)
 lbC021CC0	lsl.l	#2,d3
 	adda.l	d3,a3
 	tst.b	d1
-	beq.w	lbC0224C0
+	beq.w	put_value_d0_word
 	rts
 
 lbC021CCC	btst	#6,(a3)
@@ -40828,11 +40841,11 @@ lbC021CCC	btst	#6,(a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC021CE6
-	addq.l	#1,(lbL02D258-ds,a6)
+	addq.l	#1,(count_oddaddrerr-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
-lbC021CE6	addq.l	#1,(lbL02D264-ds,a6)
+lbC021CE6	addq.l	#1,(count_wordlines-ds,a6)
 	st	(lbB02EAD3-ds,a6)
-	tst.b	(lbB02B44F-ds,a6)
+	tst.b	(opt1_show_dcb-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC021CFE
@@ -40901,7 +40914,7 @@ lbC021D92	move.b	(dl.MSG-ds,a6),(a4)+
 	move.l	d2,d0
 	add.l	d2,d2
 	bsr.w	lbC0221FE
-	dl	lbC0224C0
+	dl	put_value_d0_word
 
 lbC021DB8	move.b	(wx.MSG-ds,a6),d0
 	jsr	(lbC029FE8-ds,a6)
@@ -40912,7 +40925,7 @@ lbC021DB8	move.b	(wx.MSG-ds,a6),d0
 	move.l	d1,(lbL02D2E0-ds,a6)
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC021DEA
-	tst.b	(lbB02B453-ds,a6)
+	tst.b	(opt1_show_constants-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021DE6
@@ -40959,7 +40972,7 @@ lbC021E48	btst	#0,(6,a3)
 	move.l	a2,d0
 	btst	#0,d0
 	beq.b	lbC021E6A
-	addq.l	#1,(lbL02D258-ds,a6)
+	addq.l	#1,(count_oddaddrerr-ds,a6)
 	bset	#2,(lbB02D3A4-ds,a6)
 lbC021E6A	move.b	(wx.MSG-ds,a6),d0
 	bsr.w	lbC022086
@@ -40997,18 +41010,18 @@ lbC021EB4	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC021ECC
-	add.l	d3,(lbL02D238-ds,a6)
+	add.l	d3,(count_uninitdatabyt-ds,a6)
 lbC021ECC	lsl.l	#2,d3
 	adda.l	d3,a3
 	tst.b	d1
-	beq.w	lbC0224C0
+	beq.w	put_value_d0_word
 	rts
 
 lbC021ED8	btst	#6,(a3)
 	bne.w	lbC022018
-	addq.l	#1,(lbL02D260-ds,a6)
+	addq.l	#1,(count_bytelines-ds,a6)
 	st	(lbB02EAD3-ds,a6)
-	tst.b	(lbB02B44F-ds,a6)
+	tst.b	(opt1_show_dcb-ds,a6)
 	sne	d0
 	btst	#5,(2,a3)
 	beq.b	lbC021EF8
@@ -41067,7 +41080,7 @@ lbC021F74	move.b	(dl.MSG-ds,a6),(a4)+
 	jsr	(setspacepostopcode-ds,a6)
 	move.l	d2,d0
 	bsr.w	lbC0221FE
-	dl	put_line_end
+	dl	put_value_d0_byte
 
 lbC021F98	move.b	(bd.MSG-ds,a6),d0
 	jsr	(lbC029FE8-ds,a6)
@@ -41078,7 +41091,7 @@ lbC021F98	move.b	(bd.MSG-ds,a6),d0
 	move.l	d1,(lbL02D2E0-ds,a6)
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC021FCC
-	tst.b	(lbB02B453-ds,a6)
+	tst.b	(opt1_show_constants-ds,a6)
 	sne	d1
 	btst	#4,(2,a3)
 	beq.b	lbC021FC8
@@ -41148,15 +41161,15 @@ lbC022064	move.l	d3,d0
 	adda.l	d3,a2
 	btst	#3,(2,a3)
 	beq.b	lbC02207A
-	add.l	d3,(lbL02D238-ds,a6)
+	add.l	d3,(count_uninitdatabyt-ds,a6)
 lbC02207A	lsl.l	#2,d3
 	adda.l	d3,a3
 	tst.b	d1
-	beq.w	lbC0224C0
+	beq.w	put_value_d0_word
 	rts
 
 lbC022086	st	(lbW02EACE-ds,a6)
-	addq.l	#1,(lbL02D27C-ds,a6)
+	addq.l	#1,(count_bsslines-ds,a6)
 	move.b	(dl.MSG-ds,a6),(a4)+
 	move.b	(x.MSG-ds,a6),(a4)+
 	btst	#3,(2,a3)
@@ -41179,7 +41192,7 @@ lbC0220BC	tst.l	d0
 	move.l	d0,(lbL02D204-ds,a6)
 	tst.b	d0
 	bne.b	lbC0220D8
-	move.b	#$28,(a4)+
+	move.b	#'(',(a4)+
 	st	(lbB02EB68-ds,a6)
 lbC0220D8	movem.w	d2-d4,-(sp)
 	move.b	#$27,(a4)+
@@ -41272,14 +41285,14 @@ lbC0221B8	move.b	#$27,(a4)+
 lbC0221E8	tst.b	(lbB02EB68-ds,a6)
 	beq.b	lbC0221F2
 	move.b	#$29,(a4)+
-lbC0221F2	addq.l	#1,(lbL02D284-ds,a6)
+lbC0221F2	addq.l	#1,(count_ascii_ops-ds,a6)
 	movem.w	(sp)+,d2-d4
 	addq.l	#4,sp
 	rts
 
 lbC0221FE	bsr.b	lbC022228
 	bne.b	lbC022206
-	bsr.w	lbC022490
+	bsr.w	put_value_d0_long
 lbC022206	move.b	#$2C,(a4)+
 	move.l	d3,d0
 	addq.l	#1,a2
@@ -41289,7 +41302,7 @@ lbC022206	move.b	#$2C,(a4)+
 	addq.l	#4,sp
 	rts
 
-	bsr.w	lbC022490
+	bsr.w	put_value_d0_long
 	move.b	#$2C,(a4)+
 	move.l	d3,d0
 lbC022222	movea.l	(sp)+,a0
@@ -41334,7 +41347,7 @@ lbC02226C	addq.l	#4,a2
 
 lbC022274	tst.b	(lbB02B3EA-ds,a6)
 	beq.b	lbC022298
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#2,(a4)+
 	bsr.b	lbC022298
 	move.b	#1,(a4)+
@@ -41361,8 +41374,8 @@ lbC0222A4	move.b	(a2)+,d0
 	addq.w	#8,a3
 	addq.w	#8,a3
 	bne.w	lbC022808
-	tst.b	(lbB02B457-ds,a6)
-	beq.w	lbC022490
+	tst.b	(opt1_allow_refrecog-ds,a6)
+	beq.w	put_value_d0_long
 	move.l	d0,d1
 	sub.l	(ds-ds,a6),d1
 	addq.l	#4,d1
@@ -41371,12 +41384,12 @@ lbC0222CE	beq.w	put_adr_d0
 	beq.b	lbC0222CE
 	move.l	(workdata_strt_plus1-ds,a6),d1
 	subq.l	#1,d1
-	bcs.w	lbC022490
+	bcs.w	put_value_d0_long
 	cmp.l	d1,d0
-	bcs.w	lbC022490
+	bcs.w	put_value_d0_long
 	add.l	(workdata_length-ds,a6),d1
 	cmp.l	d1,d0
-	bcc.w	lbC022490
+	bcc.w	put_value_d0_long
 	sub.l	(workdata_length-ds,a6),d1
 	sub.l	d1,d0
 	add.l	(ds-ds,a6),d0
@@ -41393,7 +41406,7 @@ lbC02230A	moveq	#0,d0
 	lsl.w	#8,d0
 	move.b	(a2)+,d0
 	addq.l	#8,a3
-	bra.w	lbC0224C0
+	bra.w	put_value_d0_word
 
 lbC022318	moveq	#0,d0
 	move.b	(a2)+,d0
@@ -41402,7 +41415,7 @@ lbC022318	moveq	#0,d0
 	rts
 
 lbC022324	move.b	(-1,a2),d0
-	bra.w	put_line_end
+	bra.w	put_value_d0_byte
 
 lbC02232C	lea	(lbL02D080-ds,a6),a0
 	move.l	d0,(a0)
@@ -41457,147 +41470,144 @@ lbC02239A	tst.b	(a4)+
 lbC0223A6	movea.l	a2,a0
 	move.l	d2,d0
 	movem.l	(sp)+,d2-d4/a2
-	beq.w	lbC022430
+	beq.w	put_a0_long_hex
 	subq.b	#1,d0
-	beq.b	lbC02240E
-	bra.b	lbC0223E2
+	beq.b	put_a0_2long_hex
+	bra.b	put_a0_3long_hex
 
 mathieeedoubb.MSG	db	'mathieeedoubbas.library',0
 fpsupportlibr.MSG	db	'fpsupport.library',0
 
-lbC0223E2	movem.l	a1/a2,-(sp)
-	lea	(_RawDoFmt_args-ds,a6),a1
+put_a0_3long_hex	movem.l	a1/a2,-(sp)
+	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	(a0)+,(a1)+
 	move.l	(a0)+,(a1)+
 	move.l	(a0),(a1)
 	lea	(lx08lx08lx.MSG,pc),a0
-	bra.w	lbC022566
+	bra.w	rawdofmt
 
 lx08lx08lx.MSG	db	'$%08lx,$%08lx,$%08lx',0,0
 
-lbC02240E	movem.l	a1/a2,-(sp)
-	lea	(_RawDoFmt_args-ds,a6),a1
+put_a0_2long_hex	movem.l	a1/a2,-(sp)
+	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	(a0)+,(a1)+
 	move.l	(a0),(a1)
-	lea	(lbC022422,pc),a0
-	bra.w	lbC022566
+	lea	(lx08lx.MSG1,pc),a0
+	bra.w	rawdofmt
 
-lbC022422	move.l	-(a5),d2
-	move.w	($6C78).w,d0
-	move.l	-(a4),d6
-	move.l	($6C,a0,d3.l),-(a2)
-	moveq	#0,d4
-lbC022430	move.l	(a0),d0
+lx08lx.MSG1	db	'$%08lx,$%08lx',0
+
+put_a0_long_hex	move.l	(a0),d0
 	lea	(lx8.MSG,pc),a0
-	bra.w	lbC02255E
+	bra.w	rawdofmt_d0
 
-lbC02243A	tst.l	(a0)
-	bne.b	lbC02245A
+put_a0_64bit	tst.l	(a0)
+	bne.b	.64
 	move.l	(4,a0),d0
 	cmp.l	(lbL02CDF0-ds,a6),d0
-	bcs.w	lbC022542
+	bcs.w	put_dec_d0
 	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$10,d1
-	bne.w	lbC022542
-	bra.w	lbC022518
+	bne.w	put_dec_d0
+	bra.w	put_hex8_d0
 
-lbC02245A	movem.l	a1/a2,-(sp)
-	lea	(_RawDoFmt_args-ds,a6),a1
+.64	movem.l	a1/a2,-(sp)
+	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	(a0)+,(a1)+
 	move.l	(a0),(a1)
 	lea	(lx08lx.MSG,pc),a0
-	tst.b	(lbB02B452-ds,a6)
+	tst.b	(opt1_show_zeros-ds,a6)
 	beq.b	lbC022474
 	lea	(lx08lx.MSG0,pc),a0
-lbC022474	bra.w	lbC022566
+lbC022474	bra.w	rawdofmt
 
 lx08lx.MSG	db	'$%-lx%08lx',0
 lx08lx.MSG0	db	'$%08lx%08lx',0,0
 
-lbC022490	moveq	#6,d1
+put_value_d0_long	moveq	#6,d1
 	and.b	(lbB02D0ED-ds,a6),d1
 	beq.b	lbC0224AA
 	bsr.w	lbC0220B0
 	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$11,d1
 	beq.b	lbC0224AE
-	bra.w	lbC0225A0
+	bra.w	put_bin_long
 
 lbC0224AA	move.l	(lbB02D0EC-ds,a6),d1
 lbC0224AE	cmp.l	(lbL02CDF0-ds,a6),d0
-	bcs.w	lbC022542
+	bcs.w	put_dec_d0
 	btst	#$10,d1
-	bne.w	lbC022542
-	bra.b	lbC022518
+	bne.w	put_dec_d0
+	bra.b	put_hex8_d0
 
-lbC0224C0	moveq	#6,d1
+put_value_d0_word	moveq	#6,d1
 	and.b	(lbB02D0ED-ds,a6),d1
 	beq.b	lbC0224DA
 	bsr.w	lbC0220B0
 	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$11,d1
-	bne.w	lbC0225B8
+	bne.w	put_bin_word
 	bra.b	lbC0224DE
 
 lbC0224DA	move.l	(lbB02D0EC-ds,a6),d1
 lbC0224DE	cmp.l	(lbL02CDF0-ds,a6),d0
-	bcs.b	lbC022542
+	bcs.b	put_dec_d0
 	btst	#$10,d1
-	bne.b	lbC022542
-	bra.b	lbC022524
+	bne.b	put_dec_d0
+	bra.b	put_hex4_d0
 
-put_line_end	moveq	#6,d1
+put_value_d0_byte	moveq	#6,d1
 	and.b	(lbB02D0ED-ds,a6),d1
 	beq.b	lbC022506
 	bsr.w	lbC0220B0
 	move.l	(lbB02D0EC-ds,a6),d1
 	btst	#$11,d1
-	bne.w	lbC0225D4
+	bne.w	put_bin_byte
 	bra.b	lbC02250A
 
 lbC022506	move.l	(lbB02D0EC-ds,a6),d1
 lbC02250A	cmp.l	(lbL02CDF0-ds,a6),d0
-	bcs.b	lbC022542
+	bcs.b	put_dec_d0
 	btst	#$10,d1
-	bne.b	lbC022542
-	bra.b	lbC022530
+	bne.b	put_dec_d0
+	bra.b	put_hex2_d0
 
-lbC022518	tst.b	(lbB02B452-ds,a6)
-	beq.b	lbC02255A
+put_hex8_d0	tst.b	(opt1_show_zeros-ds,a6)
+	beq.b	put_hex_d0
 	lea	(lx8.MSG,pc),a0
-	bra.b	lbC02255E
+	bra.b	rawdofmt_d0
 
-lbC022524	tst.b	(lbB02B452-ds,a6)
-	beq.b	lbC02255A
+put_hex4_d0	tst.b	(opt1_show_zeros-ds,a6)
+	beq.b	put_hex_d0
 	lea	(lx4.MSG,pc),a0
-	bra.b	lbC02255E
+	bra.b	rawdofmt_d0
 
-lbC022530	tst.b	(lbB02B452-ds,a6)
-	beq.b	lbC02255A
+put_hex2_d0	tst.b	(opt1_show_zeros-ds,a6)
+	beq.b	put_hex_d0
 	lea	(lx2.MSG,pc),a0
-	bra.b	lbC02255E
+	bra.b	rawdofmt_d0
 
-lbC02253C	lea	(lx6.MSG,pc),a0
-	bra.b	lbC02255E
+put_hex6_d0	lea	(lx6.MSG,pc),a0
+	bra.b	rawdofmt_d0
 
-lbC022542	cmpi.l	#9,d0
-	bhi.b	lbC022554
-	addi.b	#$30,d0
+put_dec_d0	cmpi.l	#9,d0
+	bhi.b	.greater
+	addi.b	#'0',d0
 	move.b	d0,(a4)+
 	addq.w	#1,d6
 	rts
 
-lbC022554	lea	(ld.MSG,pc),a0
-	bra.b	lbC02255E
+.greater	lea	(ld.MSG,pc),a0
+	bra.b	rawdofmt_d0
 
-lbC02255A	lea	(lx.MSG1,pc),a0
-lbC02255E	movem.l	a1/a2,-(sp)
-	move.l	d0,(_RawDoFmt_args-ds,a6)
-lbC022566	lea	(lbL02D79C-ds,a6),a2
+put_hex_d0	lea	(lx.MSG1,pc),a0
+rawdofmt_d0	movem.l	a1/a2,-(sp)
+	move.l	d0,(rawDoFmt_args-ds,a6)
+rawdofmt	lea	(rawDoFmt_buf-ds,a6),a2
 	bsr.w	_RawDoFmt
-lbC02256E	move.b	(a2)+,(a4)+
+.copy	move.b	(a2)+,(a4)+
 	tst.b	(a2)
-	bne.b	lbC02256E
+	bne.b	.copy
 	movem.l	(sp)+,a1/a2
 	rts
 
@@ -41608,38 +41618,38 @@ lx4.MSG	db	'$%04lx',0
 lx2.MSG	db	'$%02lx',0
 ld.MSG	db	'%ld',0,0
 
-lbC0225A0	move.l	d2,-(sp)
-	move.b	#$25,(a4)+
-	moveq	#$1F,d2
-lbC0225A8	moveq	#$18,d1
+put_bin_long	move.l	d2,-(sp)
+	move.b	#'%',(a4)+
+	moveq	#31,d2
+.loop	moveq	#$18,d1
 	add.l	d0,d0
 	addx.b	d1,d1
 	move.b	d1,(a4)+
-	dbra	d2,lbC0225A8
+	dbra	d2,.loop
 	move.l	(sp)+,d2
 	rts
 
-lbC0225B8	move.b	#$25,(a4)+
-	moveq	#$10,d1
+put_bin_word	move.b	#'%',(a4)+
+	moveq	#16,d1
 	swap	d0
-lbC0225C0	move.b	#$30,(a4)+
+.loop	move.b	#'0',(a4)+
 	add.l	d0,d0
-	bcc.b	lbC0225CE
-	move.b	#$31,(-1,a4)
-lbC0225CE	subq.b	#1,d1
-	bne.b	lbC0225C0
+	bcc.b	.go
+	move.b	#'1',(-1,a4)
+.go	subq.b	#1,d1
+	bne.b	.loop
 	rts
 
-lbC0225D4	move.b	#$25,(a4)+
+put_bin_byte	move.b	#'%',(a4)+
 	moveq	#8,d1
 	swap	d0
 	lsl.l	#8,d0
-lbC0225DE	move.b	#$30,(a4)+
+.loop	move.b	#'0',(a4)+
 	add.l	d0,d0
-	bcc.b	lbC0225EC
-	move.b	#$31,(-1,a4)
-lbC0225EC	subq.b	#1,d1
-	bne.b	lbC0225DE
+	bcc.b	.go
+	move.b	#'1',(-1,a4)
+.go	subq.b	#1,d1
+	bne.b	.loop
 	rts
 
 ABCDEF0001020.MSG	db	'0123456789ABCDEF'
@@ -41705,7 +41715,7 @@ put_adr_d0_outside	moveq	#'4',d2
 	lsl.l	#2,d1
 	movea.l	(workdata_struct-ds,a6),a0
 	btst	#2,(-4,a0,d1.l)
-	beq.w	lbC022490
+	beq.w	put_value_d0_long
 	clr.b	(lbB02D39A-ds,a6)
 	bra.b	lbC0228B0
 
@@ -41749,7 +41759,7 @@ lbC022908	move.b	(a0)+,(a4)+
 	dbra	d1,lbC022908
 	rts
 
-lbC022910	addq.l	#1,(lbW02D24C-ds,a6)
+lbC022910	addq.l	#1,(count_hilits-ds,a6)
 	cmpi.b	#$FF,(-1,a4)
 	beq.b	lbC022906
 	addq.l	#2,(lbB02D37C-ds,a6)
@@ -41760,7 +41770,7 @@ lbC022910	addq.l	#1,(lbW02D24C-ds,a6)
 
 lbC02292C	tst.b	(lbB02B3F3-ds,a6)
 	beq.b	lbC022976
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	cmpi.b	#2,(-1,a4)
 	beq.b	lbC022976
 	addq.l	#2,(lbB02D37C-ds,a6)
@@ -41769,7 +41779,7 @@ lbC02292C	tst.b	(lbB02B3F3-ds,a6)
 	move.b	#1,(a4)+
 	rts
 
-lbC02294E	addq.l	#1,(lbL02D298-ds,a6)
+lbC02294E	addq.l	#1,(count_badref-ds,a6)
 	bset	#3,(lbB02D3A4-ds,a6)
 	bra.b	lbC0228EC
 
@@ -41777,7 +41787,7 @@ lbC02295A	cmpi.b	#$30,(lbB02EAD2-ds,a6)
 	beq.b	lbC0228EC
 	tst.b	(3,a0)
 	bpl.b	lbC0228EC
-	addq.l	#1,(lbL02D298-ds,a6)
+	addq.l	#1,(count_badref-ds,a6)
 	bset	#4,(lbB02D3A4-ds,a6)
 	bra.w	lbC0228EC
 
@@ -41797,7 +41807,7 @@ lbC02299A	move.b	(a0)+,(a4)+
 	subq.l	#1,a4
 	rts
 
-lbC0229A2	addq.l	#1,(lbL02D218-ds,a6)
+lbC0229A2	addq.l	#1,(count_startplusref-ds,a6)
 	bset	#5,(lbB02D3A4-ds,a6)
 	move.b	#$53,(a4)+
 	move.b	#$54,(a4)+
@@ -42464,7 +42474,7 @@ lbC023292	move.l	d0,(lbL02D208-ds,a6)
 	move.b	#$6C,(a4)+
 	move.b	#$62,(a4)+
 	move.b	(lbW02EB3A-ds,a6),(a4)+
-	bsr.w	lbC02253C
+	bsr.w	put_hex6_d0
 	moveq	#9,d0
 	movea.l	a4,a0
 	suba.l	d0,a0
@@ -42583,7 +42593,7 @@ lbC0233EC	cmp.b	d0,d0
 lbC0233F0	movea.l	a2,a0
 	addq.w	#8,a2
 	lea	($20,a3),a3
-	bra.w	lbC02243A
+	bra.w	put_a0_64bit
 
 lbC0233FC	movem.l	d0/a2,-(sp)
 	addq.l	#1,a2
@@ -42701,14 +42711,14 @@ lbC02353A	move.l	a2,d0
 	rts
 
 lbC023564	movem.l	d1-d7/a0/a1,-(sp)
-	tst.b	(lbB02B449-ds,a6)
+	tst.b	(opt1_show_symbols-ds,a6)
 	beq.b	lbC0235CE
 	tst.b	(lbB02EAD5-ds,a6)
 	bhi.b	lbC0235CE
-	addq.l	#1,(lbW02D224-ds,a6)
+	addq.l	#1,(count_symbols-ds,a6)
 	tst.b	(lbB02B3F1-ds,a6)
 	beq.b	lbC0235AE
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#4,(a4)+
 	bsr.w	lbC02390E
@@ -42759,7 +42769,7 @@ lbC0235E8	btst	#6,(a3)
 	jsr	(lbC029FE8-ds,a6)
 	moveq	#0,d0
 	movem.l	d2-d5,-(sp)
-	addq.l	#1,(lbL02D25C-ds,a6)
+	addq.l	#1,(count_ascii_lines-ds,a6)
 	move.b	(a2)+,d0
 	move.b	#$27,(a4)+
 	move.b	d0,(a4)+
@@ -42794,7 +42804,7 @@ lbC023664	move.b	#$27,(a4)+
 	addq.w	#1,d6
 lbC02366A	sub.l	d6,d7
 	subq.l	#1,d7
-	sub.l	d7,(lbL02D280-ds,a6)
+	sub.l	d7,(count_ascii_chars-ds,a6)
 	movem.l	(sp)+,d2-d5
 	rts
 
@@ -43031,7 +43041,7 @@ lbC023970	tst.b	d0
 	beq.w	lbC023A2C
 	cmpi.b	#$1B,d0
 	bne.b	lbC0239EA
-	tst.b	(lbB02B449-ds,a6)
+	tst.b	(opt1_show_symbols-ds,a6)
 	beq.b	lbC0239EA
 	subq.b	#1,d1
 	beq.w	lbC023A2C
@@ -43141,7 +43151,7 @@ lbC023AB8	move.b	(a0)+,(a4)+
 	subq.l	#1,a4
 	rts
 
-lbC023AC0	move.b	#'#',(a4)+
+oper01	move.b	#'#',(a4)+
 lbC023AC4	clr.b	(lbB02EB6F-ds,a6)
 	tst.b	(a2)
 	bne.b	lbC023AF6
@@ -43153,18 +43163,18 @@ lbC023AD2	btst	#0,(a3)
 	addq.l	#1,a2
 	moveq	#0,d0
 	move.b	(a2)+,d0
-	bra.w	put_line_end
+	bra.w	put_value_d0_byte
 
 lbC023AE4	addq.l	#8,a3
 	addq.l	#2,a2
 	bne.b	lbC023AF4
 	moveq	#0,d0
 	move.b	(-1,a2),d0
-	bra.w	put_line_end
+	bra.w	put_value_d0_byte
 
 lbC023AF4	rts
 
-lbC023AF6	move.b	#$3F,(a4)
+lbC023AF6	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
@@ -43190,14 +43200,14 @@ lbC023B3C	bsr.b	lbC023B40
 	bra.b	lbC023AE4
 
 lbC023B40	movem.l	d1-d7/a0/a1,-(sp)
-	tst.b	(lbB02B449-ds,a6)
+	tst.b	(opt1_show_symbols-ds,a6)
 	beq.b	lbC023B84
 	tst.b	(lbB02EAD5-ds,a6)
 	bhi.b	lbC023B84
-	addq.l	#1,(lbW02D224-ds,a6)
+	addq.l	#1,(count_symbols-ds,a6)
 	tst.b	(lbB02B3F1-ds,a6)
 	beq.b	lbC023B76
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	addq.l	#2,(lbB02D37C-ds,a6)
 	move.b	#4,(a4)+
 	bsr.w	lbC02390E
@@ -43216,22 +43226,22 @@ lbC023B84	moveq	#0,d0
 	movem.l	(sp)+,d1-d7/a0/a1
 	bra.b	lbC023B80
 
-lbC023B8C	move.b	#$23,(a4)+
+oper5584_immbit	move.b	#'#',(a4)+
 	clr.b	(lbB02EB6F-ds,a6)
 	move.w	(a2),d0
 	cmpi.w	#7,d0
 	bls.w	lbC023ACC
 	move.l	d5,d1
-	andi.l	#$380000,d1
+	andi.l	#$380000,d1	;mode=111?
 	bne.w	lbC023AF6
 	cmpi.w	#$1F,d0
 	bhi.w	lbC023AF6
 lbC023BB2	bra.w	lbC023ACC
 
-lbC023BB6	move.b	#'#',(a4)+
+oper02	move.b	#'#',(a4)+
 	bra.w	lbC0222FE
 
-lbC023BBE	move.b	#$23,(a4)+
+oper48	move.b	#$23,(a4)+
 	bsr.w	lbC0234F4
 	addq.l	#2,a2
 	addq.l	#8,a3
@@ -43240,14 +43250,14 @@ lbC023BBE	move.b	#$23,(a4)+
 	bpl.b	lbC023BD6
 	move.b	#$2D,(a4)+
 	neg.w	d0
-lbC023BD6	bra.w	lbC0224C0
+lbC023BD6	bra.w	put_value_d0_word
 
 lbC023BDA	rts
 
-lbC023BDC	move.b	#$23,(a4)+
+oper19	move.b	#'#',(a4)+
 	bra.w	lbC022292
 
-lbC023BE4	move.b	#$23,(a4)+
+oper87	move.b	#$23,(a4)+
 	bsr.w	lbC023464
 	movea.l	a2,a0
 	addq.l	#4,a2
@@ -43265,17 +43275,17 @@ lbC023BE4	move.b	#$23,(a4)+
 	bpl.b	lbC023C0E
 	move.b	#$2D,(a4)+
 	neg.l	d0
-lbC023C0E	bra.w	lbC022490
+lbC023C0E	bra.w	put_value_d0_long
 
 lbC023C12	rts
 
 	MC68020
-extract_ea_68020	bfextu	d5{10:3},d0
+oper0350_ea_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
 	jmp	([lbL00E11C,pc,d0.w*4])
 	MC68000
 
-extract_ea_68000	move.l	d5,d0
+oper0350_ea_68000	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.w	#1,d0
@@ -43286,7 +43296,7 @@ extract_ea_68000	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC023C46	move.l	d5,d0
+oper64	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.w	#1,d0
@@ -43297,7 +43307,7 @@ lbC023C46	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC023C68	move.l	d5,d0
+oper56	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.w	#1,d0
@@ -43317,7 +43327,7 @@ set4q	move.b	#'?',(a4)
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbC023CA0	move.b	#$2D,(a4)+
+ea_d3_anindd	move.b	#'-',(a4)+
 	move.l	d3,d0
 	lsl.w	#2,d0
 	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
@@ -43328,7 +43338,7 @@ lbC023CA0	move.b	#$2D,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC023CB8	btst	#0,(-4,a3)
+ext50_ea_d3_anind	btst	#0,(-4,a3)
 	bne.b	lbC023CDA
 	tst.b	(lbB02EB3D-ds,a6)
 	bne.b	lbC023CDA
@@ -43344,7 +43354,7 @@ setanind	move.l	d3,d0
 
 lbC023CDA	btst	#1,(lbB02EAD0-ds,a6)
 	bne.b	setanind
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	beq.b	lbC023CEC
 	move.b	#'(',(a4)+
 lbC023CEC	subq.l	#4,a3
@@ -43355,7 +43365,7 @@ lbC023CEC	subq.l	#4,a3
 	addq.w	#1,a2
 	addq.l	#4,a3
 	move.b	#$28,d0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	beq.b	lbC023D0E
 	move.b	#$2C,d0
 lbC023D0E	move.b	d0,(a4)+
@@ -43382,7 +43392,7 @@ lbC023D24	bsr.w	lbC0234F4
 	move.b	#$29,(a4)+
 	rts
 
-lbC023D46	move.b	#'(',(a4)+
+ext53_ea_d3_and16	move.b	#'(',(a4)+
 	btst	#0,(a3)
 	bne.b	lbC023D24
 	tst.b	(lbB02EB3D-ds,a6)
@@ -43396,7 +43406,7 @@ lbC023D56	moveq	#0,d0
 	beq.w	lbC023DEC
 	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC023DEC
-	move.l	(lbL02D0F0-ds,a6),d1
+	move.l	(work_actual_offset-ds,a6),d1
 	sub.l	(ds-ds,a6),d1
 	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC023DEC
@@ -43415,7 +43425,7 @@ lbC023D92	ext.l	d0
 	bne.b	lbC023DDE
 lbC023DA8	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-ds,a6)
+	addq.l	#1,(count_xanconvers-ds,a6)
 	tst.b	(flag_DT_enabled-ds,a6)
 	beq.b	lbC023DD8
 	move.b	#'-',(a4)+
@@ -43485,7 +43495,7 @@ lbC023E50	moveq	#0,d0
 	beq.w	lbC023EE6
 	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC023EE6
-	move.l	(lbL02D0F0-ds,a6),d1
+	move.l	(work_actual_offset-ds,a6),d1
 	sub.l	(ds-ds,a6),d1
 	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC023EE6
@@ -43504,7 +43514,7 @@ lbC023E8C	ext.l	d0
 	bne.b	lbC023ED8
 lbC023EA2	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-ds,a6)
+	addq.l	#1,(count_xanconvers-ds,a6)
 	tst.b	(flag_DT_enabled-ds,a6)
 	beq.b	lbC023ED6
 	move.b	#$2D,(a4)+
@@ -43562,7 +43572,7 @@ lbC023F20	moveq	#0,d0
 	beq.b	lbC023FB8
 	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC023FB8
-	move.l	(lbL02D0F0-ds,a6),d1
+	move.l	(work_actual_offset-ds,a6),d1
 	sub.l	(ds-ds,a6),d1
 	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC023FB8
@@ -43586,7 +43596,7 @@ lbC023F76	ext.w	d0
 	bne.b	lbC023FA8
 lbC023F8E	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-ds,a6)
+	addq.l	#1,(count_xanconvers-ds,a6)
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
@@ -43603,7 +43613,7 @@ lbC023FB0	move.b	#$2D,(a4)+
 lbC023FB8	moveq	#0,d0
 	move.b	(-1,a2),d0
 	blt.b	lbC023FB0
-lbC023FC0	bsr.w	put_line_end
+lbC023FC0	bsr.w	put_value_d0_byte
 lbC023FC4	move.l	d3,d0
 	lsl.w	#2,d0
 	lea	(A0A1A2A3A4A5A.MSG2-ds,a6),a0
@@ -43630,7 +43640,7 @@ lbC023FC4	move.l	d3,d0
 	move.b	#$29,(a4)+
 	rts
 
-lbC024004	move.b	#$28,(a4)+
+ea_d3_d8anxn	move.b	#'(',(a4)+
 	moveq	#0,d0
 	btst	#8,d4
 	bne.w	lbC02410E
@@ -43646,7 +43656,7 @@ lbC024004	move.b	#$28,(a4)+
 	beq.w	lbC0240BA
 	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC0240BA
-	move.l	(lbL02D0F0-ds,a6),d1
+	move.l	(work_actual_offset-ds,a6),d1
 	sub.l	(ds-ds,a6),d1
 	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC0240BA
@@ -43670,7 +43680,7 @@ lbC024062	ext.w	d0
 	bne.b	lbC024094
 lbC02407A	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-ds,a6)
+	addq.l	#1,(count_xanconvers-ds,a6)
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
@@ -43697,7 +43707,7 @@ lbC0240A6	move.w	d3,d0
 lbC0240BA	moveq	#0,d0
 	move.b	(-1,a2),d0
 	ble.b	lbC02409C
-lbC0240C2	bsr.w	put_line_end
+lbC0240C2	bsr.w	put_value_d0_byte
 lbC0240C6	move.l	d3,d0
 	lsl.w	#2,d0
 	lea	(A0A1A2A3A4A5A.MSG3-ds,a6),a0
@@ -43778,7 +43788,7 @@ lbC024172	bsr.w	lbC0234F4
 	beq.b	lbC0241F6
 	btst	#5,(lbW02D0EE-ds,a6)
 	bne.b	lbC0241F6
-	move.l	(lbL02D0F0-ds,a6),d1
+	move.l	(work_actual_offset-ds,a6),d1
 	sub.l	(ds-ds,a6),d1
 	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC0241F6
@@ -43801,7 +43811,7 @@ lbC0241BE	ext.l	d0
 	bne.b	lbC0241F0
 lbC0241D4	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-ds,a6)
+	addq.l	#1,(count_xanconvers-ds,a6)
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
@@ -43813,7 +43823,7 @@ lbC0241F6	move.w	(-2,a2),d0
 	bpl.b	lbC024202
 	move.b	#$2D,(a4)+
 	neg.w	d0
-lbC024202	bsr.w	lbC0224C0
+lbC024202	bsr.w	put_value_d0_word
 	bra.w	lbC0242D6
 
 lbC02420A	bsr.w	lbC023464
@@ -43828,7 +43838,7 @@ lbC02420A	bsr.w	lbC023464
 	bne.w	lbC0242BE
 	cmp.b	(convert_anea_regnum-ds,a6),d3
 	bne.w	lbC0242BE
-	move.l	(lbL02D0F0-ds,a6),d1
+	move.l	(work_actual_offset-ds,a6),d1
 	sub.l	(ds-ds,a6),d1
 	cmp.l	(lbL02B4C8-ds,a6),d1
 	bcs.b	lbC0242BE
@@ -43851,7 +43861,7 @@ lbC024260	add.l	(lbL02D098-ds,a6),d0
 	bne.b	lbC02428E
 lbC024274	add.l	(ds-ds,a6),d0
 	bsr.w	put_adr_d0
-	addq.l	#1,(lbL02D288-ds,a6)
+	addq.l	#1,(count_xanconvers-ds,a6)
 	move.b	#$2D,(a4)+
 	move.b	#$44,(a4)+
 	move.b	#$54,(a4)+
@@ -43863,7 +43873,7 @@ lbC02428E	tst.b	(lbB02B42E-ds,a6)
 
 lbC024296	btst	#2,(lbL02D2E8-ds,a6)
 	beq.b	lbC0242B4
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#2,(a4)+
 	move.l	(-4,a2),d0
 	bsr.w	put_adr_d0
@@ -43880,7 +43890,7 @@ lbC0242BE	btst	#2,(-$10,a3)
 	bpl.b	lbC0242D2
 	move.b	#$2D,(a4)+
 	neg.l	d0
-lbC0242D2	bsr.w	lbC022490
+lbC0242D2	bsr.w	put_value_d0_long
 lbC0242D6	move.b	#$2C,(a4)+
 lbC0242DA	tst.b	d4
 	bpl.b	lbC0242E6
@@ -43963,7 +43973,7 @@ lbC0243A6	bsr.w	lbC0234F4
 	bpl.b	lbC0243BC
 	move.b	#$2D,(a4)+
 	neg.w	d0
-lbC0243BC	bsr.w	lbC0224C0
+lbC0243BC	bsr.w	put_value_d0_word
 	bra.b	lbC0243DE
 
 lbC0243C2	bsr.w	lbC023464
@@ -43974,7 +43984,7 @@ lbC0243C2	bsr.w	lbC023464
 	bpl.b	lbC0243DA
 	move.b	#$2D,(a4)+
 	neg.l	d0
-lbC0243DA	bsr.w	lbC022490
+lbC0243DA	bsr.w	put_value_d0_long
 lbC0243DE	cmpi.b	#$2C,-(a4)
 	beq.b	lbC0243E6
 	addq.l	#1,a4
@@ -44011,7 +44021,7 @@ lbC02442E	lea	(lbL00E22C).l,a0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC02443E	lea	(lbL00E24C).l,a0
+ea_d3_ext	lea	(jmp_ea2ext).l,a0
 	move.l	d3,d0
 	lsl.w	#2,d0
 	movea.l	(a0,d0.w),a0
@@ -44056,31 +44066,31 @@ lbC02449E	bsr.w	lbC0234F4
 	neg.w	d0
 lbC0244B0	cmpi.w	#$FF,d0
 	bcc.b	lbC0244BC
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	bra.b	lbC0244C0
 
-lbC0244BC	bsr.w	lbC0224C0
+lbC0244BC	bsr.w	put_value_d0_word
 lbC0244C0	addq.w	#2,a2
 	addq.w	#8,a3
 	rts
 
 lbC0244C6	bsr.b	lbC02449E
-	tst.b	(lbB02B470-ds,a6)
+	tst.b	(opt1_size_absword-ds,a6)
 	beq.b	lbC0244D6
 	move.b	#$2E,(a4)+
 	move.b	(flagCaseSizeSpec-ds,a6),(a4)+
 lbC0244D6	rts
 
-lbC0244D8	move.b	#$28,(a4)+
+ea_absw	move.b	#'(',(a4)+
 	bsr.b	lbC02449E
-	move.b	#$29,(a4)+
-	tst.b	(lbB02B470-ds,a6)
+	move.b	#')',(a4)+
+	tst.b	(opt1_size_absword-ds,a6)
 	beq.b	lbC0244F0
-	move.b	#$2E,(a4)+
+	move.b	#'.',(a4)+
 	move.b	(flagCaseSizeSpec-ds,a6),(a4)+
 lbC0244F0	rts
 
-lbC0244F2	tst.b	(lbB02B472-ds,a6)
+lbC0244F2	tst.b	(opt1_size_optimize-ds,a6)
 	beq.b	lbC024514
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC024514
@@ -44089,15 +44099,15 @@ lbC0244F2	tst.b	(lbB02B472-ds,a6)
 	cmpi.l	#$7FFF,(a2)
 	bgt.b	lbC024514
 	cmpi.l	#$FFFF8000,(a2)
-	bge.b	lbC0244D8
+	bge.b	ea_absw
 lbC024514	bsr.w	lbC022292
-	tst.b	(lbB02B471-ds,a6)
+	tst.b	(opt1_size_abslong-ds,a6)
 	beq.b	lbC024526
 	move.b	#$2E,(a4)+
 	move.b	(L.MSG-ds,a6),(a4)+
 lbC024526	rts
 
-lbC024528	tst.b	(lbB02B472-ds,a6)
+ea_absl	tst.b	(opt1_size_optimize-ds,a6)
 	beq.b	lbC02454A
 	tst.b	(lbB02EAD5-ds,a6)
 	bne.b	lbC02454A
@@ -44106,11 +44116,11 @@ lbC024528	tst.b	(lbB02B472-ds,a6)
 	cmpi.l	#$7FFF,(a2)
 	bgt.b	lbC02454A
 	cmpi.l	#$FFFF8000,(a2)
-	bge.b	lbC0244D8
+	bge.b	ea_absw
 lbC02454A	move.b	#$28,(a4)+
 	bsr.w	lbC022292
 	move.b	#$29,(a4)+
-	tst.b	(lbB02B471-ds,a6)
+	tst.b	(opt1_size_abslong-ds,a6)
 	bne.b	lbC02455E
 	rts
 
@@ -44118,7 +44128,7 @@ lbC02455E	move.b	#$2E,(a4)+
 	move.b	(L.MSG-ds,a6),(a4)+
 	rts
 
-lbC024568	move.b	#$23,(a4)+
+ea_imm	move.b	#'#',(a4)+
 	moveq	#0,d0
 	move.b	(opcode_size-ds,a6),d0
 	lsl.w	#2,d0
@@ -44126,11 +44136,11 @@ lbC024568	move.b	#$23,(a4)+
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024580	move.b	#$23,(a4)+
+lbC024580	move.b	#'#',(a4)+
 	move.b	#$30,(lbB02EAD2-ds,a6)
 lbC02458A	bra.w	lbC022292
 
-lbC02458E	move.b	#$28,(a4)+
+ea_d16pc_new	move.b	#'(',(a4)+
 	bsr.w	put_adr_relword
 	lea	(PC.MSG2-ds,a6),a0
 	move.b	(a0)+,(a4)+
@@ -44139,7 +44149,7 @@ lbC02458E	move.b	#$28,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0245A4	bsr.w	put_adr_relword
+ea_d16pc_old	bsr.w	put_adr_relword
 	lea	(PC.MSG3-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -44147,7 +44157,7 @@ lbC0245A4	bsr.w	put_adr_relword
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0245B6	move.b	#$28,(a4)+
+ea_d8pcxn	move.b	#$28,(a4)+
 	btst	#8,d4
 	bne.w	lbC02466A
 	movea.l	a2,a0
@@ -44269,18 +44279,18 @@ lbC0246E4	move.b	(PC.MSG1-ds,a6),(a4)+
 	move.b	#$2C,(a4)+
 	bra.w	lbC0242F8
 
-copy_3_a5_a4	move.b	(a5)+,(a4)+
+oper04_copy_3_a5_a4	move.b	(a5)+,(a4)+
 	move.b	(a5)+,(a4)+
 	move.b	(a5)+,(a4)+
 	move.l	a5,(4,sp)
 	rts
 
-copy_2_a5_a4	move.b	(a5)+,(a4)+
+oper05_copy_2_a5_a4	move.b	(a5)+,(a4)+
 	move.b	(a5)+,(a4)+
 	move.l	a5,(4,sp)
 	rts
 
-set_dn_f000	moveq	#0,d0
+oper06_set_dn_f000	moveq	#0,d0
 	move.w	d5,d0
 	andi.w	#$F000,d0
 	lsr.w	#8,d0
@@ -44291,7 +44301,7 @@ set_dn_f000	moveq	#0,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-set_dn_7000	moveq	#0,d0
+oper51_set_dn_7000	moveq	#0,d0
 	move.w	d5,d0
 	andi.w	#$7000,d0
 	lsr.w	#8,d0
@@ -44302,7 +44312,7 @@ set_dn_7000	moveq	#0,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC02473A	moveq	#0,d1
+oper54	moveq	#0,d1
 	move.w	d5,d1
 	andi.w	#$7000,d1
 	moveq	#12,d0
@@ -44326,7 +44336,7 @@ lbC024764	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024772	btst	#$17,d5
+oper07	btst	#$17,d5
 	bne.b	lbC024798
 	bsr.b	lbC02479E
 	move.b	#$2C,(a4)+
@@ -44352,7 +44362,7 @@ lbC02479E	move.b	#$28,(a4)+
 	bpl.b	lbC0247B6
 	move.b	#$2D,(a4)+
 	neg.w	d0
-lbC0247B6	bsr.w	lbC0224C0
+lbC0247B6	bsr.w	put_value_d0_word
 	move.b	#$2C,(a4)+
 	move.l	d5,d0
 	andi.l	#$70000,d0
@@ -44365,7 +44375,7 @@ lbC0247B6	bsr.w	lbC0224C0
 	move.b	#$29,(a4)+
 	rts
 
-lbC0247DA	btst	#$17,d5
+oper57	btst	#$17,d5
 	bne.b	lbC024800
 	bsr.b	lbC024806
 	move.b	#$2C,(a4)+
@@ -44390,7 +44400,7 @@ lbC024806	bsr.w	lbC0234F4
 	bpl.b	lbC02481A
 	move.b	#$2D,(a4)+
 	neg.w	d0
-lbC02481A	bsr.w	lbC0224C0
+lbC02481A	bsr.w	put_value_d0_word
 	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
@@ -44403,7 +44413,7 @@ lbC02481A	bsr.w	lbC0224C0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC02483A	move.l	d5,d0
+oper08	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.w	#1,d0
@@ -44414,7 +44424,7 @@ lbC02483A	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC02485C	move.l	d5,d0
+oper60	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.w	#1,d0
@@ -44425,7 +44435,7 @@ lbC02485C	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC02487E	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
+ea_d3_dn	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.w	d3,d0
 	add.w	d0,d0
 	adda.w	d0,a0
@@ -44433,7 +44443,7 @@ lbC02487E	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC02488E	tst.b	(opcode_size-ds,a6)
+ea_d3_an	tst.b	(opcode_size-ds,a6)
 	beq.b	lbC0248A4
 	move.w	d3,d0
 	add.w	d0,d0
@@ -44458,7 +44468,7 @@ lbC0248B6	move.w	d3,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0248C6	move.l	d3,d0
+ea_d3_anindi	move.l	d3,d0
 	lsl.w	#2,d0
 	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	adda.w	d0,a0
@@ -44466,10 +44476,10 @@ lbC0248C6	move.l	d3,d0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	move.b	#$2B,(a4)+
+	move.b	#'+',(a4)+
 	rts
 
-lbC0248DE	move.b	#$23,(a4)+
+oper09	move.b	#'#',(a4)+
 	move.l	d5,d0
 	andi.l	#$C00000,d0
 	moveq	#$14,d1
@@ -44481,12 +44491,12 @@ lbC0248DE	move.b	#$23,(a4)+
 lbC0248FA	bra.w	lbC022292
 
 	MC68020
-extract_dn_68020	bfextu	d5{4:3},d0
+oper10_dn_68020	bfextu	d5{4:3},d0
 	move.w	(D0D1D2D3D4D5D.MSG.l,pc,d0.w*2),(a4)+
 	rts
 	MC68000
 
-extract_dn_68000	move.l	d5,d0
+oper10_dn_68000	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
 	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
@@ -44495,7 +44505,7 @@ extract_dn_68000	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024922	move.l	d5,d0
+oper11	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.w	#1,d0
@@ -44506,7 +44516,7 @@ lbC024922	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024944	move.l	d5,d0
+oper58	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.w	#1,d0
@@ -44518,12 +44528,12 @@ lbC024944	move.l	d5,d0
 	jmp	(a0)
 
 	MC68020
-extract_ea4_68020	bfextu	d5{7:3},d0
+oper43_ea4_68020	bfextu	d5{7:3},d0
 	bfextu	d5{4:3},d3
 	jmp	([lbL00E38C,pc,d0.w*4])
 	MC68000
 
-extract_ea4_68000	move.l	d5,d0
+oper43_ea4_68000	move.l	d5,d0
 	andi.l	#$1C00000,d0
 	moveq	#$14,d1
 	lsr.l	d1,d0
@@ -44534,7 +44544,7 @@ extract_ea4_68000	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024998	move.l	d5,d0
+oper62	move.l	d5,d0
 	andi.l	#$1C00000,d0
 	moveq	#$14,d1
 	lsr.l	d1,d0
@@ -44546,12 +44556,12 @@ lbC024998	move.l	d5,d0
 	jmp	(a0)
 
 	MC68020
-extract_ea3_68020	bfextu	d5{10:3},d0
+oper30_ea3_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
 	jmp	([lbL00E3CC,pc,d0.w*4])
 	MC68000
 
-extract_ea3_68000	move.l	d5,d0
+oper30_ea3_68000	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44562,7 +44572,7 @@ extract_ea3_68000	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC0249EC	move.l	d5,d0
+oper75	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44573,7 +44583,7 @@ lbC0249EC	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024A0E	move.l	d5,d0
+oper68	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44584,7 +44594,7 @@ lbC024A0E	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024A30	move.w	(a2),d0
+oper12	move.w	(a2),d0
 	and.w	#$E38,d0
 	bne.w	lbC024ACC
 	moveq	#7,d0
@@ -44653,7 +44663,7 @@ lbC024ACC	addq.l	#2,a2
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbC024AE2	moveq	#7,d0
+oper13	moveq	#7,d0
 	and.l	d5,d0
 	add.w	d0,d0
 	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
@@ -44670,7 +44680,7 @@ lbC024AE2	moveq	#7,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024B0C	move.l	d5,d0
+oper14	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44681,7 +44691,7 @@ lbC024B0C	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024B2E	move.l	d5,d0
+oper69	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44692,36 +44702,36 @@ lbC024B2E	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024B50	btst	#11,d5
+oper15	btst	#11,d5
 	bne.b	_set_dn_f000
-	bsr.b	lbC024B0C
+	bsr.b	oper14
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	set_dn_f000
+	bra.w	oper06_set_dn_f000
 
-_set_dn_f000	bsr.w	set_dn_f000
+_set_dn_f000	bsr.w	oper06_set_dn_f000
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.b	lbC024B0C
+	bra.b	oper14
 
 	MC68020
-extract_ea2_68020	bfextu	d5{10:3},d0
+oper1653_ea2_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
-	jmp	([lbL00E44C,pc,d0.w*4])
+	jmp	([jmp_ea2,pc,d0.w*4])
 	MC68000
 
-extract_ea2_68000	move.l	d5,d0
+oper1653_ea2_68000	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
 	move.l	d5,d3
 	andi.l	#$70000,d3
 	swap	d3
-	lea	(lbL00E44C).l,a0
+	lea	(jmp_ea2).l,a0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024BA0	move.l	d5,d0
+oper72	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44732,7 +44742,7 @@ lbC024BA0	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024BC2	move.l	d5,d0
+oper59	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44743,7 +44753,7 @@ lbC024BC2	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024BE4	move.l	d5,d0
+oper49	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44754,7 +44764,7 @@ lbC024BE4	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024C06	move.l	d5,d0
+oper61	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44766,23 +44776,23 @@ lbC024C06	move.l	d5,d0
 	jmp	(a0)
 
 	MC68020
-extract_ea5_68020	bfextu	d5{10:3},d0
+oper47_ea5_68020	bfextu	d5{10:3},d0
 	bfextu	d5{13:3},d3
-	jmp	([lbL00E4CC,pc,d0.w*4])
+	jmp	([jmp_ea5,pc,d0.w*4])
 	MC68000
 
-extract_ea5_68000	move.l	d5,d0
+oper47_ea5_68000	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
 	move.l	d5,d3
 	andi.l	#$70000,d3
 	swap	d3
-	lea	(lbL00E4CC).l,a0
+	lea	(jmp_ea5).l,a0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024C5A	move.l	d5,d0
+oper63	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -44794,12 +44804,12 @@ lbC024C5A	move.l	d5,d0
 	jmp	(a0)
 
 	MC68020
-extract_an_68020	bfextu	d5{4:3},d0
+oper17_an_68020	bfextu	d5{4:3},d0
 	move.w	(A0A1A2A3A4A5A.MSG.l,pc,d0.w*2),(a4)+
 	rts
 	MC68000
 
-extract_an_68000	move.l	d5,d0
+oper17_an_68000	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
 	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
@@ -44808,7 +44818,7 @@ extract_an_68000	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024CA0	moveq	#7,d0
+oper79	moveq	#7,d0
 	and.l	d5,d0
 	add.w	d0,d0
 	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
@@ -44817,7 +44827,7 @@ lbC024CA0	moveq	#7,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024CB2	move.l	d5,d0
+oper18	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
 	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
@@ -44827,7 +44837,7 @@ lbC024CB2	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024CCA	move.l	d5,d0
+oper20	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
 	add.w	d0,d0
@@ -44837,25 +44847,25 @@ lbC024CCA	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024CE2	move.l	d5,d0
+oper21	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
 	move.b	#$23,(a4)+
 	bsr.w	lbC0234A4
-	beq.w	put_line_end
+	beq.w	put_value_d0_byte
 	rts
 
-lbC024CFA	move.b	#$23,(a4)+
+oper26	move.b	#$23,(a4)+
 	move.l	d5,d0
 	andi.l	#$F0000,d0
 	swap	d0
 	bsr.w	lbC0234A4
 	bne.b	lbC024D12
-	bra.w	put_line_end
+	bra.w	put_value_d0_byte
 
 lbC024D12	rts
 
-lbC024D14	move.w	(a2)+,d2
+oper22	move.w	(a2)+,d2
 	bne.b	lbC024D1E
 	bset	#0,(lbB02D3A4-ds,a6)
 lbC024D1E	addq.l	#8,a3
@@ -44880,12 +44890,12 @@ lbC024D4C	ror.w	#8,d2
 	bsr.b	lbC024D70
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bsr.w	lbC024EFE
+	bsr.w	oper45
 	rts
 
 lbC024D62	move.l	d2,-(sp)
 	move.w	(a2),d4
-	bsr.w	lbC024EBA
+	bsr.w	oper23
 	move.l	(sp)+,d2
 	move.b	#$2C,(a4)+
 lbC024D70	tst.b	d2
@@ -44927,7 +44937,7 @@ lbC024DBC	move.b	(a0)+,(a4)+
 lbC024DC8	subq.l	#1,a4
 lbC024DCA	rts
 
-lbC024DCC	move.w	(a2)+,d2
+oper80	move.w	(a2)+,d2
 	addq.l	#8,a3
 	move.l	d5,d0
 	andi.l	#$380000,d0
@@ -44947,7 +44957,7 @@ lbC024DCC	move.w	(a2)+,d2
 lbC024DFC	ror.w	#8,d2
 	bra.w	lbC024D70
 
-lbC024E02	move.w	(a2)+,d2
+oper65	move.w	(a2)+,d2
 	bne.b	lbC024E0C
 	bset	#0,(lbB02D3A4-ds,a6)
 lbC024E0C	addq.l	#8,a3
@@ -44972,12 +44982,12 @@ lbC024E3A	ror.w	#8,d2
 	bsr.b	lbC024E5E
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bsr.w	lbC024F20
+	bsr.w	oper66
 	rts
 
 lbC024E50	move.l	d2,-(sp)
 	move.w	(a2),d4
-	bsr.w	lbC024EDC
+	bsr.w	oper67
 	move.l	(sp)+,d2
 	move.b	#$2C,(a4)+
 lbC024E5E	tst.b	d2
@@ -45019,7 +45029,7 @@ lbC024EAA	move.b	(a0)+,(a4)+
 lbC024EB6	subq.l	#1,a4
 lbC024EB8	rts
 
-lbC024EBA	move.l	d5,d0
+oper23	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -45030,7 +45040,7 @@ lbC024EBA	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024EDC	move.l	d5,d0
+oper67	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -45041,7 +45051,7 @@ lbC024EDC	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024EFE	move.l	d5,d0
+oper45	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -45052,7 +45062,7 @@ lbC024EFE	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024F20	move.l	d5,d0
+oper66	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -45063,10 +45073,10 @@ lbC024F20	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC024F42	bsr.w	lbC024BE4
+oper24	bsr.w	oper49
 	move.b	#$2C,(a4)+
 	btst	#10,d5
-	bne.b	lbC024F70
+	bne.b	oper25
 	move.l	d5,d1
 	andi.l	#$7000,d1
 	moveq	#12,d0
@@ -45080,7 +45090,7 @@ lbC024F5E	move.b	#$3F,(a4)
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbC024F70	moveq	#7,d0
+oper25	moveq	#7,d0
 	and.l	d5,d0
 	add.w	d0,d0
 	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
@@ -45102,9 +45112,9 @@ lbC024F96	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024FA4	btst	#$13,d5
+oper27	btst	#$13,d5
 	bne.b	lbC024FBC
-	bsr.w	lbC024CCA
+	bsr.w	oper20
 	lea	(USP.MSG0-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45117,9 +45127,9 @@ lbC024FBC	lea	(USP.MSG1-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-	bra.w	lbC024CCA
+	bra.w	oper20
 
-lbC024FCC	btst	#$10,d5
+oper28	btst	#$10,d5
 	bne.b	lbC024FF0
 	bsr.b	lbC024FF6
 	move.b	#$2C,(a4)+
@@ -45175,20 +45185,20 @@ lbW025030	dw	SFC.MSG-ds
 	dw	URP.MSG-ds
 	dw	SRP.MSG-ds
 
-lbC025050	move.b	#$23,(a4)+
+oper31	move.b	#$23,(a4)+
 	move.b	(-1,a2),d0
 	bsr.w	lbC0234A4
 	bne.b	lbC025070
 	ext.w	d0
 	ext.l	d0
-	bpl.w	put_line_end
+	bpl.w	put_value_d0_byte
 	move.b	#$2D,(a4)+
 	neg.l	d0
-	bra.w	put_line_end
+	bra.w	put_value_d0_byte
 
 lbC025070	rts
 
-lbC025072	btst	#$13,d5
+oper32	btst	#$13,d5
 	bne.b	lbC0250A8
 	move.l	d5,d0
 	andi.l	#$70000,d0
@@ -45233,55 +45243,55 @@ lbC0250A8	move.b	#$2D,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0250EA	btst	#$18,d5
+oper33	btst	#$18,d5
 	bne.b	_extract_dn_68000
-	bsr.w	lbC024BE4
+	bsr.w	oper49
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	extract_dn_68000
+	bra.w	oper10_dn_68000
 
-_extract_dn_68000	bsr.w	extract_dn_68000
+_extract_dn_68000	bsr.w	oper10_dn_68000
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	lbC024B0C
+	bra.w	oper14
 
-lbC02510C	btst	#$18,d5
+oper70	btst	#$18,d5
 	bne.b	_extract_dn_680000
-	bsr.w	lbC024C06
+	bsr.w	oper61
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	extract_dn_68000
+	bra.w	oper10_dn_68000
 
-_extract_dn_680000	bsr.w	extract_dn_68000
+_extract_dn_680000	bsr.w	oper10_dn_68000
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	lbC024B2E
+	bra.w	oper69
 
-lbC02512E	btst	#$18,d5
+oper38	btst	#$18,d5
 	bne.b	_extract_dn_680001
-	bsr.w	extract_ea2_68000
+	bsr.w	oper1653_ea2_68000
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	extract_dn_68000
+	bra.w	oper10_dn_68000
 
-_extract_dn_680001	bsr.w	extract_dn_68000
+_extract_dn_680001	bsr.w	oper10_dn_68000
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	lbC024922
+	bra.w	oper11
 
-lbC025150	btst	#$18,d5
+oper71	btst	#$18,d5
 	bne.b	_extract_dn_680002
-	bsr.w	lbC024BC2
+	bsr.w	oper59
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	extract_dn_68000
+	bra.w	oper10_dn_68000
 
-_extract_dn_680002	bsr.w	extract_dn_68000
+_extract_dn_680002	bsr.w	oper10_dn_68000
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	lbC024944
+	bra.w	oper58
 
-lbC025172	move.l	d5,d0
+oper34	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
 	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
@@ -45306,7 +45316,7 @@ lbC025172	move.l	d5,d0
 	move.b	#$2B,(a4)+
 	rts
 
-lbC0251B4	move.l	d5,d0
+oper35	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
 	move.l	d5,d1
@@ -45337,7 +45347,7 @@ lbC0251EA	lea	(A0A1A2A3A4A5A.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC025204	move.l	d5,d0
+oper36	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#8,d0
 	move.l	d5,d1
@@ -45355,7 +45365,7 @@ lbC025204	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC025234	move.l	d5,d0
+oper52	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.w	#1,d0
@@ -45367,7 +45377,7 @@ lbC025234	move.l	d5,d0
 	jsr	(a0)
 	bra.b	lbC02525C
 
-lbC025258	bsr.w	lbC025300
+oper37	bsr.w	lbC025300
 lbC02525C	move.b	#$7B,(a4)+
 	move.l	d5,d0
 	andi.l	#$FC0,d0
@@ -45380,7 +45390,7 @@ lbC02525C	move.b	#$7B,(a4)+
 	addq.l	#1,a2
 	addq.l	#4,a3
 	bne.b	lbC0252AC
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	bra.b	lbC0252AC
 
 lbC025284	move.b	#$3F,(a4)
@@ -45407,7 +45417,7 @@ lbC0252AC	move.b	#$3A,(a4)+
 	beq.b	lbC0252CE
 lbC0252BE	bsr.w	lbC0234AE
 	bne.b	lbC0252C8
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 lbC0252C8	move.b	#$7D,(a4)+
 	rts
 
@@ -45443,7 +45453,7 @@ lbC025300	move.l	d5,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC025322	move.l	d5,d0
+oper3940	move.l	d5,d0
 	andi.l	#$E000,d0
 	lsr.w	#8,d0
 	lsr.w	#5,d0
@@ -45454,7 +45464,7 @@ lbC025322	move.l	d5,d0
 lbC02533A	btst	#9,d5
 	bne.b	lbC02538A
 	move.l	a0,-(sp)
-	bsr.w	lbC023C68
+	bsr.w	oper56
 	movea.l	(sp)+,a0
 	move.b	#$2C,(a4)+
 lbC02534C	move.l	d5,d0
@@ -45488,12 +45498,12 @@ lbC025384	lea	(ascii.MSG6-ds,a6),a0
 lbC02538A	bsr.b	lbC02534C
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	lbC023C68
+	bra.w	oper56
 
 lbC025396	btst	#9,d5
 	bne.b	lbC0253B8
 	move.w	(a2),d4
-	bsr.w	lbC023C68
+	bsr.w	oper56
 	lea	(MMU.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
@@ -45513,15 +45523,15 @@ lbC0253B8	lea	(MMUS.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	move.w	(a2),d4
-	bra.w	lbC023C68
+	bra.w	oper56
 
-lbC0253D2	move.l	d5,d0
+oper76	move.l	d5,d0
 	andi.l	#$E000,d0
 	cmpi.w	#$6000,d0
 	beq.w	lbC02546A
 	btst	#9,d5
 	bne.b	lbC02543C
-	lea	(extract_ea2_68000,pc),a0
+	lea	(oper1653_ea2_68000,pc),a0
 	move.l	d5,d0
 	andi.w	#$1C00,d0
 	cmpi.w	#$400,d0
@@ -45530,13 +45540,13 @@ lbC0253D2	move.l	d5,d0
 	beq.b	lbC025404
 	cmpi.w	#$C00,d0
 	bne.b	lbC025408
-lbC025404	lea	(lbC0249EC,pc),a0
+lbC025404	lea	(oper75,pc),a0
 lbC025408	jsr	(a0)
 	move.b	#$2C,(a4)+
 	bsr.b	lbC025418
 	bra.b	lbC025466
 
-lbC025412	lea	(VAL.MSG-ds,a6),a0
+oper86	lea	(VAL.MSG-ds,a6),a0
 	bra.b	lbC025428
 
 lbC025418	lea	(TC.MSG0-ds,a6),a0
@@ -45558,7 +45568,7 @@ lbC025438	addq.l	#1,a4
 lbC02543C	bsr.b	lbC025418
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	lea	(extract_ea3_68000,pc),a0
+	lea	(oper30_ea3_68000,pc),a0
 	move.l	d5,d0
 	andi.w	#$1C00,d0
 	cmpi.w	#$400,d0
@@ -45567,14 +45577,14 @@ lbC02543C	bsr.b	lbC025418
 	beq.b	lbC025460
 	cmpi.w	#$C00,d0
 	bne.b	lbC025464
-lbC025460	lea	(lbC024B0C,pc),a0
+lbC025460	lea	(oper14,pc),a0
 lbC025464	jsr	(a0)
-lbC025466	bra.w	lbC025606
+lbC025466	bra.w	ext_mc68851
 
 lbC02546A	btst	#9,d5
 	bne.b	lbC02547E
 	move.w	(a2),d4
-	bsr.w	extract_ea2_68000
+	bsr.w	oper1653_ea2_68000
 	move.b	#$2C,(a4)+
 	bsr.b	lbC02548C
 	bra.b	lbC025466
@@ -45582,7 +45592,7 @@ lbC02546A	btst	#9,d5
 lbC02547E	bsr.b	lbC02548C
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bsr.w	extract_ea3_68000
+	bsr.w	oper30_ea3_68000
 	bra.b	lbC025466
 
 lbC02548C	move.l	d5,d0
@@ -45615,10 +45625,10 @@ lbC0254D6	move.b	(a0)+,(a4)+
 	subq.l	#1,a4
 	rts
 
-lbC0254DE	bset	#0,(detected_badaddress-ds,a6)
+ext31_badaddress	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbC0254E6	jsr	(setspacepostopcode-ds,a6)
+ext41	jsr	(setspacepostopcode-ds,a6)
 	move.l	d5,d3
 	swap	d3
 	andi.w	#7,d3
@@ -45670,20 +45680,20 @@ lbC025556	lea	(A0A1A2A3A4A5A.MSG0-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC025566	tst.b	(lbB02B455-ds,a6)
+lbC025566	tst.b	(opt1_show_newsyntax-ds,a6)
 	beq.b	lbC025570
 	move.b	#$28,(a4)+
 lbC025570	bsr.w	lbC022292
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	beq.b	lbC02557E
 	move.b	#$29,(a4)+
-lbC02557E	tst.b	(lbB02B471-ds,a6)
+lbC02557E	tst.b	(opt1_size_abslong-ds,a6)
 	beq.b	lbC02558C
 	move.b	#$2E,(a4)+
 	move.b	(L.MSG-ds,a6),(a4)+
 lbC02558C	rts
 
-lbC02558E	move.l	d5,d0
+oper82	move.l	d5,d0
 	swap	d0
 	andi.w	#7,d0
 	lsl.w	#2,d0
@@ -45694,9 +45704,9 @@ lbC02558E	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	addq.w	#4,d6
-	bra.b	lbC0255F2
+	bra.b	ext_mc68040
 
-lbC0255AA	move.l	d5,d0
+oper83	move.l	d5,d0
 	swap	d0
 	andi.w	#$C0,d0
 	lsr.w	#5,d0
@@ -45725,24 +45735,24 @@ lbC0255CE	move.b	#$2C,(a4)+
 	addq.w	#4,d6
 	rts
 
-lbC0255EE	jsr	(setspacepostopcode-ds,a6)
-lbC0255F2	lea	(MC68040.MSG,pc),a0
-	bra.b	lbC025614
+ext42_po_mc68040	jsr	(setspacepostopcode-ds,a6)
+ext_mc68040	lea	(MC68040.MSG,pc),a0
+	bra.b	AddComment
 
-lbC0255F8	jsr	(setspacepostopcode-ds,a6)
+ext43_po_mc68030	jsr	(setspacepostopcode-ds,a6)
 	lea	(MC68030.MSG,pc),a0
-	bra.b	lbC025614
+	bra.b	AddComment
 
-lbC025602	jsr	(setspacepostopcode-ds,a6)
-lbC025606	lea	(MC68851.MSG,pc),a0
-	bra.b	lbC025614
+ext44_po_mc68851	jsr	(setspacepostopcode-ds,a6)
+ext_mc68851	lea	(MC68851.MSG,pc),a0
+	bra.b	AddComment
 
-lbC02560C	jsr	(setspacepostopcode-ds,a6)
-lbC025610	lea	(MC68851MC6803.MSG,pc),a0
-lbC025614	move.b	#9,(a4)+
-	move.b	#$3B,(a4)+
-lbC02561C	move.b	(a0)+,(a4)+
-	bne.b	lbC02561C
+ext45_po_MC68851_30	jsr	(setspacepostopcode-ds,a6)
+ext_MC68851_30	lea	(MC68851MC6803.MSG,pc),a0
+AddComment	move.b	#9,(a4)+
+	move.b	#';',(a4)+
+.copy	move.b	(a0)+,(a4)+
+	bne.b	.copy
 	subq.w	#1,a4
 	rts
 
@@ -45751,7 +45761,7 @@ MC68030.MSG	db	'MC68030',0
 MC68851.MSG	db	'MC68851',0
 MC68851MC6803.MSG	db	'MC68851/MC68030',0
 
-lbC02564C	move.b	#$2E,(a4)+
+ext30	move.b	#$2E,(a4)+
 	btst	#14,d5
 	bne.b	lbC025676
 	move.b	(flagCaseCode-ds,a6),(a4)+
@@ -45775,7 +45785,7 @@ lbC025676	move.l	d5,d0
 	move.b	(a0,d0.w),(lbB02EAD2-ds,a6)
 	addq.w	#2,d6
 	jsr	(setspacepostopcode-ds,a6)
-lbC025698	move.l	d5,d0
+oper81	move.l	d5,d0
 	andi.l	#$380000,d0
 	swap	d0
 	lsr.l	#1,d0
@@ -45783,7 +45793,7 @@ lbC025698	move.l	d5,d0
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E64C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC0256C0
 	lea	(lbL00E66C).l,a0
 lbC0256C0	movea.l	(a0,d0.w),a0
@@ -45826,20 +45836,20 @@ lbC02570C	move.l	d5,d0
 lbC025720	move.b	#$23,(a4)+
 	moveq	#0,d0
 	move.b	d4,d0
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	addq.w	#2,a2
 	rts
 
 lbC025730	move.b	#$23,(a4)+
 	moveq	#0,d0
 	move.w	d4,d0
-	bsr.w	lbC0224C0
+	bsr.w	put_value_d0_word
 	addq.w	#2,a2
 	rts
 
 lbC025740	move.b	#$23,(a4)+
 	move.l	(a2)+,d0
-	bsr.w	lbC022490
+	bsr.w	put_value_d0_long
 	rts
 
 lbC02574C	move.b	#$23,(a4)+
@@ -45866,7 +45876,7 @@ lbC02577E	move.b	#$23,(a4)+
 	move.l	(a2)+,(8,a0)
 	bra.w	lbC02233E
 
-lbC025794	move.b	#$2E,(a4)+
+ext34	move.b	#$2E,(a4)+
 	move.l	d5,d0
 	andi.w	#$1C00,d0
 	lsr.w	#8,d0
@@ -45894,7 +45904,7 @@ lbC025794	move.b	#$2E,(a4)+
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E34C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC0257FC
 	lea	(lbL00E36C).l,a0
 lbC0257FC	movea.l	(a0,d0.w),a0
@@ -45922,11 +45932,11 @@ lbC02582C	move.b	#$7B,(a4)+
 	bset	#7,d0
 lbC02583E	ext.w	d0
 	ext.l	d0
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 lbC025846	move.b	#$7D,(a4)+
 lbC02584A	rts
 
-lbC02584C	moveq	#0,d0
+ext35	moveq	#0,d0
 	btst	#12,d5
 	beq.b	lbC025856
 	addq.w	#1,d0
@@ -45959,7 +45969,7 @@ lbC025870	lea	(L.MSG0-ds,a6),a0
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E34C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC0258BE
 	lea	(lbL00E36C).l,a0
 lbC0258BE	cmpi.w	#$1000,d1
@@ -45967,13 +45977,13 @@ lbC0258BE	cmpi.w	#$1000,d1
 	cmpi.w	#$800,d1
 	beq.b	lbC0258F4
 	lea	(lbL00E3CC).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC0258DC
 	lea	(lbL00E3EC).l,a0
 lbC0258DC	cmpi.w	#$400,d1
 	beq.b	lbC0258F4
 	lea	(lbL00E40C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC0258F4
 	lea	(lbL00E42C).l,a0
 lbC0258F4	movea.l	(a0,d0.w),a0
@@ -46000,21 +46010,21 @@ lbC0258FA	move.w	d5,d1
 	bra.b	lbC025984
 
 lbC025936	lea	(lbL00E48C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC025948
 	lea	(lbL00E4AC).l,a0
 lbC025948	cmpi.w	#$1000,d1
 	beq.b	lbC02597E
 	cmpi.w	#$800,d1
 	beq.b	lbC02597E
-	lea	(lbL00E44C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	lea	(jmp_ea2).l,a0
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC025966
 	lea	(lbL00E46C).l,a0
 lbC025966	cmpi.w	#$400,d1
 	beq.b	lbC02597E
 	lea	(lbL00E60C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC02597E
 	lea	(lbL00E62C).l,a0
 lbC02597E	movea.l	(a0,d0.w),a0
@@ -46043,11 +46053,11 @@ lbC0259C0	cmpi.b	#$2F,(-1,a4)
 	clr.b	-(a4)
 lbC0259CA	rts
 
-lbC0259CC	jsr	(setspacepostopcode-ds,a6)
+ext36	jsr	(setspacepostopcode-ds,a6)
 	move.b	#'#',(a4)+
 	move.l	d5,d0
 	andi.l	#$7F,d0
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	move.b	#',',(a4)+
 	move.l	d5,d0
 	andi.w	#$380,d0
@@ -46158,7 +46168,7 @@ E1024.MSG	db	'1E1024',0
 E2048.MSG	db	'1E2048',0
 E4096.MSG	db	'1E4096',0,0
 
-lbC025AE0	jsr	(setspacepostopcode-ds,a6)
+ext37	jsr	(setspacepostopcode-ds,a6)
 	btst	#13,d5
 	beq.b	lbC025B4A
 	btst	#12,d5
@@ -46175,7 +46185,7 @@ lbC025AFA	move.b	#$2C,(a4)+
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E54C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC025B26
 	lea	(lbL00E56C).l,a0
 lbC025B26	movea.l	(a0,d0.w),a0
@@ -46203,7 +46213,7 @@ lbC025B4A	move.l	d5,d0
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E50C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC025B72
 	lea	(lbL00E52C).l,a0
 lbC025B72	movea.l	(a0,d0.w),a0
@@ -46267,7 +46277,7 @@ lbC025BF4	addq.w	#1,d1
 	addq.w	#1,a4
 lbC025C04	rts
 
-lbC025C06	move.l	d5,d2
+ext38	move.l	d5,d2
 	andi.l	#$380000,d2
 	swap	d2
 	lsr.w	#1,d2
@@ -46286,7 +46296,7 @@ lbC025C06	move.l	d5,d2
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	addq.w	#3,d6
-	bra.w	lbC025D1A
+	bra.w	ext40
 
 lbC025C42	move.l	d5,d0
 	andi.w	#$1F,d0
@@ -46301,14 +46311,14 @@ lbC025C52	move.b	(a0)+,d0
 	dbra	d1,lbC025C52
 lbC025C5E	jsr	(setspacepostopcode-ds,a6)
 	lea	(lbL00E34C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC025C74
 	lea	(lbL00E36C).l,a0
 lbC025C74	move.l	d2,d0
 	movea.l	(a0,d0.w),a0
 	jmp	(a0)
 
-lbC025C7C	move.b	#$2E,(a4)+
+ext39	move.b	#$2E,(a4)+
 	btst	#14,d5
 	beq.b	lbC025CD8
 	move.l	d5,d0
@@ -46329,7 +46339,7 @@ lbC025C7C	move.b	#$2E,(a4)+
 	andi.l	#$70000,d3
 	swap	d3
 	lea	(lbL00E64C).l,a0
-	tst.b	(lbB02B455-ds,a6)
+	tst.b	(opt1_show_newsyntax-ds,a6)
 	bne.b	lbC025CD0
 	lea	(lbL00E66C).l,a0
 lbC025CD0	movea.l	(a0,d0.w),a0
@@ -46359,7 +46369,7 @@ lbC025CE6	move.b	#$2C,(a4)+
 	move.b	d0,(a4)+
 	rts
 
-lbC025D1A	move.l	d5,d0
+ext40	move.l	d5,d0
 	andi.w	#$1F,d0
 	lsl.w	#2,d0
 	lea	(F.MSG-ds,a6),a0
@@ -46387,7 +46397,7 @@ lbC025D46	cmpi.w	#2,d3
 	moveq	#0,d0
 	move.l	d4,d0
 	addq.w	#2,a2
-	bra.w	lbC0224C0
+	bra.w	put_value_d0_word
 
 lbC025D6C	cmpi.w	#3,d3
 	bne.b	lbC025D8E
@@ -46397,7 +46407,7 @@ lbC025D6C	cmpi.w	#3,d3
 	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$23,(a4)+
 	move.l	(a2)+,d0
-	bra.w	lbC022490
+	bra.w	put_value_d0_long
 
 lbC025D8E	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
@@ -46406,7 +46416,7 @@ lbC025D8E	move.b	#$3F,(a4)
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbC025DA0	move.b	(WFD.MSG-ds,a6),(a4)+
+ext27	move.b	(WFD.MSG-ds,a6),(a4)+
 	btst	#9,d5
 	beq.b	lbC025DB0
 	move.b	(RS.MSG-ds,a6),(-1,a4)
@@ -46417,7 +46427,7 @@ lbC025DB0	jsr	(setspacepostopcode-ds,a6)
 	bne.b	lbC025DE8
 	bra.b	lbC025DD4
 
-lbC025DC0	move.b	(WFD.MSG-ds,a6),(a4)+
+ext18	move.b	(WFD.MSG-ds,a6),(a4)+
 	btst	#9,d5
 	beq.b	lbC025DD0
 	move.b	(RS.MSG-ds,a6),(-1,a4)
@@ -46433,7 +46443,7 @@ lbC025DD4	moveq	#7,d0
 	subq.b	#1,d1
 	bne.b	lbC025DF2
 lbC025DE8	move.b	#$23,(a4)+
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	bra.b	lbC025E32
 
 lbC025DF2	move.b	#$3F,(a4)
@@ -46461,9 +46471,9 @@ lbC025E26	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 lbC025E32	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bra.w	lbC023C68
+	bra.w	oper56
 
-lbC025E3C	moveq	#7,d0
+oper41	moveq	#7,d0
 	and.l	d5,d0
 	moveq	#$18,d1
 	and.l	d5,d1
@@ -46474,7 +46484,7 @@ lbC025E3C	moveq	#7,d0
 	subq.b	#1,d1
 	bne.b	lbC025E5A
 	move.b	#$23,(a4)+
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	bra.b	lbC025E9A
 
 lbC025E5A	move.b	#$3F,(a4)
@@ -46505,14 +46515,14 @@ lbC025E9A	move.b	#$2C,(a4)+
 	move.l	d5,d0
 	andi.l	#$1E0,d0
 	lsr.w	#5,d0
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	move.w	d5,d0
 	andi.w	#$1800,d0
 	cmpi.w	#$1800,d0
 	bne.b	lbC025EC8
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bsr.w	lbC023C68
+	bsr.w	oper56
 	bra.b	lbC025EE8
 
 lbC025EC8	cmpi.w	#$1000,d0
@@ -46525,9 +46535,9 @@ lbC025ED8	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
 	bset	#0,(detected_badaddress-ds,a6)
-lbC025EE8	bra.w	lbC025610
+lbC025EE8	bra.w	ext_MC68851_30
 
-lbC025EEC	moveq	#$1F,d0
+oper74	moveq	#$1F,d0
 	and.l	d5,d0
 	bclr	#4,d0
 	bne.b	lbC025F10
@@ -46541,7 +46551,7 @@ lbC025F06	move.b	(FC.MSG-ds,a6),(a4)+
 	bra.b	lbC025F34
 
 lbC025F10	move.b	#$23,(a4)+
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	bra.b	lbC025F34
 
 lbC025F1A	move.b	#$3F,(-1,a4)
@@ -46558,14 +46568,14 @@ lbC025F34	move.b	#$2C,(a4)+
 	move.l	d5,d0
 	andi.l	#$1E0,d0
 	lsr.w	#5,d0
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	move.w	d5,d0
 	andi.w	#$1800,d0
 	cmpi.w	#$1800,d0
 	bne.b	lbC025F62
 	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bsr.w	lbC023C68
+	bsr.w	oper56
 	bra.b	lbC025F82
 
 lbC025F62	cmpi.w	#$1000,d0
@@ -46578,13 +46588,13 @@ lbC025F72	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
 	bset	#0,(detected_badaddress-ds,a6)
-lbC025F82	bra.w	lbC025610
+lbC025F82	bra.w	ext_MC68851_30
 
-lbC025F86	moveq	#$1F,d0
+oper77	moveq	#$1F,d0
 	and.l	d5,d0
 	bclr	#4,d0
 	bne.b	lbC025FA4
-lbC025F90	moveq	#7,d0
+oper42	moveq	#7,d0
 	and.l	d5,d0
 	moveq	#$18,d1
 	and.l	d5,d1
@@ -46601,7 +46611,7 @@ lbC025FA4	move.b	#$23,(a4)+
 	addq.l	#3,a2
 	lea	(12,a3),a3
 	bne.b	lbC026000
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	bra.b	lbC026000
 
 lbC025FC0	move.b	#$3F,(a4)
@@ -46629,7 +46639,7 @@ lbC025FF4	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 lbC026000	move.b	#$2C,(a4)+
 	move.w	(a2),d4
-	bsr.w	lbC023C68
+	bsr.w	oper56
 	move.b	#$2C,(a4)+
 	move.b	#$23,(a4)+
 	move.l	d5,d0
@@ -46643,7 +46653,7 @@ lbC026000	move.b	#$2C,(a4)+
 	addq.l	#8,a3
 	bne.b	lbC02603E
 	move.b	d0,-(sp)
-	bsr.w	put_line_end
+	bsr.w	put_value_d0_byte
 	move.b	(sp)+,d0
 	bne.b	lbC02603E
 	move.w	d5,d0
@@ -46667,39 +46677,39 @@ lbC026060	tst.b	d0
 _set4q	bne.w	set4q
 	rts
 
-lbC026068	addq.l	#1,(lbL02D290-ds,a6)
+oper44	addq.l	#1,(count_aflines-ds,a6)
 	st	(lbL02EB36-ds,a6)
 	bra.w	lbC0222FE
 
 	MC68020
-extract_shift_68020	move.b	#'#',(a4)+
+oper46_shift_68020	move.b	#'#',(a4)+
 	bfextu	d5{4:3},d0
-	beq.b	lbC026088
-lbC02607E	bsr.w	lbC0234AE
-	beq.w	put_line_end
+	beq.b	oper46_shift_8
+oper46_shift_go	bsr.w	lbC0234AE
+	beq.w	put_value_d0_byte
 	rts
 	MC68000
 
-lbC026088	moveq	#8,d0
-	bra.b	lbC02607E
+oper46_shift_8	moveq	#8,d0
+	bra.b	oper46_shift_go
 
-extract_shift_68000	move.b	#'#',(a4)+
+oper46_shift_68000	move.b	#'#',(a4)+
 	move.l	d5,d0
 	andi.l	#$E000000,d0
 	rol.l	#7,d0
-	beq.b	lbC026088
+	beq.b	oper46_shift_8
 	bsr.w	lbC0234AE
-	beq.w	put_line_end
+	beq.w	put_value_d0_byte
 	rts
 
-lbC0260A6	move.b	#'#',(a4)+
+oper85_immbyte	move.b	#'#',(a4)+
 	move.l	d5,d0
 	andi.l	#$FF,d0
 	bsr.w	lbC0234AE
-	beq.w	put_line_end
+	beq.w	put_value_d0_byte
 	rts
 
-lbC0260BC	jsr	(setspacepostopcode-ds,a6)
+ext46_add_dn	jsr	(setspacepostopcode-ds,a6)
 	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.l	d5,d0
 	swap	d0
@@ -46710,7 +46720,7 @@ lbC0260BC	jsr	(setspacepostopcode-ds,a6)
 	move.b	(a0),(a4)+
 	rts
 
-lbC0260D6	move.l	d5,d0
+ext47	move.l	d5,d0
 	swap	d0
 	andi.w	#$18,d0
 	lsr.w	#3,d0
@@ -46760,15 +46770,15 @@ lbC02612C	move.b	#$2C,(a4)+
 
 lbC02614C	tst.b	(lbB02B3EA-ds,a6)
 	beq.b	lbC026178
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#2,(a4)+
 	bsr.b	lbC026178
 	move.b	#1,(a4)+
 	rts
 
-lbC026162	btst	#$16,d5
-	beq.w	lbC0261EA
-lbC02616A	btst	#0,(3,a2)
+oper73	btst	#$16,d5
+	beq.w	oper29
+oper78	btst	#0,(3,a2)
 	bne.b	lbC0261C8
 put_adr_rellong	btst	#2,(a3)
 	bne.b	lbC02614C
@@ -46789,21 +46799,21 @@ lbC026194	addq.l	#4,a2
 lbC02619C	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
-	sub.l	(lbL02D0F0-ds,a6),d0
+	sub.l	(work_actual_offset-ds,a6),d0
 	lea	($10,a3),a3
 	move.l	(a2)+,d1
 	bgt.b	lbC0261C0
 	beq.b	lbC0261C4
 	neg.l	d0
 	move.b	#$2D,(-1,a4)
-lbC0261C0	bra.w	lbC022490
+lbC0261C0	bra.w	put_value_d0_long
 
 lbC0261C4	subq.l	#1,a4
 	rts
 
 lbC0261C8	addq.l	#2,a2
 	addq.l	#8,a3
-	move.b	#$3F,(a4)
+	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
@@ -46816,7 +46826,7 @@ lbC0261DE	bsr.w	lbC0234EE
 	addq.l	#8,a3
 	rts
 
-lbC0261EA	btst	#0,(1,a2)
+oper29	btst	#0,(1,a2)
 	bne.b	lbC0261C8
 put_adr_relword	btst	#0,(a3)
 	bne.b	lbC0261DE
@@ -46826,33 +46836,33 @@ lbC0261FE	movea.l	a2,a0
 	adda.w	(a0),a0
 	move.l	a0,d0
 	cmp.l	(ds-ds,a6),d0
-	bcs.b	lbC02621A
+	bcs.b	put_adr_relword_lo
 	cmp.l	(workdata_end-ds,a6),d0
-	bcc.b	lbC026228
-lbC026210	bsr.w	put_adr_d0
+	bcc.b	put_adr_relword_hi
+put_adr_relword_pr	bsr.w	put_adr_d0
 	addq.l	#2,a2
 	addq.l	#8,a3
 	rts
 
-lbC02621A	move.l	(ds-ds,a6),d1
+put_adr_relword_lo	move.l	(ds-ds,a6),d1
 	sub.l	a0,d1
 	subq.l	#4,d1
-	beq.b	lbC026210
+	beq.b	put_adr_relword_pr
 	subq.l	#4,d1
-	beq.b	lbC026210
-lbC026228	bset	#3,(detected_badaddress-ds,a6)
-	move.b	#$2A,(a4)+
-	move.b	#$2B,(a4)+
-	sub.l	(lbL02D0F0-ds,a6),d0
+	beq.b	put_adr_relword_pr
+put_adr_relword_hi	bset	#3,(detected_badaddress-ds,a6)
+	move.b	#'*',(a4)+
+	move.b	#'+',(a4)+
+	sub.l	(work_actual_offset-ds,a6),d0
 	addq.l	#8,a3
 	move.w	(a2)+,d1
-	bgt.b	lbC02624A
-	beq.b	lbC02624E
+	bgt.b	.pos
+	beq.b	.equ
 	neg.w	d0
-	move.b	#$2D,(-1,a4)
-lbC02624A	bra.w	lbC0224C0
+	move.b	#'-',(-1,a4)
+.pos	bra.w	put_value_d0_word
 
-lbC02624E	subq.l	#1,a4
+.equ	subq.l	#1,a4
 	rts
 
 lbC026252	btst	#2,(a3)
@@ -46867,7 +46877,7 @@ lbC026258	bsr.w	lbC023464
 	bge.b	lbC026274
 	neg.l	d0
 	move.b	#$2D,(a4)+
-lbC026274	bra.w	lbC022490
+lbC026274	bra.w	put_value_d0_long
 
 lbC026278	adda.l	(a2),a0
 	move.l	a0,d0
@@ -46882,7 +46892,7 @@ lbC02628C	addq.l	#4,a2
 
 lbC026294	tst.b	(lbB02B3EA-ds,a6)
 	beq.b	lbC026258
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#2,(a4)+
 	bsr.b	lbC026258
 	move.b	#1,(a4)+
@@ -46891,14 +46901,14 @@ lbC026294	tst.b	(lbB02B3EA-ds,a6)
 lbC0262AA	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
-	sub.l	(lbL02D0F0-ds,a6),d0
+	sub.l	(work_actual_offset-ds,a6),d0
 	lea	($10,a3),a3
 	move.l	(a2)+,d1
 	bgt.b	lbC0262CE
 	beq.b	lbC0262D2
 	neg.l	d0
 	move.b	#$2D,(-1,a4)
-lbC0262CE	bra.w	lbC022490
+lbC0262CE	bra.w	put_value_d0_long
 
 lbC0262D2	subq.l	#1,a4
 	rts
@@ -46924,7 +46934,7 @@ lbC0262F2	adda.w	(a2),a0
 	bsr.w	put_adr_d0
 	bra.b	lbC02630C
 
-lbC026308	bsr.w	lbC0224C0
+lbC026308	bsr.w	put_value_d0_word
 lbC02630C	addq.l	#2,a2
 	addq.l	#8,a3
 lbC026310	rts
@@ -46932,7 +46942,7 @@ lbC026310	rts
 lbC026312	bset	#3,(detected_badaddress-ds,a6)
 	move.b	#$2A,(a4)+
 	move.b	#$2B,(a4)+
-	sub.l	(lbL02D0F0-ds,a6),d0
+	sub.l	(work_actual_offset-ds,a6),d0
 	tst.w	(a2)
 	bgt.b	lbC026308
 	beq.b	lbC026334
@@ -46943,7 +46953,7 @@ lbC026312	bset	#3,(detected_badaddress-ds,a6)
 lbC026334	subq.l	#1,a4
 	rts
 
-lbC026338	move.l	d5,d0
+ext1	move.l	d5,d0
 	andi.l	#$6000000,d0
 	rol.l	#7,d0
 	move.b	d0,(opcode_size-ds,a6)
@@ -46963,7 +46973,7 @@ set2q	move.b	#'?',(a4)
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbC02636A	moveq	#0,d0
+ext2	moveq	#0,d0
 	btst	#$16,d5
 	sne	d0
 	neg.b	d0
@@ -46976,10 +46986,10 @@ lbC02636A	moveq	#0,d0
 	beq.b	set2q
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
-lbC02638A	rts
+ext0_Rts	rts
 
 	MC68020
-extract_size_68020	bfextu	d5{8:2},d0
+ext3_size_68020	bfextu	d5{8:2},d0
 	move.b	d0,(opcode_size-ds.l,a6)
 	addq.w	#2,d6
 	move.w	(dotB.MSG-ds.l,a6,d0.w*2),(a4)+
@@ -46987,7 +46997,7 @@ extract_size_68020	bfextu	d5{8:2},d0
 	rts
 	MC68000
 
-extract_size_68000	move.l	d5,d0
+ext3_size_68000	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
@@ -47002,7 +47012,7 @@ extract_size_68000	move.l	d5,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0263CA	move.l	(-8,a3),d0
+ext20	move.l	(-8,a3),d0
 	andi.l	#$40000800,d0
 	bne.b	lbC0263FC
 lbC0263D6	move.l	d5,d0
@@ -47037,7 +47047,7 @@ lbC0263FC	tst.b	(lbB02EAD5-ds,a6)
 	move.l	(lbB02D20C-ds,a6),-(sp)
 	rts
 
-lbC02642A	move.l	d5,d0
+ext4	move.l	d5,d0
 	andi.l	#$10000000,d0
 	rol.l	#4,d0
 	move.b	d0,(opcode_size-ds,a6)
@@ -47053,7 +47063,7 @@ lbC02642A	move.l	d5,d0
 
 lbW02644E	dw	$201
 
-lbC026450	move.l	d5,d0
+ext5_dotwl	move.l	d5,d0
 	andi.l	#$800000,d0
 	swap	d0
 	lsr.w	#6,d0
@@ -47067,7 +47077,7 @@ lbC026450	move.l	d5,d0
 	addq.w	#2,d6
 	rts
 
-lbC026476	btst	#$17,d5
+ext24_dotw	btst	#23,d5
 	beq.w	set2q
 	lea	(W.MSG0-ds,a6),a0
 	move.b	(a0)+,(a4)+
@@ -47076,7 +47086,7 @@ lbC026476	btst	#$17,d5
 	addq.w	#2,d6
 	rts
 
-lbC026490	move.l	d5,d0
+ext6	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
@@ -47092,7 +47102,7 @@ lbC0264AC	move.b	(TU.MSG-ds,a6),(a4)+
 	subq.w	#1,d6
 	rts
 
-lbC0264B4	move.l	d5,d0
+ext14	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
@@ -47107,7 +47117,7 @@ lbC0264CE	subq.l	#1,a4
 	subq.w	#1,d6
 	rts
 
-lbC0264D4	bsr.b	lbC0264B4
+ext7	bsr.b	ext14
 	move.l	d5,d0
 	andi.l	#$70000,d0
 	swap	d0
@@ -47134,7 +47144,7 @@ lbC026510	move.b	(L.MSG0-ds,a6),(a4)+
 	bra.w	lbC022292
 
 	MC68020
-extract_cc_68020	bfextu	d5{4:4},d0
+ext8_cc_68020	bfextu	d5{4:4},d0
 	move.w	(RASRHILS.MSG.l,pc,d0.w*2),(a4)+
 	move.b	#'.',(a4)+
 	movea.l	a2,a0
@@ -47169,13 +47179,13 @@ extract_cc_boundsfailed
 
 .pos	addq.b	#2,d0
 .go	btst	#0,d0	;odd?
-	beq.w	put_line_end
+	beq.w	put_value_d0_byte
 	move.b	#'?',(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
 	bset	#0,(detected_badaddress-ds,a6)
-	bra.w	put_line_end
+	bra.w	put_value_d0_byte
 
 extract_cc_w	move.b	(WFD.MSG-ds,a6),(a4)+
 	jsr	(setspacepostopcode-ds,a6)
@@ -47199,7 +47209,7 @@ extract_cc_l	move.b	(LPA.MSG-ds,a6),(a4)+
 	bset	#0,(detected_badaddress-ds,a6)
 	bra.w	put_adr_rellong
 
-extract_cc_68000	move.l	d5,d0
+ext8_cc_68000	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
@@ -47229,7 +47239,7 @@ extract_cc_68000	move.l	d5,d0
 	rts
 
 	MC68020
-extract_cc_68060	bfextu	d5{4:4},d0
+ext8_cc_68060	bfextu	d5{4:4},d0
 	move.w	(RASRHILS.MSG.l,pc,d0.w*2),(a4)+
 	move.b	#'.',(a4)+
 	movea.l	a2,a0
@@ -47251,7 +47261,7 @@ extract_cc_68060	bfextu	d5{4:4},d0
 	bra	put_adr_d0
 	MC68000
 
-lbC026652	move.l	d5,d0
+ext21	move.l	d5,d0
 	andi.l	#$F000000,d0
 	swap	d0
 	lsr.w	#7,d0
@@ -47292,15 +47302,15 @@ lbC0266A0	bset	#3,(detected_badaddress-ds,a6)
 
 lbC0266C2	addq.b	#2,d0
 lbC0266C4	btst	#0,d0
-	beq.w	put_line_end
+	beq.w	put_value_d0_byte
 	move.b	#$3F,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
 	bset	#0,(detected_badaddress-ds,a6)
-	bra.w	put_line_end
+	bra.w	put_value_d0_byte
 
-lbC0266E0	tst.b	(lbL02EB80-ds,a6)
+lbC0266E0	tst.b	(opt1_show_strict-ds,a6)
 	bne.b	lbC0266F0
 	addq.w	#2,d6
 	move.b	#$2E,(a4)+
@@ -47315,7 +47325,7 @@ lbC0266F0	jsr	(setspacepostopcode-ds,a6)
 	bset	#0,(detected_badaddress-ds,a6)
 	bra.w	put_adr_relword
 
-lbC026712	move.l	d5,d0
+ext32	move.l	d5,d0
 	swap	d0
 	andi.w	#$1F,d0
 	lsl.w	#2,d0
@@ -47353,7 +47363,7 @@ lbC026760	lea	(NOP.MSG-ds,a6),a0
 	addq.w	#8,a3
 	rts
 
-lbC026774	move.l	d5,d0
+ext33	move.l	d5,d0
 	andi.w	#$1F,d0
 	lsl.w	#2,d0
 	lea	(F.MSG-ds,a6),a0
@@ -47376,7 +47386,7 @@ lbC026790	jsr	(setspacepostopcode-ds,a6)
 	move.b	#$2C,(a4)+
 	bra.w	put_adr_relword
 
-lbC0267B0	move.l	d5,d0
+ext9	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
@@ -47391,7 +47401,7 @@ lbC0267B0	move.l	d5,d0
 	addq.w	#2,d6
 	rts
 
-lbC0267D6	move.l	d5,d0
+ext10	move.l	d5,d0
 	andi.l	#$1000000,d0
 	swap	d0
 	lsr.w	#8,d0
@@ -47407,7 +47417,7 @@ lbC0267D6	move.l	d5,d0
 	addq.w	#2,d6
 	rts
 
-lbC0267FE	btst	#8,d5
+ext11	btst	#8,d5
 	beq.b	lbC026814
 	btst	#9,d5
 	bne.b	lbC026840
@@ -47447,7 +47457,7 @@ lbC02684E	move.l	d5,d0
 lbC026864	move.b	(WFD.MSG-ds,a6),(a4)+
 	rts
 
-lbC02686A	move.b	#$2E,(a4)+
+ext28	move.b	#'.',(a4)+
 	move.l	d5,d0
 	andi.l	#$6000,d0
 	lsr.w	#8,d0
@@ -47460,7 +47470,7 @@ lbL026880	dl	lbC026890
 	dl	lbC02689C
 	dl	lbC0268EA
 
-lbC026890	move.b	#$3F,(a4)+
+lbC026890	move.b	#'?',(a4)+
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
@@ -47501,7 +47511,7 @@ lbC0268EA	move.b	(WFD.MSG-ds,a6),(a4)+
 lbC0268F0	move.b	d1,(opcode_size-ds,a6)
 	rts
 
-lbC0268F6	move.b	(RS.MSG-ds,a6),(a4)+
+ext12	move.b	(RS.MSG-ds,a6),(a4)+
 	btst	#1,(3,a2)
 	bne.b	lbC026908
 	move.b	(WFD.MSG-ds,a6),(-1,a4)
@@ -47514,13 +47524,13 @@ lbC02690A	move.b	#$3F,(a4)
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbC02691C	move.l	d5,d0
+ext19	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
 	cmp.b	#3,d0
 	beq.b	lbC02690A
-lbC02692E	move.b	(RS.MSG-ds,a6),d0
+ext13	move.b	(RS.MSG-ds,a6),d0
 	btst	#$18,d5
 	beq.b	lbC02693C
 	move.b	(LPA.MSG-ds,a6),d0
@@ -47551,7 +47561,7 @@ lbC02693C	move.b	d0,(a4)+
 	tst.b	d0
 	bne.b	lbC026988
 	moveq	#8,d0
-lbC026988	bsr.w	put_line_end
+lbC026988	bsr.w	put_value_d0_byte
 lbC02698C	move.b	#$2C,(a4)+
 	move.w	d2,d0
 	add.w	d0,d0
@@ -47566,7 +47576,7 @@ lbC0269A0	lea	(W.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	jsr	(setspacepostopcode-ds,a6)
 	move.w	(a2),d4
-	bra.w	lbC024B0C
+	bra.w	oper14
 
 lbC0269B2	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
@@ -47582,13 +47592,13 @@ lbC0269B2	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC0269D2	move.l	d5,d0
+ext23	move.l	d5,d0
 	andi.l	#$C00000,d0
 	swap	d0
 	lsr.w	#6,d0
 	cmp.b	#3,d0
 	beq.w	lbC02690A
-lbC0269E6	move.b	(RS.MSG-ds,a6),d0
+ext22	move.b	(RS.MSG-ds,a6),d0
 	btst	#$18,d5
 	beq.b	lbC0269F4
 	move.b	(LPA.MSG-ds,a6),d0
@@ -47619,7 +47629,7 @@ lbC0269F4	move.b	d0,(a4)+
 	tst.b	d0
 	bne.b	lbC026A40
 	moveq	#8,d0
-lbC026A40	bsr.w	put_line_end
+lbC026A40	bsr.w	put_value_d0_byte
 lbC026A44	move.b	#$2C,(a4)+
 	move.w	d2,d0
 	add.w	d0,d0
@@ -47634,7 +47644,7 @@ lbC026A58	lea	(W.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	jsr	(setspacepostopcode-ds,a6)
 	move.w	(a2),d4
-	bra.w	lbC024B2E
+	bra.w	oper69
 
 lbC026A6A	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	add.w	d0,d0
@@ -47650,7 +47660,7 @@ lbC026A6A	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC026A8A	move.l	d5,d0
+ext26	move.l	d5,d0
 	andi.w	#$3F,d0
 	cmpi.w	#$10,d0
 	bcs.b	lbC026A9E
@@ -47663,7 +47673,7 @@ lbC026A9E	add.w	d0,d0
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC026AAC	bsr.b	lbC026A8A
+ext29	bsr.b	ext26
 	move.l	d5,d0
 	swap	d0
 	andi.w	#7,d0
@@ -47676,7 +47686,7 @@ lbC026AAC	bsr.b	lbC026A8A
 	move.b	(LPA.MSG-ds,a6),(-1,a4)
 lbC026AD0	rts
 
-lbC026AD2	move.l	d5,d0
+ext25	move.l	d5,d0
 	swap	d0
 	andi.w	#$3F,d0
 	cmpi.w	#$10,d0
@@ -47693,7 +47703,7 @@ lbC026AE8	lea	(BSBCLSLCSSSCA.MSG-ds,a6),a0
 	sne	d0
 	bra.b	lbC026B06
 
-lbC026AFE	moveq	#0,d0
+ext15	moveq	#0,d0
 	btst	#$19,d5
 	sne	d0
 lbC026B06	neg.b	d0
@@ -47705,7 +47715,7 @@ lbC026B06	neg.b	d0
 	addq.w	#2,d6
 	rts
 
-lbC026B18	move.l	d5,d0
+ext16	move.l	d5,d0
 	andi.l	#$6000000,d0
 	rol.l	#7,d0
 	addq.w	#2,d6
@@ -47723,7 +47733,7 @@ lbC026B36	move.b	#$3F,(a4)
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbC026B44	btst	#10,d5
+ext17	btst	#10,d5
 	bne.b	lbC026B64
 	move.l	d5,d0
 	andi.l	#$7000,d0
@@ -47923,7 +47933,7 @@ lbC026D7C	move.b	(a0)+,(a1)+
 	bsr.w	lbC027222
 	bra.w	lbC02116C
 
-lbC026D94	tst.l	(window2ptr-ds,a6)
+lbC026D94	tst.l	(searchWindowPtr-ds,a6)
 	beq.b	lbC026DC8
 	move.w	(lbB02EACC-ds,a6),d0
 	cmpi.w	#$4D,d0
@@ -49413,7 +49423,7 @@ lbC027DDE	bsr.w	saveregs_all
 	moveq	#1,d0
 	rts
 
-lbC027DEC	tst.b	(lbB02B45F-ds,a6)
+lbC027DEC	tst.b	(opt2_int_refresh-ds,a6)
 	beq.b	lbC027E00
 	cmpi.b	#$1E,(vblank_counter-ds,a6)
 	bgt.b	lbC027DFC
@@ -49478,7 +49488,7 @@ SetWindowTitle	move.l	a0,-(sp)
 	tst.b	(a0)
 	movea.l	(sp)+,a0
 	bmi.b	.rts
-	tst.b	(lbB02B45C-ds,a6)
+	tst.b	(opt2_int_feedback-ds,a6)
 	beq.b	.rts_ne
 	tst.b	(lbB02EB41-ds,a6)
 	beq.b	lbC027EA0
@@ -49493,7 +49503,7 @@ lbC027EA0	cmpa.l	#0,a4
 	beq.w	lbC027E00
 	st	(lbB02EB48-ds,a6)
 	st	(lbB02EB45-ds,a6)
-	tst.b	(lbB02B45D-ds,a6)
+	tst.b	(opt2_int_delays-ds,a6)
 	beq.b	lbC027EC8
 	tst.b	(lbB02B417-ds,a6)
 	beq.b	lbC027EC4
@@ -49501,7 +49511,7 @@ lbC027EA0	cmpa.l	#0,a4
 	bne.b	lbC027EC8
 lbC027EC4	pea	(lbC027DDE,pc)
 lbC027EC8	movem.l	d0-d3/a0-a4/a6,-(sp)
-lbC027ECC	lea	(lbL02D79C-ds,a6),a0
+lbC027ECC	lea	(rawDoFmt_buf-ds,a6),a0
 	lea	(lbL02D7A8-ds,a6),a1
 	move.l	#'    ',d0
 	move.l	d0,(a0)+
@@ -49517,7 +49527,7 @@ lbC027ECC	lea	(lbL02D79C-ds,a6),a0
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
 	move.l	(workdata_length-ds,a6),d1
-	lea	(_RawDoFmt_args-ds,a6),a1
+	lea	(rawDoFmt_args-ds,a6),a1
 lbC027F04	tst.l	d1
 	beq.b	lbC027F26
 	cmpi.l	#$FFFF,d0
@@ -49537,7 +49547,7 @@ lbC027F28	move.w	d0,(a1)+
 	move.w	#$25,(a1)
 	lea	(dc.MSG,pc),a0
 	move.l	a2,-(sp)
-	lea	(lbL02D79C-ds,a6),a2
+	lea	(rawDoFmt_buf-ds,a6),a2
 	bsr.w	_RawDoFmt
 	movea.l	(sp)+,a2
 	lea	(lbB028039,pc),a0
@@ -49555,7 +49565,7 @@ lbC027F5A	sub.l	(workdata_strt-ds,a6),d0
 	bpl.b	lbC027F66
 	neg.l	d0
 	lea	(ascii.MSG3,pc),a0
-lbC027F66	lea	(_RawDoFmt_args-ds,a6),a1
+lbC027F66	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	a0,(a1)+
 	move.l	d0,(a1)
 	lea	(s06lx.MSG,pc),a0
@@ -49564,8 +49574,8 @@ lbC027F66	lea	(_RawDoFmt_args-ds,a6),a1
 	lea	(s08lx.MSG,pc),a0
 lbC027F7E	lea	(lbL02D7A8-ds,a6),a2
 	bsr.w	_RawDoFmt
-lbC027F86	lea	(_RawDoFmt_args-ds,a6),a1
-	lea	(lbL02D79C-ds,a6),a0
+lbC027F86	lea	(rawDoFmt_args-ds,a6),a1
+	lea	(rawDoFmt_buf-ds,a6),a0
 	move.l	a0,(a1)+
 	lea	(lbL02D7A8-ds,a6),a0
 	move.l	a0,(a1)+
@@ -49797,7 +49807,7 @@ lbC028210	bsr.w	lbC02742E
 	bsr.w	lbC0273FC
 	bra.w	lbC02AF68
 
-lbC02821C	movea.l	(lbL02D0F0-ds,a6),a2
+lbC02821C	movea.l	(work_actual_offset-ds,a6),a2
 	bsr.w	lbC02A3CC
 	bra.w	lbC02AF74
 
@@ -49815,7 +49825,7 @@ _savecommonregs1	bsr.w	saveregs_nod0d1a0a1
 	bsr.w	lbC0273FC
 	bra.b	lbC028268
 
-lbC028254	tst.l	(window2ptr-ds,a6)
+lbC028254	tst.l	(searchWindowPtr-ds,a6)
 	beq.b	__DisplayBeep
 	jsr	(lbC0016AE).l
 	bra.w	cceq
@@ -50005,7 +50015,7 @@ lbC028480	movem.l	a2/a4,-(sp)
 	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC028492
 	lea	(lbB02D9C8-ds,a6),a0
-lbC028492	lea	(_RawDoFmt_args-ds,a6),a1
+lbC028492	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	a0,(a1)
 	move.w	#$2755,d0
 	jsr	(gettextbynum-ds,a6)
@@ -50637,7 +50647,7 @@ lbC028C4A	cmpi.l	#$200,d2
 
 lbC028C60	cmpi.l	#$40000,d2
 	bne.w	lbC0289DA
-	cmpa.l	(window2ptr-ds,a6),a3
+	cmpa.l	(searchWindowPtr-ds,a6),a3
 	bne.w	lbC0289DA
 	jsr	(lbC0016AE).l
 	bra.w	lbC0289DA
@@ -50933,7 +50943,7 @@ lbC028FA0	cmpi.b	#$EF,d0
 	move.l	a4,(lbL02D170-ds,a6)
 	move.l	(lbL02D16C-ds,a6),d0
 	addq.l	#1,(lbL02D16C-ds,a6)
-	bsr.w	lbC022542
+	bsr.w	put_dec_d0
 	clr.b	(a4)
 	movem.l	(sp)+,d0-d3/d6/a0-a4
 	andi.b	#$FB,ccr
@@ -51347,7 +51357,7 @@ lbC0293C2	lea	(lbL02C1D4-ds,a6),a4
 	bne.b	lbC029410
 	tst.b	(lbB02B42B-ds,a6)
 	bne.b	lbC0293DE
-	bsr.w	lbC022542
+	bsr.w	put_dec_d0
 	bra.w	lbC02948A
 
 lbC0293DE	move.b	#$25,(a4)+
@@ -51728,7 +51738,7 @@ lbC029808	movea.l	d1,a1
 	tst.b	(lbB02EB4A-ds,a6)
 	bne.b	lbC029840
 	movem.l	d0/d1/a1-a4,-(sp)
-	lea	(_RawDoFmt_args-ds,a6),a1
+	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	(12,a0),(a1)
 	move.w	#$2756,d0
 	jsr	(gettextbynum-ds,a6)
@@ -51918,7 +51928,7 @@ lbC029A66	clr.l	(lbW02B478-ds,a6)
 	tst.b	(lbB02EB9D-ds,a6)
 	bne.b	lbC029A9C
 	lea	(lbB02B3E5-ds,a6),a0
-	lea	(lbL02EB8E-ds,a6),a1
+	lea	(lbB02EB8E-ds,a6),a1
 	moveq	#14,d0
 lbC029A7E	move.b	(a0),(a1)+
 	clr.b	(a0)+
@@ -51935,7 +51945,7 @@ lbC029A9E	clr.l	(lbL02D128-ds,a6)
 	clr.b	(lbB02EBF3-ds,a6)
 	tst.b	(lbB02EB9D-ds,a6)
 	beq.b	lbC029AD2
-	lea	(lbL02EB8E-ds,a6),a0
+	lea	(lbB02EB8E-ds,a6),a0
 	lea	(lbB02B3E5-ds,a6),a1
 	moveq	#14,d0
 lbC029ABE	move.b	(a0)+,(a1)+
@@ -52012,7 +52022,7 @@ lbC029B68	move.w	#$2717,d0
 	bra.b	lbC029B8A
 
 lbC029B86	move.l	(ds-ds,a6),d0
-lbC029B8A	bsr.w	lbC022518
+lbC029B8A	bsr.w	put_hex8_d0
 	clr.b	(a4)
 	movem.l	(sp)+,d0/d1/a4
 	bsr.w	StringRequest240
@@ -52190,37 +52200,37 @@ lbC029E04	movem.l	d0-d2/a0-a2/a5/a6,-(sp)
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 	lea	(lbL02B060-ds,a5),a2
-	move.l	(symwindowptr-ds,a5),d2
+	move.l	(symbolsWindowPtr-ds,a5),d2
 	beq.b	lbC029E28
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E28	lea	(lbL02B0D0-ds,a5),a2
-	move.l	(window2ptr-ds,a5),d2
+	move.l	(searchWindowPtr-ds,a5),d2
 	beq.b	lbC029E36
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E36	lea	(lbL02B140-ds,a5),a2
-	move.l	(WindowMacros1Ptr-ds,a5),d2
+	move.l	(windowMacros1Ptr-ds,a5),d2
 	beq.b	lbC029E44
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E44	lea	(lbL02B1B0-ds,a5),a2
-	move.l	(WindowMacros2Ptr-ds,a5),d2
+	move.l	(windowMacros2Ptr-ds,a5),d2
 	beq.b	lbC029E52
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E52	lea	(lbL02B220-ds,a5),a2
-	move.l	(WindowMacros3Ptr-ds,a5),d2
+	move.l	(windowMacros3Ptr-ds,a5),d2
 	beq.b	lbC029E60
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E60	lea	(lbL02B290-ds,a5),a2
-	move.l	(window6ptr-ds,a5),d2
+	move.l	(windowOptions1Ptr-ds,a5),d2
 	beq.b	lbC029E6E
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E6E	lea	(lbL02B300-ds,a5),a2
-	move.l	(window7ptr-ds,a5),d2
+	move.l	(windowOptions2Ptr-ds,a5),d2
 	beq.b	lbC029E7C
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
@@ -52242,37 +52252,37 @@ lbC029E98	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
 	movea.l	(window1ptr-ds,a5),a1
 	movea.l	(intbase-ds,a5),a6
 	jsr	(_LVOEndRequest,a6)
-	move.l	(symwindowptr-ds,a5),d0
+	move.l	(symbolsWindowPtr-ds,a5),d0
 	beq.b	lbC029EBE
 	lea	(lbL02B060-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EBE	move.l	(window2ptr-ds,a5),d0
+lbC029EBE	move.l	(searchWindowPtr-ds,a5),d0
 	beq.b	lbC029ECE
 	lea	(lbL02B0D0-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029ECE	move.l	(WindowMacros1Ptr-ds,a5),d0
+lbC029ECE	move.l	(windowMacros1Ptr-ds,a5),d0
 	beq.b	lbC029EDE
 	lea	(lbL02B140-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EDE	move.l	(WindowMacros2Ptr-ds,a5),d0
+lbC029EDE	move.l	(windowMacros2Ptr-ds,a5),d0
 	beq.b	lbC029EEE
 	lea	(lbL02B1B0-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EEE	move.l	(WindowMacros3Ptr-ds,a5),d0
+lbC029EEE	move.l	(windowMacros3Ptr-ds,a5),d0
 	beq.b	lbC029EFE
 	lea	(lbL02B220-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EFE	move.l	(window6ptr-ds,a5),d0
+lbC029EFE	move.l	(windowOptions1Ptr-ds,a5),d0
 	beq.b	lbC029F0E
 	lea	(lbL02B290-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029F0E	move.l	(window7ptr-ds,a5),d0
+lbC029F0E	move.l	(windowOptions2Ptr-ds,a5),d0
 	beq.b	lbC029F1E
 	lea	(lbL02B300-ds,a5),a0
 	movea.l	d0,a1
@@ -52287,25 +52297,25 @@ _SetPointerAll	movem.l	d0-d3/a0/a1/a5/a6,-(sp)
 	movea.l	(intbase-ds,a5),a6
 	move.l	(window1ptr-ds,a5),d0
 	bsr.w	_SetPointer
-	move.l	(symwindowptr-ds,a5),d0
+	move.l	(symbolsWindowPtr-ds,a5),d0
 	beq.b	lbC029F42
 	bsr.b	_SetPointer
-lbC029F42	move.l	(window2ptr-ds,a5),d0
+lbC029F42	move.l	(searchWindowPtr-ds,a5),d0
 	beq.b	lbC029F4A
 	bsr.b	_SetPointer
-lbC029F4A	move.l	(WindowMacros1Ptr-ds,a5),d0
+lbC029F4A	move.l	(windowMacros1Ptr-ds,a5),d0
 	beq.b	lbC029F52
 	bsr.b	_SetPointer
-lbC029F52	move.l	(WindowMacros2Ptr-ds,a5),d0
+lbC029F52	move.l	(windowMacros2Ptr-ds,a5),d0
 	beq.b	lbC029F5A
 	bsr.b	_SetPointer
-lbC029F5A	move.l	(WindowMacros3Ptr-ds,a5),d0
+lbC029F5A	move.l	(windowMacros3Ptr-ds,a5),d0
 	beq.b	lbC029F62
 	bsr.b	_SetPointer
-lbC029F62	move.l	(window6ptr-ds,a5),d0
+lbC029F62	move.l	(windowOptions1Ptr-ds,a5),d0
 	beq.b	lbC029F6A
 	bsr.b	_SetPointer
-lbC029F6A	move.l	(window7ptr-ds,a5),d0
+lbC029F6A	move.l	(windowOptions2Ptr-ds,a5),d0
 	beq.b	lbC029F72
 	bsr.b	_SetPointer
 lbC029F72	movem.l	(sp)+,d0-d3/a0/a1/a5/a6
@@ -52324,25 +52334,25 @@ _ClearPointerAll	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
 	movea.l	(intbase-ds,a5),a6
 	move.l	(window1ptr-ds,a5),d0
 	bsr.b	_ClearPointer
-	move.l	(symwindowptr-ds,a5),d0
+	move.l	(symbolsWindowPtr-ds,a5),d0
 	beq.b	lbC029FA6
 	bsr.b	_ClearPointer
-lbC029FA6	move.l	(window2ptr-ds,a5),d0
+lbC029FA6	move.l	(searchWindowPtr-ds,a5),d0
 	beq.b	lbC029FAE
 	bsr.b	_ClearPointer
-lbC029FAE	move.l	(WindowMacros1Ptr-ds,a5),d0
+lbC029FAE	move.l	(windowMacros1Ptr-ds,a5),d0
 	beq.b	lbC029FB6
 	bsr.b	_ClearPointer
-lbC029FB6	move.l	(WindowMacros2Ptr-ds,a5),d0
+lbC029FB6	move.l	(windowMacros2Ptr-ds,a5),d0
 	beq.b	lbC029FBE
 	bsr.b	_ClearPointer
-lbC029FBE	move.l	(WindowMacros3Ptr-ds,a5),d0
+lbC029FBE	move.l	(windowMacros3Ptr-ds,a5),d0
 	beq.b	lbC029FC6
 	bsr.b	_ClearPointer
-lbC029FC6	move.l	(window6ptr-ds,a5),d0
+lbC029FC6	move.l	(windowOptions1Ptr-ds,a5),d0
 	beq.b	lbC029FCE
 	bsr.b	_ClearPointer
-lbC029FCE	move.l	(window7ptr-ds,a5),d0
+lbC029FCE	move.l	(windowOptions2Ptr-ds,a5),d0
 	beq.b	lbC029FD6
 	bsr.b	_ClearPointer
 lbC029FD6	movem.l	(sp)+,d0/d1/a0/a1/a5/a6
@@ -52388,7 +52398,7 @@ lbC02A032	move.b	d6,(a4)+
 
 lbC02A048	tst.b	(lbB02B3EF-ds,a6)
 	beq.b	lbC02A02A
-	addq.l	#1,(lbW02D24C-ds,a6)
+	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#2,(a4)+
 	bra.b	lbC02A02A
 
@@ -52412,7 +52422,7 @@ lbC02A078	move.b	d6,(a4)+
 	move.w	d6,(lbB02D3AA-ds,a6)
 	rts
 
-lbC02A08A	addq.l	#1,(lbW02D24C-ds,a6)
+lbC02A08A	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#2,(a4)+
 lbC02A092	andi.l	#$300,d1
 	beq.b	lbC02A0C6
@@ -52423,7 +52433,7 @@ lbC02A09A	bsr.b	lbC02A0E0
 	move.b	#1,(a4)+
 	rts
 
-lbC02A0AA	addq.l	#1,(lbW02D24C-ds,a6)
+lbC02A0AA	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#2,(a4)+
 	andi.l	#$C000,d1
 	beq.b	lbC02A0BC
@@ -52454,7 +52464,7 @@ lbC02A0EC	move.b	#$20,(a4)+
 	bne.b	lbC02A0FC
 	rts
 
-lbC02A0FC	addq.l	#1,(lbW02D24C-ds,a6)
+lbC02A0FC	addq.l	#1,(count_hilits-ds,a6)
 	move.b	#2,(a4)+
 	andi.l	#$C000,d0
 	beq.b	lbC02A10E
@@ -52523,7 +52533,7 @@ _DeleteFile	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVODeleteFile,a6)
 	bra.w	inita6
 
-_DisplayBeep_cond	tst.b	(lbB02EB43-ds,a6)
+_DisplayBeep_cond	tst.b	(opt2_int_beep_inv-ds,a6)
 	bne.b	lbC02A1BE
 	tst.b	(lbB02EB9E-ds,a6)
 lbC02A1BE	bne.w	_rts
@@ -52701,15 +52711,15 @@ _Write	movea.l	(dosbase-ds,a6),a6
 	bra.w	inita6
 
 _RawDoFmt	movem.l	a2/a3/a6,-(sp)
-	lea	(_RawDoFmt_args-ds,a6),a1
+	lea	(rawDoFmt_args-ds,a6),a1
 	movea.l	a2,a3
-	lea	(_putcharfunc,pc),a2
+	lea	(_RawDoFmt_putchar,pc),a2
 	movea.l	(4).w,a6
 	jsr	(_LVORawDoFmt,a6)
 	movem.l	(sp)+,a2/a3/a6
 	rts
 
-_putcharfunc	move.b	d0,(a3)+
+_RawDoFmt_putchar	move.b	d0,(a3)+
 	rts
 
 lbC02A3C6	move.b	#1,(lbB02EB48-ds,a6)
@@ -52826,7 +52836,7 @@ DisableMacros	movem.l	d0-d2/a0-a3,-(sp)
 	moveq	#0,d2
 	move.b	d2,(lbB02EB4B-ds,a6)
 	bsr.b	DisableMacros1
-	lea	(WindowMacros1Ptr-ds,a6),a0
+	lea	(windowMacros1Ptr-ds,a6),a0
 	move.w	(macros_num-ds,a6),d0
 	lsl.w	#2,d0
 	move.l	(a0,d0.w),d0
@@ -52836,11 +52846,11 @@ DisableMacros	movem.l	d0-d2/a0-a3,-(sp)
 	movem.l	(sp)+,d0-d2/a0-a3
 	rts
 
-DisableMacros1	move.l	(WindowMacros1Ptr-ds,a6),d0
+DisableMacros1	move.l	(windowMacros1Ptr-ds,a6),d0
 	bsr.b	.disable
-	move.l	(WindowMacros2Ptr-ds,a6),d0
+	move.l	(windowMacros2Ptr-ds,a6),d0
 	bsr.b	.disable
-	move.l	(WindowMacros3Ptr-ds,a6),d0
+	move.l	(windowMacros3Ptr-ds,a6),d0
 .disable	beq.b	.notopen
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a0
@@ -53025,7 +53035,7 @@ lbC02A70E	bra.b	easyrequest_bynum
 easyrequest_33	moveq	#$33,d0
 	bra.b	easyrequest_bynum
 
-error_lib	lea	(_RawDoFmt_args-ds,a6),a1
+error_lib	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	a0,(a1)
 	lea	(txt_resourceutillib_version,pc),a0
 lbC02A71E	move.l	a0,(4,a1)
@@ -53443,7 +53453,7 @@ lbC02ADA2	move.l	a4,-(sp)
 	lea	(miscBuffer-ds,a6),a4
 	move.l	a4,-(sp)
 	move.l	d1,-(sp)
-	jsr	(lbC022542).l
+	jsr	(put_dec_d0).l
 	move.l	(sp)+,d0
 	clr.b	(a4)
 	move.l	(sp)+,d1
@@ -54066,51 +54076,57 @@ lbB02B442	db	0
 lbB02B443	db	0
 lbB02B444	db	0
 lbB02B445	db	1
-lbB02B446	db	0
+opt1_show_offsets	db	0
 lbB02B447	db	1
-lbB02B448	db	1
-lbB02B449	db	1
-lbB02B44A	db	1
-lbB02B44B	db	1
-lbB02B44C	db	1
-lbB02B44D	db	1
-lbB02B44E	db	1
-lbB02B44F	db	0
-lbB02B450	db	0
-lbB02B451	db	0
-lbB02B452	db	0
-lbB02B453	db	0
-lbB02B454	db	0
-lbB02B455	db	1
+opt1_show_hlabels	db	1
+opt1_show_symbols	db	1
+opt1_show_eolcomments
+	db	1
+opt1_show_flcomments
+	db	1
+opt1_show_chipload	db	1
+opt1_show_sections	db	1
+opt1_show_end	db	1
+opt1_show_dcb	db	0
+opt1_show_seplabels	db	0
+opt1_show_colons	db	0
+opt1_show_zeros	db	0
+opt1_show_constants	db	0
+opt1_show_dcomments	db	0
+opt1_show_newsyntax	db	1
 lbB02B456	db	1
-lbB02B457	db	1
-lbB02B458	db	1
-lbB02B459	db	1
-lbB02B45A	db	0
-lbB02B45B	db	1
-lbB02B45C	db	1
-lbB02B45D	db	0
-lbB02B45E	db	1
-lbB02B45F	db	0
-lbB02B460	db	1
-lbB02B461	db	1
-lbB02B462	db	1
-lbB02B463	db	1
-lbB02B464	db	1
-lbB02B465	db	1
-lbB02B466	db	1
-lbB02B467	db	0
-lbB02B468	db	1
-lbB02B469	db	1
-lbB02B46A	db	1
-lbB02B46B	db	1
-lbB02B46C	db	0
+opt1_allow_refrecog	db	1
+opt1_allow_autolabels
+	db	1
+opt1_allow_equ	db	1
+opt1_allow_ecomments
+	db	0
+opt2_int_beep	db	1
+opt2_int_feedback	db	1
+opt2_int_delays	db	0
+opt2_int_verbose	db	1
+opt2_int_refresh	db	0
+opt2_error_code	db	1
+opt2_error_missing	db	1
+opt2_error_badalign	db	1
+opt2_error_coderef	db	1
+opt2_error_dataref	db	1
+opt2_error_startplus
+	db	1
+opt2_error_afline	db	1
+opt2_error_libcalls	db	0
+opt2_error_illegal	db	1
+opt2_error_symequ	db	1
+opt2_pseudo_pushpop	db	1
+opt2_pseudo_pushmpopm
+	db	1
+opt2_pseudo_blobhs	db	0
 lbB02B46D	db	0
 lbB02B46E	db	0
 lbB02B46F	db	1
-lbB02B470	db	1
-lbB02B471	db	1
-lbB02B472	db	0
+opt1_size_absword	db	1
+opt1_size_abslong	db	1
+opt1_size_optimize	db	0
 	db	0
 lbW02B474	dw	0
 lbW02B476	dw	$34
@@ -54225,17 +54241,17 @@ vblank_inited	dx.b	1
 vblank_counter	dx.b	1
 window1ptr	dx.b	4
 userport	dx.l	1
-symwindowptr	dx.l	1
-window2ptr	dx.l	1
-WindowMacros1Ptr	dx.l	1
-WindowMacros2Ptr	dx.l	1
-WindowMacros3Ptr	dx.l	1
-window6ptr	dx.l	1
-window7ptr	dx.l	1
+symbolsWindowPtr	dx.l	1
+searchWindowPtr	dx.l	1
+windowMacros1Ptr	dx.l	1
+windowMacros2Ptr	dx.l	1
+windowMacros3Ptr	dx.l	1
+windowOptions1Ptr	dx.l	1
+windowOptions2Ptr	dx.l	1
 lbL02CF86	dx.l	1
 macros_num	dx.b	2
 lbB02CF8C	dx.b	2
-_RawDoFmt_args	dx.b	$10
+rawDoFmt_args	dx.b	$10
 lbL02CF9E	dx.l	5
 lbW02CFB2	dx.w	1
 menuModifyList	dx.b	$1A
@@ -54293,7 +54309,7 @@ lbL02D0C4	dx.l	1
 lbL02D0C8	dx.l	1
 lbL02D0CC	dx.l	1
 lbL02D0D0	dx.l	1
-lbL02D0D4	dx.l	1
+count_filesize	dx.l	1
 lbL02D0D8	dx.l	1
 lbL02D0DC	dx.l	1
 saveFH	dx.b	4
@@ -54302,9 +54318,9 @@ SaveFileName	dx.b	4
 lbB02D0EC	dx.b	1
 lbB02D0ED	dx.b	1
 lbW02D0EE	dx.w	1
-lbL02D0F0	dx.w	1
+work_actual_offset	dx.w	1
 	dx.b	1
-lbB02D0F3	dx.b	1
+work_actual_offsetb	dx.b	1
 lbL02D0F4	dx.l	1
 lbL02D0F8	dx.l	1
 lbL02D0FC	dx.l	1
@@ -54330,7 +54346,7 @@ lbL02D154	dx.l	1
 strings	dx.l	1
 lbL02D15C	dx.l	1
 lbL02D160	dx.l	1
-lbL02D164	dx.l	1
+_opCodeTab	dx.l	1
 lbL02D168	dx.l	1
 lbL02D16C	dx.l	1
 lbL02D170	dx.l	1
@@ -54358,43 +54374,43 @@ lbL02D208	dx.l	1
 lbB02D20C	dx.b	4
 lbL02D210	dx.l	1
 lbL02D214	dx.l	1
-lbL02D218	dx.l	1
-lbL02D21C	dx.l	1
-lbL02D220	dx.l	1
-lbW02D224	dx.w	1
+count_startplusref	dx.l	1
+count_customlabels	dx.l	1
+count_labels	dx.l	1
+count_symbols	dx.w	1
 lbL02D226	dx.w	1
-lbW02D228	dx.w	1
-lbW02D22A	dx.w	1
-lbL02D22C	dx.l	1
-lbL02D230	dx.l	1
-lbL02D234	dx.l	1
-lbL02D238	dx.l	1
-lbL02D23C	dx.l	1
-lbB02D240	dx.b	4
-lbL02D244	dx.l	1
-lbL02D248	dx.l	1
-lbW02D24C	dx.w	1
+count_lines	dx.w	1
+count_lines_w	dx.w	1
+count_codesections	dx.l	1
+count_datasections	dx.l	1
+count_bsssections	dx.l	1
+count_uninitdatabyt	dx.l	1
+count_fulllinecomm	dx.l	1
+count_endlinecomm	dx.l	1
+count_hiddenlabels	dx.l	1
+count_chipsections	dx.l	1
+count_hilits	dx.w	1
 	dx.b	1
-lbB02D24F	dx.b	1
-lbL02D250	dx.l	1
-lbL02D254	dx.l	1
-lbL02D258	dx.l	1
-lbL02D25C	dx.l	1
-lbL02D260	dx.l	1
-lbL02D264	dx.l	1
-lbL02D268	dx.l	1
-lbL02D26C	dx.l	1
-lbL02D270	dx.l	1
-lbL02D274	dx.l	1
-lbL02D278	dx.l	1
-lbL02D27C	dx.l	1
-lbL02D280	dx.l	1
-lbL02D284	dx.l	1
-lbL02D288	dx.l	1
-lbL02D28C	dx.l	1
-lbL02D290	dx.l	1
-lbL02D294	dx.l	1
-lbL02D298	dx.l	1
+count_hilights_b	dx.b	1
+count_blanklines	dx.l	1
+count_codelines	dx.l	1
+count_oddaddrerr	dx.l	1
+count_ascii_lines	dx.l	1
+count_bytelines	dx.l	1
+count_wordlines	dx.l	1
+count_longlines	dx.l	1
+count_singelines	dx.l	1
+count_doublelines	dx.l	1
+count_extendlines	dx.l	1
+count_packedlines	dx.l	1
+count_bsslines	dx.l	1
+count_ascii_chars	dx.l	1
+count_ascii_ops	dx.l	1
+count_xanconvers	dx.l	1
+count_invcodelines	dx.l	1
+count_aflines	dx.l	1
+count_sections	dx.l	1
+count_badref	dx.l	1
 lbL02D29C	dx.l	3
 lbL02D2A8	dx.l	3
 openFileName	dx.b	4
@@ -54475,7 +54491,7 @@ lbL02D430	dx.l	$14
 lbB02D480	dx.b	$200
 lbL02D680	dx.l	15
 displayid	dx.l	$38
-lbL02D79C	dx.l	3
+rawDoFmt_buf	dx.l	3
 lbL02D7A8	dx.l	8
 screen_pubname	dx.l	$40
 lbL02D8C8	dx.l	$40
@@ -54538,7 +54554,7 @@ lbB02EB3F	dx.b	1
 lbB02EB40	dx.b	1
 lbB02EB41	dx.b	1
 lbB02EB42	dx.b	1
-lbB02EB43	dx.b	1
+opt2_int_beep_inv	dx.b	1	;invers
 lbB02EB44	dx.b	1
 lbB02EB45	dx.b	1
 lbB02EB46	dx.b	1
@@ -54599,7 +54615,7 @@ lbL02EB7C	dx.b	1
 lbB02EB7D	dx.b	1
 lbW02EB7E	dx.b	1
 lbB02EB7F	dx.b	1
-lbL02EB80	dx.w	1
+opt1_show_strict	dx.b	2
 allFileNamesBuild	dx.b	1
 lbB02EB83	dx.b	1
 lbB02EB84	dx.b	1
@@ -54608,7 +54624,7 @@ lbB02EB87	dx.b	1
 lbW02EB88	dx.b	1
 lbB02EB89	dx.b	1
 lbB02EB8A	dx.b	1
-lbL02EB8E	dx.b	15
+lbB02EB8E	dx.b	15
 lbB02EB9D	dx.b	1
 lbB02EB9E	dx.b	1
 lbB02EB9F	dx.b	$50
@@ -54724,7 +54740,7 @@ lbB039E88	dx.b	$1A
 Macros3String19	dx.b	$22
 DxAreaEnd
 
-	SECTION	ReSource19rs039EC4,DATA,CHIP
+	SECTION	ReSource21rs039EC4,DATA,CHIP
 pointerdata	dl	0
 	dl	$40007C0
 	dl	$7C0
@@ -54815,7 +54831,7 @@ GadgetImageData	dl	0
 	dl	0
 
 
-	SECTION	ReSource19rs03A024,CODE
+	SECTION	ReSource21rs03A024,CODE
 copyhunk2	movem.l	a2-a4,-(sp)
 	lea	(lbL03A400,pc),a0
 	lea	(lbL03576C).l,a1
