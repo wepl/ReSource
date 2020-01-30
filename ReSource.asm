@@ -44492,7 +44492,7 @@ lbC0248FA	bra.w	lbC022292
 
 	MC68020
 oper10_dn_68020	bfextu	d5{4:3},d0
-	move.w	(D0D1D2D3D4D5D.MSG.l,pc,d0.w*2),(a4)+
+	move.w	(D0D1D2D3D4D5D.MSG.w,pc,d0.l*2),(a4)+
 	rts
 	MC68000
 
@@ -44805,7 +44805,7 @@ oper63	move.l	d5,d0
 
 	MC68020
 oper17_an_68020	bfextu	d5{4:3},d0
-	move.w	(A0A1A2A3A4A5A.MSG.l,pc,d0.w*2),(a4)+
+	move.w	(A0A1A2A3A4A5A.MSG.w,pc,d0.l*2),(a4)+
 	rts
 	MC68000
 
@@ -46990,9 +46990,9 @@ ext0_Rts	rts
 
 	MC68020
 ext3_size_68020	bfextu	d5{8:2},d0
-	move.b	d0,(opcode_size-ds.l,a6)
+	move.b	d0,(opcode_size-ds,a6)
 	addq.w	#2,d6
-	move.w	(dotB.MSG-ds.l,a6,d0.w*2),(a4)+
+	move.w	(dotB.MSG.w,pc,d0.l*2),(a4)+
 	beq.b	set2qbefore
 	rts
 	MC68000
@@ -47145,21 +47145,21 @@ lbC026510	move.b	(L.MSG0-ds,a6),(a4)+
 
 	MC68020
 ext8_cc_68020	bfextu	d5{4:4},d0
-	move.w	(RASRHILS.MSG.l,pc,d0.w*2),(a4)+
+	move.w	(RASRHILS.MSG.w,pc,d0.l*2),(a4)+
 	move.b	#'.',(a4)+
 	movea.l	a2,a0
 	move.b	(-1,a2),d1
 	beq.b	extract_cc_w
 	cmpi.b	#$FF,d1
 	beq.w	extract_cc_l
-	move.b	(B.MSG-ds.l,a6),(a4)+
+	move.b	(B.MSG-ds,a6),(a4)+
 	bsr.w	setspacepostopcode
 	extb.l	d1
 	btst	#0,d1	;odd address?
 	bne.w	set4q
 	add.l	a0,d1
 	move.l	d1,d0
-	cmp2.l	(workdata_strt_cmp2-ds.l,a6),d0
+	cmp2.l	(workdata_strt_cmp2-ds,a6),d0
 	bcs.b	extract_cc_boundsfailed
 	bsr.w	put_adr_d0
 	rts
@@ -47240,14 +47240,14 @@ ext8_cc_68000	move.l	d5,d0
 
 	MC68020
 ext8_cc_68060	bfextu	d5{4:4},d0
-	move.w	(RASRHILS.MSG.l,pc,d0.w*2),(a4)+
+	move.w	(RASRHILS.MSG.w,pc,d0.l*2),(a4)+
 	move.b	#'.',(a4)+
 	movea.l	a2,a0
 	move.b	(-1,a2),d1
 	beq.b	extract_cc_w
 	cmpi.b	#$FF,d1
 	beq.w	extract_cc_l
-	move.b	(B.MSG-ds.l,a6),(a4)+
+	move.b	(B.MSG-ds,a6),(a4)+
 	bsr.w	setspacepostopcode
 	extb.l	d1
 	btst	#0,d1	;odd address?
