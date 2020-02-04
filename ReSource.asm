@@ -15573,7 +15573,7 @@ lbL00DFB8	dl	oper47_ea5_68000-lbL00DFB8
 	dl	oper52-*
 	dl	oper1653_ea2_68000-*
 	dl	oper54-*
-	dl	oper5584_immbit-*
+	dl	oper55_immbit-*
 	dl	oper56-*
 	dl	oper57-*
 	dl	oper58-*
@@ -15602,7 +15602,7 @@ lbL00DFB8	dl	oper47_ea5_68000-lbL00DFB8
 	dl	oper81-*
 	dl	oper82-*
 	dl	oper83-*
-	dl	oper5584_immbit-*
+	dl	oper84_immbyte-*
 	dl	oper85_immbyte-*
 	dl	oper86-*
 	dl	oper87-*
@@ -43226,7 +43226,7 @@ lbC023B84	moveq	#0,d0
 	movem.l	(sp)+,d1-d7/a0/a1
 	bra.b	lbC023B80
 
-oper5584_immbit	move.b	#'#',(a4)+
+oper55_immbit	move.b	#'#',(a4)+
 	clr.b	(lbB02EB6F-ds,a6)
 	move.w	(a2),d0
 	cmpi.w	#7,d0
@@ -46701,6 +46701,12 @@ oper46_shift_68000	move.b	#'#',(a4)+
 	bsr.w	lbC0234AE
 	beq.w	put_value_d0_byte
 	rts
+
+oper84_immbyte	move.b	#'#',(a4)+
+	clr.b	(lbB02EB6F-ds,a6)
+	tst.b	(a2)		;upper byte ne?
+	beq	lbC023ACC
+	bra	lbC023AF6
 
 oper85_immbyte	move.b	#'#',(a4)+
 	move.l	d5,d0
