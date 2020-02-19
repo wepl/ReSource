@@ -1,3 +1,7 @@
+;
+; to be assembled with BASM, no other assembler tested
+; final build without symbols: basm -dNOSYMBOLS=1 ReSource.asm
+;
 
 	IFD BARFLY
 	BOPT	O+		;enable optimizing
@@ -7,7 +11,9 @@
 	BOPT	ODd-		;disable mulu optimizing
 	BOPT	ODe-		;disable muls optimizing
 	BOPT	wo-		;no optimize warnings
+	IFND NOSYMBOLS
 	BOPT	sa+		;write symbol hunks
+	ENDC
 	BOPT	v+		;verbose
 	ENDC
 
@@ -946,7 +952,7 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	move.w	#185,d0
 	move.l	(screenptr-ds,a6),a0
 	cmp	#SCREENHEIGHTTRIG,(sc_Height,a0)
-	blo	.setheight
+	bls	.setheight
 	add	#SYMWINHEIGHTADD,d0
 
 .setheight	move.l	d0,-(sp)
@@ -2447,7 +2453,7 @@ lbC0017DC	move.l	d0,-(sp)
 	move.w	#$b9,d0
 	move.l	(screenptr-ds,a6),a0
 	cmp	#SCREENHEIGHTTRIG,(sc_Height,a0)
-	blo	.setheight
+	bls	.setheight
 	add	#MACWINHEIGHTADD,d0
 
 .setheight	move.l	d0,-(sp)
@@ -23837,7 +23843,7 @@ ThePuzzleFact.MSG
 	db	'     USA                              Nottinghamshire NG17 2HB',$A
 	db	'                                      UK',$A,$A
 	db	'     +(503) 935-3709                  +(623) 554828',$A,$A
-	db	"This version of ReSource is derrived from original 6.06 and modified by Wepl",10,0
+	db	"This version of ReSource is derrived from the original release 6.06 and modified by Wepl.",10,0
 	EVEN
 
 lbC01455E	tst.l	(workdata_length-ds,a6)
@@ -36352,7 +36358,7 @@ screen_ok	movea.l	d0,a2
 
 	;enlargement of symbols/macros windows
 	cmp	#SCREENHEIGHTTRIG,d6
-	blo	.skip
+	bls	.skip
 	move	#SYMWINHEIGHTADD,d1
 	add	d1,gadgets_sym_lv1h
 	add	d1,gadgets_sym_lv2h
