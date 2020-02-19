@@ -39064,17 +39064,17 @@ lbC020854	move.l	d7,d2
 	move.l	d2,d0
 	addq.l	#1,(count_sections-ds,a6)
 	addq.l	#1,(count_codesections-ds,a6)
-	move.l	#$45444F43,d2
+	move.l	#'EDOC',d2
 	cmpi.l	#$10000000,d0
 	beq.b	lbC02089C
 	subq.l	#1,(count_codesections-ds,a6)
 	addq.l	#1,(count_datasections-ds,a6)
-	move.l	#$41544144,d2
+	move.l	#'ATAD',d2
 	cmpi.l	#$20000000,d0
 	beq.b	lbC02089C
 	subq.l	#1,(count_datasections-ds,a6)
 	addq.l	#1,(count_bsssections-ds,a6)
-	move.l	#$535342,d2
+	move.l	#'SSB',d2
 lbC02089C	lea	(SECTION.MSG,pc),a0
 	bsr.w	lbC023AB8
 	moveq	#$1B,d6
@@ -54746,7 +54746,7 @@ lbB039E88	dx.b	$1A
 Macros3String19	dx.b	$22
 DxAreaEnd
 
-	SECTION	ReSource21rs039EC4,DATA,CHIP
+	SECTION	ReSource22rs039EC4,DATA,CHIP
 pointerdata	dl	0
 	dl	$40007C0
 	dl	$7C0
@@ -54837,7 +54837,7 @@ GadgetImageData	dl	0
 	dl	0
 
 
-	SECTION	ReSource21rs03A024,CODE
+	SECTION	ReSource22rs03A024,CODE
 copyhunk2	movem.l	a2-a4,-(sp)
 	lea	(lbL03A400,pc),a0
 	lea	(lbL03576C).l,a1
