@@ -36623,10 +36623,10 @@ _getenvlastfilename
 	move.l	a2,d1
 	jsr	(_LVOPathPart,a6)
 	move.l	d0,a0
+	tst.b	(a0)		;no more subdirs?
+	beq	.append
 	clr.b	(a0)
-	cmp.l	d0,a2
-	bne	.lock
-	bra	.append
+	bra	.lock
 .unlock	jsr	(_LVOUnLock,a6)
 	;append filename
 .search	tst.b	(a2)+
