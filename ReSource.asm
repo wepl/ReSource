@@ -42560,7 +42560,7 @@ lbC02336E	eor.b	d2,d1
 	movea.l	(stringPointer-ds,a6),a0
 	cmp.l	(8,a0,d2.l),d0
 	beq.b	lbC02339A
-lbC023390	move.l	(a0,d2.l),d2
+lbC023390	move.l	(a0,d2.l),d2	;endless loop, d0=1b2ec d1=380 d2=0
 	cmp.l	(8,a0,d2.l),d0
 	bne.b	lbC023390
 lbC02339A	move.l	(4,a0,d2.l),d0
