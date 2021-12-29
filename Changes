@@ -1,4 +1,8 @@
 
+version 6.6.x (2021-12-29) done by Wepl
+
+* changed from RCS to Git and made available via github
+
 version 6.6.1 (2020-02-19) done by Wepl
 
 * if screen height is greater than 512 pixel the height of the symbol and

@@ -9,12 +9,13 @@ must be made in .rs and then merged into the source .asm.
 Merge .rs changes into .asm
 ***************************
 
-This is how to merge changes made in the ReSource.*.rs into the source.
-The RCS file contains two branches. Branch 1.1.1 contains the .asm
-output of the resourced ReSource. Branch 1 contains the modified source.
+This is how to merge changes made in the ReSource.rs into the source.
+The master branch contains the modified source. The resourced branch
+contains the source which is created be ReSource from the ReSource.rs
+file.
 
-* check in actual source (if changed) or stash it manually
-	ci -l1 ReSource.asm
+* switch to the resourced branch
+	git checkout resourced
 * create new asm file from within ReSource
   it must be named ReSource.asm for the following steps
   options to be set:
@@ -47,29 +48,29 @@ output of the resourced ReSource. Branch 1 contains the modified source.
 * compare the created .asm against the last one checked in
   this is also to compare that options in ReSource for source creation
   are correctly set
-	rcsdiff -r1.1.1 ReSource.asm
-* check in the new asm on the branch 1.1.1
-	ci -l1.1.1 ReSource.asm
-  this will create a new revision 1.1.1.n
-* check out actual source
-	co -l1 ReSource.asm
+	git diff ReSource.asm
+* check in the new asm and remember the commit-number
+	git commit ReSource.asm ReSource.rs
+* switch to master branch
+	git checkout master
 * merge the changes
-	rcsmerge -r1.1.1.n-1 -r1.1.1 ReSource.asm
-
-RCS file: RCS/ReSource.asm
-retrieving revision 1.1.1.18
-retrieving revision 1.1.1.19
-Merging differences between 1.1.1.18 and 1.1.1.19 into ReSource.asm
-rcsmerge: warning: conflicts during merge
+	git cherry-pick commit-number
 
 search and resolve conficts:
 	vi ReSource.asm
 		/<<
 
 * check in the merged changes
-	rcsdiff -r1 ReSource.asm
-	ci -l1 ReSource.asm
-		merged 1.1.1.n
+	git commit ReSource.asm
+
+Conversion from RCS to Git
+**************************
+
+wget http://git.oblomov.eu/rcs-fast-export/blob_plain/HEAD:/rcs-fast-export.rb
+chmod +x rcs-fast-export.rb
+mv ReSource.asm ReSource.asm,v
+git init
+rcs-fast-export.rb --author-is-committer ReSource.asm,v | git fast-import
 
 
 Differences when assembling the source with BASM
@@ -125,8 +126,8 @@ dcb:
 		dcb.w   lbC016D22-lbW01725C,$FAC6
 
 
-Feature Improvements
-********************
+Feature Improvements ToDo
+*************************
 
 labels starting with a number should be not possible
 it is not posible to use 'SPECIAL FUNCTIONS - Convert Specific EAs' with unsigned values
