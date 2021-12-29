@@ -1,0 +1,140 @@
+
+How to work on this
+*******************
+
+Changes which add new stuff can be made directly in the .asm.
+Changing existing labels or the interpretion of old ReSource code
+must be made in .rs and then merged into the source .asm.
+
+Merge .rs changes into .asm
+***************************
+
+This is how to merge changes made in the ReSource.*.rs into the source.
+The RCS file contains two branches. Branch 1.1.1 contains the .asm
+output of the resourced ReSource. Branch 1 contains the modified source.
+
+* check in actual source (if changed) or stash it manually
+	ci -l1 ReSource.asm
+* create new asm file from within ReSource
+  it must be named ReSource.asm for the following steps
+  options to be set:
+	Options1/Offsets		off
+	Options1/Labels			on
+	Options1/Hidden Labels		on
+	Options1/Symbols		on
+	Options1/* comments		on
+	Options1/Chip-load		on
+	Options1/Section statement	on
+	Options1/End statement		on
+	Options1/DCB statememnts	off	(to be changed)
+	Options1/Separate Labels	off
+	Options1/Label colons		off
+	Options1/Leading zeros		off
+	Options1/Multiple constants	off	(to be changed)
+	Options1/Data comments		off
+	Options1/New syntax		on
+	Options1/Strict Mnemonics	on
+	Options1/Assembler		Macro68
+	Options1/Ref recognition	on
+	Options1/Auto labels		on
+	Options1/EQU value checks	on
+	Options1/Error comments		off
+	Options1/Abs Word		on
+	Options1/Abs Longword		on
+	Options1/Optimize		off
+	Options2/Pseudo opcode		all off
+	Options2/Error detection	all on	(has no influence)
+* compare the created .asm against the last one checked in
+  this is also to compare that options in ReSource for source creation
+  are correctly set
+	rcsdiff -r1.1.1 ReSource.asm
+* check in the new asm on the branch 1.1.1
+	ci -l1.1.1 ReSource.asm
+  this will create a new revision 1.1.1.n
+* check out actual source
+	co -l1 ReSource.asm
+* merge the changes
+	rcsmerge -r1.1.1.n-1 -r1.1.1 ReSource.asm
+
+RCS file: RCS/ReSource.asm
+retrieving revision 1.1.1.18
+retrieving revision 1.1.1.19
+Merging differences between 1.1.1.18 and 1.1.1.19 into ReSource.asm
+rcsmerge: warning: conflicts during merge
+
+search and resolve conficts:
+	vi ReSource.asm
+		/<<
+
+* check in the merged changes
+	rcsdiff -r1 ReSource.asm
+	ci -l1 ReSource.asm
+		merged 1.1.1.n
+
+
+Differences when assembling the source with BASM
+************************************************
+
+assembling changes:
+	90bc sub.l #,dn	->	0480 subi.l #,dn	$bb88,$15d34
+	803c or.b #,dn	->	0000 ori.b #,dn		15f10
+	ce3c and.b #,dn	->	0207 andi.b #,dn	1610c
+the relocs are sorted differently, to compare ShortRel & back:
+shortrel reloc32 ReSource.original ReSource.original.sr
+shortrel reloc32 ReSource.11 ReSource.11.sr
+wcmp ReSource.original.sr ReSource.11.sr
+offset exe to ReSource offset is $28
+ok is:
+00bbb0 90bc                             ..               0480                             ..
+015d34 90bc                             ..               0480                             ..
+015f10 803c                             .<               0000                             ..
+01610c ce3c                             .<               0207                             ..
+016124 c03c                             .<               0200                             ..
+01659a c0bc                             ..               0280                             ..
+0165a0 b0bc                             ..               0c80                             ..
+01cafc 90bc                             ..               0480                             ..
+020084 cebc                             ..               0287                             ..
+020e76 90bc                             ..               0480                             ..
+024a5a c07c                             .|               0240                             .@
+0252bc c07c                             .|               0240                             .@
+0252c2 b03c                             .<               0c00                             ..
+0252fa b03c                             .<               0c00                             ..
+025322 c07c                             .|               0240                             .@
+026950 b03c                             .<               0c00                             ..
+026a06 b03c                             .<               0c00                             ..
+02862a c2bc                             ..               0281                             ..
+02863a c27c                             .|               0241                             .A
+028662 80bc                             ..               0080                             ..
+files have 40 differences
+
+
+Bugs, ToDo list
+***************
+
+long displacement will be saved in asm source without size specifier (.l)
+symbol pointing to current address will be saved as asm as ' dl lbC010170-'
+	in general the label is missing if not defined
+btst dn,#i disassembled as 'btst dn,#????i'
+dcb:
+	if Options1/DCB statememnts = On
+	and repeated lines with relative words:
+		dw      lbC016D22-lbW01725C
+		dw      lbC016D22-lbW01725C
+		dw      lbC016D22-lbW01725C
+	will create:
+		dcb.w   lbC016D22-lbW01725C,$FAC6
+
+
+Feature Improvements
+********************
+
+labels starting with a number should be not possible
+it is not posible to use 'SPECIAL FUNCTIONS - Convert Specific EAs' with unsigned values
+	ReSource offset $29b28
+add function to remove all labels/datatypes in an area
+when opening Search window activate string gadget
+pressing open any window button should close it if already open
+open windows on right border cascaded or remember their position
+make global optimize working with BASM
+make OD08 working with BASM
+

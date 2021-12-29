@@ -1,0 +1,12 @@
+
+This is an attempt to improve the usability and fix bugs in ReSource 6.06.
+You need the full ReSource package to use because only the main binary
+of ReSource is currently changed and part of this package.
+
+This new version is build from a resourced ReSource. This may introduce
+bugs! Only a small part of the functionality has been tested. It is 
+recommended that you make backups of existing .rs files before overwriting
+them with this new version.
+
+See Changes file for changes made.
+

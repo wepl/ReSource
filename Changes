@@ -1,0 +1,18 @@
+
+version 6.6.1 (2020-02-19) done by Wepl
+
+* if screen height is greater than 512 pixel the height of the symbol and
+  macro windows are enlarged to avoid scrolling in the list view gadgets
+* no longer uses cmp2 instructions on 68060
+* on saving an .rs file ReSource now remembers the used filepath in the 
+  environment variable ReSourceLastFileName, when ReSource is later started
+  without a file specification it uses the remembered filepath as default
+  original file
+* clash of two variables for saveRsOriginal fixed which caused Current to
+  be displayed in the menu but Original was active
+* the save path upon start has been changed from Current to Original for 
+  saving .rs/.asm/executable
+* disassembling of 'btst dn,#x' fixed for x > 7, no longer prints ???? in
+  front of x
+* some minor optimizations, some dead code/data removed
+
