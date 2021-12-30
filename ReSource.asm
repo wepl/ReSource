@@ -154,6 +154,7 @@ GTST_String	equ	$8008002D
 _LVONameFromLock	equ	-$192
 SA_Reserved	equ	$80000048
 SA_Depth	equ	$80000025
+_LVOAddGList	equ	-$1B6
 WA_HelpGroupWindow	equ	$8000009C
 SA_Width	equ	$80000023
 _LVOClipBlit	equ	-$228
@@ -331,6 +332,7 @@ gng_LeftEdge	equ	$0
 MEMF_CHIP	equ	$2
 GTST_MaxChars	equ	$8008002E
 STRINGA_ExitHelp	equ	$80032013
+_LVORefreshGList	equ	-$1B0
 _LVOGT_BeginRefresh	equ	-$5A
 WA_SmartRefresh	equ	$8000008D
 _LVOEnable	equ	-$7E
@@ -925,7 +927,7 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	beq.w	syms_nowin
 	movea.l	d0,a3
 	move.l	#$400778,d0
-	bsr.w	lbC002A28
+	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
@@ -1383,7 +1385,7 @@ lbC000BEC	lea	(lbW000DAE,pc),a0
 	beq.w	lbC000D54
 	movea.l	d0,a3
 	move.l	#$400078,d0
-	bsr.w	lbC002A28
+	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
@@ -1636,7 +1638,7 @@ lbC000F44	move.l	d0,-(sp)
 	beq.w	lbC000FCE
 	movea.l	d0,a3
 	move.l	#$40760,d0
-	bsr.w	lbC002A28
+	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
@@ -2433,7 +2435,7 @@ lbC00185E	move.l	d0,-(sp)
 	beq.w	lbC001996
 	movea.l	d0,a3
 	move.l	#$400778,d0
-	bsr.w	lbC002A28
+	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
@@ -2964,7 +2966,7 @@ openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 	beq.w	lbC001E92
 	movea.l	d0,a3
 	move.l	#$740,d0
-	bsr.w	lbC002A28
+	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
@@ -3615,7 +3617,7 @@ lbC002480	move.l	#$10000,d1
 	beq.b	lbC002584
 	movea.l	d0,a3
 	move.l	#$740,d0
-	bsr.w	lbC002A28
+	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
 	move.l	a6,-(sp)
@@ -4092,7 +4094,7 @@ lbC002A0A	jsr	(easyrequest_3c-ds,a6)
 lbC002A22	movem.l	(sp)+,d2/a2-a4
 	rts
 
-lbC002A28	movem.l	a2/a6,-(sp)	;a3 = window
+addgadgets	movem.l	a2/a6,-(sp)	;a3 = window
 	move.l	(userport-ds,a6),(wd_UserPort,a3)
 	movea.l	a3,a0
 	movea.l	(intbase-ds,a6),a6
@@ -4102,11 +4104,11 @@ lbC002A28	movem.l	a2/a6,-(sp)	;a3 = window
 	suba.l	a2,a2
 	moveq	#-1,d0
 	moveq	#-1,d1
-	jsr	(findmenu_setd0-ds,a6)
+	jsr	(_LVOAddGList,a6)
 	movea.l	($22,a5),a0
 	movea.l	a3,a1
 	moveq	#-1,d0
-	jsr	(findmenu_set-ds,a6)
+	jsr	(_LVORefreshGList,a6)
 	movem.l	(sp)+,a2/a6
 	rts
 
@@ -52821,17 +52823,17 @@ findmenu	movem.l	d1/a0-a2,-(sp)
 	cmp.w	(mi_SIZEOF,a0),d0
 	bne.b	.next_sub
 	move.l	a0,d0
-	bra.b	findmenu_set
+	bra.b	.set
 
 .found	suba.l	a0,a0	;clear sub
 	move.l	a1,d0
-	bra.b	findmenu_set
+	bra.b	.set
 
 .notfound	moveq	#0,d0
-findmenu_setd0	movea.l	d0,a2
+	movea.l	d0,a2
 	movea.l	d0,a1
 	movea.l	d0,a0
-findmenu_set	move.l	a2,(findmenu_strip-ds,a6)
+.set	move.l	a2,(findmenu_strip-ds,a6)
 	move.l	a1,(findmenu_item-ds,a6)
 	move.l	a0,(findmenu_sub-ds,a6)
 	tst.l	d0
