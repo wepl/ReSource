@@ -392,7 +392,7 @@ SA_DisplayID	equ	$80000032
 WFLG_DRAGBAR	equ	$2
 ****************************************************************************
 	exeobj
-	SECTION	ReSource12rs000000,CODE
+	SECTION	ReSourcers000000,CODE
 ProgStart
 ; datasegment = $2a890 (sometimes a5, sometimes a6)
 lbC000000	jmp	(Start).l
@@ -2526,14 +2526,14 @@ lbC0018DC	tst.b	(a0)
 	moveq	#$2E,d0
 	moveq	#$17,d1
 	movea.l	a2,a1
-	jsr	(lbC02A7A0-ds,a6)
+	jsr	(_LVOMove,a6)
 	moveq	#$18,d0
 	movea.l	(sp)+,a0
 	movea.l	a2,a1
-	jsr	(lbC02A854-ds,a6)
+	jsr	(_LVOText,a6)
 	moveq	#1,d0
 	movea.l	a2,a1
-	jsr	(easyrequest_3a-ds,a6)
+	jsr	(_LVOSetAPen,a6)
 	movea.l	(sp)+,a6
 lbC001912	lea	($2A,a5),a2
 	lea	(lbB02CFF8-ds,a6),a0
@@ -54754,7 +54754,7 @@ lbB039E88	dx.b	$1A
 Macros3String19	dx.b	$22
 DxAreaEnd
 
-	SECTION	ReSource22rs039EC4,DATA,CHIP
+	SECTION	ReSourcers039EC4,DATA,CHIP
 pointerdata	dl	0
 	dl	$40007C0
 	dl	$7C0
@@ -54845,7 +54845,7 @@ GadgetImageData	dl	0
 	dl	0
 
 
-	SECTION	ReSource22rs03A024,CODE
+	SECTION	ReSourcers03A024,CODE
 copyhunk2	movem.l	a2-a4,-(sp)
 	lea	(lbL03A400,pc),a0
 	lea	(lbL03576C).l,a1
