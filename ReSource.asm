@@ -45137,7 +45137,14 @@ lbC024FBC	lea	(USP.MSG1-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	bra.w	oper20
 
-oper28	btst	#$10,d5
+pcr_68060_comment
+	btst	#3,d5
+	beq.b	.nopcr
+	bsr.w	ext_mc68060
+.nopcr	rts
+
+oper28	pea	(pcr_68060_comment,pc)
+	btst	#$10,d5
 	bne.b	lbC024FF0
 	bsr.b	lbC024FF6
 	move.b	#$2C,(a4)+
@@ -45155,7 +45162,7 @@ lbC024FF0	bsr.b	lbC024FD8
 	move.b	#$2C,(a4)+
 lbC024FF6	move.l	d5,d0
 	andi.w	#$7FF,d0
-	cmpi.w	#7,d0
+	cmpi.w	#8,d0
 	bhi.b	lbC02501E
 	lea	(lbW025030,pc),a1
 	btst	#11,d5
@@ -45192,6 +45199,7 @@ lbW025030	dw	SFC.MSG-ds
 	dw	MMUSR.MSG-ds
 	dw	URP.MSG-ds
 	dw	SRP.MSG-ds
+	dw	pcr.msg-ds
 
 oper31	move.b	#$23,(a4)+
 	move.b	(-1,a2),d0
@@ -45743,6 +45751,8 @@ lbC0255CE	move.b	#$2C,(a4)+
 	addq.w	#4,d6
 	rts
 
+ext_mc68060	lea	(MC68060.MSG,pc),a0
+	bra.b	AddComment
 ext42_po_mc68040	jsr	(setspacepostopcode-ds,a6)
 ext_mc68040	lea	(MC68040.MSG,pc),a0
 	bra.b	AddComment
@@ -45764,6 +45774,7 @@ AddComment	move.b	#9,(a4)+
 	subq.w	#1,a4
 	rts
 
+MC68060.MSG	db	'MC68060',0
 MC68040.MSG	db	'MC68040',0
 MC68030.MSG	db	'MC68030',0
 MC68851.MSG	db	'MC68851',0
@@ -53283,6 +53294,7 @@ CAAR.MSG	db	'CAAR',0
 MSP.MSG	db	'MSP',0
 ISP.MSG	db	'ISP',0
 URP.MSG	db	'URP',0
+pcr.msg	db	'PCR',0
 TC.MSG	db	'TC',0,0
 	db	0
 	db	0
