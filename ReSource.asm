@@ -45137,13 +45137,13 @@ lbC024FBC	lea	(USP.MSG1-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	bra.w	oper20
 
-pcr_68060_comment
-	btst	#3,d5
-	beq.b	.nopcr
+add_68060_comment
+	btst	#3,d5		;check for buscr/pcr
+	beq.b	.skip
 	bsr.w	ext_mc68060
-.nopcr	rts
+.skip	rts
 
-oper28	pea	(pcr_68060_comment,pc)
+oper28	pea	(add_68060_comment,pc)
 	btst	#$10,d5
 	bne.b	lbC024FF0
 	bsr.b	lbC024FF6
@@ -45167,7 +45167,7 @@ lbC024FF6	move.l	d5,d0
 	lea	(lbW025030,pc),a1
 	btst	#11,d5
 	beq.b	lbC02500E
-	addq.w	#8,d0
+	add.w	#9,d0
 lbC02500E	add.w	d0,d0
 	movea.l	a6,a0
 	adda.w	(a1,d0.w),a0
@@ -45191,6 +45191,7 @@ lbW025030	dw	SFC.MSG-ds
 	dw	ITT1.MSG-ds
 	dw	DTT0.MSG-ds
 	dw	DTT1.MSG-ds
+	dw	buscr.msg-ds	;68060
 	dw	USP.MSG-ds
 	dw	VBR.MSG-ds
 	dw	CAAR.MSG-ds
@@ -45199,7 +45200,7 @@ lbW025030	dw	SFC.MSG-ds
 	dw	MMUSR.MSG-ds
 	dw	URP.MSG-ds
 	dw	SRP.MSG-ds
-	dw	pcr.msg-ds
+	dw	pcr.msg-ds	;68060
 
 oper31	move.b	#$23,(a4)+
 	move.b	(-1,a2),d0
@@ -53288,6 +53289,7 @@ ITT0.MSG	db	'ITT0',0
 ITT1.MSG	db	'ITT1',0
 DTT0.MSG	db	'DTT0',0
 DTT1.MSG	db	'DTT1',0
+buscr.msg	db	'BUSCR',0
 USP.MSG	db	'USP',0
 VBR.MSG	db	'VBR',0
 CAAR.MSG	db	'CAAR',0
