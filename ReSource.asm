@@ -18,7 +18,7 @@
 	ENDC
 
 VERSION MACRO
-	db	"6.6.1"
+	db	"6.6.2"
 	ENDM
 
 SCREENHEIGHTTRIG = 512		;required screen height for Symbols/Macros window enlargement
