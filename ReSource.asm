@@ -1,25 +1,19 @@
 ;
-; to be assembled with BASM, no other assembler tested
-; final build without symbols: basm -dNOSYMBOLS=1 ReSource.asm
-;
-
-	IFD BARFLY
-	BOPT	O+		;enable optimizing
-	;BOPT	OG+		;enable optimizing
-	BOPT	OD08-		;disable 'move.b #-1,ea' -> 'st' optimizing
-				;e.g. $2a422
-	BOPT	ODd-		;disable mulu optimizing
-	BOPT	ODe-		;disable muls optimizing
-	BOPT	wo-		;no optimize warnings
-	IFND NOSYMBOLS
-	BOPT	sa+		;write symbol hunks
-	ENDC
-	BOPT	v+		;verbose
-	ENDC
+; Amiga:
+;	WDate >.date
+;	basm -v+ -O+ -OD08- -ODc- -ODd- -wo- -v+ -oReSource ReSource.asm
+; Linux/MacOSX;
+;	date "+(%d.%m.%Y)" | xargs printf > .date 
+;	vasmm68k_mot -nosym -quiet -ldots -wfail -opt-allbra -opt-clr -opt-lsl -opt-movem -opt-nmoveq -opt-pea -opt-size -Fhunkexe -o ReSource ReSource.asm
 
 VERSION MACRO
-	db	"6.6.1"
+	db	"6.6.2"
 	ENDM
+
+	IFND BARFLY
+BOPT	MACRO
+	ENDM
+	ENDC
 
 SCREENHEIGHTTRIG = 512		;required screen height for Symbols/Macros window enlargement
 SYMWINHEIGHTADD = -2+26*8	;enlargement for symbols window
@@ -391,25 +385,15 @@ pr_ConsoleTask	equ	$A4
 SA_DisplayID	equ	$80000032
 WFLG_DRAGBAR	equ	$2
 ****************************************************************************
-	exeobj
 	SECTION	ReSourcers000000,CODE
 ProgStart
 ; datasegment = $2a890 (sometimes a5, sometimes a6)
 lbC000000	jmp	(Start).l
 
-	IFD BARFLY
-	IFND	.passchk
-	DOSCMD	"WDate  >T:date"
-.passchk
-	ENDC
-	ENDC
-
 	db	"$VER: ReSource "
 	VERSION
 	db	" "
-	IFD BARFLY
-		INCBIN	"T:date"
-	ENDC
+		INCBIN	".date"
 	db	$D,$A,0
 	EVEN
 
@@ -23050,7 +23034,7 @@ lbW013A52	dw	AL.MSG-i_orib
 	dw	W.MSG1-i_orib
 	db	'.W',0
 m01	MACRO
-	db	(\1-i_orib)>>8,\1-i_orib,\2,0
+	db	(\1-i_orib)>>8,(\1-i_orib)&$ff,\2,0
 	ENDM
 	m01	A.MSG3,'A'
 	m01	A.MSG4,'A'
@@ -23832,11 +23816,7 @@ ReSourceV606.MSG	db	"ReSource V"
 	VERSION
 	db	$A,0
 Tuesday07Feb9.MSG
-	IFD BARFLY
-		INCBIN	"T:date"
-	ELSE
-		db	'Tuesday 07-Feb-95'
-	ENDC
+		INCBIN	".date"
 		db	0
 ThePuzzleFact.MSG
 	db	'     The Puzzle Factory, Inc.         Helios Software',$A
@@ -53158,10 +53138,9 @@ Macros1.MSG	db	'     - Macros 1 -       ',0,0
 Macros2.MSG	db	'     - Macros 2 -       ',0,0
 Macros3.MSG	db	'     - Macros 3 -       ',0,0
 
-	CNOP 0,4
-	IFD BARFLY
+	CNOP 0,4	; aligns ds on long address
+
 	BOPT OD8-
-	ENDC
 
 lbC02A830	jmp	(lbC01C2A4).l
 
@@ -53195,9 +53174,7 @@ lbC02A884	jmp	(lbC020C9C).l
 
 lbC02A88A	jmp	(lbC000028).l
 
-	IFD BARFLY
 	BOPT OD8+
-	ENDC
 
 ds	dl	0	;work data start address
 workdata_struct	dl	0

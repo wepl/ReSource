@@ -50,7 +50,11 @@ file.
   are correctly set
 	git diff ReSource.asm
 * check in the new asm and remember the commit-number
-	git commit ReSource.asm ReSource.rs
+	git commit ReSource.asm
+* later you must also commit the changed ReSource.rs, but it's better to
+  first check if the modification made are ok and also to have separate
+  commits for the .asm and the .rs
+	git commit ReSource.rs
 * switch to master branch
 	git checkout master
 * merge the changes
@@ -134,8 +138,11 @@ it is not posible to use 'SPECIAL FUNCTIONS - Convert Specific EAs' with unsigne
 	ReSource offset $29b28
 add function to remove all labels/datatypes in an area
 when opening Search window activate string gadget
-pressing open any window button should close it if already open
+pressing open any window button should close it if is already open
 open windows on right border cascaded or remember their position
 make global optimize working with BASM
 make OD08 working with BASM
+saving a .rs file under different name doesn't change the displayed filename in the
+	screen title bar and also not in the title of subsequent file requesters;
+	also when saving .asm names of sections will still use the initial file name
 
