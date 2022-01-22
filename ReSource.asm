@@ -122,6 +122,7 @@ IV_SIZE	equ	$C
 _LVOGetMsg	equ	-$174
 fh_Type	equ	$8
 im_MouseX	equ	$20
+sc_RastPort	equ	$54
 _LVOFreeMem	equ	-$D2
 WFLG_NOCAREREFRESH	equ	$20000
 GMORE_GADGETHELP	equ	$2
@@ -208,6 +209,7 @@ ASLSM_FilterFunc	equ	$8008007A
 im_Class	equ	$14
 wd_RPort	equ	$32
 _LVOSetAPen	equ	-$156
+bm_Planes	equ	$8
 _LVOFreeVec	equ	-$2B2
 _LVOExNext	equ	-$6C
 SA_Left	equ	$80000021
@@ -224,6 +226,7 @@ ASL_ScreenModeRequest	equ	$2
 SUPERLACE_KEY	equ	$8024
 fr_Drawer	equ	$8
 wd_TopEdge	equ	$6
+BMB_STANDARD	equ	$3
 LAYOUTA_Orientation	equ	$80038003
 _LVOWrite	equ	-$30
 SA_Type	equ	$8000002D
@@ -309,6 +312,7 @@ _LVOUnlockPubScreen	equ	-$204
 _LVOMatchPatternNoCase	equ	-$3CC
 WA_Backdrop	equ	$80000085
 GACT_ENDGADGET	equ	$4
+rp_BitMap	equ	$4
 GMR_HELPCODE	equ	$10000
 GA_RelSpecial	equ	$80030027
 GTYP_STRGADGET	equ	$4
@@ -337,6 +341,7 @@ mi_SIZEOF	equ	$22
 _LVOCloseDevice	equ	-$1C2
 LISTVIEW_KIND	equ	$4
 SA_Title	equ	$80000028
+BMA_HEIGHT	equ	$0
 _LVOLock	equ	-$54
 GMR_MEACTIVE	equ	$0
 WA_DepthGadget	equ	$80000083
@@ -404,15 +409,15 @@ lbC000028	movem.l	d0-d6/a0-a3/a5,-(sp)
 	moveq	#12,d1
 	add.l	d6,d1
 	movea.l	(window1ptr-ds,a6),a3
-	movea.l	($32,a3),a3
+	movea.l	(wd_RPort,a3),a3
 	moveq	#0,d2
 	moveq	#12,d3
-	movea.l	(4,a3),a0
+	movea.l	(rp_BitMap,a3),a0
 	moveq	#0,d4
-	move.w	(a0),d4
+	move.w	(bm_BytesPerRow,a0),d4
 	lsl.l	#3,d4
 	moveq	#0,d5
-	move.w	(2,a0),d5
+	move.w	(bm_Rows,a0),d5
 	subi.w	#$1C,d5
 	tst.l	d6
 	bpl.b	lbC000060
@@ -425,16 +430,16 @@ lbC000060	addq.l	#7,d6
 lbC000068	tst.b	(sysrenderflag-ds,a6)
 	bne.b	lbC00009C
 	movea.l	(gfxbase-ds,a6),a1
-	cmpi.w	#$27,($14,a1)
+	cmpi.w	#39,(LIB_VERSION,a1)
 	bcs.b	lbC0000B4
 	movem.l	d0/d1/a6,-(sp)
 	movea.l	(screenptr-ds,a6),a0
-	lea	($54,a0),a0
-	movea.l	(4,a0),a0
+	lea	(sc_RastPort,a0),a0
+	movea.l	(rp_BitMap,a0),a0
 	moveq	#12,d1
 	movea.l	a1,a6
 	jsr	(_LVOGetBitMapAttr,a6)
-	btst	#3,d0
+	btst	#BMB_STANDARD,d0
 	movem.l	(sp)+,d0/d1/a6
 	bne.b	lbC0000B4
 lbC00009C	movea.l	(lbB02CF38-ds,a6),a0
@@ -1310,7 +1315,7 @@ gadcode_sym_load	move.w	($C8,a5),d0
 
 lbC000B1C	move.w	(4,a3),(lbB02CFCE-ds,a6)
 	move.w	(6,a3),(lbB02CFD0-ds,a6)
-	bsr.w	lbC002B98
+	bsr.w	CloseWindow
 	clr.l	(symbolsWindowPtr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
@@ -1484,7 +1489,7 @@ lbC000D2C	cmpi.l	#$40,d3
 
 lbC000D42	move.w	(4,a3),(lbB02CFD2-ds,a6)
 	move.w	(6,a3),(lbB02CFD4-ds,a6)
-	bsr.w	lbC002B98
+	bsr.w	CloseWindow
 	bra.b	lbC000D58
 
 lbC000D54	jsr	(easyrequest_38-ds,a6)
@@ -2333,7 +2338,7 @@ lbC0016D0	movem.l	(sp)+,a2/a6
 
 lbC0016D6	move.w	(4,a3),(lbB02CFE2-ds,a6)
 	move.w	(6,a3),(lbB02CFE4-ds,a6)
-	bsr.w	lbC002B98
+	bsr.w	CloseWindow
 	clr.l	(searchWindowPtr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
@@ -2925,7 +2930,7 @@ lbC001D36	lea	(lbL02CF86-ds,a6),a0
 	cmpa.l	(a0),a3
 	bne.b	lbC001D40
 	clr.l	(a0)
-lbC001D40	bsr.w	lbC002B98
+lbC001D40	bsr.w	CloseWindow
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
@@ -2951,51 +2956,51 @@ openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 	beq.b	.open
 	movea.l	d0,a0
 	bsr.w	windowtofront
-	bra.w	lbC001E8C
+	bra.w	.clrccr
 
-.open	move.l	#$10000,d1
+.open	move.l	#MEMF_CLEAR,d1
 	move.l	#$CA,d0
 	move.l	a6,-(sp)
 	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
-	beq.w	lbC001EB6
-	movea.l	d0,a5
+	beq.w	.nomem
+	movea.l	d0,a5	;A5 = UserData
 	lea	(gadgets_options1,pc),a0
 	bsr.w	CreateGadgets
-	beq.w	lbC001EA6
+	beq.w	.nogadgets
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
-	move.l	#$80000070,-(sp)
+	move.l	#WA_CustomScreen,-(sp)
 	move.w	#$BB8,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
-	move.l	#$8000006E,-(sp)
+	move.l	#WA_Title,-(sp)
 	moveq	#1,d0
 	move.l	d0,-(sp)
-	move.l	#$80000083,-(sp)
+	move.l	#WA_DepthGadget,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000082,-(sp)
+	move.l	#WA_DragBar,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000089,-(sp)
+	move.l	#WA_Activate,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000084,-(sp)
+	move.l	#WA_CloseGadget,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008D,-(sp)
+	move.l	#WA_SmartRefresh,-(sp)
 	clr.l	-(sp)
-	move.l	#$8000006A,-(sp)
+	move.l	#WA_IDCMP,-(sp)
 	pea	($A8).w
-	move.l	#$80000067,-(sp)
+	move.l	#WA_Height,-(sp)
 	pea	($247).w
-	move.l	#$80000066,-(sp)
+	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFE8-ds,a6),d0
+	move.w	(windowOptions1Top-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000065,-(sp)
-	move.w	(lbB02CFE6-ds,a6),d0
+	move.l	#WA_Top,-(sp)
+	move.w	(windowOptions1Left-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000064,-(sp)
+	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
@@ -3004,8 +3009,8 @@ openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
 	move.l	d0,(windowOptions1Ptr-ds,a6)
-	beq.w	lbC001E92
-	movea.l	d0,a3
+	beq.w	.nowindow
+	movea.l	d0,a3	;A3 = Window
 	move.l	#$740,d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
@@ -3020,105 +3025,105 @@ openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
-	bsr.b	lbC001EDC
-	lea	(lbC002438,pc),a0
+	bsr.b	win_options1_cfg
+	lea	(closewindow_options2,pc),a0
 	move.l	a0,($A6,a5)
-	move.l	a5,($78,a3)
-lbC001E8C	andi.b	#$FB,ccr
-	bra.b	lbC001EBE
+	move.l	a5,(wd_UserData,a3)
+.clrccr	andi.b	#$FB,ccr
+	bra.b	.quit
 
-lbC001E92	jsr	(easyrequest_38-ds,a6)
+.nowindow	jsr	(easyrequest_38-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
-lbC001EA6	movea.l	a5,a1
+.nogadgets	movea.l	a5,a1
 	move.l	a6,-(sp)
 	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
-	bra.b	lbC001EBA
+	bra.b	.setccr
 
-lbC001EB6	jsr	(easyrequest_3a-ds,a6)
-lbC001EBA	ori.b	#4,ccr
-lbC001EBE	movem.l	(sp)+,d2-d6/a2-a5
+.nomem	jsr	(easyrequest_3a-ds,a6)
+.setccr	ori.b	#4,ccr
+.quit	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
-lbC001EC4	movem.l	a2-a5,-(sp)
+win_options1_setcfg	movem.l	a2-a5,-(sp)
 	move.l	(windowOptions1Ptr-ds,a6),d0
-	beq.b	lbC001ED6
+	beq.b	.notopen
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
-	bsr.b	lbC001EDC
-lbC001ED6	movem.l	(sp)+,a2-a5
+	bsr.b	win_options1_cfg
+.notopen	movem.l	(sp)+,a2-a5
 	rts
 
-lbC001EDC	lea	(lbW001F3C,pc),a2
-	lea	($2A,a5),a4
-lbC001EE4	move.w	(a2)+,d1
-	beq.b	lbC001F0C
-	bmi.b	lbC001F3A
+win_options1_cfg	lea	(.cfgoffsets,pc),a2
+	lea	($2A,a5),a4	;A4 = gadget list
+.loop	move.w	(a2)+,d1
+	beq.b	.skip
+	bmi.b	.end
 	cmpi.w	#1,d1
-	beq.b	lbC001F10
+	beq.b	.asmlist
 	moveq	#0,d0
 	move.b	(a6,d1.w),d0
 	movea.l	(a4),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80080004,-(sp)
+	move.l	#GTCB_Checked,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-lbC001F0C	addq.w	#4,a4
-	bra.b	lbC001EE4
+.skip	addq.w	#4,a4
+	bra.b	.loop
 
-lbC001F10	moveq	#0,d0
-	tst.b	(lbB02B46D-ds,a6)
-	bne.b	lbC001F22
+.asmlist	moveq	#0,d0
+	tst.b	(opt1_asm_assem-ds,a6)
+	bne.b	.set
 	moveq	#1,d0
-	tst.b	(lbB02B46E-ds,a6)
-	bne.b	lbC001F22
+	tst.b	(opt1_asm_cape-ds,a6)
+	bne.b	.set
 	moveq	#2,d0
-lbC001F22	movea.l	(a4),a0
+.set	movea.l	(a4),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8008000F,-(sp)
+	move.l	#GTCY_Active,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-	bra.b	lbC001F0C
+	bra.b	.skip
 
-lbC001F3A	rts
+.end	rts
 
-lbW001F3C	dw	0
-	dw	$BB6
-	dw	$BB7
-	dw	$BB8
-	dw	$BB9
-	dw	$BBA
-	dw	$BBB
-	dw	$BBC
-	dw	$BBD
-	dw	$BBE
+.cfgoffsets	dw	0
+	dw	opt1_show_offsets-ds
+	dw	opt1_show_labels-ds
+	dw	opt1_show_hlabels-ds
+	dw	opt1_show_symbols-ds
+	dw	opt1_show_eolcomments-ds
+	dw	opt1_show_flcomments-ds
+	dw	opt1_show_chipload-ds
+	dw	opt1_show_sections-ds
+	dw	opt1_show_end-ds
 	dw	0
-	dw	$BBF
-	dw	$BC0
-	dw	$BC1
-	dw	$BC2
-	dw	$BC3
-	dw	$BC4
-	dw	$BC5
-	dw	$BC6
+	dw	opt1_show_dcb-ds
+	dw	opt1_show_seplabels-ds
+	dw	opt1_show_colons-ds
+	dw	opt1_show_zeros-ds
+	dw	opt1_show_constants-ds
+	dw	opt1_show_dcomments-ds
+	dw	opt1_show_newsyntax-ds
+	dw	opt1_show_strict-ds
 	dw	0
-	dw	$BC7
-	dw	$BC8
-	dw	$BC9
-	dw	$BCA
+	dw	opt1_allow_refrecog-ds
+	dw	opt1_allow_autolabels-ds
+	dw	opt1_allow_equ-ds
+	dw	opt1_allow_ecomments-ds
 	dw	0
-	dw	$BE0
-	dw	$BE1
-	dw	$BE2
+	dw	opt1_size_absword-ds
+	dw	opt1_size_abslong-ds
+	dw	opt1_size_optimize-ds
 	dw	1
 	dw	0
 	dw	0
@@ -3581,9 +3586,10 @@ lbW002432	dw	$294
 	dw	$295
 	dw	$2B8
 
-lbC002438	move.w	(4,a3),(lbB02CFE6-ds,a6)
-	move.w	(6,a3),(lbB02CFE8-ds,a6)
-	bsr.w	lbC002B98
+closewindow_options2
+	move.w	(4,a3),(windowOptions1Left-ds,a6)
+	move.w	(6,a3),(windowOptions1Top-ds,a6)
+	bsr.w	CloseWindow
 	clr.l	(windowOptions1Ptr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
@@ -3671,7 +3677,7 @@ lbC002480	move.l	#$10000,d1
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
-	bsr.b	lbC0025CE
+	bsr.b	win_options2_cfg
 	lea	(lbC002964,pc),a0
 	move.l	a0,($A6,a5)
 	move.l	a5,($78,a3)
@@ -3696,55 +3702,55 @@ lbC0025AC	ori.b	#4,ccr
 lbC0025B0	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
-lbC0025B6	movem.l	a2-a5,-(sp)
+win_options2_setcfg	movem.l	a2-a5,-(sp)
 	move.l	(windowOptions2Ptr-ds,a6),d0
-	beq.b	lbC0025C8
+	beq.b	.skip
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
-	bsr.b	lbC0025CE
-lbC0025C8	movem.l	(sp)+,a2-a5
+	bsr.b	win_options2_cfg
+.skip	movem.l	(sp)+,a2-a5
 	rts
 
-lbC0025CE	lea	(lbW0025FE,pc),a2
+win_options2_cfg	lea	(.cfglist,pc),a2
 	lea	($2A,a5),a4
-lbC0025D6	move.w	(a2)+,d1
-	beq.b	lbC0025F8
-	bmi.b	lbC0025FC
+.loop	move.w	(a2)+,d1
+	beq.b	.next
+	bmi.b	.end
 	moveq	#0,d0
 	move.b	(a6,d1.w),d0
 	movea.l	(a4),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80080004,-(sp)
+	move.l	#GTCB_Checked,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-lbC0025F8	addq.w	#4,a4
-	bra.b	lbC0025D6
+.next	addq.w	#4,a4
+	bra.b	.loop
 
-lbC0025FC	rts
+.end	rts
 
-lbW0025FE	dw	0
-	dw	$BCB
-	dw	$BCC
-	dw	$BCD
-	dw	$BCE
-	dw	$BCF
+.cfglist	dw	0
+	dw	opt2_int_beep-ds
+	dw	opt2_int_feedback-ds
+	dw	opt2_int_delays-ds
+	dw	opt2_int_verbose-ds
+	dw	opt2_int_refresh-ds
 	dw	0
-	dw	$BDA
-	dw	$BDB
-	dw	$BDC
+	dw	opt2_pseudo_pushpop-ds
+	dw	opt2_pseudo_pushmpopm-ds
+	dw	opt2_pseudo_blobhs-ds
 	dw	0
-	dw	$BD0
-	dw	$BD1
-	dw	$BD2
-	dw	$BD3
-	dw	$BD4
-	dw	$BD5
-	dw	$BD6
-	dw	$BD7
-	dw	$BD8
-	dw	$BD9
+	dw	opt2_error_code-ds
+	dw	opt2_error_missing-ds
+	dw	opt2_error_badalign-ds
+	dw	opt2_error_coderef-ds
+	dw	opt2_error_dataref-ds
+	dw	opt2_error_startplus-ds
+	dw	opt2_error_afline-ds
+	dw	opt2_error_libcalls-ds
+	dw	opt2_error_illegal-ds
+	dw	opt2_error_symequ-ds
 	dw	0
 	dw	0
 	dw	$FFFF
@@ -4067,7 +4073,7 @@ lbC002962	rts
 
 lbC002964	move.w	(4,a3),(lbB02CFEA-ds,a6)
 	move.w	(6,a3),(lbB02CFEC-ds,a6)
-	bsr.w	lbC002B98
+	bsr.w	CloseWindow
 	clr.l	(windowOptions2Ptr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
@@ -4081,9 +4087,9 @@ lbC002964	move.w	(4,a3),(lbB02CFEA-ds,a6)
 	movea.l	(sp)+,a6
 	rts
 
-CreateGadgets	movem.l	d2/a2-a4,-(sp)
+CreateGadgets	movem.l	d2/a2-a4,-(sp)	;A0=gadgets A5=UserData
 	movea.l	a0,a3
-	lea	($26,a5),a4
+	lea	($26,a5),a4	;A4=list of gadgets
 	lea	($22,a5),a0
 	clr.l	(a0)
 	move.l	a6,-(sp)
@@ -4091,9 +4097,9 @@ CreateGadgets	movem.l	d2/a2-a4,-(sp)
 	jsr	(_LVOCreateContext,a6)
 	movea.l	(sp)+,a6
 	move.l	d0,(a4)+
-	beq.b	lbC002A0A
-	moveq	#0,d2
-lbC0029BA	lea	(4,a5),a1
+	beq.b	.nocontext
+	moveq	#0,d2	;GadgetID counter
+.loop	lea	(4,a5),a1	;A1=NewGadget
 	movea.l	a1,a2
 	move.w	(a3)+,(a2)+	;LeftEdge
 	move.w	(a3)+,(a2)+	;TopEdge
@@ -4101,9 +4107,9 @@ lbC0029BA	lea	(4,a5),a1
 	move.w	(a3)+,(a2)+	;Height
 	moveq	#0,d0
 	move.w	(a3)+,d0	;text number
-	beq.b	lbC0029D2
+	beq.b	.notext
 	jsr	(gettextbynum-ds,a6)
-lbC0029D2	move.l	d0,(a2)+	;GadgetText
+.notext	move.l	d0,(a2)+	;GadgetText
 	lea	(topas_TextAttr).l,a0
 	move.l	a0,(a2)+	;TextAttr
 	move.w	d2,(a2)+	;GadgetID
@@ -4118,21 +4124,21 @@ lbC0029D2	move.l	d0,(a2)+	;GadgetText
 	jsr	(_LVOCreateGadgetA,a6)
 	movea.l	(sp)+,a6
 	move.l	d0,(a4)+
-	beq.b	lbC002A0A
+	beq.b	.nocontext
 	addq.w	#1,d2
 	tst.l	(a3)
-	bne.b	lbC0029BA
+	bne.b	.loop
 	andi.b	#$FB,ccr
-	bra.b	lbC002A22
+	bra.b	.end
 
-lbC002A0A	jsr	(easyrequest_3c-ds,a6)
+.nocontext	jsr	(easyrequest_3c-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
 	ori.b	#4,ccr
-lbC002A22	movem.l	(sp)+,d2/a2-a4
+.end	movem.l	(sp)+,d2/a2-a4
 	rts
 
 addgadgets	movem.l	a2/a6,-(sp)	;a3 = window
@@ -4267,7 +4273,7 @@ windowtofront	movem.l	d0/d1/a0/a1/a6,-(sp)
 	movem.l	(sp)+,d0/d1/a0/a1/a6
 	rts
 
-lbC002B98	movem.l	d2/a5/a6,-(sp)
+CloseWindow	movem.l	d2/a5/a6,-(sp)
 	movea.l	a6,a5
 	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOForbid,a6)
@@ -4695,119 +4701,143 @@ LoadMenuDefaults	movem.l	d2/a2/a3/a6,-(sp)
 	movem.l	(sp)+,d2/a2/a3/a6
 	rts
 
-lbC0030FA	st	(opt1_show_offsets-ds,a6)
+opt1_show_offsets_on
+	st	(opt1_show_offsets-ds,a6)
 	bra.w	lbC003634
 
-lbC003102	clr.b	(opt1_show_offsets-ds,a6)
+opt1_show_offsets_off
+	clr.b	(opt1_show_offsets-ds,a6)
 	bra.w	lbC003634
 
-opt1_show_labels	st	(lbB02B447-ds,a6)
+opt1_show_labels_on	st	(opt1_show_labels-ds,a6)
 	bra.w	lbC003634
 
-lbC003112	clr.b	(lbB02B447-ds,a6)
+opt1_show_labels_off
+	clr.b	(opt1_show_labels-ds,a6)
 	bra.w	lbC003634
 
-lbC00311A	st	(opt1_show_hlabels-ds,a6)
+opt1_show_hlabels_on
+	st	(opt1_show_hlabels-ds,a6)
 	bra.w	lbC003634
 
-lbC003122	clr.b	(opt1_show_hlabels-ds,a6)
+opt1_show_hlabels_off
+	clr.b	(opt1_show_hlabels-ds,a6)
 	bra.w	lbC003634
 
-lbC00312A	st	(opt1_show_symbols-ds,a6)
+opt1_show_symbols_on
+	st	(opt1_show_symbols-ds,a6)
 	bra.w	lbC003634
 
-lbC003132	clr.b	(opt1_show_symbols-ds,a6)
+opt1_show_symbols_off
+	clr.b	(opt1_show_symbols-ds,a6)
 	bra.w	lbC003634
 
-lbC00313A	st	(opt1_show_eolcomments-ds,a6)
+opt1_show_eolcomments_on
+	st	(opt1_show_eolcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC003142	clr.b	(opt1_show_eolcomments-ds,a6)
+opt1_show_eolcomments_off
+	clr.b	(opt1_show_eolcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC00314A	st	(opt1_show_flcomments-ds,a6)
+opt1_show_flcomments_on
+	st	(opt1_show_flcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC003152	clr.b	(opt1_show_flcomments-ds,a6)
+opt1_show_flcomments_off
+	clr.b	(opt1_show_flcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC00315A	st	(opt1_show_chipload-ds,a6)
+opt1_show_chipload_on
+	st	(opt1_show_chipload-ds,a6)
 	bra.w	lbC003634
 
-lbC003162	clr.b	(opt1_show_chipload-ds,a6)
+opt1_show_chipload_off
+	clr.b	(opt1_show_chipload-ds,a6)
 	bra.w	lbC003634
 
-lbC00316A	st	(opt1_show_sections-ds,a6)
+opt1_show_sections_on
+	st	(opt1_show_sections-ds,a6)
 	bra.w	lbC003634
 
-lbC003172	clr.b	(opt1_show_sections-ds,a6)
+opt1_show_sections_off
+	clr.b	(opt1_show_sections-ds,a6)
 	bra.w	lbC003634
 
-lbC00317A	st	(opt1_show_end-ds,a6)
+opt1_show_end_on	st	(opt1_show_end-ds,a6)
 	bra.w	lbC003634
 
-lbC003182	clr.b	(opt1_show_end-ds,a6)
+opt1_show_end_off	clr.b	(opt1_show_end-ds,a6)
 	bra.w	lbC003634
 
-lbC00318A	jsr	(lbC02AF7E-ds,a6)
+opt1_show_dcb_on	jsr	(lbC02AF7E-ds,a6)
 	st	(opt1_show_dcb-ds,a6)
 	bra.w	lbC003634
 
-lbC003196	jsr	(lbC02AF7E-ds,a6)
+opt1_show_dcb_off	jsr	(lbC02AF7E-ds,a6)
 	clr.b	(opt1_show_dcb-ds,a6)
 	bra.w	lbC003634
 
-lbC0031A2	st	(opt1_show_seplabels-ds,a6)
+opt1_show_seplabels_on
+	st	(opt1_show_seplabels-ds,a6)
 	bra.w	lbC003634
 
-lbC0031AA	clr.b	(opt1_show_seplabels-ds,a6)
+opt1_show_seplabels_off
+	clr.b	(opt1_show_seplabels-ds,a6)
 	bra.w	lbC003634
 
-lbC0031B2	st	(opt1_show_colons-ds,a6)
+opt1_show_colons_on	st	(opt1_show_colons-ds,a6)
 	bra.w	lbC003634
 
-lbC0031BA	clr.b	(opt1_show_colons-ds,a6)
+opt1_show_colons_off
+	clr.b	(opt1_show_colons-ds,a6)
 	bra.w	lbC003634
 
-lbC0031C2	st	(opt1_show_zeros-ds,a6)
+opt1_show_zeros_on	st	(opt1_show_zeros-ds,a6)
 	bra.w	lbC003634
 
-lbC0031CA	clr.b	(opt1_show_zeros-ds,a6)
+opt1_show_zeros_off	clr.b	(opt1_show_zeros-ds,a6)
 	bra.w	lbC003634
 
-lbC0031D2	jsr	(lbC02AF7E-ds,a6)
+opt1_show_constants_on
+	jsr	(lbC02AF7E-ds,a6)
 	st	(opt1_show_constants-ds,a6)
 	bra.w	lbC003634
 
-lbC0031DE	jsr	(lbC02AF7E-ds,a6)
+opt1_show_constants_off
+	jsr	(lbC02AF7E-ds,a6)
 	clr.b	(opt1_show_constants-ds,a6)
 	bra.w	lbC003634
 
-lbC0031EA	st	(opt1_show_dcomments-ds,a6)
+opt1_show_dcomments_on
+	st	(opt1_show_dcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC0031F2	clr.b	(opt1_show_dcomments-ds,a6)
+opt1_show_dcomments_off
+	clr.b	(opt1_show_dcomments-ds,a6)
 	bra.w	lbC003634
 
-lbC0031FA	move.l	#opCodeTabNewSyntax,(_opCodeTab-ds,a6)
+opt1_show_newsyntax_on
+	move.l	#opCodeTabNewSyntax,(_opCodeTab-ds,a6)
 	move.l	#lbL03576C,(lbL02D168-ds,a6)
 	jsr	(lbC02AFC0-ds,a6)
 	jsr	(lbC02AF7E-ds,a6)
 	st	(opt1_show_newsyntax-ds,a6)
 	bra.w	lbC003634
 
-lbC00321A	move.l	#opCodeTabOldSyntax,(_opCodeTab-ds,a6)
+opt1_show_newsyntax_off
+	move.l	#opCodeTabOldSyntax,(_opCodeTab-ds,a6)
 	move.l	#lbL03776C,(lbL02D168-ds,a6)
 	jsr	(lbC02AFC0-ds,a6)
 	jsr	(lbC02AF7E-ds,a6)
 	clr.b	(opt1_show_newsyntax-ds,a6)
 	bra.w	lbC003634
 
-Opt1_show_strict_off
+opt1_show_strict_off
 	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	tst.b	(opt1_show_strict-ds,a6)
+	tst.b	(opt1_show_strict_lock-ds,a6)
 	beq.b	lbC0032A6
-	clr.b	(opt1_show_strict-ds,a6)
+	clr.b	(opt1_show_strict_lock-ds,a6)
 	moveq	#0,d0
 	lea	(lbW013A52).l,a0
 	lea	(i_orib).l,a1
@@ -4851,13 +4881,13 @@ lbC00329E	tst.b	(a3)+
 lbC0032A6	andi.b	#$FB,ccr
 	rts
 
-lbC0032AC	st	(lbB02B456-ds,a6)
+lbC0032AC	st	(opt1_show_strict-ds,a6)
 	bra.w	lbC003634
 
-Opt1_show_strict_on	jsr	(saveregs_nod0d1a0a1-ds,a6)
-	tst.b	(opt1_show_strict-ds,a6)
+opt1_show_strict_on	jsr	(saveregs_nod0d1a0a1-ds,a6)
+	tst.b	(opt1_show_strict_lock-ds,a6)
 	bne.b	lbC0032FA
-	st	(opt1_show_strict-ds,a6)
+	st	(opt1_show_strict_lock-ds,a6)
 	moveq	#0,d0
 	lea	(lbW013A52).l,a0
 	lea	(i_orib).l,a1
@@ -4885,86 +4915,97 @@ lbC0032F0	clr.b	(a2)+
 
 lbC0032FA	rts
 
-lbC0032FC	clr.b	(lbB02B456-ds,a6)
+lbC0032FC	clr.b	(opt1_show_strict-ds,a6)
 	bra.w	lbC003634
 
-Opt1_allow_refrecog_on
+opt1_allow_refrecog_on
 	jsr	(lbC02AFC0-ds,a6)
 	st	(opt1_allow_refrecog-ds,a6)
 	bra.w	lbC003634
 
-Opt1_allow_refrecog_off
+opt1_allow_refrecog_off
 	jsr	(lbC02AFC0-ds,a6)
 	clr.b	(opt1_allow_refrecog-ds,a6)
 	bra.w	lbC003634
 
-lbC00331C	st	(opt1_allow_autolabels-ds,a6)
+opt1_allow_autolabels_on
+	st	(opt1_allow_autolabels-ds,a6)
 	bra.w	lbC003634
 
-lbC003324	clr.b	(opt1_allow_autolabels-ds,a6)
+opt1_allow_autolabels_off
+	clr.b	(opt1_allow_autolabels-ds,a6)
 	bra.w	lbC003634
 
-lbC00332C	st	(opt1_allow_equ-ds,a6)
+opt1_allow_equ_on	st	(opt1_allow_equ-ds,a6)
 	bra.w	lbC003634
 
-lbC003334	clr.b	(opt1_allow_equ-ds,a6)
+opt1_allow_equ_off	clr.b	(opt1_allow_equ-ds,a6)
 	bra.w	lbC003634
 
-lbC00333C	st	(opt1_allow_ecomments-ds,a6)
+opt1_allow_ecomments_on
+	st	(opt1_allow_ecomments-ds,a6)
 	bra.w	lbC003634
 
-lbC003344	clr.b	(opt1_allow_ecomments-ds,a6)
+opt1_allow_ecomments_off
+	clr.b	(opt1_allow_ecomments-ds,a6)
 	bra.w	lbC003634
 
-lbC00334C	st	(opt1_size_absword-ds,a6)
+opt1_size_absword_on
+	st	(opt1_size_absword-ds,a6)
 	bra.w	lbC003634
 
-lbC003354	clr.b	(opt1_size_absword-ds,a6)
+opt1_size_absword_off
+	clr.b	(opt1_size_absword-ds,a6)
 	bra.w	lbC003634
 
-lbC00335C	st	(opt1_size_abslong-ds,a6)
+opt1_size_abslong_on
+	st	(opt1_size_abslong-ds,a6)
 	bra.w	lbC003634
 
-lbC003364	clr.b	(opt1_size_abslong-ds,a6)
+opt1_size_abslong_off
+	clr.b	(opt1_size_abslong-ds,a6)
 	bra.w	lbC003634
 
-lbC00336C	st	(opt1_size_optimize-ds,a6)
+opt1_size_optimize_on
+	st	(opt1_size_optimize-ds,a6)
 	bra.w	lbC003634
 
-lbC003374	clr.b	(opt1_size_optimize-ds,a6)
+opt1_size_optimize_off
+	clr.b	(opt1_size_optimize-ds,a6)
 	bra.w	lbC003634
 
-lbC00337C	move.l	#$3F,(lbL02B49C-ds,a6)
+opt1_asm_assem_set	move.l	#$3F,(lbL02B49C-ds,a6)
 	moveq	#$20,d0
 	and.b	(x.MSG-ds,a6),d0
 	ori.b	#$53,d0
 	move.b	d0,(x.MSG-ds,a6)
-	pea	(lbC013F20).l
-	st	(lbB02B46D-ds,a6)
-	clr.b	(lbB02B46E-ds,a6)
-	clr.b	(lbB02B46F-ds,a6)
+	pea	(RebuildAllFileNames).l
+	st	(opt1_asm_assem-ds,a6)
+	clr.b	(opt1_asm_cape-ds,a6)
+	clr.b	(opt1_asm_macro68-ds,a6)
 	bra.w	lbC003634
 
-lbC0033A8	move.l	#$FFFFFFFF,(lbL02B49C-ds,a6)
+opt1_asm_cape_set	move.l	#$FFFFFFFF,(lbL02B49C-ds,a6)
 	moveq	#$20,d0
 	and.b	(x.MSG-ds,a6),d0
 	ori.b	#$53,d0
 	move.b	d0,(x.MSG-ds,a6)
-	pea	(lbC013F20).l
-	clr.b	(lbB02B46D-ds,a6)
-	st	(lbB02B46E-ds,a6)
-	clr.b	(lbB02B46F-ds,a6)
+	pea	(RebuildAllFileNames).l
+	clr.b	(opt1_asm_assem-ds,a6)
+	st	(opt1_asm_cape-ds,a6)
+	clr.b	(opt1_asm_macro68-ds,a6)
 	bra.w	lbC003634
 
-lbC0033D4	move.l	#$FFFFFFFF,(lbL02B49C-ds,a6)
+opt1_asm_macro68_set
+	move.l	#$FFFFFFFF,(lbL02B49C-ds,a6)
 	moveq	#$20,d0
 	and.b	(x.MSG-ds,a6),d0
 	ori.b	#$58,d0
 	move.b	d0,(x.MSG-ds,a6)
-	pea	(lbC013F20).l
-	clr.b	(lbB02B46D-ds,a6)
-	clr.b	(lbB02B46E-ds,a6)
-	st	(lbB02B46F-ds,a6)
+	pea	(RebuildAllFileNames).l
+	clr.b	(opt1_asm_assem-ds,a6)
+	clr.b	(opt1_asm_cape-ds,a6)
+	st	(opt1_asm_macro68-ds,a6)
 	bra.w	lbC003634
 
 lbC003400	st	(opt2_int_beep-ds,a6)
@@ -10265,7 +10306,7 @@ lbC00B24C	bsr.b	lbC00B29E
 	movea.l	(SaveFileName-ds,a6),a0
 	bsr.w	parseargs_special
 	beq.b	lbC00B278
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 	clr.b	(lbB02EB69-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -16133,7 +16174,7 @@ functable	dl	clear_ccr-functable
 	dl	miscBuffer-*
 	dw	$FFF8
 	dl	0
-	dl	lbC02803A-*
+	dl	print_text_a0_ifwf-*
 	dw	$FFFC
 	dl	0
 default_func	dl	term1-default_func
@@ -17735,130 +17776,130 @@ default_func	dl	term1-default_func
 	dl	lbC01A350-*
 	dw	$194
 	dl	0
-	dl	lbC0030FA-*
+	dl	opt1_show_offsets_on-*
 	dw	$170
 	dl	0
-	dl	lbC003102-*
+	dl	opt1_show_offsets_off-*
 	dw	$171
 	dl	0
-	dl	opt1_show_labels-*
+	dl	opt1_show_labels_on-*
 	dw	$17C
 	dl	0
-	dl	lbC003112-*
+	dl	opt1_show_labels_off-*
 	dw	$17D
 	dl	0
-	dl	lbC00311A-*
+	dl	opt1_show_hlabels_on-*
 	dw	$188
 	dl	0
-	dl	lbC003122-*
+	dl	opt1_show_hlabels_off-*
 	dw	$189
 	dl	0
-	dl	lbC00312A-*
+	dl	opt1_show_symbols_on-*
 	dw	$17E
 	dl	0
-	dl	lbC003132-*
+	dl	opt1_show_symbols_off-*
 	dw	$17F
 	dl	0
-	dl	lbC00313A-*
+	dl	opt1_show_eolcomments_on-*
 	dw	$180
 	dl	0
-	dl	lbC003142-*
+	dl	opt1_show_eolcomments_off-*
 	dw	$181
 	dl	0
-	dl	lbC00314A-*
+	dl	opt1_show_flcomments_on-*
 	dw	$182
 	dl	0
-	dl	lbC003152-*
+	dl	opt1_show_flcomments_off-*
 	dw	$183
 	dl	0
-	dl	lbC00315A-*
+	dl	opt1_show_chipload_on-*
 	dw	$18A
 	dl	0
-	dl	lbC003162-*
+	dl	opt1_show_chipload_off-*
 	dw	$18B
 	dl	0
-	dl	lbC00316A-*
+	dl	opt1_show_sections_on-*
 	dw	$18C
 	dl	0
-	dl	lbC003172-*
+	dl	opt1_show_sections_off-*
 	dw	$18D
 	dl	0
-	dl	lbC00317A-*
+	dl	opt1_show_end_on-*
 	dw	$18E
 	dl	0
-	dl	lbC003182-*
+	dl	opt1_show_end_off-*
 	dw	$18F
 	dl	0
-	dl	lbC00318A-*
+	dl	opt1_show_dcb_on-*
 	dw	$1B0
 	dl	0
-	dl	lbC003196-*
+	dl	opt1_show_dcb_off-*
 	dw	$1B1
 	dl	0
-	dl	lbC0031A2-*
+	dl	opt1_show_seplabels_on-*
 	dw	$2A5
 	dl	0
-	dl	lbC0031AA-*
+	dl	opt1_show_seplabels_off-*
 	dw	$2A6
 	dl	0
-	dl	lbC0031B2-*
+	dl	opt1_show_colons_on-*
 	dw	$2A7
 	dl	0
-	dl	lbC0031BA-*
+	dl	opt1_show_colons_off-*
 	dw	$2A8
 	dl	0
-	dl	lbC0031C2-*
+	dl	opt1_show_zeros_on-*
 	dw	$29B
 	dl	0
-	dl	lbC0031CA-*
+	dl	opt1_show_zeros_off-*
 	dw	$29A
 	dl	0
-	dl	lbC0031D2-*
+	dl	opt1_show_constants_on-*
 	dw	$2C8
 	dl	0
-	dl	lbC0031DE-*
+	dl	opt1_show_constants_off-*
 	dw	$2C9
 	dl	0
-	dl	lbC0031EA-*
+	dl	opt1_show_dcomments_on-*
 	dw	$35B
 	dl	0
-	dl	lbC0031F2-*
+	dl	opt1_show_dcomments_off-*
 	dw	$35C
 	dl	0
-	dl	lbC0031FA-*
+	dl	opt1_show_newsyntax_on-*
 	dw	$35E
 	dl	0
-	dl	lbC00321A-*
+	dl	opt1_show_newsyntax_off-*
 	dw	$35D
 	dl	0
-	dl	Opt1_show_strict_off-*
+	dl	opt1_show_strict_off-*
 	dw	$360
 	dl	0
-	dl	Opt1_show_strict_on-*
+	dl	opt1_show_strict_on-*
 	dw	$35F
 	dl	0
-	dl	Opt1_allow_refrecog_on-*
+	dl	opt1_allow_refrecog_on-*
 	dw	$218
 	dl	0
-	dl	Opt1_allow_refrecog_off-*
+	dl	opt1_allow_refrecog_off-*
 	dw	$219
 	dl	0
-	dl	lbC00331C-*
+	dl	opt1_allow_autolabels_on-*
 	dw	$2BA
 	dl	0
-	dl	lbC003324-*
+	dl	opt1_allow_autolabels_off-*
 	dw	$2BB
 	dl	0
-	dl	lbC00332C-*
+	dl	opt1_allow_equ_on-*
 	dw	$37B
 	dl	0
-	dl	lbC003334-*
+	dl	opt1_allow_equ_off-*
 	dw	$37C
 	dl	0
-	dl	lbC00333C-*
+	dl	opt1_allow_ecomments_on-*
 	dw	$3B4
 	dl	0
-	dl	lbC003344-*
+	dl	opt1_allow_ecomments_off-*
 	dw	$3B5
 	dl	0
 	dl	lbC003400-*
@@ -17969,31 +18010,31 @@ default_func	dl	term1-default_func
 	dl	Opt2_pseudo_blobhs_off-*
 	dw	$38E
 	dl	0
-	dl	lbC00337C-*
+	dl	opt1_asm_assem_set-*
 	dw	$294
 	dl	0
-	dl	lbC0033A8-*
+	dl	opt1_asm_cape_set-*
 	dw	$295
 	dl	0
-	dl	lbC0033D4-*
+	dl	opt1_asm_macro68_set-*
 	dw	$2B8
 	dl	0
-	dl	lbC00334C-*
+	dl	opt1_size_absword_on-*
 	dw	$362
 	dl	0
-	dl	lbC003354-*
+	dl	opt1_size_absword_off-*
 	dw	$3AE
 	dl	0
-	dl	lbC00335C-*
+	dl	opt1_size_abslong_on-*
 	dw	$363
 	dl	0
-	dl	lbC003364-*
+	dl	opt1_size_abslong_off-*
 	dw	$3AF
 	dl	0
-	dl	lbC00336C-*
+	dl	opt1_size_optimize_on-*
 	dw	$364
 	dl	0
-	dl	lbC003374-*
+	dl	opt1_size_optimize_off-*
 	dw	$3B0
 	dl	0
 	dl	lbC01BCD0-*
@@ -23405,7 +23446,7 @@ SaveExeSpecify	move.w	#$2719,d0	;new default path?
 	clr.w	(a0)
 ModifyFileNames	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
-lbC013F20	clr.b	(allFileNamesBuild-ds,a6)
+RebuildAllFileNames	clr.b	(allFileNamesBuild-ds,a6)
 	jsr	(BuildAllFileNames-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
@@ -23964,7 +24005,7 @@ lbC0146A4	move.b	(a0)+,d5
 	lea	(screen_pubname-ds,a6),a0
 	move.l	a0,d4
 	move.l	d6,d1
-	jsr	(lbC02AEB2-ds,a6)
+	jsr	(strlen-ds,a6)
 	bra.w	lbC014B1E
 
 lbC01470A	lea	(screen_pubname-ds,a6),a1
@@ -23991,7 +24032,7 @@ lbC014740	move.b	#$29,(-1,a4)
 	clr.b	-(a4)
 lbC014756	move.l	a5,d4
 	movea.l	d4,a0
-	jsr	(lbC02AEB2-ds,a6)
+	jsr	(strlen-ds,a6)
 	bra.w	lbC014B26
 
 lbC014762	bsr.b	lbC014782
@@ -24371,7 +24412,7 @@ lbC014B3A	movea.l	(lbB02D118-ds,a6),a1
 	moveq	#1,d1
 	jsr	(lbC027684-ds,a6)
 	movea.l	d4,a0
-	jsr	(lbC02AEB2-ds,a6)
+	jsr	(strlen-ds,a6)
 	moveq	#1,d1
 	jsr	(_savecommonregs0-ds,a6)
 	jsr	(lbC029B18-ds,a6)
@@ -24515,7 +24556,7 @@ lbC014CA4	rts
 
 lbC014CA6	movem.l	d0-d6/a0-a5,-(sp)
 	movea.l	d4,a0
-	jsr	(lbC02AEB2-ds,a6)
+	jsr	(strlen-ds,a6)
 	move.l	d0,d5
 	beq.b	lbC014CE2
 	jsr	(lbC027A26-ds,a6)
@@ -25087,8 +25128,8 @@ _LoadMenuDefaults1	moveq	#1,d0
 _LoadMenuDefaults	move.l	d0,-(sp)
 	move.b	#$FF,(lbB02EB48-ds,a6)
 	jsr	(lbC001000).l
-	jsr	(lbC001EC4).l
-	jsr	(lbC0025B6).l
+	jsr	(win_options1_setcfg).l
+	jsr	(win_options2_setcfg).l
 	jsr	(LoadMenuDefaults).l
 	move.l	(sp)+,d0
 	rts
@@ -25176,7 +25217,7 @@ lbC0153E2	lea	(lbB02DEC8).l,a0
 
 lbC0153EC	lea	(lbB02DF48).l,a0
 	moveq	#1,d2
-lbC0153F4	jsr	(lbC02AEB2-ds,a6)
+lbC0153F4	jsr	(strlen-ds,a6)
 	move.l	d2,d1
 	jsr	(lbC027884-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
@@ -25194,7 +25235,7 @@ lbC01541A	lea	(lbB02DEC8).l,a0
 
 lbC015424	lea	(lbB02DF48).l,a0
 	moveq	#1,d2
-lbC01542C	jsr	(lbC02AEB2-ds,a6)
+lbC01542C	jsr	(strlen-ds,a6)
 	move.l	d2,d1
 	jsr	(lbC0277F2-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
@@ -27773,7 +27814,7 @@ lbC0170A0	move.b	(a0)+,d6
 	move.l	a0,d4
 	bsr.w	lbC014CA6
 	beq.w	lbC0167C0
-	jsr	(lbC02AEB2-ds,a6)
+	jsr	(strlen-ds,a6)
 	movem.l	d0/a0,-(sp)
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
@@ -29278,7 +29319,7 @@ lbL018154	dl	$7C0010
 	dl	$400000
 	dl	0
 	dl	0
-lbL018174	dl	0
+_chargfx1	dl	0
 	dl	0
 	dl	$FEC6C6C6
 	dl	$C6C6FE00
@@ -29790,7 +29831,7 @@ lbL018174	dl	0
 	dl	$667C6060
 	dl	$660066
 	dl	$663C1830
-lbL018974	dl	$FFFFFFFF
+_chargfx2	dl	$FFFFFFFF
 	dl	$FFFFFFFF
 	dl	$1393939
 	dl	$393901FF
@@ -30302,7 +30343,7 @@ lbL018974	dl	$FFFFFFFF
 	dl	$99839F9F
 	dl	$FF99FF99
 	dl	$99C3E7CF
-lbL019174	dl	0
+_chargfx3	dl	0
 	dl	0
 	dl	$FEC6C6C6
 	dl	$C6C6FE00
@@ -30814,7 +30855,7 @@ lbL019174	dl	0
 	dl	$667C60EA
 	dl	$660066
 	dl	$663C18BA
-lbL019974	dl	0
+_chargfx4	dl	0
 	dl	0
 	dl	$FEC6C6C6
 	dl	$C6C6FE00
@@ -32993,7 +33034,7 @@ lbC01B890	clr.b	(a1)
 lbC01B894	move.l	#aslfr_initialfile,d1
 	jsr	(StringRequest240-ds,a6)
 	jsr	(term2_if_cceq-ds,a6)
-	jsr	(lbC02AEB2-ds,a6)
+	jsr	(strlen-ds,a6)
 	move.b	d5,d1
 	cmpi.b	#1,d1
 	beq.b	lbC01B8C2
@@ -33066,7 +33107,7 @@ lbC01B96E	movea.l	d6,a1
 	suba.l	(ds-ds,a6),a1
 	move.l	d5,d1
 	lea	(aslfr_initialfile-ds,a6),a0
-	jsr	(lbC02AEB2-ds,a6)
+	jsr	(strlen-ds,a6)
 	tst.l	d0
 	beq.b	lbC01B996
 	tst.b	d1
@@ -33350,7 +33391,7 @@ lbC01BCA2	move.b	(a0)+,(a4)+
 	move.b	#1,(-1,a4)
 	move.b	#10,(a4)+
 	move.b	#0,(a4)
-	jsr	(lbC02803A-ds,a6)
+	jsr	(print_text_a0_ifwf-ds,a6)
 	clr.b	(lbB02EB48-ds,a6)
 	jmp	(lbC02A42A-ds,a6)
 
@@ -33409,7 +33450,7 @@ lbC01BD6E	tst.b	(a0)+
 	bne.b	lbC01BD38
 	move.b	#0,(a4)
 	movea.l	(ds-ds,a6),a2
-	jsr	(lbC02803A-ds,a6)
+	jsr	(print_text_a0_ifwf-ds,a6)
 	jsr	(DropIMsgAll-ds,a6)
 	move.l	a4,-(sp)
 	move.w	#$2758,d0
@@ -33679,7 +33720,7 @@ lbC01C158	movea.l	d0,a2
 	jsr	(lbC02A3CC-ds,a6)
 	jmp	(lbC02AF74-ds,a6)
 
-lbC01C162	jsr	(lbC027E00-ds,a6)
+lbC01C162	jsr	(SetWindowTitle2-ds,a6)
 	bra.b	lbC01C14A
 
 lbC01C168	jsr	(lbC02742E-ds,a6)
@@ -34223,10 +34264,10 @@ lbC01C862	move.b	(a0)+,(a1)+
 	bra.b	.loop
 
 .end	move.w	#$294,d0
-	tst.b	(lbB02B46D-ds,a6)
+	tst.b	(opt1_asm_assem-ds,a6)
 	bne.b	lbC01C898
 	addq.w	#1,d0
-	tst.b	(lbB02B46E-ds,a6)
+	tst.b	(opt1_asm_cape-ds,a6)
 	beq.b	lbC01C89A
 lbC01C898	move.w	d0,(a5)+
 lbC01C89A	move.w	#$16A,d1
@@ -34550,7 +34591,7 @@ OptionTable	dw	lbB02B3E5-ds
 	dw	opt1_show_offsets-ds
 	dw	0
 	dw	$170
-	dw	lbB02B447-ds
+	dw	opt1_show_labels-ds
 	dw	1
 	dw	$17D
 	dw	opt1_show_hlabels-ds
@@ -34595,7 +34636,7 @@ OptionTable	dw	lbB02B3E5-ds
 	dw	opt1_show_newsyntax-ds
 	dw	1
 	dw	$35D
-	dw	lbB02B456-ds
+	dw	opt1_show_strict-ds
 	dw	1
 	dw	$35F
 	dw	opt1_allow_refrecog-ds
@@ -34829,7 +34870,7 @@ lbC01CDCA	movea.l	(sp)+,a0
 	beq.b	lbC01CE1A
 	jmp	(term2-ds,a6)
 
-lbC01CE14	jsr	(lbC027E00-ds,a6)
+lbC01CE14	jsr	(SetWindowTitle2-ds,a6)
 	bra.b	lbC01CE2C
 
 lbC01CE1A	st	(lbB02EBF6-ds,a6)
@@ -34887,7 +34928,7 @@ lbC01CEAA	move.l	#$1000,d0
 	movea.l	d0,a1
 	move.b	#1,(lbB02EB41-ds,a6)
 	clr.l	(lbL02D100-ds,a6)
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 	clr.w	(a1)
 lbC01CED8	move.l	a1,-(sp)
 	jsr	(lbC028982-ds,a6)
@@ -34990,7 +35031,7 @@ lbC01CFF4	clr.w	(a1)
 	move.b	#1,(lbB02EB41-ds,a6)
 	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC01D01E
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 lbC01D01E	bsr.w	lbC020BBE
 	bra.w	lbC01CED8
 
@@ -35295,7 +35336,7 @@ lbC01D38C	move.l	d0,-(sp)
 lbC01D40C	clr.b	(a4)
 	lea	(miscBuffer-ds,a6),a4
 	movea.l	a4,a0
-	jsr	(lbC02AEB2-ds,a6)
+	jsr	(strlen-ds,a6)
 	movea.l	(lbB02D118-ds,a6),a1
 	suba.l	(ds-ds,a6),a1
 	moveq	#1,d1
@@ -36153,11 +36194,11 @@ lbC01DE8C	sub.w	d1,d0
 	move.w	d5,d0
 	subi.w	#$247,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE6-ds,a6)
+	move.w	d0,(windowOptions1Left-ds,a6)
 	move.w	d6,d0
 	subi.w	#$A8,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE8-ds,a6)
+	move.w	d0,(windowOptions1Top-ds,a6)
 	move.w	d5,d0
 	subi.w	#$164,d0
 	lsr.w	#1,d0
@@ -36461,7 +36502,7 @@ lbC01E1CA	move.b	(a2),(a0)+
 	bra.w	nomemory
 
 .aslfr_ok	lea	(unknown_bitmap-ds,a6),a0
-	movea.l	(8,a0),a0
+	movea.l	(bm_Planes,a0),a0
 	move.l	d6,d0
 	mulu.w	d3,d0
 	adda.l	d0,a0
@@ -36629,7 +36670,7 @@ _filespecok	clr.b	(lbB02EB69-ds,a6)
 	jsr	(lbC0297B4-ds,a6)
 	jsr	(DropIMsgAll-ds,a6)
 	bsr.w	lbC020BBE
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 	move.l	(fflag-ds,a6),d0
 	beq.w	mainloop2
 	jsr	(getfuncbynum-ds,a6)
@@ -36720,7 +36761,7 @@ lbC01E85A	tst.b	(opt2_int_refresh-ds,a6)
 	bne.b	lbC01E866
 	tst.b	(lbB02EB45-ds,a6)
 	beq.b	lbC01E86A
-lbC01E866	jsr	(lbC027E00-ds,a6)
+lbC01E866	jsr	(SetWindowTitle2-ds,a6)
 lbC01E86A	tst.b	(lbB02EB48-ds,a6)
 	beq.b	lbC01E874
 	bsr.w	lbC020BBE
@@ -37012,7 +37053,7 @@ lbC01EB94	movem.l	d0/d6,-(sp)
 
 lbC01EBB6	move.l	(sp)+,d6
 lbC01EBB8	bsr.w	lbC020BBE
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 lbC01EBC0	movea.l	(userport-ds,a6),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
@@ -37684,7 +37725,7 @@ lbC01F3CE	movem.l	(sp)+,d2-d7/a0-a3/a5
 
 lbC01F3D4	tst.b	(lbB02EB78-ds,a6)
 	bne.b	lbC01F3DE
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 lbC01F3DE	move.l	(count_lines-ds,a6),-(sp)
 	move.l	(count_aflines-ds,a6),-(sp)
 	move.l	(count_blanklines-ds,a6),-(sp)
@@ -38779,7 +38820,7 @@ lbC02053C	move.l	(windowOptions1Ptr-ds,a6),d0
 	beq.b	lbC02054E
 	movea.l	d0,a3
 	movea.l	($78,a3),a5
-	jsr	(lbC002438).l
+	jsr	(closewindow_options2).l
 lbC02054E	move.l	(windowOptions2Ptr-ds,a6),d0
 	beq.b	lbC020560
 	movea.l	d0,a3
@@ -38836,7 +38877,7 @@ requestfile	tst.b	(lbB02EB41-ds,a6)
 	add.l	d0,(lbL02D0FC-ds,a6)
 	rts
 
-lbC0205EA	jsr	(lbC02AEB2-ds,a6)
+lbC0205EA	jsr	(strlen-ds,a6)
 	addq.l	#1,d0
 	bclr	#0,d0
 	move.l	a0,-(sp)
@@ -38925,7 +38966,7 @@ requestfile_doreq	move.l	a2,-(sp)
 	bne.b	.copyfile
 	movea.l	(requestfile_buffer-ds,a6),a0
 	move.l	a0,d0
-.failed	bsr.w	lbC027E00
+.failed	bsr.w	SetWindowTitle2
 	jsr	(lbC028CFC-ds,a6)
 	tst.l	d0
 	movea.l	(sp)+,a2
@@ -39183,7 +39224,7 @@ lbC0209F6	rts
 
 lbC0209F8	tst.w	(lbW02B478-ds,a6)
 	bne.w	lbC020AF6
-	tst.b	(lbB02B46D-ds,a6)
+	tst.b	(opt1_asm_assem-ds,a6)
 	bne.w	lbC020AF6
 	tst.b	(lbB02EAD9-ds,a6)
 	beq.b	lbC020A26
@@ -39258,7 +39299,7 @@ lbC020AC6	tst.b	(lbB02B444-ds,a6)
 	move.b	#$6F,(a4)+
 lbC020AD4	move.b	#$27,(a4)+
 	bsr.w	lbC020C3C
-	tst.b	(lbB02B46F-ds,a6)
+	tst.b	(opt1_asm_macro68-ds,a6)
 	beq.b	lbC020AF6
 	move.b	#$3B,(a4)+
 	move.b	#$5F,(a4)+
@@ -39284,7 +39325,7 @@ lbC020AF8	tst.b	(lbB02B3EE-ds,a6)
 lbC020B22	subq.l	#1,a4
 	rts
 
-lbC020B26	tst.b	(lbB02B447-ds,a6)
+lbC020B26	tst.b	(opt1_show_labels-ds,a6)
 	beq.b	lbC020B6C
 	addq.l	#1,(count_labels-ds,a6)
 	move.l	a2,d0
@@ -39342,7 +39383,7 @@ lbC020BB6	move.b	#$3A,(a4)+
 
 lbC020BBE	clr.b	(lbB02EB48-ds,a6)
 	bsr.b	lbC020BC8
-	bra.w	lbC02803A
+	bra.w	print_text_a0_ifwf
 
 lbC020BC8	jsr	(saveregs_all-ds,a6)
 	bsr.w	lbC020CC4
@@ -47304,7 +47345,7 @@ lbC0266C4	btst	#0,d0
 	bset	#0,(detected_badaddress-ds,a6)
 	bra.w	put_value_d0_byte
 
-lbC0266E0	tst.b	(opt1_show_strict-ds,a6)
+lbC0266E0	tst.b	(opt1_show_strict_lock-ds,a6)
 	bne.b	lbC0266F0
 	addq.w	#2,d6
 	move.b	#$2E,(a4)+
@@ -47871,7 +47912,7 @@ lbC026CEA	move.b	(a0)+,(a1)+
 	cmpi.w	#$7FFE,d0
 	rts
 
-lbC026CF8	jsr	(lbC02AEB2-ds,a6)
+lbC026CF8	jsr	(strlen-ds,a6)
 	addq.l	#2,d0
 	bclr	#0,d0
 	move.l	a0,-(sp)
@@ -47954,7 +47995,7 @@ lbC026DC8	movem.l	d2/d3/a2/a3,-(sp)
 	move.l	d1,-(sp)
 	lea	(displayid-ds,a6),a0
 	bsr.w	lbC027004
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	move.l	a0,(a2)
 	move.w	d0,(8,a2)
 	clr.w	(12,a2)
@@ -47967,7 +48008,7 @@ lbC026DC8	movem.l	d2/d3/a2/a3,-(sp)
 _gettextbynum	bsr.w	gettextbynum
 	movea.l	d0,a0
 	move.w	(8,a2),d1
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	lsl.w	#3,d0
 	sub.w	d0,d1
 	lsr.w	#1,d1
@@ -47982,7 +48023,7 @@ _gettextbynum	bsr.w	gettextbynum
 _gettextbynum0	bsr.w	gettextbynum
 	movea.l	d0,a0
 	move.w	(8,a2),d1
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	lsl.w	#3,d0
 	sub.w	d0,d1
 	lsr.w	#1,d1
@@ -48046,7 +48087,7 @@ lbC026EEA	cmpi.l	#$2000000,d2
 	bsr.w	lbC028CFC
 	movem.l	a2/a3,-(sp)
 	movem.l	(lbL02D070-ds,a6),a2/a3
-	bsr.w	lbC027E00
+	bsr.w	SetWindowTitle2
 	movem.l	(sp)+,a2/a3
 	bra.b	lbC026E90
 
@@ -48628,7 +48669,7 @@ lbC02758E	move.w	#$2713,d0
 	bne.b	lbC02759E
 	rts
 
-lbC02759E	jsr	(lbC02AEB2-ds,a6)
+lbC02759E	jsr	(strlen-ds,a6)
 lbC0275A2	movem.l	d0-d7/a0-a5,-(sp)
 	movea.l	d0,a0
 	move.l	d1,d0
@@ -49418,13 +49459,13 @@ lbC027DDE	bsr.w	saveregs_all
 	rts
 
 lbC027DEC	tst.b	(opt2_int_refresh-ds,a6)
-	beq.b	lbC027E00
+	beq.b	SetWindowTitle2
 	cmpi.b	#$1E,(vblank_counter-ds,a6)
 	bgt.b	lbC027DFC
 	rts
 
 lbC027DFC	clr.b	(vblank_counter-ds,a6)
-lbC027E00	move.l	a0,-(sp)
+SetWindowTitle2	move.l	a0,-(sp)
 	movea.l	(window_flags_lw_ptr-ds,a6),a0
 	tst.b	(a0)
 	movea.l	(sp)+,a0
@@ -49494,7 +49535,7 @@ SetWindowTitle	move.l	a0,-(sp)
 .rts	rts
 
 lbC027EA0	cmpa.l	#0,a4
-	beq.w	lbC027E00
+	beq.w	SetWindowTitle2
 	st	(lbB02EB48-ds,a6)
 	st	(lbB02EB45-ds,a6)
 	tst.b	(opt2_int_delays-ds,a6)
@@ -49593,7 +49634,7 @@ lbC027FA6	move.w	d0,(a1)+
 	movea.l	(gfxbase-ds,a6),a6
 	jsr	(_LVOMove,a6)
 	lea	(ReSource.MSG0,pc),a0
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	movea.l	d2,a1
 	jsr	(_LVOText,a6)
 	moveq	#$70,d0
@@ -49601,7 +49642,7 @@ lbC027FA6	move.w	d0,(a1)+
 	movea.l	d3,a1
 	jsr	(_LVOMove,a6)
 	movea.l	a2,a0
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	movea.l	d3,a1
 	jsr	(_LVOText,a6)
 	movem.l	(sp)+,d0-d3/a0-a4/a6
@@ -49615,143 +49656,143 @@ s1010sc4646s.MSG	db	'%-6.6s%-10.10s%c%-46.46s',0
 ascii.MSG3	db	'-'
 lbB028039	db	0
 
-lbC02803A	move.l	a0,-(sp)
+print_text_a0_ifwf	move.l	a0,-(sp)
 	movea.l	(window_flags_lw_ptr-ds,a6),a0
 	tst.b	(a0)
 	movea.l	(sp)+,a0
-	bpl.b	lbC028048
+	bpl.b	.print
 	rts
 
-lbC028048	tst.b	(lbB02EB78-ds,a6)
-	bne.b	lbC028052
-	bsr.w	lbC027E00
-lbC028052	movem.l	d0-d6/a0-a4,-(sp)
+.print	tst.b	(lbB02EB78-ds,a6)
+	bne.b	.skiptitle
+	bsr.w	SetWindowTitle2
+.skiptitle	movem.l	d0-d6/a0-a4,-(sp)
 	lea	(miscBuffer-ds,a6),a0
-	bra.b	lbC028060
+	bra.b	print_text_a0_in
 
 print_text_a0	movem.l	d0-d6/a0-a4,-(sp)
-lbC028060	clr.b	(lbB02EB6A-ds,a6)
+print_text_a0_in	clr.b	(lbB02EB6A-ds,a6)
 	lea	(unknown_bitmap-ds,a6),a2
 	moveq	#0,d5
-	move.w	(a2),d5
-	movea.l	(8,a2),a2
+	move.w	(bm_BytesPerRow,a2),d5
+	movea.l	(bm_Planes,a2),a2
 	adda.l	(lbL02CF3E-ds,a6),a2
 	move.l	a2,d6
-	movea.l	(lbL02B48C-ds,a6),a4
-lbC02807A	moveq	#0,d0
+	movea.l	(chargfx1-ds,a6),a4
+.next_char	moveq	#0,d0
 	move.b	(a0)+,d0
-	cmpi.b	#$20,d0
-	bcs.b	lbC0280BE
+	cmpi.b	#' ',d0
+	bcs.b	.special_char
 	move.l	a2,d2
 	lsl.w	#3,d0
 	lea	(a4,d0.w),a3
-	moveq	#7,d1
-lbC02808E	move.b	(a3)+,(a2)
-	adda.l	d5,a2
-	dbra	d1,lbC02808E
+	moveq	#7,d1	;font height = 8
+.copy	move.b	(a3)+,(a2)
+	adda.l	d5,a2	;next line
+	dbra	d1,.copy
 	addq.l	#1,d2
 	movea.l	d2,a2
 	move.l	d6,d0
 	add.l	d5,d0
 	cmpa.l	d0,a2
-	bcs.b	lbC02807A
+	bcs.b	.next_char
 	cmpi.b	#10,(a0)+
-	beq.b	lbC0280FA
+	beq.b	.linefeed
 	subq.w	#1,a0
 	tst.b	(lbB02B404-ds,a6)
-	bne.b	lbC0280FA
-lbC0280B0	move.b	(a0)+,d0
-	beq.w	lbC02816A
+	bne.b	.linefeed
+.search_lf	move.b	(a0)+,d0
+	beq.w	.nullchar
 	cmpi.b	#10,d0
-	beq.b	lbC0280FA
-	bra.b	lbC0280B0
+	beq.b	.linefeed
+	bra.b	.search_lf
 
-lbC0280BE	cmpi.b	#9,d0
-	beq.w	lbC02812E
+.special_char	cmpi.b	#9,d0
+	beq.w	.tab_char
 	cmpi.b	#10,d0
-	beq.b	lbC0280FA
-	movea.l	(lbL02B490-ds,a6),a4
+	beq.b	.linefeed
+	movea.l	(chargfx3-ds,a6),a4
 	cmpi.b	#3,d0
-	beq.b	lbC02807A
-	movea.l	(lbL02B494-ds,a6),a4
+	beq.b	.next_char
+	movea.l	(chargfx4-ds,a6),a4
 	cmpi.b	#4,d0
-	beq.b	lbC02807A
-	movea.l	(lbL02B498-ds,a6),a4
+	beq.b	.next_char
+	movea.l	(chargfx2-ds,a6),a4
 	cmpi.b	#2,d0
-	beq.b	lbC02807A
-	movea.l	(lbL02B48C-ds,a6),a4
+	beq.b	.next_char
+	movea.l	(chargfx1-ds,a6),a4
 	cmpi.b	#1,d0
-	beq.b	lbC02807A
+	beq.b	.next_char
 	tst.b	d0
-	beq.b	lbC02816A
-	bra.b	lbC02807A
+	beq.b	.nullchar
+	bra.b	.next_char
 
-lbC0280FA	move.l	d6,d3
-	moveq	#7,d2
-lbC0280FE	move.l	a2,d0
+.linefeed	move.l	d6,d3
+	moveq	#7,d2	;font height = 8
+.clrchar	move.l	a2,d0
 	add.l	d5,d3
 	move.l	d3,d1
 	sub.l	a2,d1
-	bra.b	lbC02810A
+	bra.b	.clrin
 
-lbC028108	clr.b	(a2)+
-lbC02810A	dbra	d1,lbC028108
+.clr	clr.b	(a2)+
+.clrin	dbra	d1,.clr
 	movea.l	d0,a2
 	adda.l	d5,a2
-	dbra	d2,lbC0280FE
+	dbra	d2,.clrchar
 	movea.l	d6,a2
 	move.l	d5,d6
 	lsl.l	#3,d6
 	adda.l	d6,a2
 	cmpa.l	(lbL02CF46-ds,a6),a2
-	bhi.b	lbC02818E
+	bhi.b	.end
 	move.l	a2,d6
 	addq.b	#1,(lbB02EB6A-ds,a6)
-	bra.w	lbC02807A
+	bra.w	.next_char
 
-lbC02812E	move.l	a2,d3
+.tab_char	move.l	a2,d3
 	move.l	a2,d0
 	sub.l	d6,d0
 	moveq	#$14,d2
 	cmp.l	d2,d0
-	bcs.b	lbC02814C
+	bcs.b	.bcs14
 	moveq	#$1C,d2
 	cmp.l	d2,d0
-	bcs.b	lbC02814C
+	bcs.b	.bcs14
 	move.l	(lbW02B474-ds,a6),d2
 	cmp.l	d2,d0
-	bcs.b	lbC02814C
+	bcs.b	.bcs14
 	move.l	d0,d2
 	addq.l	#1,d2
-lbC02814C	sub.l	d0,d2
+.bcs14	sub.l	d0,d2
 	moveq	#7,d1
-lbC028150	move.w	d2,d0
+.clr2char	move.w	d2,d0
 	subq.w	#1,d0
-lbC028154	clr.b	(a2)+
-	dbra	d0,lbC028154
+.clr2	clr.b	(a2)+
+	dbra	d0,.clr2
 	adda.l	d5,a2
 	suba.l	d2,a2
-	dbra	d1,lbC028150
+	dbra	d1,.clr2char
 	movea.l	d3,a2
 	adda.l	d2,a2
-	bra.w	lbC02807A
+	bra.w	.next_char
 
-lbC02816A	move.l	a2,d0
+.nullchar	move.l	a2,d0
 	andi.l	#3,d0
-	beq.b	lbC028178
+	beq.b	.and3
 	clr.b	(a2)+
-	bra.b	lbC02816A
+	bra.b	.nullchar
 
-lbC028178	movea.l	(lbL02CF46-ds,a6),a0
+.and3	movea.l	(lbL02CF46-ds,a6),a0
 	adda.w	(displaywidth_rounddown-ds,a6),a0
 	moveq	#0,d0
 	moveq	#0,d1
-	bra.b	lbC02818A
+	bra.b	.chk
 
-lbC028186	movem.l	d0/d1,-(a0)
-lbC02818A	cmpa.l	a0,a2
-	bcs.b	lbC028186
-lbC02818E	moveq	#0,d0
+.set	movem.l	d0/d1,-(a0)
+.chk	cmpa.l	a0,a2
+	bcs.b	.set
+.end	moveq	#0,d0
 	jsr	(lbC02A88A-ds,a6)
 	movem.l	(sp)+,d0-d6/a0-a4
 	rts
@@ -50416,16 +50457,16 @@ lbC028982	movem.l	a2-a5,-(sp)
 	movem.l	a2/a3,(lbL02D070-ds,a6)
 	clr.l	(lbB02D17C-ds,a6)
 	jsr	(__ClearMenuStrip-ds,a6)
-	beq.b	lbC0289A0
+	beq.b	_msgloop
 	bsr.w	DropIMsgAll
 	move.w	#$7FFE,(lbW02EAC8-ds,a6)
-lbC0289A0	jsr	(__ClearMenuStrip-ds,a6)
+_msgloop	jsr	(__ClearMenuStrip-ds,a6)
 	bsr.w	_ClearPointerAll
 	tst.b	(lbB02EB7A-ds,a6)
 	bne.b	lbC0289C0
 	movem.l	a2/a3,-(sp)
 	movem.l	(lbL02D070-ds,a6),a2/a3
-	bsr.w	lbC027E00
+	bsr.w	SetWindowTitle2
 	movem.l	(sp)+,a2/a3
 lbC0289C0	move.l	#$100,d2
 	move.w	(lbW02CFB2-ds,a6),d3
@@ -50439,7 +50480,7 @@ lbC0289DA	movea.l	(userport-ds,a6),a0
 	jsr	(_LVOGT_GetIMsg,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
-	beq.b	lbC0289A0
+	beq.b	_msgloop
 	movea.l	d0,a1
 	move.l	(im_Class,a1),d2
 	move.l	(im_Code,a1),d3
@@ -50574,7 +50615,7 @@ lbC028B7C	move.w	d0,(lbB02EACC-ds,a6)
 	jsr	(lbC01BFD0).l
 lbC028B92	movem.l	d1-d7/a0-a5,-(sp)
 	movem.l	(lbL02D070-ds,a6),a2/a3
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 	movem.l	(sp)+,d1-d7/a0-a5
 	move.l	(6,a0),d0
 	movea.l	(a0),a0
@@ -50660,7 +50701,7 @@ lbC028C96	bclr	#15,d0
 lbC028C9E	jsr	(lbC01BFD0).l
 	movem.l	d0-d7/a0-a5,-(sp)
 	movem.l	(lbL02D070-ds,a6),a2/a3
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 	movem.l	(sp)+,d0-d7/a0-a5
 	jsr	(getfuncbynum-ds,a6)
 	move.l	(6,a0),d0
@@ -50819,7 +50860,7 @@ lbC028E50	tst.b	(a1)
 lbC028E5A	lea	(lbL02C1D4-ds,a6),a0
 	tst.b	(a0)
 	beq.w	term2
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	adda.l	d0,a0
 	move.l	a0,-(sp)
 	move.w	#$2715,d0
@@ -50829,7 +50870,7 @@ lbC028E5A	lea	(lbL02C1D4-ds,a6),a0
 	beq.w	term2
 	tst.b	(a0)
 	beq.w	term2
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	adda.l	d0,a0
 lbC028E8A	move.b	(a0),d0
 	move.b	(a1),d1
@@ -50848,7 +50889,7 @@ lbC028EA8	clr.b	(a1)
 	jmp	(lbC02A422-ds,a6)
 
 lbC028EAE	lea	(lbL02C1D4-ds,a6),a0
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	movem.l	d0/a0,-(sp)
 	move.w	#$2716,d0
 	jsr	(gettextbynum-ds,a6)
@@ -50858,7 +50899,7 @@ lbC028EAE	lea	(lbL02C1D4-ds,a6),a0
 
 lbC028ECC	bsr.b	lbC028EAE
 	beq.w	term2
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	move.l	d0,d2
 	beq.w	lbC02A42A
 	add.b	d1,d2
@@ -50882,7 +50923,7 @@ lbC028F06	bsr.b	lbC028EAE
 	beq.w	term2
 	tst.b	(a0)
 	beq.w	term2
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	move.l	d0,d2
 	add.b	d1,d2
 	bcs.w	term2
@@ -50909,7 +50950,7 @@ lbC028F46	clr.l	(lbL02D16C-ds,a6)
 	movea.l	d0,a1
 	moveq	#0,d1
 	bsr.w	lbC027684
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	move.l	d0,(lbL02D354-ds,a6)
 	bsr.w	lbC027A26
 	beq.b	lbC028F8C
@@ -50920,7 +50961,7 @@ lbC028F46	clr.l	(lbL02D16C-ds,a6)
 lbC028F78	move.l	(lbL02D354-ds,a6),d0
 	bsr.b	lbC028FA0
 lbC028F7E	beq.w	term2
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	bsr.w	lbC027A26
 	bne.b	lbC028F78
 lbC028F8C	move.l	a0,-(sp)
@@ -51425,7 +51466,7 @@ lbC029494	jsr	(lbC014DDC).l
 	bra.w	lbC0293C2
 
 lbC0294B2	lea	(lbL02C1D4-ds,a6),a0
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	move.l	d0,d1
 	bra.w	lbC0293C2
 
@@ -51567,7 +51608,7 @@ lbC02965E	movea.l	(sp)+,a0
 	move.b	(a0)+,d0
 	beq.b	lbC02967E
 	lea	(lbL02C1D4-ds,a6),a0
-	bsr.w	lbC02AEB2
+	bsr.w	strlen
 	add.l	a0,d0
 	move.l	d0,d2
 	movea.l	a0,a1
@@ -51811,7 +51852,7 @@ lbC0298EA	cmpi.w	#$7FFD,d0
 
 lbC029908	movem.l	d0-d7/a0-a5,-(sp)
 	jsr	(lbC01BFD0).l
-	jsr	(lbC027E00-ds,a6)
+	jsr	(SetWindowTitle2-ds,a6)
 	movem.l	(sp)+,d0-d7/a0-a5
 	bra.b	lbC029932
 
@@ -52366,7 +52407,7 @@ lbC029FE8	move.b	(dl.MSG-ds,a6),(a4)+
 	beq.b	lbC02A00A
 	cmp.b	(ps.MSG-ds,a6),d0
 	beq.b	lbC02A00A
-	tst.b	(lbB02B46D-ds,a6)
+	tst.b	(opt1_asm_assem-ds,a6)
 	beq.b	lbC02A014
 lbC02A00A	move.b	(cx.MSG-ds,a6),(a4)+
 	move.b	#$2E,(a4)+
@@ -53551,7 +53592,7 @@ lbC02AEAC	subq.w	#1,a0
 	addq.w	#2,sp
 	rts
 
-lbC02AEB2	move.l	a0,d0
+strlen	move.l	a0,d0
 lbC02AEB4	tst.b	(a0)+
 	bne.b	lbC02AEB4
 	exg	d0,a0
@@ -54068,7 +54109,7 @@ lbB02B443	db	0
 lbB02B444	db	0
 lbB02B445	db	1
 opt1_show_offsets	db	0
-lbB02B447	db	1
+opt1_show_labels	db	1
 opt1_show_hlabels	db	1
 opt1_show_symbols	db	1
 opt1_show_eolcomments
@@ -54085,7 +54126,7 @@ opt1_show_zeros	db	0
 opt1_show_constants	db	0
 opt1_show_dcomments	db	0
 opt1_show_newsyntax	db	1
-lbB02B456	db	1
+opt1_show_strict	db	1
 opt1_allow_refrecog	db	1
 opt1_allow_autolabels
 	db	1
@@ -54112,9 +54153,9 @@ opt2_pseudo_pushpop	db	1
 opt2_pseudo_pushmpopm
 	db	1
 opt2_pseudo_blobhs	db	0
-lbB02B46D	db	0
-lbB02B46E	db	0
-lbB02B46F	db	1
+opt1_asm_assem	db	0
+opt1_asm_cape	db	0
+opt1_asm_macro68	db	1
 opt1_size_absword	db	1
 opt1_size_abslong	db	1
 opt1_size_optimize	db	0
@@ -54128,10 +54169,10 @@ examine_buffer_ptr	dl	examine_buffer
 lbL02B480	dl	miscBuffer
 lbL02B484	dl	lbL01C2C8
 lbL02B488	dl	lbL01C3E8
-lbL02B48C	dl	lbL018174
-lbL02B490	dl	lbL019174
-lbL02B494	dl	lbL019974
-lbL02B498	dl	lbL018974
+chargfx1	dl	_chargfx1
+chargfx3	dl	_chargfx3
+chargfx4	dl	_chargfx4
+chargfx2	dl	_chargfx2
 lbL02B49C	dl	$FFFFFFFF
 workdata_struct_end	dx.l	1
 lbL02B4A4	dx.l	1
@@ -54258,8 +54299,8 @@ lbB02CFDE	dx.b	2
 lbB02CFE0	dx.b	2
 lbB02CFE2	dx.b	2
 lbB02CFE4	dx.b	2
-lbB02CFE6	dx.b	2
-lbB02CFE8	dx.b	2
+windowOptions1Left	dx.b	2
+windowOptions1Top	dx.b	2
 lbB02CFEA	dx.b	2
 lbB02CFEC	dx.b	2
 WindowLeftZap2	dx.w	1
@@ -54606,7 +54647,8 @@ lbL02EB7C	dx.b	1
 lbB02EB7D	dx.b	1
 lbW02EB7E	dx.b	1
 lbB02EB7F	dx.b	1
-opt1_show_strict	dx.b	2
+opt1_show_strict_lock
+	dx.b	2
 allFileNamesBuild	dx.b	1
 lbB02EB83	dx.b	1
 lbB02EB84	dx.b	1
