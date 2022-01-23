@@ -70,6 +70,10 @@ endif
 
 else
 
+ifneq ($(AS),vasm)
+$(error variable AS must be set to (basm|vasm))
+endif
+
 # VASM: -wfail -warncomm -databss
 # currently no working: -opt-st
 ASM=vasmm68k_mot -Fhunkexe -quiet -ldots -wfail -opt-allbra -opt-clr -opt-lsl -opt-movem -opt-nmoveq -opt-pea -opt-size
