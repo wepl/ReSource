@@ -30,7 +30,7 @@ RM=Delete All
 DATE=wdate >
 
 # Amiga default: AS=basm, DEBUG=1
-ifndef AS
+ifeq ($(AS),as)
 AS=basm
 endif
 ifndef DEBUG
@@ -45,12 +45,12 @@ RM=rm -fr
 DATE=date "+(%d.%m.%Y)" | xargs printf >
 VAMOS=vamos -qC68020 -m4096 -s128 --
 
-# UNIX default: AS=vasm, DEBUG=0
-ifndef AS
+# UNIX default: AS=vasm, DEBUG=1
+ifeq ($(AS),as)
 AS=vasm
 endif
 ifndef DEBUG
-DEBUG=0
+DEBUG=1
 endif
 
 endif
@@ -76,23 +76,27 @@ endif
 
 # VASM: -wfail -warncomm -databss
 # currently no working: -opt-st
-ASM=vasmm68k_mot -Fhunkexe -quiet -ldots -wfail -opt-allbra -opt-clr -opt-lsl -opt-movem -opt-nmoveq -opt-pea -opt-size
+ASM=vasmm68k_mot -Fhunkexe -quiet -ldots -wfail -opt-clr -opt-lsl -opt-movem -opt-nmoveq -opt-pea -opt-size
 ASMDEF=-D
 ASMOUT=-o 
 
 ifeq ($(DEBUG),1)
 ASM+= -kick1hunks -DDEBUG=1
 else
-ASM+= -nosym
+ASM+= -nosym -opt-allbra
 endif
 
+endif
+
+ifeq ($(DEBUG),0)
+$(warning WARNING: optimized builds are currently broken!)
 endif
 
 #
 # ReSource (default target)
 #
 ReSource: ReSource.asm
-	$(DATE) .date
+	@$(DATE) .date
 	$(ASM) $(ASMOUT)$@ $<
 
 # how to create additionally listing files

@@ -47279,7 +47279,7 @@ ext8_cc_68060	bfextu	d5{4:4},d0
 	move.b	#'.',(a4)+
 	movea.l	a2,a0
 	move.b	(-1,a2),d1
-	beq.b	extract_cc_w
+	beq	extract_cc_w
 	cmpi.b	#$FF,d1
 	beq.w	extract_cc_l
 	move.b	(B.MSG-ds,a6),(a4)+
