@@ -1,7 +1,10 @@
 
-version 6.6.x (2021-12-29) done by Wepl
+version 6.6.x (2022-01-26) done by Wepl
 
 * changed from RCS to Git and made available via github
+* added Makefile, builds with vasm & basm
+* supports full optimize now, all relatives should be correctly
+  disassembled
 
 version 6.6.1 (2020-02-19) done by Wepl
 

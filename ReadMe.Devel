@@ -113,13 +113,12 @@ ok is:
 files have 40 differences
 
 
-Bugs, ToDo list
-***************
+Known Bugs, missing Feature Improvements, ToDo list
+***************************************************
 
 long displacement will be saved in asm source without size specifier (.l)
 symbol pointing to current address will be saved as asm as ' dl lbC010170-'
 	in general the label is missing if not defined
-btst dn,#i disassembled as 'btst dn,#????i'
 dcb:
 	if Options1/DCB statememnts = On
 	and repeated lines with relative words:
@@ -128,11 +127,6 @@ dcb:
 		dw      lbC016D22-lbW01725C
 	will create:
 		dcb.w   lbC016D22-lbW01725C,$FAC6
-
-
-Feature Improvements ToDo
-*************************
-
 labels starting with a number should be not possible
 it is not posible to use 'SPECIAL FUNCTIONS - Convert Specific EAs' with unsigned values
 	ReSource offset $29b28
@@ -140,7 +134,6 @@ add function to remove all labels/datatypes in an area
 when opening Search window activate string gadget
 pressing open any window button should close it if is already open
 open windows on right border cascaded or remember their position
-make global optimize working with BASM
 make OD08 working with BASM
 saving a .rs file under different name doesn't change the displayed filename in the
 	screen title bar and also not in the title of subsequent file requesters;

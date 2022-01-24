@@ -45,12 +45,12 @@ RM=rm -fr
 DATE=date "+(%d.%m.%Y)" | xargs printf >
 VAMOS=vamos -qC68020 -m4096 -s128 --
 
-# UNIX default: AS=vasm, DEBUG=1
+# UNIX default: AS=vasm, DEBUG=0
 ifeq ($(AS),as)
 AS=vasm
 endif
 ifndef DEBUG
-DEBUG=1
+DEBUG=0
 endif
 
 endif
@@ -86,10 +86,6 @@ else
 ASM+= -nosym -opt-allbra
 endif
 
-endif
-
-ifeq ($(DEBUG),0)
-$(warning WARNING: optimized builds are currently broken!)
 endif
 
 #

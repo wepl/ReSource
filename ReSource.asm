@@ -16597,7 +16597,7 @@ default_func	dl	term1-default_func
 	dl	lbC01C0FA-*
 	dw	$2CE
 	dl	0
-	dl	lbC02AEC0-*
+	dl	_RefreshAll-*
 	dw	$16
 	dl	0
 	dl	lbC02AEDE-*
@@ -25427,7 +25427,7 @@ lbC015650	jsr	(lbC02A3CC-ds,a6)
 lbC01565C	movem.l	d2-d7/a4/a5,-(sp)
 	tst.b	(lbB02B416-ds,a6)
 	beq.b	lbC015670
-	jsr	(lbC02AEC0-ds,a6)
+	jsr	(_RefreshAll-ds,a6)
 	jsr	(lbC001674).l
 lbC015670	move.l	a2,(lbL02D324-ds,a6)
 	jsr	(lbC02846C-ds,a6)
@@ -25603,7 +25603,7 @@ lbC01581E	movem.l	(sp)+,a2/a3
 lbC01582A	movem.l	d2-d7/a4/a5,-(sp)
 	tst.b	(lbB02B416-ds,a6)
 	beq.b	lbC01583E
-	jsr	(lbC02AEC0-ds,a6)
+	jsr	(_RefreshAll-ds,a6)
 	jsr	(lbC001674).l
 lbC01583E	move.l	a2,(lbL02D324-ds,a6)
 	jsr	(lbC028476-ds,a6)
@@ -25962,11 +25962,11 @@ lbC015BB8	clr.l	(workdata_strt_plus1-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC015BC0	move.l	#$FFFFF000,d1
-	move.w	#$64E,d2
+	move.w	#lbC02AEDE-ds,d2
 	bra.b	lbC015BD6
 
 lbC015BCC	move.l	#$1000,d1
-	move.w	#$630,d2
+	move.w	#_RefreshAll-ds,d2
 lbC015BD6	move.l	a2,d0
 	add.l	d1,d0
 	cmp.l	(workdata_end-ds,a6),d0
@@ -49933,7 +49933,7 @@ lbC028322	cmpi.b	#$FF,(lbB02EB3C-ds,a6)
 	bne.b	lbC028340
 	tst.b	(lbB02B416-ds,a6)
 	beq.b	lbC02833A
-	jsr	(lbC02AEC0-ds,a6)
+	jsr	(_RefreshAll-ds,a6)
 	jsr	(lbC001674).l
 lbC02833A	move.l	a2,(lbL02D0AC-ds,a6)
 	bra.b	lbC028348
@@ -52958,13 +52958,13 @@ lbC02A5FA	movem.l	(sp)+,d0-d2/a0-a2/a6
 
 lbC02A600	movem.l	d0/d1/a0-a2/a6,-(sp)
 	movea.l	a6,a2
-	movea.l	($26D2,a2),a0
+	movea.l	(window1ptr-ds,a2),a0
 lbC02A60A	movea.l	(intbase-ds,a2),a6
 	jsr	(_LVOClearMenuStrip,a6)
 	movea.l	(12,sp),a1
 	move.l	(sp),(12,a1)
-	movea.l	($26D2,a2),a0
-	movea.l	($25C4,a2),a1
+	movea.l	(window1ptr-ds,a2),a0
+	movea.l	(menustrip-ds,a2),a1
 	jsr	(_LVOResetMenuStrip,a6)
 	movem.l	(sp)+,d0/d1/a0-a2/a6
 	rts
@@ -53600,7 +53600,7 @@ lbC02AEB4	tst.b	(a0)+
 	subq.l	#1,d0
 	rts
 
-lbC02AEC0	bsr.w	_SetPointerAll
+_RefreshAll	bsr.w	_SetPointerAll
 	jsr	(lbC029B18-ds,a6)
 	bsr.w	lbC0273FC
 	movea.l	(workdata_end-ds,a6),a2
