@@ -45120,6 +45120,10 @@ lbC024FBC	lea	(USP.MSG1-ds,a6),a0
 add_68060_comment
 	btst	#3,d5		;check for buscr/pcr
 	beq.b	.skip
+	move.l	d5,d0
+	andi.w	#$7FF,d0
+	cmpi.w	#8,d0		;check for illegal registers
+	bhi.b	.skip
 	bsr.w	ext_mc68060
 .skip	rts
 
