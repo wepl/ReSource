@@ -869,7 +869,7 @@ GadgetRender	dl	0	;Left Top
 	dl	0	;NextImage
 
 openwindow_symbols	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(symbolsWindowPtr-ds,a6),d0
+	move.l	(windowSymbolsPtr-ds,a6),d0
 	beq.b	lbC000602
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -938,7 +938,7 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(symbolsWindowPtr-ds,a6)
+	move.l	d0,(windowSymbolsPtr-ds,a6)
 	beq.w	syms_nowin
 	movea.l	d0,a3
 	move.l	#$400778,d0
@@ -1290,7 +1290,7 @@ gadcode_sym_load	move.w	($C8,a5),d0
 closewindow_symbols	move.w	(wd_LeftEdge,a3),(windowSymbolsLeft-ds,a6)
 	move.w	(wd_TopEdge,a3),(windowSymbolsTop-ds,a6)
 	bsr.w	CloseWindow
-	clr.l	(symbolsWindowPtr-ds,a6)
+	clr.l	(windowSymbolsPtr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
@@ -1550,7 +1550,7 @@ lbC000E2A	moveq	#0,d5
 	rts
 
 openwindow_search	movem.l	d2-d6/a2-a5,-(sp)
-	move.l	(searchWindowPtr-ds,a6),d0
+	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	lbC000E44
 	movea.l	d0,a0
 	bsr.w	windowtofront
@@ -1649,7 +1649,7 @@ lbC000F44	move.l	d0,-(sp)
 	jsr	(_LVOOpenWindowTagList,a6)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
-	move.l	d0,(searchWindowPtr-ds,a6)
+	move.l	d0,(windowSearchPtr-ds,a6)
 	beq.w	lbC000FCE
 	movea.l	d0,a3
 	move.l	#$40760,d0
@@ -1692,7 +1692,7 @@ lbC000FFA	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
 lbC001000	movem.l	d1-d3/a2-a5,-(sp)
-	move.l	(searchWindowPtr-ds,a6),d0
+	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	lbC001012
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
@@ -2280,7 +2280,7 @@ lbW001668	dw	$4D
 	dw	$354
 
 lbC001674	movem.l	d0/d1/a0-a3,-(sp)
-	move.l	(searchWindowPtr-ds,a6),d0
+	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	lbC0016A0
 	movea.l	d0,a3
 	movea.l	($78,a3),a0
@@ -2299,7 +2299,7 @@ lbC0016A0	clr.b	(lbB02B415-ds,a6)
 
 ActivateSearchString
 	movem.l	a2/a6,-(sp)
-	move.l	(searchWindowPtr-ds,a6),d0
+	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	.nowin
 	movea.l	d0,a1
 	movea.l	(wd_UserData,a1),a0
@@ -2314,7 +2314,7 @@ ActivateSearchString
 closewindow_search	move.w	(wd_LeftEdge,a3),(windowSearchLeft-ds,a6)
 	move.w	(wd_TopEdge,a3),(windowSearchTop-ds,a6)
 	bsr.w	CloseWindow
-	clr.l	(searchWindowPtr-ds,a6)
+	clr.l	(windowSearchPtr-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
@@ -2517,7 +2517,7 @@ _setgadget2	bsr.w	setgadget
 	bsr.w	SetGadgetAttrs
 lbC001950	cmp.w	(macros_num-ds,a6),d6
 	bne.b	lbC001962
-	cmp.w	(lbB02CF8C-ds,a6),d2
+	cmp.w	(lbW02CF8C-ds,a6),d2
 	bne.b	lbC001962
 	lea	(ga_disabled_1,pc),a1
 	bra.b	lbC001966
@@ -2638,7 +2638,7 @@ select_macros_list	movem.l	d2/a2,-(sp)
 	bsr.w	SetGadgetAttrs
 lbC001AAE	cmp.w	(macros_num-ds,a6),d2
 	bne.b	lbC001AC0
-	cmp.w	(lbB02CF8C-ds,a6),d3
+	cmp.w	(lbW02CF8C-ds,a6),d3
 	bne.b	lbC001AC0
 	lea	(ga_disabled_1,pc),a1
 	bra.b	lbC001AC4
@@ -2658,7 +2658,7 @@ select_macros_execute
 	adda.w	(a1,d0.w),a1
 	lea	(lbB02CFF8-ds,a6),a0
 	move.w	(a0,d0.w),d0
-	move.w	d0,(lbB02CF8C-ds,a6)
+	move.w	d0,(lbW02CF8C-ds,a6)
 	add.w	d0,d0
 	move.w	(a1,d0.w),d0
 	move.l	a3,(lbL02CF86-ds,a6)
@@ -24084,7 +24084,7 @@ lbC01483E	movea.l	(4,a0),a0
 lbC01484C	move.b	(a0)+,(a1)+
 	dbeq	d0,lbC01484C
 	clr.b	-(a1)
-	move.l	(symbolsWindowPtr-ds,a6),d0
+	move.l	(windowSymbolsPtr-ds,a6),d0
 	beq.b	lbC014892
 	movem.l	d1/d2/a0-a5,-(sp)
 	movea.l	d0,a3
@@ -25094,11 +25094,11 @@ _LoadMenuDefaults	move.l	d0,-(sp)
 
 SetSmartRefresh	movea.l	(window1ptr-ds,a6),a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-	move.l	(symbolsWindowPtr-ds,a6),d0
+	move.l	(windowSymbolsPtr-ds,a6),d0
 	beq.b	lbC0152DC
 	movea.l	d0,a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
-lbC0152DC	move.l	(searchWindowPtr-ds,a6),d0
+lbC0152DC	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	lbC0152EA
 	movea.l	d0,a0
 	bset	#WFLG_SMART_REFRESH,(wd_Flags+1,a0)
@@ -25126,11 +25126,11 @@ lbC015330	rts
 
 SetNoSmartRefresh	movea.l	(window1ptr-ds,a6),a0
 	bclr	#0,($19,a0)
-	move.l	(symbolsWindowPtr-ds,a6),d0
+	move.l	(windowSymbolsPtr-ds,a6),d0
 	beq.b	lbC01534A
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
-lbC01534A	move.l	(searchWindowPtr-ds,a6),d0
+lbC01534A	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	lbC015358
 	movea.l	d0,a0
 	bclr	#0,($19,a0)
@@ -38674,12 +38674,12 @@ lbC0204D4	move.l	(sp)+,d0
 
 CloseAllWin	movem.l	a3/a5/a6,-(sp)
 	movea.l	a5,a6
-	move.l	(symbolsWindowPtr-ds,a6),d0
+	move.l	(windowSymbolsPtr-ds,a6),d0
 	beq.b	lbC0204F4
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
 	jsr	(closewindow_symbols).l
-lbC0204F4	move.l	(searchWindowPtr-ds,a6),d0
+lbC0204F4	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	lbC020506
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
@@ -47794,7 +47794,7 @@ lbC026D7C	move.b	(a0)+,(a1)+
 	bsr.w	lbC027222
 	bra.w	lbC02116C
 
-lbC026D94	tst.l	(searchWindowPtr-ds,a6)
+lbC026D94	tst.l	(windowSearchPtr-ds,a6)
 	beq.b	lbC026DC8
 	move.w	(lbB02EACC-ds,a6),d0
 	cmpi.w	#$4D,d0
@@ -49686,7 +49686,7 @@ _savecommonregs1	bsr.w	saveregs_nod0d1a0a1
 	bsr.w	lbC0273FC
 	bra.b	lbC028268
 
-lbC028254	tst.l	(searchWindowPtr-ds,a6)
+lbC028254	tst.l	(windowSearchPtr-ds,a6)
 	beq.b	.beep
 	jsr	(ActivateSearchString).l
 	bra.w	cceq
@@ -50508,7 +50508,7 @@ _nogadget	cmpi.l	#IDCMP_CLOSEWINDOW,d2
 
 _noclosewindow	cmpi.l	#IDCMP_ACTIVEWINDOW,d2
 	bne.w	_msgnext
-	cmpa.l	(searchWindowPtr-ds,a6),a3
+	cmpa.l	(windowSearchPtr-ds,a6),a3
 	bne.w	_msgnext
 	jsr	(ActivateSearchString).l
 	bra.w	_msgnext
@@ -52073,12 +52073,12 @@ lbC029E04	movem.l	d0-d2/a0-a2/a5/a6,-(sp)
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 	lea	(lbL02B060-ds,a5),a2
-	move.l	(symbolsWindowPtr-ds,a5),d2
+	move.l	(windowSymbolsPtr-ds,a5),d2
 	beq.b	lbC029E28
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
 lbC029E28	lea	(lbL02B0D0-ds,a5),a2
-	move.l	(searchWindowPtr-ds,a5),d2
+	move.l	(windowSearchPtr-ds,a5),d2
 	beq.b	lbC029E36
 	bsr.b	_InitRequester
 	beq.b	lbC029E80
@@ -52125,12 +52125,12 @@ lbC029E98	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
 	movea.l	(window1ptr-ds,a5),a1
 	movea.l	(intbase-ds,a5),a6
 	jsr	(_LVOEndRequest,a6)
-	move.l	(symbolsWindowPtr-ds,a5),d0
+	move.l	(windowSymbolsPtr-ds,a5),d0
 	beq.b	lbC029EBE
 	lea	(lbL02B060-ds,a5),a0
 	movea.l	d0,a1
 	jsr	(_LVOEndRequest,a6)
-lbC029EBE	move.l	(searchWindowPtr-ds,a5),d0
+lbC029EBE	move.l	(windowSearchPtr-ds,a5),d0
 	beq.b	lbC029ECE
 	lea	(lbL02B0D0-ds,a5),a0
 	movea.l	d0,a1
@@ -52170,10 +52170,10 @@ _SetPointerAll	movem.l	d0-d3/a0/a1/a5/a6,-(sp)
 	movea.l	(intbase-ds,a5),a6
 	move.l	(window1ptr-ds,a5),d0
 	bsr.w	_SetPointer
-	move.l	(symbolsWindowPtr-ds,a5),d0
+	move.l	(windowSymbolsPtr-ds,a5),d0
 	beq.b	lbC029F42
 	bsr.b	_SetPointer
-lbC029F42	move.l	(searchWindowPtr-ds,a5),d0
+lbC029F42	move.l	(windowSearchPtr-ds,a5),d0
 	beq.b	lbC029F4A
 	bsr.b	_SetPointer
 lbC029F4A	move.l	(windowMacros1Ptr-ds,a5),d0
@@ -52207,10 +52207,10 @@ _ClearPointerAll	movem.l	d0/d1/a0/a1/a5/a6,-(sp)
 	movea.l	(intbase-ds,a5),a6
 	move.l	(window1ptr-ds,a5),d0
 	bsr.b	_ClearPointer
-	move.l	(symbolsWindowPtr-ds,a5),d0
+	move.l	(windowSymbolsPtr-ds,a5),d0
 	beq.b	lbC029FA6
 	bsr.b	_ClearPointer
-lbC029FA6	move.l	(searchWindowPtr-ds,a5),d0
+lbC029FA6	move.l	(windowSearchPtr-ds,a5),d0
 	beq.b	lbC029FAE
 	bsr.b	_ClearPointer
 lbC029FAE	move.l	(windowMacros1Ptr-ds,a5),d0
@@ -54101,38 +54101,38 @@ vblank_struct	dx.l	5
 	dx.w	1
 vblank_inited	dx.b	1
 vblank_counter	dx.b	1
-window1ptr	dx.b	4
+window1ptr	dx.l	1
 userport	dx.l	1
-symbolsWindowPtr	dx.l	1
-searchWindowPtr	dx.l	1
+windowSymbolsPtr	dx.l	1
+windowSearchPtr	dx.l	1
 windowMacros1Ptr	dx.l	1
 windowMacros2Ptr	dx.l	1
 windowMacros3Ptr	dx.l	1
 windowOptions1Ptr	dx.l	1
 windowOptions2Ptr	dx.l	1
 lbL02CF86	dx.l	1
-macros_num	dx.b	2
-lbB02CF8C	dx.b	2
+macros_num	dx.w	1
+lbW02CF8C	dx.w	1
 rawDoFmt_args	dx.b	$10
 lbL02CF9E	dx.l	5
 lbW02CFB2	dx.w	1
 menuModifyList	dx.b	$1A
-windowSymbolsLeft	dx.b	2
-windowSymbolsTop	dx.b	2
-windowXLeft	dx.b	2
-windowXTop	dx.b	2
-windowMacros1Left	dx.b	2
-windowMacros1Top	dx.b	2
-windowMacros2Left	dx.b	2
-windowMacros2Top	dx.b	2
-windowMacros3Left	dx.b	2
-windowMacros3Top	dx.b	2
-windowSearchLeft	dx.b	2
-windowSearchTop	dx.b	2
-windowOptions1Left	dx.b	2
-windowOptions1Top	dx.b	2
-windowOptions2Left	dx.b	2
-windowOptions2Top	dx.b	2
+windowSymbolsLeft	dx.w	1
+windowSymbolsTop	dx.w	1
+windowXLeft	dx.w	1
+windowXTop	dx.w	1
+windowMacros1Left	dx.w	1
+windowMacros1Top	dx.w	1
+windowMacros2Left	dx.w	1
+windowMacros2Top	dx.w	1
+windowMacros3Left	dx.w	1
+windowMacros3Top	dx.w	1
+windowSearchLeft	dx.w	1
+windowSearchTop	dx.w	1
+windowOptions1Left	dx.w	1
+windowOptions1Top	dx.w	1
+windowOptions2Left	dx.w	1
+windowOptions2Top	dx.w	1
 windowZap2Left	dx.w	1
 windowZap2Top	dx.w	1
 symactivenum_dirs	dx.b	2	;-1 if none
