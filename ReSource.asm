@@ -44,6 +44,7 @@ pr_COS	equ	$A0
 WA_NewLookMenus	equ	$80000093
 GTCB_Checked	equ	$80080004
 WFLG_ACTIVATE	equ	$1000
+IDCMP_ACTIVEWINDOW	equ	$40000
 _LVOSetRGB4	equ	-$120
 AttnFlags	equ	$128
 BUTTON_KIND	equ	$1
@@ -68,6 +69,7 @@ AFB_68881	equ	$4
 ASLFR_InitialDrawer	equ	$80080009
 h_Entry	equ	$8
 _LVOFreeRaster	equ	-$1F2
+IDCMP_CLOSEWINDOW	equ	$200
 SA_Overscan	equ	$80000034
 GTCY_Active	equ	$8008000F
 GTLV_ShowSelected	equ	$80080035
@@ -83,6 +85,7 @@ _LVOInitRastPort	equ	-$C6
 WA_CloseGadget	equ	$80000084
 WA_Borderless	equ	$80000088
 MN_SIZE	equ	$14
+gg_GadgetID	equ	$26
 _LVODoubleClick	equ	-$66
 GM_LAYOUT	equ	$6
 _LVOPutStr	equ	-$3B4
@@ -121,6 +124,7 @@ ASLFR_TitleText	equ	$80080001
 bm_BytesPerRow	equ	$0
 AFB_68020	equ	$1
 nw_Height	equ	$6
+IDCMP_REFRESHWINDOW	equ	$4
 _LVOAllocRemember	equ	-$18C
 _LVOAllocRaster	equ	-$1EC
 _LVOText	equ	-$3C
@@ -133,6 +137,7 @@ mi_NextItem	equ	$0
 _LVOGetDiskObject	equ	-$4E
 WA_SimpleRefresh	equ	$8000008C
 ALTLEFT	equ	$10
+IDCMP_GADGETUP	equ	$40
 _LVOUnLock	equ	-$5A
 _LVOBltBitMapRastPort	equ	-$25E
 _LVOWaitBlit	equ	-$E4
@@ -157,6 +162,7 @@ SA_Reserved	equ	$80000048
 SA_Depth	equ	$80000025
 _LVOAddGList	equ	-$1B6
 WA_HelpGroupWindow	equ	$8000009C
+IDCMP_MENUPICK	equ	$100
 SA_Width	equ	$80000023
 _LVOClipBlit	equ	-$228
 _LVOModifyIDCMP	equ	-$96
@@ -182,6 +188,7 @@ bm_Planes	equ	$8
 _LVOFreeVec	equ	-$2B2
 _LVOExNext	equ	-$6C
 SA_Left	equ	$80000021
+SELECTDOWN	equ	$68
 TC_SIZE	equ	$5C
 ASLSM_InitialDisplayHeight	equ	$80080066
 im_Qualifier	equ	$1A
@@ -232,6 +239,7 @@ h_Data	equ	$10
 _LVOCopyMemQuick	equ	-$276
 _LVOGetDisplayInfoData	equ	-$2F4
 mi_ItemFill	equ	$12
+IDCMP_GADGETDOWN	equ	$20
 _LVOPubScreenStatus	equ	-$228
 _LVOClearMenuStrip	equ	-$36
 pr_MsgPort	equ	$5C
@@ -251,6 +259,7 @@ SA_BitMap	equ	$8000002E
 GTLV_Top	equ	$80080005
 _LVOExecute	equ	-$DE
 GACT_STRINGCENTER	equ	$200
+gg_UserData	equ	$28
 _LVODelay	equ	-$C6
 _LVOScreenToFront	equ	-$FC
 mu_NextMenu	equ	$0
@@ -336,6 +345,7 @@ _LVOGT_RefreshWindow	equ	-$54
 gng_LeftEdge	equ	$0
 MEMF_CHIP	equ	$2
 GTST_MaxChars	equ	$8008002E
+IDCMP_MOUSEBUTTONS	equ	$8
 STRINGA_ExitHelp	equ	$80032013
 _LVORefreshGList	equ	-$1B0
 _LVOGT_BeginRefresh	equ	-$5A
@@ -915,10 +925,10 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	pea	($273).w
 	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFD0-ds,a6),d0
+	move.w	(windowSymbolsTop-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#WA_Top,-(sp)
-	move.w	(lbB02CFCE-ds,a6),d0
+	move.w	(windowSymbolsLeft-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
@@ -1023,9 +1033,9 @@ lbC0007FC	movea.l	($32,a5),a0
 	bne.b	_setgadget1
 	moveq	#5,d1
 _setgadget1	bsr.w	setgadget
-	lea	(lbC000B1C,pc),a0
+	lea	(closewindow_symbols,pc),a0
 	move.l	a0,($A6,a5)
-	move.l	a5,($78,a3)
+	move.l	a5,(wd_UserData,a3)
 lbC000820	andi.b	#$FB,ccr
 	bra.b	lbC000852
 
@@ -1277,8 +1287,8 @@ lbC000B14	rts
 gadcode_sym_load	move.w	($C8,a5),d0
 	rts
 
-lbC000B1C	move.w	(4,a3),(lbB02CFCE-ds,a6)
-	move.w	(6,a3),(lbB02CFD0-ds,a6)
+closewindow_symbols	move.w	(wd_LeftEdge,a3),(windowSymbolsLeft-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowSymbolsTop-ds,a6)
 	bsr.w	CloseWindow
 	clr.l	(symbolsWindowPtr-ds,a6)
 	movea.l	($22,a5),a0
@@ -1301,7 +1311,7 @@ lbC000B54	movea.l	a5,a1
 	movea.l	(sp)+,a6
 	rts
 
-lbC000B64	movem.l	d2-d7/a2-a5,-(sp)
+openwindow_x	movem.l	d2-d7/a2-a5,-(sp)
 	suba.w	#$CA,sp
 	movea.l	sp,a5
 	movea.l	(window1ptr-ds,a6),a0
@@ -1356,29 +1366,29 @@ lbC000BEC	lea	(lbW000DAE,pc),a0
 	move.w	#$1770,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
-	move.l	#$8000006E,-(sp)
+	move.l	#WA_Title,-(sp)
 	moveq	#1,d0
 	move.l	d0,-(sp)
-	move.l	#$80000082,-(sp)
+	move.l	#WA_DragBar,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008A,-(sp)
+	move.l	#WA_RMBTrap,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000089,-(sp)
+	move.l	#WA_Activate,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008D,-(sp)
+	move.l	#WA_SmartRefresh,-(sp)
 	clr.l	-(sp)
-	move.l	#$8000006A,-(sp)
+	move.l	#WA_IDCMP,-(sp)
 	pea	($B9).w
-	move.l	#$80000067,-(sp)
+	move.l	#WA_Height,-(sp)
 	pea	($10C).w
-	move.l	#$80000066,-(sp)
+	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFD4-ds,a6),d0
+	move.w	(windowXTop-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000065,-(sp)
-	move.w	(lbB02CFD2-ds,a6),d0
+	move.l	#WA_Top,-(sp)
+	move.w	(windowXLeft-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000064,-(sp)
+	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
@@ -1404,7 +1414,7 @@ lbC000BEC	lea	(lbW000DAE,pc),a0
 	bsr.w	setgadget
 	moveq	#0,d4
 lbC000CB4	tst.w	d4
-	bne.w	lbC000D42
+	bne.w	closewindow_x
 	movea.l	($56,a3),a0
 	move.l	a6,-(sp)
 	movea.l	(execbase-ds,a6),a6
@@ -1434,7 +1444,7 @@ lbC000CCA	movea.l	($56,a3),a0
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_BeginRefresh,a6)
 	movea.l	(sp)+,a6
-	jsr	(lbC028CFC).l
+	jsr	(RefreshScreen).l
 	movea.l	a3,a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
@@ -1451,8 +1461,8 @@ lbC000D2C	cmpi.l	#$40,d3
 	jsr	(a0)
 	bra.w	lbC000CCA
 
-lbC000D42	move.w	(4,a3),(lbB02CFD2-ds,a6)
-	move.w	(6,a3),(lbB02CFD4-ds,a6)
+closewindow_x	move.w	(wd_LeftEdge,a3),(windowXLeft-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowXTop-ds,a6)
 	bsr.w	CloseWindow
 	bra.b	lbC000D58
 
@@ -1595,43 +1605,43 @@ lbC000EB0	move.w	(a0)+,d0
 	beq.w	lbC000FE2
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
-	move.l	#$80000070,-(sp)
+	move.l	#WA_CustomScreen,-(sp)
 	move.w	#$1194,d0
 	tst.b	(laceflag-ds,a6)
 	bne.b	lbC000EF6
 	addq.w	#1,d0
 lbC000EF6	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
-	move.l	#$8000006E,-(sp)
+	move.l	#WA_Title,-(sp)
 	moveq	#1,d0
 	move.l	d0,-(sp)
-	move.l	#$80000083,-(sp)
+	move.l	#WA_DepthGadget,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000082,-(sp)
+	move.l	#WA_DragBar,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000089,-(sp)
+	move.l	#WA_Activate,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000084,-(sp)
+	move.l	#WA_CloseGadget,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008D,-(sp)
+	move.l	#WA_SmartRefresh,-(sp)
 	clr.l	-(sp)
-	move.l	#$8000006A,-(sp)
+	move.l	#WA_IDCMP,-(sp)
 	moveq	#0,d0
 	move.w	#$97,d0
 	tst.b	(laceflag-ds,a6)
 	bne.b	lbC000F44
 	move.w	#$6B,d0
 lbC000F44	move.l	d0,-(sp)
-	move.l	#$80000067,-(sp)
+	move.l	#WA_Height,-(sp)
 	pea	($194).w
-	move.l	#$80000066,-(sp)
+	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFE4-ds,a6),d0
+	move.w	(windowSearchTop-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000065,-(sp)
-	move.w	(lbB02CFE2-ds,a6),d0
+	move.l	#WA_Top,-(sp)
+	move.w	(windowSearchLeft-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000064,-(sp)
+	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
@@ -1657,9 +1667,9 @@ lbC000F44	move.l	d0,-(sp)
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
 	bsr.b	lbC001018
-	lea	(lbC0016D6,pc),a0
+	lea	(closewindow_search,pc),a0
 	move.l	a0,($A6,a5)
-	move.l	a5,($78,a3)
+	move.l	a5,(wd_UserData,a3)
 lbC000FC8	andi.b	#$FB,ccr
 	bra.b	lbC000FFA
 
@@ -2287,21 +2297,22 @@ lbC0016A0	clr.b	(lbB02B415-ds,a6)
 	movem.l	(sp)+,d0/d1/a0-a3
 	rts
 
-lbC0016AE	movem.l	a2/a6,-(sp)
+ActivateSearchString
+	movem.l	a2/a6,-(sp)
 	move.l	(searchWindowPtr-ds,a6),d0
-	beq.b	lbC0016D0
+	beq.b	.nowin
 	movea.l	d0,a1
-	movea.l	($78,a1),a0
+	movea.l	(wd_UserData,a1),a0
 	lea	($2A,a0),a0
 	movea.l	($3C,a0),a0
 	suba.l	a2,a2
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOActivateGadget,a6)
-lbC0016D0	movem.l	(sp)+,a2/a6
+.nowin	movem.l	(sp)+,a2/a6
 	rts
 
-lbC0016D6	move.w	(4,a3),(lbB02CFE2-ds,a6)
-	move.w	(6,a3),(lbB02CFE4-ds,a6)
+closewindow_search	move.w	(wd_LeftEdge,a3),(windowSearchLeft-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowSearchTop-ds,a6)
 	bsr.w	CloseWindow
 	clr.l	(searchWindowPtr-ds,a6)
 	movea.l	($22,a5),a0
@@ -2411,17 +2422,17 @@ lbC0017DC	move.l	d0,-(sp)
 	pea	($10C).w
 	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFD8-ds,a6),d0
+	move.w	(windowMacros1Top-ds,a6),d0
 	moveq	#0,d1
-	move.w	(lbB02CFD6-ds,a6),d1
+	move.w	(windowMacros1Left-ds,a6),d1
 	tst.w	d6
 	beq.b	lbC00185E
-	move.w	(lbB02CFDC-ds,a6),d0
-	move.w	(lbB02CFDA-ds,a6),d1
+	move.w	(windowMacros2Top-ds,a6),d0
+	move.w	(windowMacros2Left-ds,a6),d1
 	cmpi.w	#1,d6
 	beq.b	lbC00185E
-	move.w	(lbB02CFE0-ds,a6),d0
-	move.w	(lbB02CFDE-ds,a6),d1
+	move.w	(windowMacros3Top-ds,a6),d0
+	move.w	(windowMacros3Left-ds,a6),d1
 lbC00185E	move.l	d0,-(sp)
 	move.l	#WA_Top,-(sp)
 	move.l	d1,-(sp)
@@ -2515,15 +2526,15 @@ lbC001962	lea	(ga_disabled_0,pc),a1
 lbC001966	movea.l	(8,a2),a0
 	bsr.w	SetGadgetAttrs
 lbC00196E	move.w	d6,($C8,a5)
-	lea	(Macros1Dealloc,pc),a0
+	lea	(closewindow_macros1,pc),a0
 	tst.w	d6
 	beq.b	lbC001988
-	lea	(Macros2Dealloc,pc),a0
+	lea	(closewindow_macros2,pc),a0
 	cmpi.w	#1,d6
 	beq.b	lbC001988
-	lea	(Macros3Dealloc,pc),a0
+	lea	(closewindow_macros3,pc),a0
 lbC001988	move.l	a0,($A6,a5)
-	move.l	a5,($78,a3)
+	move.l	a5,(wd_UserData,a3)
 lbC001990	andi.b	#$FB,ccr
 	bra.b	lbC0019D6
 
@@ -2872,18 +2883,18 @@ lbC001CF4	jsr	(easyrequest_3a-ds,a6)
 lbC001CFC	movem.l	(sp)+,d2/a2/a3
 	rts
 
-Macros1Dealloc	move.w	(4,a3),(lbB02CFD6-ds,a6)
-	move.w	(6,a3),(lbB02CFD8-ds,a6)
+closewindow_macros1	move.w	(wd_LeftEdge,a3),(windowMacros1Left-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowMacros1Top-ds,a6)
 	clr.l	(windowMacros1Ptr-ds,a6)
 	bra.b	lbC001D36
 
-Macros2Dealloc	move.w	(4,a3),(lbB02CFDA-ds,a6)
-	move.w	(6,a3),(lbB02CFDC-ds,a6)
+closewindow_macros2	move.w	(wd_LeftEdge,a3),(windowMacros2Left-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowMacros2Top-ds,a6)
 	clr.l	(windowMacros2Ptr-ds,a6)
 	bra.b	lbC001D36
 
-Macros3Dealloc	move.w	(4,a3),(lbB02CFDE-ds,a6)
-	move.w	(6,a3),(lbB02CFE0-ds,a6)
+closewindow_macros3	move.w	(wd_LeftEdge,a3),(windowMacros3Left-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowMacros3Top-ds,a6)
 	clr.l	(windowMacros3Ptr-ds,a6)
 lbC001D36	lea	(lbL02CF86-ds,a6),a0
 	cmpa.l	(a0),a3
@@ -2985,7 +2996,7 @@ openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
 	bsr.b	win_options1_cfg
-	lea	(closewindow_options2,pc),a0
+	lea	(closewindow_options1,pc),a0
 	move.l	a0,($A6,a5)
 	move.l	a5,(wd_UserData,a3)
 .clrccr	andi.b	#$FB,ccr
@@ -3545,9 +3556,9 @@ lbW002432	dw	$294
 	dw	$295
 	dw	$2B8
 
-closewindow_options2
-	move.w	(4,a3),(windowOptions1Left-ds,a6)
-	move.w	(6,a3),(windowOptions1Top-ds,a6)
+closewindow_options1
+	move.w	(wd_LeftEdge,a3),(windowOptions1Left-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowOptions1Top-ds,a6)
 	bsr.w	CloseWindow
 	clr.l	(windowOptions1Ptr-ds,a6)
 	movea.l	($22,a5),a0
@@ -3583,35 +3594,35 @@ lbC002480	move.l	#$10000,d1
 	beq.w	lbC002598
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
-	move.l	#$80000070,-(sp)
+	move.l	#WA_CustomScreen,-(sp)
 	move.w	#$BB8,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
-	move.l	#$8000006E,-(sp)
+	move.l	#WA_Title,-(sp)
 	moveq	#1,d0
 	move.l	d0,-(sp)
-	move.l	#$80000083,-(sp)
+	move.l	#WA_DepthGadget,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000082,-(sp)
+	move.l	#WA_DragBar,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000084,-(sp)
+	move.l	#WA_CloseGadget,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$80000089,-(sp)
+	move.l	#WA_Activate,-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8000008D,-(sp)
+	move.l	#WA_SmartRefresh,-(sp)
 	clr.l	-(sp)
-	move.l	#$8000006A,-(sp)
+	move.l	#WA_IDCMP,-(sp)
 	pea	($B1).w
-	move.l	#$80000067,-(sp)
+	move.l	#WA_Height,-(sp)
 	pea	($164).w
-	move.l	#$80000066,-(sp)
+	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(lbB02CFEC-ds,a6),d0
+	move.w	(windowOptions2Top-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000065,-(sp)
-	move.w	(lbB02CFEA-ds,a6),d0
+	move.l	#WA_Top,-(sp)
+	move.w	(windowOptions2Left-ds,a6),d0
 	move.l	d0,-(sp)
-	move.l	#$80000064,-(sp)
+	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
 	suba.l	a0,a0
 	move.l	a6,-(sp)
@@ -3637,9 +3648,9 @@ lbC002480	move.l	#$10000,d1
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
 	bsr.b	win_options2_cfg
-	lea	(lbC002964,pc),a0
+	lea	(closewindow_options2,pc),a0
 	move.l	a0,($A6,a5)
-	move.l	a5,($78,a3)
+	move.l	a5,(wd_UserData,a3)
 lbC00257E	andi.b	#$FB,ccr
 	bra.b	lbC0025B0
 
@@ -4030,8 +4041,9 @@ select_options2_symequ
 	move.w	#$3B1,d0
 lbC002962	rts
 
-lbC002964	move.w	(4,a3),(lbB02CFEA-ds,a6)
-	move.w	(6,a3),(lbB02CFEC-ds,a6)
+closewindow_options2
+	move.w	(wd_LeftEdge,a3),(windowOptions2Left-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowOptions2Top-ds,a6)
 	bsr.w	CloseWindow
 	clr.l	(windowOptions2Ptr-ds,a6)
 	movea.l	($22,a5),a0
@@ -4236,13 +4248,13 @@ CloseWindow	movem.l	d2/a5/a6,-(sp)
 	movea.l	a6,a5
 	movea.l	(execbase-ds,a5),a6
 	jsr	(_LVOForbid,a6)
-	movea.l	($56,a3),a0
-	move.l	($14,a0),d2
-lbC002BAE	movea.l	d2,a1
+	movea.l	(wd_UserPort,a3),a0
+	move.l	(MP_MSGLIST,a0),d2
+.loop	movea.l	d2,a1
 	move.l	(a1),d2
-	beq.b	lbC002BD0
+	beq.b	.empty
 	cmpa.l	($2C,a1),a3
-	bne.b	lbC002BAE
+	bne.b	.loop
 	move.l	a1,d0
 	movea.l	(a1),a0
 	movea.l	(4,a1),a1
@@ -4250,9 +4262,9 @@ lbC002BAE	movea.l	d2,a1
 	move.l	a1,(4,a0)
 	movea.l	d0,a1
 	jsr	(_LVOReplyMsg,a6)
-	bra.b	lbC002BAE
+	bra.b	.loop
 
-lbC002BD0	clr.l	($56,a3)
+.empty	clr.l	(wd_UserPort,a3)
 	movea.l	a3,a0
 	moveq	#0,d0
 	movea.l	(intbase-ds,a5),a6
@@ -5222,10 +5234,10 @@ lbC003652	movem.l	d2-d7/a2-a5,-(sp)
 	pea	($15F).w
 	move.l	#WA_Width,-(sp)
 	moveq	#0,d0
-	move.w	(WindowTopZap2-ds,a6),d0
+	move.w	(windowZap2Top-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#WA_Top,-(sp)
-	move.w	(WindowLeftZap2-ds,a6),d0
+	move.w	(windowZap2Left-ds,a6),d0
 	move.l	d0,-(sp)
 	move.l	#WA_Left,-(sp)
 	movea.l	sp,a1
@@ -5443,8 +5455,8 @@ lbC0039AC	movea.l	(4,a0),a0
 	subq.w	#1,d0
 lbC0039B4	move.w	(a0)+,(a2)+
 	dbra	d0,lbC0039B4
-lbC0039BA	move.w	(wd_LeftEdge,a3),(WindowLeftZap2-ds,a6)
-	move.w	(wd_TopEdge,a3),(WindowTopZap2-ds,a6)
+lbC0039BA	move.w	(wd_LeftEdge,a3),(windowZap2Left-ds,a6)
+	move.w	(wd_TopEdge,a3),(windowZap2Top-ds,a6)
 	movea.l	a3,a0
 	move.l	a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
@@ -24280,7 +24292,7 @@ lbC014A76	move.b	#$FF,(a3)
 	moveq	#1,d0
 	tst.w	d3
 	beq.b	lbC014A86
-	jsr	(lbC000B64).l
+	jsr	(openwindow_x).l
 lbC014A86	movem.l	(sp)+,d1-d3/a0-a3
 	tst.w	d0
 	ble.w	StopMacros
@@ -25874,7 +25886,7 @@ lbC015B58	movea.l	(sp)+,a0
 	adda.l	d0,a2
 	move.b	(a0)+,d0
 	spl	(a2)
-	tst.b	(lbB02EBF4-ds,a6)
+	tst.b	(MenuPickFlag-ds,a6)
 	beq.b	lbC015B7E
 	tst.b	(lbB02EBF5-ds,a6)
 	sne	(a2)
@@ -36078,7 +36090,7 @@ displaydimknown	lea	(nw_win1-ds,a6),a0
 	move.w	d5,d0
 	subi.w	#627,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFCE-ds,a6)
+	move.w	d0,(windowSymbolsLeft-ds,a6)
 	move.w	d6,d0
 	move.w	#185,d1
 	tst.b	(laceflag-ds,a6)
@@ -36086,48 +36098,48 @@ displaydimknown	lea	(nw_win1-ds,a6),a0
 	move.w	#93,d1
 lbC01DE06	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD0-ds,a6)
+	move.w	d0,(windowSymbolsTop-ds,a6)
 	move.w	#$10C,d1
 	move.w	#$B9,d2
 	move.w	d5,d0
 	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD2-ds,a6)
+	move.w	d0,(windowXLeft-ds,a6)
 	move.w	d6,d0
 	sub.w	d2,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD4-ds,a6)
+	move.w	d0,(windowXTop-ds,a6)
 	tst.b	(laceflag-ds,a6)
 	bne.b	lbC01DE34
 	move.w	#$66,d2
 lbC01DE34	move.w	d5,d0
 	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD6-ds,a6)
+	move.w	d0,(windowMacros1Left-ds,a6)
 	move.w	d6,d0
 	sub.w	d2,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFD8-ds,a6)
+	move.w	d0,(windowMacros1Top-ds,a6)
 	move.w	d5,d0
 	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFDA-ds,a6)
+	move.w	d0,(windowMacros2Left-ds,a6)
 	move.w	d6,d0
 	sub.w	d2,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFDC-ds,a6)
+	move.w	d0,(windowMacros2Top-ds,a6)
 	move.w	d5,d0
 	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFDE-ds,a6)
+	move.w	d0,(windowMacros3Left-ds,a6)
 	move.w	d6,d0
 	sub.w	d2,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE0-ds,a6)
+	move.w	d0,(windowMacros3Top-ds,a6)
 	move.w	d5,d0
 	subi.w	#$194,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE2-ds,a6)
+	move.w	d0,(windowSearchLeft-ds,a6)
 	move.w	d6,d0
 	move.w	#$97,d1
 	tst.b	(laceflag-ds,a6)
@@ -36135,7 +36147,7 @@ lbC01DE34	move.w	d5,d0
 	move.w	#$6B,d1
 lbC01DE8C	sub.w	d1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFE4-ds,a6)
+	move.w	d0,(windowSearchTop-ds,a6)
 	move.w	d5,d0
 	subi.w	#$247,d0
 	lsr.w	#1,d0
@@ -36147,19 +36159,19 @@ lbC01DE8C	sub.w	d1,d0
 	move.w	d5,d0
 	subi.w	#$164,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFEA-ds,a6)
+	move.w	d0,(windowOptions2Left-ds,a6)
 	move.w	d6,d0
 	subi.w	#$B1,d0
 	lsr.w	#1,d0
-	move.w	d0,(lbB02CFEC-ds,a6)
+	move.w	d0,(windowOptions2Top-ds,a6)
 	move.w	d5,d0
 	subi.w	#$15F,d0
 	lsr.w	#1,d0
-	move.w	d0,(WindowLeftZap2-ds,a6)
+	move.w	d0,(windowZap2Left-ds,a6)
 	move.l	d6,d0
 	subi.w	#$58,d0
 	divu.w	#3,d0
-	move.w	d0,(WindowTopZap2-ds,a6)
+	move.w	d0,(windowZap2Top-ds,a6)
 	move.w	d5,d0
 	subq.w	#2,d0
 	move.w	d0,(lbW02D3A2-ds,a6)
@@ -37206,7 +37218,7 @@ lbC01EE54	movea.l	(sp)+,a0
 	adda.l	d0,a2
 	move.b	(a0)+,d0
 	spl	(a2)
-	tst.b	(lbB02EBF4-ds,a6)
+	tst.b	(MenuPickFlag-ds,a6)
 	beq.b	lbC01EE7A
 	tst.b	(lbB02EBF5-ds,a6)
 	sne	(a2)
@@ -38548,7 +38560,7 @@ shutdown	move.l	d0,-(sp)
 	lea	(lbL02CE50-ds,a5),a0
 	movea.l	(resourceutilbase-ds,a5),a1
 	jsr	(-$24,a1)
-	bsr.w	lbC0204DC
+	bsr.w	CloseAllWin
 	movea.l	d2,a0
 	jsr	(_LVOCloseWindow,a6)
 	movea.l	(thistask1-ds,a5),a0
@@ -38660,43 +38672,43 @@ lbC0204D4	move.l	(sp)+,d0
 	movea.l	(saved_sp-ds,a5),sp
 	rts
 
-lbC0204DC	movem.l	a3/a5/a6,-(sp)
+CloseAllWin	movem.l	a3/a5/a6,-(sp)
 	movea.l	a5,a6
 	move.l	(symbolsWindowPtr-ds,a6),d0
 	beq.b	lbC0204F4
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
-	jsr	(lbC000B1C).l
+	movea.l	(wd_UserData,a3),a5
+	jsr	(closewindow_symbols).l
 lbC0204F4	move.l	(searchWindowPtr-ds,a6),d0
 	beq.b	lbC020506
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
-	jsr	(lbC0016D6).l
+	movea.l	(wd_UserData,a3),a5
+	jsr	(closewindow_search).l
 lbC020506	move.l	(windowMacros1Ptr-ds,a6),d0
 	beq.b	lbC020518
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
-	jsr	(Macros1Dealloc).l
+	movea.l	(wd_UserData,a3),a5
+	jsr	(closewindow_macros1).l
 lbC020518	move.l	(windowMacros2Ptr-ds,a6),d0
 	beq.b	lbC02052A
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
-	jsr	(Macros2Dealloc).l
+	movea.l	(wd_UserData,a3),a5
+	jsr	(closewindow_macros2).l
 lbC02052A	move.l	(windowMacros3Ptr-ds,a6),d0
 	beq.b	lbC02053C
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
-	jsr	(Macros3Dealloc).l
+	movea.l	(wd_UserData,a3),a5
+	jsr	(closewindow_macros3).l
 lbC02053C	move.l	(windowOptions1Ptr-ds,a6),d0
 	beq.b	lbC02054E
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
-	jsr	(closewindow_options2).l
+	movea.l	(wd_UserData,a3),a5
+	jsr	(closewindow_options1).l
 lbC02054E	move.l	(windowOptions2Ptr-ds,a6),d0
 	beq.b	lbC020560
 	movea.l	d0,a3
-	movea.l	($78,a3),a5
-	jsr	(lbC002964).l
+	movea.l	(wd_UserData,a3),a5
+	jsr	(closewindow_options2).l
 lbC020560	movem.l	(sp)+,a3/a5/a6
 	rts
 
@@ -38838,7 +38850,7 @@ requestfile_doreq	move.l	a2,-(sp)
 	movea.l	(requestfile_buffer-ds,a6),a0
 	move.l	a0,d0
 .failed	bsr.w	SetWindowTitle2
-	jsr	(lbC028CFC-ds,a6)
+	jsr	(RefreshScreen-ds,a6)
 	tst.l	d0
 	movea.l	(sp)+,a2
 	rts
@@ -38856,7 +38868,7 @@ aslfr_hookfunc	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_BeginRefresh,a6)
 	movea.l	(sp)+,a6
-	jsr	(lbC028CFC).l
+	jsr	(RefreshScreen).l
 	movea.l	(window1ptr-ds,a6),a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
@@ -47898,7 +47910,7 @@ lbC026EDE	cmpi.l	#$40000,d2
 
 lbC026EEA	cmpi.l	#$2000000,d2
 	bne.b	lbC026E90
-	bsr.w	lbC028CFC
+	bsr.w	RefreshScreen
 	movem.l	a2/a3,-(sp)
 	movem.l	(lbL02D070-ds,a6),a2/a3
 	bsr.w	SetWindowTitle2
@@ -47926,8 +47938,8 @@ win1_gg3_UserData	moveq	#-1,d3
 	rts
 
 lbC026F32	lea	(nw_win1,pc),a0
-	move.w	(4,a3),(a0)
-	move.w	(6,a3),(2,a0)
+	move.w	(wd_LeftEdge,a3),(nw_LeftEdge,a0)
+	move.w	(wd_TopEdge,a3),(nw_TopEdge,a0)
 	movea.l	a3,a0
 	move.l	a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
@@ -49675,11 +49687,11 @@ _savecommonregs1	bsr.w	saveregs_nod0d1a0a1
 	bra.b	lbC028268
 
 lbC028254	tst.l	(searchWindowPtr-ds,a6)
-	beq.b	__DisplayBeep
-	jsr	(lbC0016AE).l
+	beq.b	.beep
+	jsr	(ActivateSearchString).l
 	bra.w	cceq
 
-__DisplayBeep	bsr.w	_DisplayBeep
+.beep	bsr.w	_DisplayBeep
 lbC028268	lea	(lbB02D9C8-ds,a6),a0
 	move.l	a0,d1
 	move.w	#$2762,d0
@@ -50277,18 +50289,18 @@ lbC028982	movem.l	a2-a5,-(sp)
 _msgloop	jsr	(__ClearMenuStrip-ds,a6)
 	bsr.w	_ClearPointerAll
 	tst.b	(lbB02EB7A-ds,a6)
-	bne.b	lbC0289C0
+	bne.b	.skiptitle
 	movem.l	a2/a3,-(sp)
 	movem.l	(lbL02D070-ds,a6),a2/a3
 	bsr.w	SetWindowTitle2
 	movem.l	(sp)+,a2/a3
-lbC0289C0	move.l	#$100,d2
+.skiptitle	move.l	#$100,d2
 	move.w	(lbW02CFB2-ds,a6),d3
 	cmpi.w	#$FFFF,d3
-	bne.w	lbC028AA6
+	bne.w	_norefresh
 	movea.l	(userport-ds,a6),a0
 	jsr	(_WaitPort-ds,a6)
-lbC0289DA	movea.l	(userport-ds,a6),a0
+_msgnext	movea.l	(userport-ds,a6),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_GetIMsg,a6)
@@ -50297,9 +50309,9 @@ lbC0289DA	movea.l	(userport-ds,a6),a0
 	beq.b	_msgloop
 	movea.l	d0,a1
 	move.l	(im_Class,a1),d2
-	move.l	(im_Code,a1),d3
+	move.l	(im_Code,a1),d3	;Code + Qualifier
 	swap	d3
-	move.l	(im_MouseX,a1),d5
+	move.l	(im_MouseX,a1),d5	;X + Y
 	swap	d5
 	movea.l	(im_IAddress,a1),a2
 	movea.l	(im_IDCMPWindow,a1),a3
@@ -50312,17 +50324,17 @@ lbC0289DA	movea.l	(userport-ds,a6),a0
 	jsr	(_LVOForbid,a6)
 	movea.l	(wd_UserPort,a3),a0
 	move.l	(MP_MSGLIST,a0),d6
-lbC028A2E	movea.l	d6,a1
+.loop	movea.l	d6,a1
 	move.l	(im_ExecMessage,a1),d6
-	beq.b	lbC028A64
+	beq.b	.end
 	cmpa.l	(im_IDCMPWindow,a1),a3
-	bne.b	lbC028A2E
+	bne.b	.loop
 	cmp.l	(im_Class,a1),d2
-	bne.b	lbC028A2E
+	bne.b	.loop
 	btst	#1,(im_Qualifier,a1)
-	beq.b	lbC028A2E
+	beq.b	.loop
 	cmp.w	(im_Code,a1),d3
-	bne.b	lbC028A2E
+	bne.b	.loop
 	move.l	a1,d0
 	movea.l	(a1),a0
 	movea.l	(4,a1),a1
@@ -50330,35 +50342,35 @@ lbC028A2E	movea.l	d6,a1
 	move.l	a1,(4,a0)
 	movea.l	d0,a1
 	jsr	(_LVOReplyMsg,a6)
-	bra.b	lbC028A2E
+	bra.b	.loop
 
-lbC028A64	jsr	(_LVOPermit,a6)
+.end	jsr	(_LVOPermit,a6)
 	movem.l	(sp)+,d6/a1/a6
 _norawkey	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_ReplyIMsg,a6)
 	movea.l	(sp)+,a6
-	cmpi.l	#4,d2
-	bne.b	lbC028AA6
+	cmpi.l	#IDCMP_REFRESHWINDOW,d2
+	bne.b	_norefresh
 	movea.l	a3,a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_BeginRefresh,a6)
 	movea.l	(sp)+,a6
-	bsr.w	lbC028CFC
+	bsr.w	RefreshScreen
 	movea.l	a3,a0
 	moveq	#1,d0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOGT_EndRefresh,a6)
 	movea.l	(sp)+,a6
-	bra.w	lbC0289DA
+	bra.w	_msgnext
 
-lbC028AA6	cmpi.l	#$100,d2
-	seq	(lbB02EBF4-ds,a6)
-	bne.b	lbC028AFA
+_norefresh	cmpi.l	#IDCMP_MENUPICK,d2
+	seq	(MenuPickFlag-ds,a6)
+	bne.b	_nomenupick
 	cmpi.w	#$FFFF,d3
-	beq.w	lbC0289DA
+	beq.w	_msgnext
 	moveq	#0,d0
 	move.w	d3,d0
 	movea.l	(menustrip-ds,a6),a0
@@ -50367,7 +50379,7 @@ lbC028AA6	cmpi.l	#$100,d2
 	jsr	(_LVOItemAddress,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
-	beq.w	lbC0289DA
+	beq.w	_msgnext
 	movea.l	d0,a0
 	move.w	($20,a0),(lbW02CFB2-ds,a6)
 	btst	#$13,d3
@@ -50378,10 +50390,10 @@ lbC028AA6	cmpi.l	#$100,d2
 	move.w	($22,a0),d0
 	bra.w	lbC028C7C
 
-lbC028AFA	cmpi.l	#$400,d2
-	bne.w	lbC028BC0
+_nomenupick	cmpi.l	#IDCMP_RAWKEY,d2
+	bne.w	_norawkey2
 	cmpi.w	#$5F,d3
-	bhi.w	lbC0289DA
+	bhi.w	_msgnext
 	moveq	#0,d0
 	move.w	d3,d0
 	swap	d3
@@ -50442,64 +50454,64 @@ lbC028B92	movem.l	d1-d7/a0-a5,-(sp)
 	move.l	(a3),d7
 	rts
 
-lbC028BC0	cmpi.l	#8,d2
-	bne.b	lbC028BDA
-	cmpi.w	#$68,d3
-	bne.w	lbC0289DA
+_norawkey2	cmpi.l	#IDCMP_MOUSEBUTTONS,d2
+	bne.b	_nomousebuttons
+	cmpi.w	#SELECTDOWN,d3
+	bne.w	_msgnext
 	lea	(lbC01EA10).l,a0
-	bra.w	lbC028CC0
+	bra.w	_msgquit
 
-lbC028BDA	cmpi.l	#$40,d2
-	beq.b	lbC028BEA
-	cmpi.l	#$20,d2
-	bne.b	lbC028C4A
-lbC028BEA	move.l	($28,a2),d0
-	beq.w	lbC0289DA
+_nomousebuttons	cmpi.l	#IDCMP_GADGETUP,d2
+	beq.b	.up
+	cmpi.l	#IDCMP_GADGETDOWN,d2
+	bne.b	_nogadget
+.up	move.l	(gg_UserData,a2),d0
+	beq.w	_msgnext
 	movea.l	d0,a0
-	move.w	($26,a2),d0
-	cmpi.w	#$5342,d0
-	beq.b	lbC028C3C
-	cmpi.w	#$5345,d0
-	beq.b	lbC028C3C
-	cmpi.w	#$4D31,d0
-	beq.b	lbC028C3C
-	cmpi.w	#$4D32,d0
-	beq.b	lbC028C3C
-	cmpi.w	#$4D33,d0
-	beq.b	lbC028C3C
-	cmpi.w	#$4F31,d0
-	beq.b	lbC028C3C
-	cmpi.w	#$4F32,d0
-	beq.b	lbC028C3C
-	movea.l	($78,a3),a5
+	move.w	(gg_GadgetID,a2),d0
+	cmpi.w	#'SB',d0
+	beq.b	.openwindow
+	cmpi.w	#'SE',d0
+	beq.b	.openwindow
+	cmpi.w	#'M1',d0
+	beq.b	.openwindow
+	cmpi.w	#'M2',d0
+	beq.b	.openwindow
+	cmpi.w	#'M3',d0
+	beq.b	.openwindow
+	cmpi.w	#'O1',d0
+	beq.b	.openwindow
+	cmpi.w	#'O2',d0
+	beq.b	.openwindow
+	movea.l	(wd_UserData,a3),a5
 	swap	d3
 	clr.w	d3
 	swap	d3
 	jsr	(a0)
 	cmpi.w	#$169,d0
-	beq.w	lbC0289DA
+	beq.w	_msgnext
 	tst.w	d0
 	bgt.b	lbC028C7C
-	bra.b	lbC028C42
+	bra.b	.term1
 
-lbC028C3C	jsr	(a0)
-	bne.w	lbC0289DA
-lbC028C42	lea	(term1,pc),a0
-	bra.w	lbC028CC0
+.openwindow	jsr	(a0)
+	bne.w	_msgnext
+.term1	lea	(term1,pc),a0
+	bra.w	_msgquit
 
-lbC028C4A	cmpi.l	#$200,d2
-	bne.b	lbC028C60
-	movea.l	($78,a3),a5
+_nogadget	cmpi.l	#IDCMP_CLOSEWINDOW,d2
+	bne.b	_noclosewindow
+	movea.l	(wd_UserData,a3),a5
 	movea.l	($A6,a5),a0
 	jsr	(a0)
-	bra.w	lbC0289DA
+	bra.w	_msgnext
 
-lbC028C60	cmpi.l	#$40000,d2
-	bne.w	lbC0289DA
+_noclosewindow	cmpi.l	#IDCMP_ACTIVEWINDOW,d2
+	bne.w	_msgnext
 	cmpa.l	(searchWindowPtr-ds,a6),a3
-	bne.w	lbC0289DA
-	jsr	(lbC0016AE).l
-	bra.w	lbC0289DA
+	bne.w	_msgnext
+	jsr	(ActivateSearchString).l
+	bra.w	_msgnext
 
 lbC028C7C	move.w	d0,(lbB02EACC-ds,a6)
 	cmpi.w	#$16F,d0
@@ -50520,7 +50532,7 @@ lbC028C9E	jsr	(lbC01BFD0).l
 	jsr	(getfuncbynum-ds,a6)
 	move.l	(6,a0),d0
 	movea.l	(a0),a0
-lbC028CC0	movem.l	(sp)+,a2-a5
+_msgquit	movem.l	(sp)+,a2-a5
 	rts
 
 DropIMsgAll	movem.l	a2/a5/a6,-(sp)
@@ -50542,7 +50554,7 @@ lbC028CEE	movea.l	(execbase-ds,a5),a6
 	movem.l	(sp)+,a2/a5/a6
 	rts
 
-lbC028CFC	movem.l	d0-d6/a0/a1/a6,-(sp)
+RefreshScreen	movem.l	d0-d6/a0/a1/a6,-(sp)
 	lea	(unknown_bitmap-ds,a6),a0
 	moveq	#0,d0
 	moveq	#12,d1
@@ -51499,7 +51511,7 @@ lbC029748	clr.l	(a0)+
 	movem.l	(sp)+,d0/a0/a1
 	rts
 
-lbC029754	clr.b	(lbB02EBF4-ds,a6)
+lbC029754	clr.b	(MenuPickFlag-ds,a6)
 	moveq	#0,d2
 	moveq	#0,d3
 	moveq	#0,d4
@@ -52814,7 +52826,7 @@ lbC02A656	movea.l	(window1ptr-ds,a2),a0
 	movem.l	(sp)+,d0/d1/a0-a2/a6
 	rts
 
-ModifyMenuByList	tst.b	(lbB02EBF4-ds,a6)
+ModifyMenuByList	tst.b	(MenuPickFlag-ds,a6)
 	bne.b	lbC02A684
 	move.l	a2,-(sp)
 	movea.l	a0,a2
@@ -52830,7 +52842,7 @@ lbC02A672	move.w	(a2)+,d0	;menucode
 lbC02A682	movea.l	(sp)+,a2
 lbC02A684	rts
 
-lbC02A686	tst.b	(lbB02EBF4-ds,a6)
+lbC02A686	tst.b	(MenuPickFlag-ds,a6)
 lbC02A68A	bne.b	lbC02A696
 	bsr.b	findmenu
 	beq.b	lbC02A696
@@ -54105,24 +54117,24 @@ rawDoFmt_args	dx.b	$10
 lbL02CF9E	dx.l	5
 lbW02CFB2	dx.w	1
 menuModifyList	dx.b	$1A
-lbB02CFCE	dx.b	2
-lbB02CFD0	dx.b	2
-lbB02CFD2	dx.b	2
-lbB02CFD4	dx.b	2
-lbB02CFD6	dx.b	2
-lbB02CFD8	dx.b	2
-lbB02CFDA	dx.b	2
-lbB02CFDC	dx.b	2
-lbB02CFDE	dx.b	2
-lbB02CFE0	dx.b	2
-lbB02CFE2	dx.b	2
-lbB02CFE4	dx.b	2
+windowSymbolsLeft	dx.b	2
+windowSymbolsTop	dx.b	2
+windowXLeft	dx.b	2
+windowXTop	dx.b	2
+windowMacros1Left	dx.b	2
+windowMacros1Top	dx.b	2
+windowMacros2Left	dx.b	2
+windowMacros2Top	dx.b	2
+windowMacros3Left	dx.b	2
+windowMacros3Top	dx.b	2
+windowSearchLeft	dx.b	2
+windowSearchTop	dx.b	2
 windowOptions1Left	dx.b	2
 windowOptions1Top	dx.b	2
-lbB02CFEA	dx.b	2
-lbB02CFEC	dx.b	2
-WindowLeftZap2	dx.w	1
-WindowTopZap2	dx.w	1
+windowOptions2Left	dx.b	2
+windowOptions2Top	dx.b	2
+windowZap2Left	dx.w	1
+windowZap2Top	dx.w	1
 symactivenum_dirs	dx.b	2	;-1 if none
 symactivenum_incs	dx.b	2
 lbB02CFF6	dx.b	2
@@ -54487,7 +54499,7 @@ lbB02EBF0	dx.b	1
 lbB02EBF1	dx.b	1
 lbB02EBF2	dx.b	1
 lbB02EBF3	dx.b	1
-lbB02EBF4	dx.b	1
+MenuPickFlag	dx.b	1
 lbB02EBF5	dx.b	1
 lbB02EBF6	dx.b	1
 pubscreen_private_flag
