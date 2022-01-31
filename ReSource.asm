@@ -45170,56 +45170,56 @@ lbC024FBC	lea	(USP.MSG1-ds,a6),a0
 	move.b	(a0)+,(a4)+
 	bra.w	oper20
 
-add_68060_comment
+oper28	lea	(.get_ea,pc),a0
+	lea	(.get_reg,pc),a1
+	btst	#16,d5
+	bne.b	.ea_reg
+	exg	a0,a1
+.ea_reg	jsr	(a0)
+	move.b	#",",(a4)+
+	jsr	(a1)
 	move.l	d5,d0
-	andi.w	#$7FF,d0
-	cmpi.w	#8,d0		;check for illegal registers
+	and.w	#$7FF,d0
+	cmp.w	#8,d0		;check for illegal registers
 	bhi.b	.skip
-	bne.b	.skip		;skip if not buscr/pcr
-	bsr.w	ext_mc68060
+	beq.w	ext_mc68060	;branch if buscr/pcr
 .skip	rts
 
-oper28	pea	(add_68060_comment,pc)
-	btst	#$10,d5
-	bne.b	lbC024FF0
-	bsr.b	lbC024FF6
-	move.b	#$2C,(a4)+
-lbC024FD8	move.l	d5,d0
-	andi.l	#$F000,d0
-	lsr.w	#8,d0
-	lsr.w	#3,d0
+.get_ea	move.l	d5,d0
+	and.w	#$F000,d0
+	rol.w	#5,d0
 	lea	(D0D1D2D3D4D5D.MSG-ds,a6),a0
-	adda.w	d0,a0
+	add.w	d0,a0
 	move.b	(a0)+,(a4)+
 	move.b	(a0)+,(a4)+
 	rts
 
-lbC024FF0	bsr.b	lbC024FD8
-	move.b	#$2C,(a4)+
-lbC024FF6	move.l	d5,d0
-	andi.w	#$7FF,d0
-	cmpi.w	#8,d0
-	bhi.b	lbC02501E
-	lea	(lbW025030,pc),a1
+.get_reg
+	move.l	d5,d0
+	and.w	#$7FF,d0
+	cmp.w	#8,d0
+	bhi.b	.illegal_reg
 	btst	#11,d5
-	beq.b	lbC02500E
+	beq.b	.tab0
 	add.w	#9,d0
-lbC02500E	add.w	d0,d0
-	movea.l	a6,a0
-	adda.w	(a1,d0.w),a0
-lbC025016	move.b	(a0)+,(a4)+
-	bne.b	lbC025016
+.tab0	add.w   d0,d0
+	move.l	a6,a0
+	add.w	(.reg_tab,pc,d0.w),a0
+.copy	move.b	(a0)+,(a4)+
+	bne.b	.copy
 	subq.w	#1,a4
 	rts
 
-lbC02501E	move.b	#$3F,(a4)
+.illegal_reg
+	move.b	#"?",(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)
 	move.b	(a4)+,(a4)+
 	bset	#0,(detected_badaddress-ds,a6)
 	rts
 
-lbW025030	dw	SFC.MSG-ds
+.reg_tab
+	dw      SFC.MSG-ds
 	dw	DFC.MSG-ds
 	dw	CACR.MSG-ds
 	dw	TC.MSG-ds
