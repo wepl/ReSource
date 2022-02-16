@@ -52,6 +52,7 @@ im_Code	equ	$18
 SA_Height	equ	$80000024
 GACT_STRINGLEFT	equ	$0
 MX_KIND	equ	$5
+IDCMP_CHANGEWINDOW	equ	$2000000
 SHARED_LOCK	equ	$FFFFFFFE
 WA_DragBar	equ	$80000082
 _LVOOpenDevice	equ	-$1BC
@@ -188,6 +189,7 @@ GFLG_GADGHCOMP	equ	$0
 STRING_KIND	equ	$C
 LN_PRI	equ	$9
 GTST_String	equ	$8008002D
+IDCMP_INTUITICKS	equ	$400000
 _LVONameFromLock	equ	-$192
 SA_Reserved	equ	$80000048
 SA_Depth	equ	$80000025
@@ -214,6 +216,7 @@ GMR_NEXTACTIVE	equ	$10
 ASLSM_FilterFunc	equ	$8008007A
 im_Class	equ	$14
 wd_RPort	equ	$32
+IDCMP_MOUSEMOVE	equ	$10
 _LVOSetAPen	equ	-$156
 bm_Planes	equ	$8
 _LVOFreeVec	equ	-$2B2
@@ -287,6 +290,7 @@ ASLFR_InitialFile	equ	$80080008
 _LVOOpenLibrary	equ	-$228
 _LVOAvailMem	equ	-$D8
 SA_BitMap	equ	$8000002E
+IDCMP_NEWSIZE	equ	$2
 GTLV_Top	equ	$80080005
 _LVOExecute	equ	-$DE
 GACT_STRINGCENTER	equ	$200
@@ -977,7 +981,7 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(windowSymbolsPtr-ds,a6)
 	beq.w	syms_nowin
 	movea.l	d0,a3
-	move.l	#$400778,d0
+	move.l	#(IDCMP_MOUSEBUTTONS|IDCMP_MOUSEMOVE|IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_INTUITICKS),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -1354,7 +1358,7 @@ openwindow_x	movem.l	d2-d7/a2-a5,-(sp)
 	move.l	($52,a0),d7
 	move.l	($18,a0),d6
 	ori.l	#$10000,($18,a0)
-	moveq	#4,d0
+	moveq	#IDCMP_REFRESHWINDOW,d0
 	move.l	a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOModifyIDCMP,a6)
@@ -1435,7 +1439,7 @@ lbC000BEC	lea	(lbW000DAE,pc),a0
 	tst.l	d0
 	beq.w	lbC000D54
 	movea.l	d0,a3
-	move.l	#$400078,d0
+	move.l	#(IDCMP_MOUSEBUTTONS|IDCMP_MOUSEMOVE|IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_INTUITICKS),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -1688,7 +1692,7 @@ lbC000F44	move.l	d0,-(sp)
 	move.l	d0,(windowSearchPtr-ds,a6)
 	beq.w	lbC000FCE
 	movea.l	d0,a3
-	move.l	#$40760,d0
+	move.l	#(IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_ACTIVEWINDOW),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -2491,7 +2495,7 @@ lbC00185E	move.l	d0,-(sp)
 	move.l	d0,(a0,d1.w)
 	beq.w	lbC001996
 	movea.l	d0,a3
-	move.l	#$400778,d0
+	move.l	#(IDCMP_MOUSEBUTTONS|IDCMP_MOUSEMOVE|IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_INTUITICKS),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -3022,7 +3026,7 @@ openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	d0,(windowOptions1Ptr-ds,a6)
 	beq.w	.nowindow
 	movea.l	d0,a3	;A3 = Window
-	move.l	#$740,d0
+	move.l	#(IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -3674,7 +3678,7 @@ lbC002480	move.l	#$10000,d1
 	move.l	d0,(windowOptions2Ptr-ds,a6)
 	beq.b	lbC002584
 	movea.l	d0,a3
-	move.l	#$740,d0
+	move.l	#(IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -5222,7 +5226,7 @@ lbC003652	movem.l	d2-d7/a2-a5,-(sp)
 	move.l	(wd_IDCMPFlags,a0),d7
 	move.l	(wd_Flags,a0),d6
 	ori.l	#(WFLG_SMART_REFRESH|WFLG_RMBTRAP),(wd_Flags,a0)
-	moveq	#2,d0
+	moveq	#IDCMP_NEWSIZE,d0
 	move.l	a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOModifyIDCMP,a6)
@@ -5268,7 +5272,7 @@ lbC003652	movem.l	d2-d7/a2-a5,-(sp)
 	move.l	#WA_Activate,-(sp)
 	move.l	d0,-(sp)
 	move.l	#WA_SmartRefresh,-(sp)
-	move.l	#$40040,-(sp)
+	move.l	#(IDCMP_GADGETUP|IDCMP_ACTIVEWINDOW),-(sp)
 	move.l	#WA_IDCMP,-(sp)
 	pea	($58).w
 	move.l	#WA_Height,-(sp)
@@ -36435,7 +36439,7 @@ screen_ok	movea.l	d0,a2
 	move.l	#WA_Borderless,-(sp)
 	move.l	d0,-(sp)
 	move.l	#WA_NewLookMenus,-(sp)
-	move.l	#$54C,-(sp)
+	move.l	#(IDCMP_REFRESHWINDOW|IDCMP_MOUSEBUTTONS|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_RAWKEY),-(sp)
 	move.l	#WA_IDCMP,-(sp)
 	move.l	d6,d0
 	subq.l	#1,d0
@@ -48264,7 +48268,7 @@ nw_win1	dw	$B4	;LeftEdge
 	dw	350	;Width
 	dw	$4B	;Height
 	dw	$301	;DetailPen, BlockPen
-	dl	$2040040	;IDCMP
+	dl	(IDCMP_GADGETUP|IDCMP_ACTIVEWINDOW|IDCMP_CHANGEWINDOW)	;IDCMP
 	dl	(WFLG_DRAGBAR|WFLG_SMART_REFRESH|WFLG_ACTIVATE|WFLG_RMBTRAP|WFLG_NOCAREREFRESH)	;Flags
 	dl	win1_gg1	;FirstGadget
 	dl	0	;CheckMark
