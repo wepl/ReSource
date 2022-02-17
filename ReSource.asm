@@ -21,12 +21,20 @@ MACWINHEIGHTADD = 5*8		;enlargement for macros windows
 
 AFB_68060		equ	7
 sc_Height		equ	14
+_LVOAllocDosObject	equ	-228
+_LVOFreeDosObject	equ	-234
 _LVOSystemTagList	equ	-606
+_LVOReadArgs		equ	-798
+_LVOFreeArgs		equ	-858
 _LVOPathPart		equ	-876
 _LVOSetVar		equ	-900
 _LVOGetVar		equ	-906
 ACCESS_READ		equ	-2
 GVF_GLOBAL_ONLY		equ	1<<8
+CS_Buffer		equ	0
+CS_Length		equ	4
+DOS_RDARGS		equ	5
+CWCODE_MOVESIZE		equ	0
 
 * here starts the normal ReSource output
 
@@ -981,7 +989,7 @@ lbC00065A	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(windowSymbolsPtr-ds,a6)
 	beq.w	syms_nowin
 	movea.l	d0,a3
-	move.l	#(IDCMP_MOUSEBUTTONS|IDCMP_MOUSEMOVE|IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_INTUITICKS),d0
+	move.l	#(IDCMP_CHANGEWINDOW|IDCMP_MOUSEBUTTONS|IDCMP_MOUSEMOVE|IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_INTUITICKS),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -1692,7 +1700,7 @@ lbC000F44	move.l	d0,-(sp)
 	move.l	d0,(windowSearchPtr-ds,a6)
 	beq.w	lbC000FCE
 	movea.l	d0,a3
-	move.l	#(IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_ACTIVEWINDOW),d0
+	move.l	#(IDCMP_CHANGEWINDOW|IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_ACTIVEWINDOW),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -2495,7 +2503,7 @@ lbC00185E	move.l	d0,-(sp)
 	move.l	d0,(a0,d1.w)
 	beq.w	lbC001996
 	movea.l	d0,a3
-	move.l	#(IDCMP_MOUSEBUTTONS|IDCMP_MOUSEMOVE|IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_INTUITICKS),d0
+	move.l	#(IDCMP_CHANGEWINDOW|IDCMP_MOUSEBUTTONS|IDCMP_MOUSEMOVE|IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_INTUITICKS),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -3026,7 +3034,7 @@ openwindow_options1	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	d0,(windowOptions1Ptr-ds,a6)
 	beq.w	.nowindow
 	movea.l	d0,a3	;A3 = Window
-	move.l	#(IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY),d0
+	move.l	#(IDCMP_CHANGEWINDOW|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -3678,7 +3686,7 @@ lbC002480	move.l	#$10000,d1
 	move.l	d0,(windowOptions2Ptr-ds,a6)
 	beq.b	lbC002584
 	movea.l	d0,a3
-	move.l	#(IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY),d0
+	move.l	#(IDCMP_CHANGEWINDOW|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY),d0
 	bsr.w	addgadgets
 	movea.l	a3,a0
 	suba.l	a1,a1
@@ -23467,7 +23475,11 @@ RebuildAllFileNames	clr.b	(allFileNamesBuild-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 env_lastfilename db "ReSourceLastFileName",0
-cpy_lastfilename db "Echo $ReSourceLastFileName NoLine >ENVARC:ReSourceLastFileName",0
+cpy_lastfilename db 'Echo "$ReSourceLastFileName" NoLine >ENVARC:ReSourceLastFileName',0
+env_winpos db "ReSourceWinPos",0
+cpy_winpos db 'Echo "$ReSourceWinPos" NoLine >ENVARC:ReSourceWinPos',0
+fmt_winpos db "SBL=%d SBT=%d SEL=%d SET=%d M1L=%d M1T=%d M2L=%d M2T=%d M3L=%d M3T=%d O1L=%d O1T=%d O2L=%d O2T=%d",0
+arg_winpos db "SBL/N,SBT/N,SEL/N,SET/N,M1L/N,M1T/N,M2L/N,M2T/N,M3L/N,M3T/N,O1L/N,O1T/N,O2L/N,O2T/N",0
 	EVEN
 
 lbC013F2C	bsr.w	lbC014DB2
@@ -23512,6 +23524,58 @@ lbC013F70	pea	(clear_ccr-ds,a6)
 	moveq	#0,d2	;tags
 	jsr	(_LVOSystemTagList,a6)
 	movem.l	(a7)+,d2-d4/a6
+
+	;addition: remember window positions in environment variable
+	bclr	#0,(WinPosModified-ds,a6)
+	beq	.winposskip
+	movem.l	d2-d5/a2-a4/a6,-(a7)
+	move.l	a6,a4			; a4 = ds
+	move.l	#160,d5			; buffer length
+	sub.l	d5,a7
+	move.l	a7,a3			; buffer
+WINSAVE	MACRO
+	lea	(\1-ds,a6),a0
+	lea	(\2-ds,a6),a1
+	bsr	.get
+	ENDM
+	WINSAVE	windowOptions2Ptr,windowOptions2Left	; option2
+	WINSAVE	windowOptions1Ptr,windowOptions1Left	; option1
+	WINSAVE	windowMacros3Ptr,windowMacros3Left	; macros3
+	WINSAVE	windowMacros2Ptr,windowMacros2Left	; macros2
+	WINSAVE	windowMacros1Ptr,windowMacros1Left	; macros1
+	WINSAVE	windowSearchPtr,windowSearchLeft	; search
+	WINSAVE	windowSymbolsPtr,windowSymbolsLeft	; symbols
+	bra	.print
+
+.get	move.l	(a7)+,a2
+	move.l	(a0),d0			; window open?
+	beq	.get1
+	move.l	d0,a0
+	move.l	(wd_LeftEdge,a0),-(a7)	; take from window
+	jmp	(a2)
+.get1	move.l	(a1),-(a7)		; take from saved position
+	jmp	(a2)
+
+.print	move.l	a7,a1			; args
+	lea	_RawDoFmt_putchar,a2	; putchar
+	lea	fmt_winpos,a0
+	move.l	4,a6
+	jsr	(_LVORawDoFmt,a6)
+	add.w	#7*4,a7			; free args
+	move.l	a7,d2			; buffer
+	moveq	#-1,d3			; size
+	move.l	#GVF_GLOBAL_ONLY,d4	; flags
+	lea	env_winpos,a0
+	move.l	a0,d1			; name
+	move.l	(dosbase-ds,a4),a6
+	jsr	(_LVOSetVar,a6)
+	lea	cpy_winpos,a0
+	move.l	a0,d1			; command
+	moveq	#0,d2			; tags
+	jsr	(_LVOSystemTagList,a6)
+	add.l	d5,a7
+	movem.l	(a7)+,d2-d5/a2-a4/a6
+.winposskip
 
 	move.l	(kickstart_adr-ds,a6),d0
 	cmp.l	(ds-ds,a6),d0
@@ -29305,25 +29369,25 @@ lbC0180E0	movem.l	(lbL02D29C-ds,a6),d0/a3
 lbC018106	btst	#0,(6,a3)
 	bne.b	lbC01813C
 lbC01810E	movem.l	(lbL02D29C-ds,a6),a2/a3
-	bsr.w	lbC01FFB0
+	jsr	lbC01FFB0
 lbC018118	andi.l	#$FFF7FDFF,(a3)
 lbC01811E	bra.w	lbC017E78
 
 lbC018122	moveq	#-1,d6
 	movem.l	(lbL02D29C-ds,a6),a2/a3
-	bsr.w	lbC02003C
+	jsr	lbC02003C
 	bra.b	lbC018118
 
 lbC018130	movem.l	(lbL02D29C-ds,a6),a2/a3
-	bsr.w	lbC01FFFC
+	jsr	lbC01FFFC
 	bra.b	lbC01811E
 
 lbC01813C	movem.l	(lbL02D29C-ds,a6),a2/a3
-	bsr.w	lbC020016
+	jsr	lbC020016
 	bra.b	lbC01811E
 
 lbC018148	movem.l	(lbL02D29C-ds,a6),a2/a3
-	bsr.w	lbC01FFD6
+	jsr	lbC01FFD6
 	bra.b	lbC01811E
 
 	CNOP 0,4
@@ -36239,6 +36303,91 @@ lbC01DE8C	sub.w	d1,d0
 	move.l	d3,d0
 	mulu.w	#12,d0
 	move.l	d0,(lbL02CF3E-ds,a6)
+
+	;addition: set window positions to remembered ones
+	movem.l	d2-d5/a2-a6,-(a7)
+	move.l	a6,a4			; a4 = ds
+	move.l	#160,d5			; d5 = buffer length
+	sub.l	d5,a7
+	move.l	a7,a3			; a3 = buffer
+	lea	env_winpos,a0
+	move.l	a0,d1
+	move.l	a3,d2			; buffer
+	move.l	d5,d3			; buffer size
+	subq.l	#1,d3			; because new line to append
+	move.l	#GVF_GLOBAL_ONLY,d4
+	move.l	(dosbase-ds,a6),a6
+	jsr	(_LVOGetVar,a6)
+	tst.l	d0
+	ble	.novar
+
+	move.l	#DOS_RDARGS,d1		; type
+	moveq	#0,d2			; tags
+	jsr	(_LVOAllocDosObject,a6)
+	tst.l	d0
+	beq	.novar
+	move.l	d0,a2			; A2 = rdargs
+
+	move.l	a3,(CS_Buffer,a2)
+	move.l	a3,a0
+	jsr	strlen
+	addq.l	#1,d0			; new line
+	move.l	d0,(CS_Length,a2)
+	lea	(-1,a3,d0.l),a0
+	move.b	#10,(a0)+		; add required new line
+	clr.b	(a0)
+
+	moveq	#7*2-1,d0
+.clr	clr.l	-(a7)			; a7 = arg array
+	dbf	d0,.clr
+
+	lea	(arg_winpos),a0
+	move.l	a0,d1			; template
+	move.l	a7,d2			; array
+	move.l	a2,d3			; rdargs
+	jsr	(_LVOReadArgs,a6)
+	tst.l	d0
+	beq	.noargs
+
+	move.l	a7,a0
+	lea	(windowSymbolsLeft-ds,a4),a1
+	bsr	.get
+	lea	(windowSearchLeft-ds,a4),a1
+	bsr	.get
+	lea	(windowMacros1Left-ds,a4),a1
+	bsr	.get
+	lea	(windowMacros2Left-ds,a4),a1
+	bsr	.get
+	lea	(windowMacros3Left-ds,a4),a1
+	bsr	.get
+	lea	(windowOptions1Left-ds,a4),a1
+	bsr	.get
+	lea	(windowOptions2Left-ds,a4),a1
+	bsr	.get
+	bra	.free
+
+.get	move.l	(a0)+,d0		; Left provided?
+	beq	.1
+	move.l	d0,a5
+	move.w	(2,a5),(a1)		; copy lower word
+.1	move.l	(a0)+,d0		; Top provided?
+	beq	.2
+	move.l	d0,a5
+	move.w	(2,a5),(2,a1)		; copy lower word
+.2	rts
+
+.free	move.l	a2,d1			; rdargs
+	jsr	(_LVOFreeArgs,a6)
+.noargs
+	add.w	#7*2*4,a7		; arg array
+
+	move.l	#DOS_RDARGS,d1		; type
+	move.l	a2,d2			; ptr
+	jsr	(_LVOFreeDosObject,a6)
+
+.novar	add.l	d5,a7			; free buffer
+	movem.l	(a7)+,d2-d5/a2-a6
+
 	moveq	#$64,d0
 	jsr	(_AllocMemClear-ds,a6)
 	move.l	d0,(lbB02CF38-ds,a6)
@@ -50711,7 +50860,16 @@ _nogadget	cmpi.l	#IDCMP_CLOSEWINDOW,d2
 	jsr	(a0)
 	bra.w	_msgnext
 
-_noclosewindow	cmpi.l	#IDCMP_ACTIVEWINDOW,d2
+_noclosewindow
+	cmpi.l	#IDCMP_CHANGEWINDOW,d2
+	bne	_nochangewindow
+	cmp.w	#CWCODE_MOVESIZE,d3
+	bne	_msgnext
+	st	(WinPosModified-ds,a6)		; flag save window positions
+	bra	_msgnext
+
+_nochangewindow
+	cmpi.l	#IDCMP_ACTIVEWINDOW,d2
 	bne.w	_msgnext
 	cmpa.l	(windowSearchPtr-ds,a6),a3
 	bne.w	_msgnext
@@ -54704,6 +54862,7 @@ lbB02EBF5	dx.b	1
 lbB02EBF6	dx.b	1
 pubscreen_private_flag
 	dx.b	1
+WinPosModified	dx.b	1
 	CNOP 0,4
 lbL02EBF8	dx.l	1
 lbL02EBFC	dx.l	1
@@ -54803,7 +54962,7 @@ lbB039E3A	dx.b	$1A
 lbB039E54	dx.b	$1A
 lbB039E6E	dx.b	$1A
 lbB039E88	dx.b	$1A
-Macros3String19	dx.b	$22
+Macros3String19	dx.b	$1A
 DxAreaEnd
 
 	SECTION	ReSourcers039EC4,DATA,CHIP

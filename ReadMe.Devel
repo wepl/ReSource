@@ -133,7 +133,6 @@ it is not posible to use 'SPECIAL FUNCTIONS - Convert Specific EAs' with unsigne
 add function to remove all labels/datatypes in an area
 when opening Search window activate string gadget
 pressing open any window button should close it if is already open
-open windows on right border cascaded or remember their position
 make OD08 working with BASM
 saving a .rs file under different name doesn't change the displayed filename in the
 	screen title bar and also not in the title of subsequent file requesters;

@@ -1,10 +1,16 @@
 
-version 6.6.x (2022-01-26) done by Wepl
+version 6.6.2 (2022-02-17) done by Wepl, Psygore
 
 * changed from RCS to Git and made available via github
 * added Makefile, builds with vasm & basm
-* supports full optimize now, all relatives should be correctly
+* supports full optimize now, all references should be correctly
   disassembled
+* added support for 68060 opcodes movec buscr/pcr
+* now remembers the window positions: if you have moved any of the sub windows
+  (Symbols, Search, Macros1/2/3, Options1/2) the next time you write a .rs
+  file these window positions are saved into the environment variable
+  ReSourceWinPos, on start of ReSource it will try to load the window
+  positions from this variable
 
 version 6.6.1 (2020-02-19) done by Wepl
 
