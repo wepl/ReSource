@@ -2355,7 +2355,9 @@ ActivateSearchString
 	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	.nowin
 	movea.l	d0,a1
-	movea.l	(wd_UserData,a1),a0
+	move.l	(wd_UserData,a1),d0	; on window open wd_UserData is not yet set
+	beq	.nowin
+	move.l	d0,a0
 	lea	($2A,a0),a0
 	movea.l	($3C,a0),a0
 	suba.l	a2,a2
