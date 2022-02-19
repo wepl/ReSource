@@ -23946,7 +23946,8 @@ ThePuzzleFact.MSG
 	db	'     USA                              Nottinghamshire NG17 2HB',$A
 	db	'                                      UK',$A,$A
 	db	'     +(503) 935-3709                  +(623) 554828',$A,$A
-	db	"This version of ReSource is derrived from the original release 6.06 and modified by Wepl.",10,0
+	db	"This version of ReSource is derrived from the original release 6.06,",10
+	db	"modified by Wepl and Psygore.",10,0
 	EVEN
 
 lbC01455E	tst.l	(workdata_length-ds,a6)
