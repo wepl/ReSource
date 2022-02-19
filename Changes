@@ -1,5 +1,5 @@
 
-version 6.6.2 (2022-02-17) done by Wepl, Psygore
+version 6.6.2 (2022-02-19) done by Wepl, Psygore
 
 * changed from RCS to Git and made available via github
 * added Makefile, builds with vasm & basm
@@ -11,6 +11,8 @@ version 6.6.2 (2022-02-17) done by Wepl, Psygore
   file these window positions are saved into the environment variable
   ReSourceWinPos, on start of ReSource it will try to load the window
   positions from this variable
+* when the Search window is opened or the search type is changed the search
+  strings gadget will be activated now
 
 version 6.6.1 (2020-02-19) done by Wepl
 

@@ -1719,7 +1719,8 @@ openwindow_search	movem.l	d2-d6/a2-a5,-(sp)
 	lea	(closewindow_search,pc),a0
 	move.l	a0,($A6,a5)
 	move.l	a5,(wd_UserData,a3)
-.ok	andi.b	#$FB,ccr
+.ok	bsr	ActivateSearchString
+	andi.b	#$FB,ccr
 	bra.b	.end
 
 .openfail	jsr	(easyrequest_38-ds,a6)
@@ -2186,6 +2187,7 @@ lbC0014CA	lea	(searchstring_array,pc),a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	dbra	d2,.loop
+	bsr	ActivateSearchString
 	move.w	#$169,d0
 	movea.l	(sp)+,a2
 	rts
