@@ -35,6 +35,7 @@ CS_Buffer		equ	0
 CS_Length		equ	4
 DOS_RDARGS		equ	5
 CWCODE_MOVESIZE		equ	0
+_LVOActivateWindow	equ	-450
 
 * here starts the normal ReSource output
 
@@ -4298,6 +4299,8 @@ lbC002B6C	movem.l	d0/d1/a0/a1/a6,-(sp)
 windowtofront	movem.l	d0/d1/a0/a1/a6,-(sp)
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOWindowToFront,a6)
+	move.l	(8,a7),a0
+	jsr	(_LVOActivateWindow,a6)
 	movem.l	(sp)+,d0/d1/a0/a1/a6
 	rts
 

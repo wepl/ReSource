@@ -13,6 +13,8 @@ version 6.6.2 (2022-02-19) done by Wepl, Psygore
   positions from this variable
 * when the Search window is opened or the search type is changed the search
   strings gadget will be activated now
+* when a already open window is tried to open again it will not only brought
+  to front but also being activated
 
 version 6.6.1 (2020-02-19) done by Wepl
 
