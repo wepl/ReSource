@@ -41,6 +41,7 @@ _LVOMatchPattern	equ	-$34E
 SA_ShowTitle	equ	$80000036
 LV_DRAW	equ	$202
 ASL_FileRequest	equ	$0
+GTMX_Active	equ	$8008000A
 pr_COS	equ	$A0
 WA_NewLookMenus	equ	$80000093
 GTCB_Checked	equ	$80080004
@@ -1555,48 +1556,48 @@ lbC000E2A	moveq	#0,d5
 
 openwindow_search	movem.l	d2-d6/a2-a5,-(sp)
 	move.l	(windowSearchPtr-ds,a6),d0
-	beq.b	lbC000E44
+	beq.b	.open
 	movea.l	d0,a0
 	bsr.w	windowtofront
-	bra.w	lbC000FC8
+	bra.w	.ok
 
-lbC000E44	move.l	#$10000,d1
+.open	move.l	#$10000,d1
 	move.l	#$CC,d0
 	move.l	a6,-(sp)
 	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOAllocVec,a6)
 	movea.l	(sp)+,a6
 	tst.l	d0
-	beq.w	lbC000FF2
+	beq.w	.request
 	movea.l	d0,a5
 	lea	(lbW001478,pc),a0
-	lea	(lbB02CFFE-ds,a6),a1
+	lea	(searchtypelabels-ds,a6),a1
 	moveq	#5,d2
-lbC000E6E	move.w	(a0)+,d0
+.looptype	move.w	(a0)+,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
-	dbra	d2,lbC000E6E
+	dbra	d2,.looptype
 	lea	(lbW001484,pc),a0
 	lea	(searchcaselabels-ds,a6),a1
 	moveq	#1,d2
-lbC000E84	move.w	(a0)+,d0
+.loopcase	move.w	(a0)+,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
-	dbra	d2,lbC000E84
+	dbra	d2,.loopcase
 	lea	(lbW001488,pc),a0
 	lea	(searchalignlabels-ds,a6),a1
 	moveq	#1,d2
-lbC000E9A	move.w	(a0)+,d0
+.loopalign	move.w	(a0)+,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
-	dbra	d2,lbC000E9A
+	dbra	d2,.loopalign
 	lea	(lbW00148C,pc),a0
 	lea	(searchfromlabels-ds,a6),a1
 	moveq	#2,d2
-lbC000EB0	move.w	(a0)+,d0
+.loopfrom	move.w	(a0)+,d0
 	jsr	(gettextbynum-ds,a6)
 	move.l	d0,(a1)+
-	dbra	d2,lbC000EB0
+	dbra	d2,.loopfrom
 	lea	(lbW001492,pc),a0
 	lea	(searchdummylabels-ds,a6),a1
 	move.l	a0,(a1)+
@@ -1606,15 +1607,15 @@ lbC000EB0	move.w	(a0)+,d0
 	bne.b	.go
 	lea	(gadgets_search_lores,pc),a0
 .go	bsr.w	CreateGadgets
-	beq.w	lbC000FE2
+	beq.w	.freemem
 	clr.l	-(sp)
 	move.l	(screenptr-ds,a6),-(sp)
 	move.l	#WA_CustomScreen,-(sp)
 	move.w	#$1194,d0
 	tst.b	(laceflag-ds,a6)
-	bne.b	lbC000EF6
+	bne.b	.lace1
 	addq.w	#1,d0
-lbC000EF6	jsr	(gettextbynum-ds,a6)
+.lace1	jsr	(gettextbynum-ds,a6)
 	move.l	d0,-(sp)
 	move.l	#WA_Title,-(sp)
 	moveq	#1,d0
@@ -1633,9 +1634,9 @@ lbC000EF6	jsr	(gettextbynum-ds,a6)
 	moveq	#0,d0
 	move.w	#$97,d0
 	tst.b	(laceflag-ds,a6)
-	bne.b	lbC000F44
+	bne.b	.lace2
 	move.w	#$6B,d0
-lbC000F44	move.l	d0,-(sp)
+.lace2	move.l	d0,-(sp)
 	move.l	#WA_Height,-(sp)
 	pea	($194).w
 	move.l	#WA_Width,-(sp)
@@ -1654,7 +1655,7 @@ lbC000F44	move.l	d0,-(sp)
 	movea.l	(sp)+,a6
 	lea	($64,sp),sp
 	move.l	d0,(windowSearchPtr-ds,a6)
-	beq.w	lbC000FCE
+	beq.w	.openfail
 	movea.l	d0,a3
 	move.l	#(IDCMP_GADGETDOWN|IDCMP_GADGETUP|IDCMP_MENUPICK|IDCMP_CLOSEWINDOW|IDCMP_RAWKEY|IDCMP_ACTIVEWINDOW),d0
 	bsr.w	addgadgets
@@ -1670,89 +1671,89 @@ lbC000F44	move.l	d0,-(sp)
 	movea.l	(intbase-ds,a6),a6
 	jsr	(_LVOSetMenuStrip,a6)
 	movea.l	(sp)+,a6
-	bsr.b	lbC001018
+	bsr.b	setsearchconditions
 	lea	(closewindow_search,pc),a0
 	move.l	a0,($A6,a5)
 	move.l	a5,(wd_UserData,a3)
-lbC000FC8	andi.b	#$FB,ccr
-	bra.b	lbC000FFA
+.ok	andi.b	#$FB,ccr
+	bra.b	.end
 
-lbC000FCE	jsr	(easyrequest_38-ds,a6)
+.openfail	jsr	(easyrequest_38-ds,a6)
 	movea.l	($22,a5),a0
 	move.l	a6,-(sp)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
-lbC000FE2	movea.l	a5,a1
+.freemem	movea.l	a5,a1
 	move.l	a6,-(sp)
 	movea.l	(execbase-ds,a6),a6
 	jsr	(_LVOFreeVec,a6)
 	movea.l	(sp)+,a6
-	bra.b	lbC000FF6
+	bra.b	.fail
 
-lbC000FF2	jsr	(easyrequest_3a-ds,a6)
-lbC000FF6	ori.b	#4,ccr
-lbC000FFA	movem.l	(sp)+,d2-d6/a2-a5
+.request	jsr	(easyrequest_3a-ds,a6)
+.fail	ori.b	#4,ccr
+.end	movem.l	(sp)+,d2-d6/a2-a5
 	rts
 
-lbC001000	movem.l	d1-d3/a2-a5,-(sp)
+refreshsearchcond	movem.l	d1-d3/a2-a5,-(sp)
 	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	lbC001012
 	movea.l	d0,a3
 	movea.l	(wd_UserData,a3),a5
-	bsr.b	lbC001018
+	bsr.b	setsearchconditions
 lbC001012	movem.l	(sp)+,d1-d3/a2-a5
 	rts
 
-lbC001018	lea	($2A,a5),a2
+setsearchconditions	lea	($2A,a5),a2
 	moveq	#0,d0
-	move.b	(lbB02D06E-ds,a6),d0
+	move.b	(searchtype-ds,a6),d0
 	move.b	d0,($CA,a5)
 	movea.l	(4,a2),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8008000A,-(sp)
+	move.l	#GTMX_Active,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d0
-	tst.b	(case_sensitive_flag-ds,a6)
+	tst.b	(searchcase-ds,a6)
 	beq.b	lbC001048
 	moveq	#1,d0
 lbC001048	movea.l	(12,a2),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8008000F,-(sp)
+	move.l	#GTCY_Active,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d0
-	tst.b	(lbB02B413-ds,a6)
+	tst.b	(searchalign-ds,a6)
 	beq.b	lbC00106A
 	moveq	#1,d0
 lbC00106A	movea.l	($10,a2),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8008000F,-(sp)
+	move.l	#GTCY_Active,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#1,d0
-	tst.b	(lbB02B415-ds,a6)
+	tst.b	(searchdir_start-ds,a6)
 	bne.b	lbC001094
 	moveq	#2,d0
-	tst.b	(lbB02B416-ds,a6)
+	tst.b	(searchdir_end-ds,a6)
 	bne.b	lbC001094
 	moveq	#0,d0
 lbC001094	movea.l	($14,a2),a0
 	clr.l	-(sp)
 	move.l	d0,-(sp)
-	move.l	#$8008000F,-(sp)
+	move.l	#GTCY_Active,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
 	moveq	#0,d3
-	move.b	(lbB02D06E-ds,a6),d3
+	move.b	(searchtype-ds,a6),d3
 	bsr.w	select_searchtype
 	rts
 
@@ -1898,7 +1899,7 @@ gadgets_search_hires
 	dw	14
 	dw	0
 	dl	0
-	dl	select_searchlabel
+	dl	select_searchstring
 	dl	STRING_KIND
 	dl	gtst_tags
 	dl	0
@@ -2044,12 +2045,12 @@ gadgets_search_lores
 	dw	14
 	dw	0
 	dl	0
-	dl	select_searchlabel
+	dl	select_searchstring
 	dl	STRING_KIND
 	dl	gtst_tags
 	dl	0
 gtmx_tags	dl	GTMX_Labels
-	dl	lbB02CFFE
+	dl	searchtypelabels
 	dl	GTMX_Spacing
 	dl	4
 	dl	0
@@ -2094,7 +2095,7 @@ lbW00148C	dw	$11AF
 lbW001492	dw	$2000
 
 select_searchtype	move.l	a2,-(sp)
-	move.b	d3,($CA,a5)
+	move.b	d3,($CA,a5)	;userdata
 	add.w	d3,d3
 	tst.b	(laceflag-ds,a6)
 	beq.b	lbC0014CA
@@ -2109,12 +2110,12 @@ select_searchtype	move.l	a2,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-lbC0014CA	lea	(lbW001584,pc),a1
+lbC0014CA	lea	(searchstring_array,pc),a1
 	moveq	#0,d0
 	move.w	(a1,d3.w),d0
 	lea	(a6,d0.l),a1
 	lea	(displayid-ds,a6),a0
-	jsr	(lbC027004-ds,a6)
+	jsr	(strcpy_escaped-ds,a6)
 	movea.l	a0,a1
 	lea	($2A,a5),a0
 	movea.l	($3C,a0),a0
@@ -2124,10 +2125,10 @@ lbC0014CA	lea	(lbW001584,pc),a1
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-	lea	(lbW001548,pc),a2
+	lea	(searchdisabled_array,pc),a2
 	adda.w	(a2,d3.w),a2
 	moveq	#7,d2
-lbC001508	lea	($2A,a5),a0
+.loop	lea	($2A,a5),a0
 	moveq	#0,d0
 	moveq	#0,d1
 	move.b	(a2)+,d1
@@ -2140,7 +2141,7 @@ lbC001508	lea	($2A,a5),a0
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-	dbra	d2,lbC001508
+	dbra	d2,.loop
 	move.w	#$169,d0
 	movea.l	(sp)+,a2
 	rts
@@ -2151,30 +2152,31 @@ lbW00153C	dw	$119F
 	dw	$11A1
 	dw	$11A2
 	dw	$11A3
-lbW001548	dw	lbL001554-lbW001548
-	dw	lbL00155C-lbW001548
-	dw	lbL001564-lbW001548
-	dw	lbL00156C-lbW001548
-	dw	lbL001574-lbW001548
-	dw	lbL00157C-lbW001548
-lbL001554	dl	$24282C30
+searchdisabled_array
+	dw	searchdisabled_norm-searchdisabled_array
+	dw	searchdisabled_pat-searchdisabled_array
+	dw	searchdisabled_buf-searchdisabled_array
+	dw	searchdisabled_bin-searchdisabled_array
+	dw	searchdisabled_lab-searchdisabled_array
+	dw	searchdisabled_sym-searchdisabled_array
+searchdisabled_norm	dl	$24282C30
 	dl	$340C9014
-lbL00155C	dl	$24282C30
+searchdisabled_pat	dl	$24282C30
 	dl	$340C9014
-lbL001564	dl	$2428ACB0
+searchdisabled_buf	dl	$2428ACB0
 	dl	$B40C9014
-lbL00156C	dl	$2428ACB0
+searchdisabled_bin	dl	$2428ACB0
 	dl	$B48C1014
-lbL001574	dl	$2428ACB0
+searchdisabled_lab	dl	$2428ACB0
 	dl	$B48C9094
-lbL00157C	dl	$2428ACB0
+searchdisabled_sym	dl	$2428ACB0
 	dl	$B48C9094
-lbW001584	dw	lbL02D8C8-ds
-	dw	lbB02D9C8-ds
-	dw	lbL02D8C8-ds
-	dw	lbL02DCC8-ds
-	dw	lbB02DEC8-ds
-	dw	lbB02DF48-ds
+searchstring_array	dw	searchstring_normal_buffer-ds
+	dw	searchstring_pattern-ds
+	dw	searchstring_normal_buffer-ds
+	dw	searchstring_binary-ds
+	dw	searchstring_label-ds
+	dw	searchstring_symbol-ds
 
 select_searchforward
 	moveq	#0,d0
@@ -2260,18 +2262,18 @@ select_searchfrom	move.w	#$3B9,d0
 	move.w	#$3B8,d0
 lbC001634	rts
 
-select_searchlabel	lea	($2A,a5),a0
+select_searchstring	lea	($2A,a5),a0
 	movea.l	($3C,a0),a0
 	movea.l	($22,a0),a0
 	movea.l	(a0),a0
 	moveq	#0,d2
 	move.b	($CA,a5),d2
 	add.w	d2,d2
-	lea	(lbW001584,pc),a1
+	lea	(searchstring_array,pc),a1
 	moveq	#0,d1
 	move.w	(a1,d2.w),d1
 	lea	(a6,d1.l),a1
-	jsr	(lbC026F92-ds,a6)
+	jsr	(strcpy_unescaped-ds,a6)
 	lea	(lbW001668,pc),a0
 	move.w	(a0,d2.w),d0
 	rts
@@ -2287,17 +2289,17 @@ lbC001674	movem.l	d0/d1/a0-a3,-(sp)
 	move.l	(windowSearchPtr-ds,a6),d0
 	beq.b	lbC0016A0
 	movea.l	d0,a3
-	movea.l	($78,a3),a0
+	movea.l	(wd_UserData,a3),a0
 	lea	($2A,a0),a0
 	movea.l	($14,a0),a0
 	clr.l	-(sp)
 	clr.l	-(sp)
-	move.l	#$8008000F,-(sp)
+	move.l	#GTCY_Active,-(sp)
 	movea.l	sp,a1
 	bsr.w	SetGadgetAttrs
 	lea	(12,sp),sp
-lbC0016A0	clr.b	(lbB02B415-ds,a6)
-	clr.b	(lbB02B416-ds,a6)
+lbC0016A0	clr.b	(searchdir_start-ds,a6)
+	clr.b	(searchdir_end-ds,a6)
 	movem.l	(sp)+,d0/d1/a0-a3
 	rts
 
@@ -2324,7 +2326,7 @@ closewindow_search	move.w	(wd_LeftEdge,a3),(windowSearchLeft-ds,a6)
 	movea.l	(gadtoolsbase-ds,a6),a6
 	jsr	(_LVOFreeGadgets,a6)
 	movea.l	(sp)+,a6
-	move.b	($CA,a5),(lbB02D06E-ds,a6)
+	move.b	($CA,a5),(searchtype-ds,a6)
 	lea	(a5),a0
 	tst.l	(a0)
 	beq.b	lbC001714
@@ -24628,7 +24630,7 @@ lbC014DEC	jsr	(saveregs_all-ds,a6)
 	jsr	(lbC0273FC).l
 	move.w	#$2762,d0
 	jsr	(gettextbynum-ds,a6)
-	move.l	#lbL02DCC8,d1
+	move.l	#searchstring_binary,d1
 	jsr	(StringRequest240-ds,a6)
 	bne.b	lbC014E1C
 lbC014E0A	jmp	(cceq-ds,a6)
@@ -25089,7 +25091,7 @@ _LoadMenuDefaults0	moveq	#0,d0
 _LoadMenuDefaults1	moveq	#1,d0
 _LoadMenuDefaults	move.l	d0,-(sp)
 	move.b	#$FF,(lbB02EB48-ds,a6)
-	jsr	(lbC001000).l
+	jsr	(refreshsearchcond).l
 	jsr	(win_options1_setcfg).l
 	jsr	(win_options2_setcfg).l
 	jsr	(LoadMenuDefaults).l
@@ -25173,11 +25175,11 @@ lbL0153A0	dl	_misc_FUNCTION
 	dl	miscBuffer
 ReSourcehelpl.MSG	db	'ReSourcehelp.library',0,0
 
-lbC0153E2	lea	(lbB02DEC8).l,a0
+lbC0153E2	lea	(searchstring_label).l,a0
 	moveq	#0,d2
 	bra.b	lbC0153F4
 
-lbC0153EC	lea	(lbB02DF48).l,a0
+lbC0153EC	lea	(searchstring_symbol).l,a0
 	moveq	#1,d2
 lbC0153F4	jsr	(strlen-ds,a6)
 	move.l	d2,d1
@@ -25191,11 +25193,11 @@ lbC0153F4	jsr	(strlen-ds,a6)
 	jsr	(clear_ccr-ds,a6)
 	jmp	(lbC02A3C6-ds,a6)
 
-lbC01541A	lea	(lbB02DEC8).l,a0
+lbC01541A	lea	(searchstring_label).l,a0
 	moveq	#0,d2
 	bra.b	lbC01542C
 
-lbC015424	lea	(lbB02DF48).l,a0
+lbC015424	lea	(searchstring_symbol).l,a0
 	moveq	#1,d2
 lbC01542C	jsr	(strlen-ds,a6)
 	move.l	d2,d1
@@ -25209,11 +25211,11 @@ lbC01542C	jsr	(strlen-ds,a6)
 	jsr	(clear_ccr-ds,a6)
 	jmp	(lbC02A3C6-ds,a6)
 
-lbC015452	move.l	#lbB02DF48,d1
+lbC015452	move.l	#searchstring_symbol,d1
 	move.w	#$2744,d0
 	bra.b	lbC015468
 
-lbC01545E	move.l	#lbB02DEC8,d1
+lbC01545E	move.l	#searchstring_label,d1
 	move.w	#$2743,d0
 lbC015468	jsr	(gettextbynum-ds,a6)
 	jmp	(StringRequest240-ds,a6)
@@ -25240,7 +25242,7 @@ lbC0154AE	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
-lbC0154BA	st	(lbB02B413-ds,a6)
+lbC0154BA	st	(searchalign-ds,a6)
 	clr.b	(lbB02B414-ds,a6)
 	lea	(menuModifyList-ds,a6),a0
 	move.w	#$37E,(a0)+
@@ -25250,7 +25252,7 @@ lbC0154BA	st	(lbB02B413-ds,a6)
 	clr.w	(a0)
 	bra.b	lbC0154F8
 
-lbC0154DA	clr.b	(lbB02B413-ds,a6)
+lbC0154DA	clr.b	(searchalign-ds,a6)
 	st	(lbB02B414-ds,a6)
 	lea	(menuModifyList-ds,a6),a0
 	move.w	#$37E,(a0)+
@@ -25266,7 +25268,7 @@ lbC015504	lea	(ABCDEFGHIJKLM.MSG,pc),a0
 	moveq	#$19,d0
 lbC01550A	ori.b	#$20,(a0)+
 	dbra	d0,lbC01550A
-	st	(case_sensitive_flag-ds,a6)
+	st	(searchcase-ds,a6)
 	clr.b	(lbB02B412-ds,a6)
 	lea	(menuModifyList-ds,a6),a0
 	move.w	#$380,(a0)+
@@ -25280,7 +25282,7 @@ lbC015532	lea	(ABCDEFGHIJKLM.MSG,pc),a0
 	moveq	#$19,d0
 lbC015538	andi.b	#$DF,(a0)+
 	dbra	d0,lbC015538
-	clr.b	(case_sensitive_flag-ds,a6)
+	clr.b	(searchcase-ds,a6)
 	st	(lbB02B412-ds,a6)
 	lea	(menuModifyList-ds,a6),a0
 	move.w	#$380,(a0)+
@@ -25292,18 +25294,18 @@ lbC01555E	lea	(menuModifyList-ds,a6),a0
 	jsr	(ModifyMenuByList-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
-lbC01556A	st	(lbB02B415-ds,a6)
+lbC01556A	st	(searchdir_start-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
-lbC015572	st	(lbB02B416-ds,a6)
+lbC015572	st	(searchdir_end-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
-lbC01557A	clr.b	(lbB02B415-ds,a6)
-	clr.b	(lbB02B416-ds,a6)
+lbC01557A	clr.b	(searchdir_start-ds,a6)
+	clr.b	(searchdir_end-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
 lbC015586	movem.l	d2-d7/a4/a5,-(sp)
-	tst.b	(lbB02B415-ds,a6)
+	tst.b	(searchdir_start-ds,a6)
 	beq.b	lbC01559A
 	jsr	(lbC02AEDE-ds,a6)
 	jsr	(lbC001674).l
@@ -25359,7 +25361,7 @@ lbC015604	suba.l	d0,a2
 	cmpa.l	a2,a0
 	sne	d4
 	beq.b	lbC015620
-	tst.b	(lbB02B413-ds,a6)
+	tst.b	(searchalign-ds,a6)
 	beq.b	lbC015620
 	move.l	a2,d1
 	btst	#0,d1
@@ -25387,7 +25389,7 @@ lbC015650	jsr	(lbC02A3CC-ds,a6)
 	jmp	(lbC02AF74-ds,a6)
 
 lbC01565C	movem.l	d2-d7/a4/a5,-(sp)
-	tst.b	(lbB02B416-ds,a6)
+	tst.b	(searchdir_end-ds,a6)
 	beq.b	lbC015670
 	jsr	(_RefreshAll-ds,a6)
 	jsr	(lbC001674).l
@@ -25450,7 +25452,7 @@ lbC0156F0	movea.l	(ds-ds,a6),a0
 	cmpa.l	a2,a0
 	sne	d4
 	beq.b	lbC015708
-	tst.b	(lbB02B413-ds,a6)
+	tst.b	(searchalign-ds,a6)
 	beq.b	lbC015708
 	move.l	a2,d1
 	btst	#0,d1
@@ -25469,14 +25471,14 @@ lbC015714	dbra	d5,lbC015712
 	bra.w	lbC01563C
 
 lbC015728	movem.l	d2-d7/a4/a5,-(sp)
-	tst.b	(lbB02B415-ds,a6)
+	tst.b	(searchdir_start-ds,a6)
 	beq.b	lbC01573C
 	jsr	(lbC02AEDE-ds,a6)
 	jsr	(lbC001674).l
 lbC01573C	move.l	a2,(lbL02D324-ds,a6)
 	jsr	(lbC028476-ds,a6)
 	jsr	(lbC01FA52).l
-	lea	(lbL02D8C8-ds,a6),a4
+	lea	(searchstring_normal_buffer-ds,a6),a4
 	lea	(case_insensitive_tab,pc),a5
 	moveq	#0,d6
 	move.l	a4,d7
@@ -25563,13 +25565,13 @@ lbC01581E	movem.l	(sp)+,a2/a3
 	jmp	(lbC02A422-ds,a6)
 
 lbC01582A	movem.l	d2-d7/a4/a5,-(sp)
-	tst.b	(lbB02B416-ds,a6)
+	tst.b	(searchdir_end-ds,a6)
 	beq.b	lbC01583E
 	jsr	(_RefreshAll-ds,a6)
 	jsr	(lbC001674).l
 lbC01583E	move.l	a2,(lbL02D324-ds,a6)
 	jsr	(lbC028476-ds,a6)
-	lea	(lbL02D8C8-ds,a6),a4
+	lea	(searchstring_normal_buffer-ds,a6),a4
 	lea	(case_insensitive_tab,pc),a5
 	moveq	#0,d6
 	move.l	a4,d7
@@ -34694,10 +34696,10 @@ lbW01CCCC	dw	$8000
 	dw	$BAA
 	dw	$36A
 	dw	0
-	dw	lbL02D8C8-ds
+	dw	searchstring_normal_buffer-ds
 	dw	$4D
 	dw	0
-	dw	lbL02DCC8-ds
+	dw	searchstring_binary-ds
 	dw	$37D
 	dw	0
 	dw	displayid-ds
@@ -47824,7 +47826,7 @@ lbC026DC8	movem.l	d2/d3/a2/a3,-(sp)
 	movea.l	d1,a1
 	move.l	d1,-(sp)
 	lea	(displayid-ds,a6),a0
-	bsr.w	lbC027004
+	bsr.w	strcpy_escaped
 	bsr.w	strlen
 	move.l	a0,(a2)
 	move.w	d0,(8,a2)
@@ -47961,7 +47963,7 @@ lbC026F32	lea	(nw_win1,pc),a0
 
 lbC026F6E	lea	(displayid-ds,a6),a0
 	movea.l	a0,a1
-	bsr.b	lbC026F92
+	bsr.b	strcpy_unescaped
 	tst.b	(lbB02EB4B-ds,a6)
 	bne.b	lbC026F80
 	bsr.w	lbC027222
@@ -47973,92 +47975,92 @@ lbC026F84	move.b	(a0)+,(a1)+
 	movem.l	(sp)+,d2/d3/a2/a3
 	rts
 
-lbC026F92	movem.l	d0/a0/a1,-(sp)
+strcpy_unescaped	movem.l	d0/a0/a1,-(sp)
 	moveq	#0,d0
-	bra.b	lbC026F9C
+	bra.b	.next
 
-lbC026F9A	move.b	d0,(a1)+
-lbC026F9C	move.b	(a0)+,d0
-	beq.b	lbC026FFC
-	cmpi.b	#$5C,d0
-	bne.b	lbC026F9A
+.copy	move.b	d0,(a1)+
+.next	move.b	(a0)+,d0
+	beq.b	.end
+	cmpi.b	#'\',d0
+	bne.b	.copy
 	move.b	(a0)+,d0
-	beq.b	lbC026FFC
-	cmpi.b	#$41,d0
-	bcs.b	lbC026FBA
-	cmpi.b	#$5A,d0
-	bhi.b	lbC026FBA
+	beq.b	.end
+	cmpi.b	#'A',d0
+	bcs.b	.lower
+	cmpi.b	#'Z',d0
+	bhi.b	.lower
 	addi.b	#$20,d0
-lbC026FBA	cmpi.b	#$74,d0
-	beq.b	lbC026FDE
-	cmpi.b	#$65,d0
-	beq.b	lbC026FE4
-	cmpi.b	#$6E,d0
-	beq.b	lbC026FEA
-	cmpi.b	#$72,d0
-	beq.b	lbC026FF0
-	cmpi.b	#$66,d0
-	beq.b	lbC026FF6
+.lower	cmpi.b	#'t',d0
+	beq.b	.tab
+	cmpi.b	#'e',d0
+	beq.b	.esc
+	cmpi.b	#'n',d0
+	beq.b	.nl
+	cmpi.b	#'r',d0
+	beq.b	.cr
+	cmpi.b	#'f',d0
+	beq.b	.ff
 	move.b	(-1,a0),(a1)+
-	bra.b	lbC026F9C
+	bra.b	.next
 
-lbC026FDE	move.b	#9,(a1)+
-	bra.b	lbC026F9C
+.tab	move.b	#9,(a1)+
+	bra.b	.next
 
-lbC026FE4	move.b	#$1B,(a1)+
-	bra.b	lbC026F9C
+.esc	move.b	#$1B,(a1)+
+	bra.b	.next
 
-lbC026FEA	move.b	#10,(a1)+
-	bra.b	lbC026F9C
+.nl	move.b	#10,(a1)+
+	bra.b	.next
 
-lbC026FF0	move.b	#13,(a1)+
-	bra.b	lbC026F9C
+.cr	move.b	#13,(a1)+
+	bra.b	.next
 
-lbC026FF6	move.b	#12,(a1)+
-	bra.b	lbC026F9C
+.ff	move.b	#12,(a1)+
+	bra.b	.next
 
-lbC026FFC	clr.b	(a1)
+.end	clr.b	(a1)
 	movem.l	(sp)+,d0/a0/a1
 	rts
 
-lbC027004	movem.l	d0/a0/a1,-(sp)
+strcpy_escaped	movem.l	d0/a0/a1,-(sp)
 	moveq	#0,d0
-lbC02700A	move.b	(a1)+,d0
-	beq.b	lbC027062
+.loop	move.b	(a1)+,d0
+	beq.b	.end
 	cmpi.b	#9,d0
-	beq.b	lbC027030
+	beq.b	.tab
 	cmpi.b	#$1B,d0
-	beq.b	lbC02703A
+	beq.b	.esc
 	cmpi.b	#10,d0
-	beq.b	lbC027044
+	beq.b	.nl
 	cmpi.b	#13,d0
-	beq.b	lbC02704E
+	beq.b	.cr
 	cmpi.b	#12,d0
-	beq.b	lbC027058
+	beq.b	.ff
 	move.b	d0,(a0)+
-	bra.b	lbC02700A
+	bra.b	.loop
 
-lbC027030	move.b	#'\',(a0)+
+.tab	move.b	#'\',(a0)+
 	move.b	#'t',(a0)+
-	bra.b	lbC02700A
+	bra.b	.loop
 
-lbC02703A	move.b	#'\',(a0)+
+.esc	move.b	#'\',(a0)+
 	move.b	#'e',(a0)+
-	bra.b	lbC02700A
+	bra.b	.loop
 
-lbC027044	move.b	#'\',(a0)+
+.nl	move.b	#'\',(a0)+
 	move.b	#'n',(a0)+
-	bra.b	lbC02700A
+	bra.b	.loop
 
-lbC02704E	move.b	#'\',(a0)+
+.cr	move.b	#'\',(a0)+
 	move.b	#'r',(a0)+
-	bra.b	lbC02700A
+	bra.b	.loop
 
-lbC027058	move.b	#'\',(a0)+
+.ff	move.b	#'\',(a0)+
 	move.b	#'f',(a0)+
-	bra.b	lbC02700A
+	bra.b	.loop
 
-lbC027062	clr.b	(a0)
+.end	clr.b	(a0)
 	movem.l	(sp)+,d0/a0/a1
 	rts
 
@@ -49678,7 +49680,7 @@ lbC02821C	movea.l	(work_actual_offset-ds,a6),a2
 
 _savecommonregs2	bsr.w	saveregs_nod0d1a0a1
 	bsr.w	lbC0273FC
-	lea	(lbL02D8C8-ds,a6),a0
+	lea	(searchstring_normal_buffer-ds,a6),a0
 	move.l	a0,d1
 	move.w	#$2762,d0
 	jsr	(gettextbynum-ds,a6)
@@ -49696,7 +49698,7 @@ lbC028254	tst.l	(windowSearchPtr-ds,a6)
 	bra.w	cceq
 
 .beep	bsr.w	_DisplayBeep
-lbC028268	lea	(lbB02D9C8-ds,a6),a0
+lbC028268	lea	(searchstring_pattern-ds,a6),a0
 	move.l	a0,d1
 	move.w	#$2762,d0
 	jsr	(gettextbynum-ds,a6)
@@ -49752,7 +49754,7 @@ lbC0282FC	clr.l	(lbL02D0A8-ds,a6)
 	clr.l	(lbL02D0AC-ds,a6)
 	cmpi.b	#1,(lbB02EB3C-ds,a6)
 	bne.b	lbC028322
-	tst.b	(lbB02B415-ds,a6)
+	tst.b	(searchdir_start-ds,a6)
 	beq.b	lbC02831C
 	jsr	(lbC02AEDE-ds,a6)
 	jsr	(lbC001674).l
@@ -49761,7 +49763,7 @@ lbC02831C	move.l	a2,(lbL02D0A8-ds,a6)
 
 lbC028322	cmpi.b	#$FF,(lbB02EB3C-ds,a6)
 	bne.b	lbC028340
-	tst.b	(lbB02B416-ds,a6)
+	tst.b	(searchdir_end-ds,a6)
 	beq.b	lbC02833A
 	jsr	(_RefreshAll-ds,a6)
 	jsr	(lbC001674).l
@@ -49833,11 +49835,11 @@ lbC0283FC	move.l	a2,-(sp)
 	clr.b	(a4)
 	clr.b	-(a4)
 	move.l	a4,d2
-	lea	(lbL02D8C8-ds,a6),a0
+	lea	(searchstring_normal_buffer-ds,a6),a0
 	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC028422
 	lea	(lbL02DAC8-ds,a6),a0
-	tst.b	(case_sensitive_flag-ds,a6)
+	tst.b	(searchcase-ds,a6)
 	bne.b	lbC028422
 	lea	(lbL02DBC8-ds,a6),a0
 lbC028422	tst.b	(a0)
@@ -49868,18 +49870,18 @@ lbC028458	bsr.w	lbC02A4A6
 	rts
 
 lbC02846C	movem.l	a2/a4,-(sp)
-	lea	(lbL02DCC8-ds,a6),a0
+	lea	(searchstring_binary-ds,a6),a0
 	bra.b	lbC028492
 
 lbC028476	movem.l	a2/a4,-(sp)
-	lea	(lbL02D8C8-ds,a6),a0
+	lea	(searchstring_normal_buffer-ds,a6),a0
 	bra.b	lbC028492
 
 lbC028480	movem.l	a2/a4,-(sp)
-	lea	(lbL02D8C8-ds,a6),a0
+	lea	(searchstring_normal_buffer-ds,a6),a0
 	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC028492
-	lea	(lbB02D9C8-ds,a6),a0
+	lea	(searchstring_pattern-ds,a6),a0
 lbC028492	lea	(rawDoFmt_args-ds,a6),a1
 	move.l	a0,(a1)
 	move.w	#$2755,d0
@@ -50814,10 +50816,10 @@ lbC028FA0	cmpi.b	#$EF,d0
 	andi.b	#$FB,ccr
 	rts
 
-lbC028FCC	lea	(lbL02D8C8-ds,a6),a0
+lbC028FCC	lea	(searchstring_normal_buffer-ds,a6),a0
 	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC028FDA
-	lea	(lbB02D9C8-ds,a6),a0
+	lea	(searchstring_pattern-ds,a6),a0
 lbC028FDA	lea	(lbL02C1D4-ds,a6),a1
 	moveq	#-1,d0
 lbC028FE0	move.b	(a0)+,(a1)+
@@ -51455,11 +51457,11 @@ lbC02967E	clr.b	(lbB02EB46-ds,a6)
 	clr.b	(1,a4)
 	move.l	a4,d2
 	lea	(miscBuffer-ds,a6),a1
-lbC0296A8	lea	(lbL02D8C8-ds,a6),a0
+lbC0296A8	lea	(searchstring_normal_buffer-ds,a6),a0
 	tst.b	(lbB02EB44-ds,a6)
 	bne.b	lbC0296C0
 	lea	(lbL02DAC8-ds,a6),a0
-	tst.b	(case_sensitive_flag-ds,a6)
+	tst.b	(searchcase-ds,a6)
 	bne.b	lbC0296C0
 	lea	(lbL02DBC8-ds,a6),a0
 lbC0296C0	tst.b	(a0)
@@ -52518,7 +52520,7 @@ lbC02A2DC	move.l	d0,d1
 lbC02A2EE	rts
 
 _cmpstr	movem.l	d0/d1/a0-a2,-(sp)
-	tst.b	(case_sensitive_flag-ds,a6)
+	tst.b	(searchcase-ds,a6)
 	beq.b	lbC02A308
 lbC02A2FA	move.b	(a0)+,d0
 	beq.b	lbC02A32C
@@ -52549,7 +52551,7 @@ lbC02A330	movem.l	(sp)+,d0/d1/a0-a2
 _MatchPattern	movem.l	d1/d2/a0/a1/a6,-(sp)
 	move.l	a0,d1
 	move.l	a1,d2
-	tst.b	(case_sensitive_flag-ds,a6)
+	tst.b	(searchcase-ds,a6)
 	bne.b	lbC02A34E
 	movea.l	(dosbase-ds,a6),a6
 	jsr	(_LVOMatchPatternNoCase,a6)
@@ -53890,12 +53892,12 @@ lbB02B40D	db	0
 lbB02B40E	db	1
 lbB02B40F	db	0
 lbB02B410	db	0
-case_sensitive_flag	db	0
+searchcase	db	0	;0=ignore 1=sensitive
 lbB02B412	db	1
-lbB02B413	db	0
+searchalign	db	0	;0=byte 1=word
 lbB02B414	db	1
-lbB02B415	db	0
-lbB02B416	db	0
+searchdir_start	db	0
+searchdir_end	db	0
 lbB02B417	db	0
 lbB02B418	db	1
 lbB02B419	db	0
@@ -54143,14 +54145,14 @@ symactivenum_dirs	dx.b	2	;-1 if none
 symactivenum_incs	dx.b	2
 lbB02CFF6	dx.b	2
 lbB02CFF8	dx.b	6
-lbB02CFFE	dx.b	$1C
+searchtypelabels	dx.b	$1C
 searchcaselabels	dx.b	12
 searchalignlabels	dx.b	12
 searchfromlabels	dx.b	$10
 searchdummylabels	dx.b	12
 textstrings_zap2	dx.l	3
 textstrings2_zap2	dx.l	5
-lbB02D06E	dx.b	2
+searchtype	dx.b	2
 lbL02D070	dx.l	2
 lbL02D078	dx.l	1
 lbL02D07C	dx.l	1
@@ -54360,15 +54362,17 @@ displayid	dx.l	$38
 rawDoFmt_buf	dx.l	3
 lbL02D7A8	dx.l	8
 screen_pubname	dx.l	$40
-lbL02D8C8	dx.l	$40
-lbB02D9C8	dx.b	$100
+searchstring_normal_buffer
+	dx.b	$100
+searchstring_pattern
+	dx.b	$100
 lbL02DAC8	dx.l	$40
 lbL02DBC8	dx.l	$40
-lbL02DCC8	dx.l	$40
+searchstring_binary	dx.b	$100
 lbB02DDC8	dx.b	1
 lbB02DDC9	dx.b	$FF
-lbB02DEC8	dx.b	$80
-lbB02DF48	dx.b	$80
+searchstring_label	dx.b	$80
+searchstring_symbol	dx.b	$80
 fileNameSaveBin	dx.l	$40
 saveBinSpecifyBuf	dx.l	$40
 fileNameSaveAsm	dx.l	$40
