@@ -58,6 +58,7 @@ endif
 ifeq ($(AS),basm)
 
 # BASM: -H to show all unused Symbols/Labels, requires -OG-
+# currently not working: -OD08+
 ASM=$(VAMOS) basm -v+ -O+ -OD08- -ODc- -ODd- -wo-
 ASMDEF=-d
 ASMOUT=-o
@@ -75,7 +76,7 @@ $(error variable AS must be set to (basm|vasm))
 endif
 
 # VASM: -wfail -warncomm -databss
-# currently no working: -opt-st
+# currently not working: -opt-st
 ASM=vasmm68k_mot -Fhunkexe -quiet -ldots -wfail -opt-clr -opt-lsl -opt-movem -opt-nmoveq -opt-pea -opt-size
 ASMDEF=-D
 ASMOUT=-o 

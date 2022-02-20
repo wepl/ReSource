@@ -1,10 +1,13 @@
 
-version 6.6.2 (2022-02-19) done by Wepl, Psygore
+version 6.6.2 (2022-02-20) done by Wepl, Psygore
 
 * changed from RCS to Git and made available via github
+  see: https://github.com/wepl/ReSource
 * added Makefile, builds with vasm & basm
 * supports full optimize now, all references should be correctly
   disassembled
+* fixed an endless loop if the volume of a remembered directory no longer
+  exists (bug introduced in 6.6.1)
 * added support for 68060 opcodes movec buscr/pcr
 * now remembers the window positions: if you have moved any of the sub windows
   (Symbols, Search, Macros1/2/3, Options1/2) the next time you write a .rs
@@ -14,7 +17,7 @@ version 6.6.2 (2022-02-19) done by Wepl, Psygore
 * when the Search window is opened or the search type is changed the search
   strings gadget will be activated now
 * when a already open window is tried to open again it will not only brought
-  to front but also being activated
+  to front but also becomes activated
 
 version 6.6.1 (2020-02-19) done by Wepl
 
