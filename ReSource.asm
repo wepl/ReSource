@@ -5177,10 +5177,10 @@ lbC00363C	tst.b	(lbB02EB4B-ds,a6)
 	jmp	(lbC01B760).l
 
 lbC003648	tst.b	(lbB02EB41-ds,a6)
-	beq.b	lbC003652
+	beq.b	openwindow_zap2
 	jmp	(lbC02A4A6-ds,a6)
 
-lbC003652	movem.l	d2-d7/a2-a5,-(sp)
+openwindow_zap2	movem.l	d2-d7/a2-a5,-(sp)
 	suba.w	#$DE,sp
 	movea.l	sp,a5
 	movea.l	(window1ptr-ds,a6),a0
@@ -5442,7 +5442,7 @@ lbC003976	moveq	#-1,d5
 
 lbC00397A	move.w	($AA,a5),d1
 	cmp.w	d1,d0
-	beq.b	lbC0039AC
+	beq.b	closewindow_zap2
 	movem.l	d0/a0,-(sp)
 	lea	(rawDoFmt_args-ds,a6),a1
 	move.w	d1,(a1)
@@ -5452,11 +5452,11 @@ lbC00397A	move.w	($AA,a5),d1
 	movea.l	d0,a0
 	jsr	(lbC02A6FC-ds,a6)
 	movem.l	(sp)+,d0/a0
-	bne.b	lbC0039AC
+	bne.b	closewindow_zap2
 	bsr.w	lbC0038AA
 	bra.w	lbC003820
 
-lbC0039AC	movea.l	(4,a0),a0
+closewindow_zap2	movea.l	(4,a0),a0
 	lsr.w	#1,d0
 	subq.w	#1,d0
 lbC0039B4	move.w	(a0)+,(a2)+
@@ -11418,7 +11418,7 @@ lbC00C026	moveq	#-4,d0
 	moveq	#0,d1
 	move.l	d0,-(sp)
 	move.l	a4,d0
-	jsr	(lbC02777C-ds,a6)
+	jsr	(getlabelbynum_qq-ds,a6)
 	movea.l	d0,a1
 	movem.l	(sp)+,d0
 	beq.b	lbC00C074
@@ -16767,7 +16767,7 @@ default_func	dl	term1-default_func
 	dl	lbC01B7EE-
 	dw	7
 	dl	0
-	dl	lbC0151A4-
+	dl	setlabelbynum-
 	dw	$358
 	dl	0
 	dl	lbC0160D4-
@@ -24909,7 +24909,7 @@ lbC0150A4	move.l	d0,-(sp)
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
 	moveq	#1,d1
-	jsr	(lbC02777C-ds,a6)
+	jsr	(getlabelbynum_qq-ds,a6)
 	movea.l	(sp)+,a1
 	jsr	(term2_if_cceq-ds,a6)
 	suba.l	(ds-ds,a6),a1
@@ -24994,7 +24994,7 @@ lbC015190	jsr	(lbC02ADA2-ds,a6)
 lbC0151A0	addq.l	#4,sp
 	rts
 
-lbC0151A4	movem.l	d2-d6/a0/a1/a5,-(sp)
+setlabelbynum	movem.l	d2-d6/a0/a1/a5,-(sp)
 	moveq	#0,d5
 	moveq	#0,d6
 	suba.l	a1,a1
@@ -25005,10 +25005,10 @@ lbC0151A4	movem.l	d2-d6/a0/a1/a5,-(sp)
 	move.l	d0,d2
 	moveq	#0,d3
 	moveq	#3,d4
-lbC0151BE	eor.b	d2,d3
+.eor	eor.b	d2,d3
 	rol.b	#1,d3
 	rol.l	#6,d2
-	dbra	d4,lbC0151BE
+	dbra	d4,.eor
 	eor.b	d2,d3
 	rol.b	#1,d3
 	move.l	d1,d4
@@ -25019,25 +25019,25 @@ lbC0151BE	eor.b	d2,d3
 	lsl.l	#2,d4
 	lea	(a0,d4.l),a1
 	movea.l	(stringPointer-ds,a6),a0
-lbC0151E2	move.l	(a1),d2
-	beq.b	lbC015202
+.next	move.l	(a1),d2
+	beq.b	.notfound
 	cmp.l	(8,a0,d2.l),d0
-	beq.b	lbC0151F2
-lbC0151EC	lea	(a0,d2.l),a1
-	bra.b	lbC0151E2
+	beq.b	.found
+.skip	lea	(a0,d2.l),a1
+	bra.b	.next
 
-lbC0151F2	lea	(a0,d2.l),a5
+.found	lea	(a0,d2.l),a5
 	tst.l	d5
-	beq.b	lbC0151FE
+	beq.b	.setfirst
 	st	d6
-	bra.b	lbC0151EC
+	bra.b	.skip
 
-lbC0151FE	move.l	a1,d5
-	bra.b	lbC0151EC
+.setfirst	move.l	a1,d5
+	bra.b	.skip
 
-lbC015202	movea.l	d5,a1
+.notfound	movea.l	d5,a1
 	tst.b	d6
-	beq.b	lbC015222
+	beq.b	.nodup
 	move.l	(a1),d0
 	move.l	(a0,d0.l),(a1)
 	move.l	(a5),d1
@@ -25047,7 +25047,7 @@ lbC015202	movea.l	d5,a1
 	jsr	(clear_ccr-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
-lbC015222	jsr	(clear_ccr-ds,a6)
+.nodup	jsr	(clear_ccr-ds,a6)
 	movem.l	(sp)+,d2-d6/a0/a1/a5
 	rts
 
@@ -27403,7 +27403,7 @@ lbC016CB8	lea	(lbW033600).l,a1
 	beq.b	lbC016CD4
 	sub.l	(ds-ds,a6),d0
 	moveq	#0,d1
-	jsr	(lbC02777C-ds,a6)
+	jsr	(getlabelbynum_qq-ds,a6)
 lbC016CD4	beq.b	lbC016CFC
 	movea.l	d0,a1
 	lea	(lbW033600).l,a5
@@ -28653,7 +28653,7 @@ lbC017960	jsr	(lbC02A3E6-ds,a6)
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
 	moveq	#0,d1
-	jsr	(lbC02777C-ds,a6)
+	jsr	(getlabelbynum_qq-ds,a6)
 	beq.b	lbC0179BC
 	movem.l	d0/d1,-(sp)
 	addq.l	#3,d1
@@ -32987,7 +32987,7 @@ lbC01B86C	move.b	d5,(lbB02EB7F-ds,a6)
 	bclr	#6,d5
 	bne.b	lbC01B890
 	move.l	d5,d1
-	jsr	(lbC02777C-ds,a6)
+	jsr	(getlabelbynum_qq-ds,a6)
 	beq.b	lbC01B890
 	movea.l	d0,a0
 lbC01B88A	move.b	(a0)+,(a1)+
@@ -33098,7 +33098,7 @@ lbC01B9AE	subq.l	#4,a3
 	move.l	a3,d0
 	sub.l	d2,d0
 	lsr.l	#2,d0
-	bsr.w	lbC023364
+	bsr.w	getlabelbynum
 	cmpi.b	#$2E,(a0)
 	beq.b	lbC01B9D2
 	cmpi.b	#$24,(-1,a0,d1.w)
@@ -33126,7 +33126,7 @@ lbC01B9F2	addq.l	#4,a3
 	move.l	a3,d0
 	sub.l	d2,d0
 	lsr.l	#2,d0
-	bsr.w	lbC023364
+	bsr.w	getlabelbynum
 	cmpi.b	#$2E,(a0)
 	beq.b	lbC01BA1A
 	cmpi.b	#$24,(-1,a0,d1.w)
@@ -33720,7 +33720,7 @@ lbC01C1A6	lea	(miscBuffer-ds,a6),a4
 	move.l	(lbB02D118-ds,a6),d0
 	sub.l	(ds-ds,a6),d0
 	moveq	#1,d1
-	jsr	(lbC02777C).l
+	jsr	(getlabelbynum_qq).l
 	beq.b	lbC01C1A6
 	movea.l	d0,a0
 	move.l	d1,d0
@@ -36660,59 +36660,59 @@ lbC01E874	bra.b	mainloop2
 lbC01E876	movem.l	d0-d2/a0/a1/a4/a5,-(sp)
 	clr.l	(lbL02D16C-ds,a6)
 	btst	#1,(a3)
-	beq.b	lbC01E8EE
+	beq.b	.go
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
-	bsr.w	lbC023364
-	cmpi.b	#$5F,(a0)
-	beq.b	lbC01E8E8
-	cmpi.b	#$2E,(-4,a0,d1.w)
-	bne.b	lbC01E8B4
-	cmpi.b	#$4D,(-3,a0,d1.w)
-	bne.b	lbC01E8B4
-	cmpi.b	#$53,(-2,a0,d1.w)
-	bne.b	lbC01E8B4
-	cmpi.b	#$47,(-1,a0,d1.w)
-	beq.b	lbC01E8E8
-lbC01E8B4	cmpi.b	#$2E,(-5,a0,d1.w)
-	bne.b	lbC01E8D4
-	cmpi.b	#$4D,(-4,a0,d1.w)
-	bne.b	lbC01E8D4
-	cmpi.b	#$53,(-3,a0,d1.w)
-	bne.b	lbC01E8D4
-	cmpi.b	#$47,(-2,a0,d1.w)
-	beq.b	lbC01E8E8
-lbC01E8D4	cmpi.w	#9,d1
-	bne.b	lbC01E8E8
-	cmpi.b	#$6C,(a0)
-	bne.b	lbC01E8E8
-	cmpi.b	#$62,(1,a0)
-	beq.b	lbC01E8EE
-lbC01E8E8	movem.l	(sp)+,d0-d2/a0/a1/a4/a5
+	bsr.w	getlabelbynum
+	cmpi.b	#'_',(a0)
+	beq.b	.end
+	cmpi.b	#'.',(-4,a0,d1.w)
+	bne.b	.nomsg
+	cmpi.b	#'M',(-3,a0,d1.w)
+	bne.b	.nomsg
+	cmpi.b	#'S',(-2,a0,d1.w)
+	bne.b	.nomsg
+	cmpi.b	#'G',(-1,a0,d1.w)
+	beq.b	.end
+.nomsg	cmpi.b	#'.',(-5,a0,d1.w)
+	bne.b	.nomsgn
+	cmpi.b	#'M',(-4,a0,d1.w)
+	bne.b	.nomsgn
+	cmpi.b	#'S',(-3,a0,d1.w)
+	bne.b	.nomsgn
+	cmpi.b	#'G',(-2,a0,d1.w)
+	beq.b	.end
+.nomsgn	cmpi.w	#9,d1
+	bne.b	.end
+	cmpi.b	#'l',(a0)
+	bne.b	.end
+	cmpi.b	#'b',(1,a0)
+	beq.b	.go
+.end	movem.l	(sp)+,d0-d2/a0/a1/a4/a5
 	rts
 
-lbC01E8EE	movea.l	a2,a0
+.go	movea.l	a2,a0
 	lea	(displayid-ds,a6),a4
 	moveq	#0,d1
 lbC01E8F6	move.b	(a0),d0
 	beq.b	lbC01E95A
-	cmpi.b	#$30,d0
+	cmpi.b	#'0',d0
 	bcs.b	lbC01E938
-	cmpi.b	#$41,d0
+	cmpi.b	#'A',d0
 	bcc.b	lbC01E90A
 	tst.b	d1
 	beq.b	lbC01E938
-lbC01E90A	cmpi.b	#$39,d0
+lbC01E90A	cmpi.b	#'9',d0
 	bls.b	lbC01E92E
-	cmpi.b	#$41,d0
+	cmpi.b	#'A',d0
 	bcs.b	lbC01E938
-	cmpi.b	#$5A,d0
+	cmpi.b	#'Z',d0
 	bls.b	lbC01E92E
-	cmpi.b	#$5F,d0
+	cmpi.b	#'_',d0
 	beq.b	lbC01E92E
-	cmpi.b	#$61,d0
+	cmpi.b	#'a',d0
 	bcs.b	lbC01E938
-	cmpi.b	#$7A,d0
+	cmpi.b	#'z',d0
 	bhi.b	lbC01E938
 lbC01E92E	move.b	d0,(a4)+
 	addq.l	#1,d1
@@ -36734,12 +36734,12 @@ lbC01E938	addq.l	#1,a0
 lbC01E95A	tst.b	d1
 	bne.b	lbC01E96C
 	lea	(displayid-ds,a6),a4
-	move.l	#$61736369,(a4)+
-	move.b	#$69,(a4)+
-lbC01E96C	move.b	#$2E,(a4)+
-	move.b	#$4D,(a4)+
-	move.b	#$53,(a4)+
-	move.b	#$47,(a4)+
+	move.l	#'asci',(a4)+
+	move.b	#'i',(a4)+
+lbC01E96C	move.b	#'.',(a4)+
+	move.b	#'M',(a4)+
+	move.b	#'S',(a4)+
+	move.b	#'G',(a4)+
 	clr.b	(a4)
 	move.l	a4,(lbL02D170-ds,a6)
 	lea	(displayid-ds,a6),a4
@@ -38287,7 +38287,7 @@ lbC020054	move.b	d2,(lbW02EB3A-ds,a6)
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
 	moveq	#0,d1
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	beq.b	lbC0200DC
 	movea.l	d0,a0
 	btst	#4,(1,a3)
@@ -38439,17 +38439,17 @@ lbC020218	move.l	a0,d0
 	movea.l	d1,a1
 	btst	#1,(a1)
 	beq.b	lbC020206
-	bsr.w	lbC023364
-	cmpi.b	#$24,(-1,a0,d1.w)
+	bsr.w	getlabelbynum
+	cmpi.b	#'$',(-1,a0,d1.w)
 	beq.b	lbC020206
-	cmpi.b	#$6C,(a0)
+	cmpi.b	#'l',(a0)
 	bne.b	lbC020250
-	cmpi.b	#$62,(1,a0)
+	cmpi.b	#'b',(1,a0)
 	beq.b	lbC020206
 lbC020250	lea	(displayid-ds,a6),a1
-	cmpi.b	#$2E,(a0)
+	cmpi.b	#'.',(a0)
 	bne.b	lbC020268
-	cmpi.b	#$2E,(1,a0)
+	cmpi.b	#'.',(1,a0)
 	beq.b	lbC020206
 	move.b	(a0)+,(a1)+
 	subq.w	#1,d1
@@ -38897,7 +38897,7 @@ lbC020762	tst.b	(opt1_show_flcomments-ds,a6)
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
 	moveq	#2,d1
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	beq.b	lbC02075A
 	movea.l	d0,a0
 	cmpi.b	#13,(a0)
@@ -38957,7 +38957,7 @@ lbC0207FC	bsr.w	lbC020C3C
 	movea.l	(lbL02D2D0-ds,a6),a4
 lbC02080A	addq.l	#1,(count_fulllinecomm-ds,a6)
 	addq.b	#1,(lbB02EB4E-ds,a6)
-	move.b	(lbB02EB4E-ds,a6),(lbB02EB4D).l
+	move.b	(lbB02EB4E-ds,a6),(labelnumdupcnt).l
 	bra.b	lbC0207E2
 
 DxAreaEnd.MSG	db	'DxAreaEnd',0
@@ -39219,7 +39219,7 @@ lbC020B26	tst.b	(opt1_show_labels-ds,a6)
 	addq.l	#1,(count_labels-ds,a6)
 	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
-	bsr.w	lbC023364
+	bsr.w	getlabelbynum
 	tst.b	(lbB02B3F2-ds,a6)
 	bne.b	lbC020B70
 lbC020B40	tst.b	(lbB02B3F3-ds,a6)
@@ -39786,7 +39786,7 @@ lbC0211A0	move.b	#$3B,(a4)+
 
 lbC0211B2	bsr.w	lbC020C3C
 	addq.b	#1,(lbB02EB4E-ds,a6)
-	move.b	(lbB02EB4E-ds,a6),(lbB02EB4D).l
+	move.b	(lbB02EB4E-ds,a6),(labelnumdupcnt).l
 	bra.b	lbC0211A0
 
 lbC0211C4	movem.l	(sp)+,d0-d7/a0-a3/a5/a6
@@ -39796,7 +39796,7 @@ lbC0211C8	movem.l	d0/a0,-(sp)
 	sub.l	(workdata_struct-ds,a6),d0
 	lsr.l	#2,d0
 	moveq	#0,d1
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	movea.l	d0,a0
 	moveq	#0,d6
 	bsr.w	lbC023954
@@ -41669,7 +41669,7 @@ lbC0228EC	btst	#1,(a0)
 	beq.w	lbC022980
 	btst	#4,(1,a0)
 	beq.b	lbC02292C
-	bsr.w	lbC023364
+	bsr.w	getlabelbynum
 	tst.b	(lbB02B3F2-ds,a6)
 	bne.b	lbC022910
 lbC022906	subq.w	#1,d1
@@ -41710,7 +41710,7 @@ lbC02295A	cmpi.b	#$30,(lbB02EAD2-ds,a6)
 	bra.w	lbC0228EC
 
 lbC022976	moveq	#0,d1
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	bra.w	lbC023952
 
 lbC022980	cmpi.l	#$FFFFFFF9,d0
@@ -42367,7 +42367,7 @@ lbC023246	move.l	a4,-(sp)
 	move.b	d1,(lbW02EB3A-ds,a6)
 	moveq	#0,d1
 	move.l	d2,d0
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	bne.b	lbC0232BC
 	cmpi.b	#$41,(lbW02EB3A-ds,a6)
 	beq.b	lbC0232BC
@@ -42405,49 +42405,49 @@ lbC0232BC	movea.l	(sp)+,a4
 	movem.l	(lbL02D088-ds,a6),a2/a3
 	move.l	(a3),d7
 	move.b	(lbW02EB3A-ds,a6),d1
-	cmpi.b	#$43,d1
+	cmpi.b	#'C',d1
 	bne.b	lbC0232DA
 	bsr.w	lbC02003C
 	bra.b	lbC023336
 
-lbC0232DA	cmpi.b	#$41,d1
+lbC0232DA	cmpi.b	#'A',d1
 	bne.b	lbC0232EA
 	bsr.w	lbC01E876
 	bsr.w	lbC01FFB0
 	bra.b	lbC023336
 
-lbC0232EA	cmpi.b	#$57,d1
+lbC0232EA	cmpi.b	#'W',d1
 	bne.b	lbC0232F6
 	bsr.w	lbC01FFFC
 	bra.b	lbC023336
 
-lbC0232F6	cmpi.b	#$4C,d1
+lbC0232F6	cmpi.b	#'L',d1
 	bne.b	lbC023302
 	bsr.w	lbC01FFD6
 	bra.b	lbC023336
 
-lbC023302	cmpi.b	#$53,d1
+lbC023302	cmpi.b	#'S',d1
 	bne.b	lbC02330E
 	bsr.w	lbC01FF38
 	bra.b	lbC023336
 
-lbC02330E	cmpi.b	#$44,d1
+lbC02330E	cmpi.b	#'D',d1
 	bne.b	lbC02331A
 	bsr.w	lbC01FF56
 	bra.b	lbC023336
 
-lbC02331A	cmpi.b	#$45,d1
+lbC02331A	cmpi.b	#'E',d1
 	bne.b	lbC023326
 	bsr.w	lbC01FF74
 	bra.b	lbC023336
 
-lbC023326	cmpi.b	#$50,d1
+lbC023326	cmpi.b	#'P',d1
 	bne.b	lbC023332
 	bsr.w	lbC01FF92
 	bra.b	lbC023336
 
 lbC023332	bsr.w	lbC020016
-lbC023336	cmpi.b	#$30,(lbB02EAD2-ds,a6)
+lbC023336	cmpi.b	#'0',(lbB02EAD2-ds,a6)
 	bne.b	lbC023344
 	bset	#1,(2,a3)
 lbC023344	movem.l	(sp)+,d2/a1-a3
@@ -42456,14 +42456,14 @@ lbC023344	movem.l	(sp)+,d2/a1-a3
 ProgStart4.MSG	db	'ProgStart-4',0
 ProgStart8.MSG	db	'ProgStart-8',0
 
-lbC023364	movem.l	d2/d3,-(sp)
+getlabelbynum	movem.l	d2/d3,-(sp)	;returns a0=label d1=len
 	move.l	d0,d2
 	moveq	#0,d1
 	moveq	#3,d3
-lbC02336E	eor.b	d2,d1
+.eorlp	eor.b	d2,d1
 	rol.b	#1,d1
 	rol.l	#6,d2
-	dbra	d3,lbC02336E
+	dbra	d3,.eorlp
 	eor.b	d2,d1
 	rol.b	#1,d1
 	lea	(hashtable2-ds,a6),a0
@@ -42471,11 +42471,11 @@ lbC02336E	eor.b	d2,d1
 	move.l	(a0,d1.w),d2
 	movea.l	(stringPointer-ds,a6),a0
 	cmp.l	(8,a0,d2.l),d0
-	beq.b	lbC02339A
-lbC023390	move.l	(a0,d2.l),d2
+	beq.b	.found
+.search	move.l	(a0,d2.l),d2	;successor
 	cmp.l	(8,a0,d2.l),d0
-	bne.b	lbC023390
-lbC02339A	move.l	(4,a0,d2.l),d0
+	bne.b	.search
+.found	move.l	(4,a0,d2.l),d0
 	moveq	#0,d1
 	move.b	d0,d1
 	lsr.l	#8,d0
@@ -42923,7 +42923,7 @@ lbC023914	move.l	a2,d0
 	sub.l	(ds-ds,a6),d0
 lbC02391A	movem.l	d2/a0/a1,-(sp)
 	move.b	d1,(lbB02EB55-ds,a6)
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	beq.b	lbC02396A
 	movea.l	d0,a0
 	cmpi.b	#$3B,(a0)
@@ -42983,7 +42983,7 @@ lbC02399E	cmpi.b	#$1B,(a1)+
 
 lbC0239BC	move.b	#$1B,(a1)
 	move.l	d2,d1
-	jsr	(lbC02777C-ds,a6)
+	jsr	(getlabelbynum_qq-ds,a6)
 	beq.b	lbC023A2C
 	movea.l	d0,a0
 	bra.b	lbC0239D0
@@ -48434,7 +48434,7 @@ lbC0274BE	movem.l	(lbL02D2C8-ds,a6),a2/a3
 	beq.b	lbC02752C
 	moveq	#1,d1
 	sub.l	(ds-ds,a6),d0
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	beq.b	lbC02752C
 	move.l	a4,-(sp)
 	lea	(displayid-ds,a6),a4
@@ -48673,14 +48673,14 @@ lbC02776E	clr.b	(a5)+
 	addq.l	#1,(lbL02D318-ds,a6)
 	jmp	(lbC02A422-ds,a6)
 
-lbC02777C	movem.l	d2-d4/a0,-(sp)
+getlabelbynum_qq	movem.l	d2-d4/a0,-(sp)	;returns d0=label d1=length
 	move.l	d0,d2
 	moveq	#0,d3
 	moveq	#3,d4
-lbC027786	eor.b	d2,d3
+.eor	eor.b	d2,d3
 	rol.b	#1,d3
 	rol.l	#6,d2
-	dbra	d4,lbC027786
+	dbra	d4,.eor
 	eor.b	d2,d3
 	rol.b	#1,d3
 	move.l	d1,d4
@@ -48690,16 +48690,16 @@ lbC027786	eor.b	d2,d3
 	lea	(hashtable2-ds,a6),a0
 	lsl.l	#2,d4
 	move.l	(a0,d4.l),d2
-	beq.b	lbC0277DA
+	beq.b	.notfound
 	movea.l	(stringPointer-ds,a6),a0
-lbC0277AC	cmp.l	(8,a0,d2.l),d0
-	beq.b	lbC0277BA
-lbC0277B2	move.l	(a0,d2.l),d2
-	bne.b	lbC0277AC
-	bra.b	lbC0277DA
+.next	cmp.l	(8,a0,d2.l),d0
+	beq.b	.found
+.skip	move.l	(a0,d2.l),d2	;successor
+	bne.b	.next
+	bra.b	.notfound
 
-lbC0277BA	tst.b	(lbB02EB4D-ds,a6)
-	bne.b	lbC0277D4
+.found	tst.b	(labelnumdupcnt-ds,a6)
+	bne.b	.dup
 	moveq	#0,d1
 	move.l	(4,a0,d2.l),d0
 	move.b	d0,d1
@@ -48708,17 +48708,17 @@ lbC0277BA	tst.b	(lbB02EB4D-ds,a6)
 	movem.l	(sp)+,d2-d4/a0
 	rts
 
-lbC0277D4	subq.b	#1,(lbB02EB4D-ds,a6)
-	bra.b	lbC0277B2
+.dup	subq.b	#1,(labelnumdupcnt-ds,a6)
+	bra.b	.skip
 
-lbC0277DA	clr.b	(lbB02EB4D-ds,a6)
-	move.l	#ascii.MSG1,d0
+.notfound	clr.b	(labelnumdupcnt-ds,a6)
+	move.l	#.qq,d0
 	moveq	#2,d1
 	cmp.w	d1,d1
 	movem.l	(sp)+,d2-d4/a0
 	rts
 
-ascii.MSG1	db	'??',0,0
+.qq	db	'??',0,0
 
 lbC0277F2	movem.l	d1-d6/a1/a3-a5,-(sp)
 	move.l	(workdata_length-ds,a6),d5
@@ -48995,10 +48995,10 @@ lbC027A90	move.b	(a0)+,d0
 	move.l	a1,d2
 	moveq	#0,d3
 	moveq	#4,d4
-lbC027AB0	eor.b	d2,d3
+.eor	eor.b	d2,d3
 	rol.b	#1,d3
 	rol.l	#6,d2
-	dbra	d4,lbC027AB0
+	dbra	d4,.eor
 	lea	(hashtable2-ds,a6),a0
 	lsl.l	#2,d3
 	adda.l	d3,a0
@@ -50617,7 +50617,7 @@ lbC028D6C	move.l	a2,d0
 	andi.w	#$FF,d1
 lbC028D86	cmpi.b	#2,d1
 	bcc.b	lbC028DA4
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	beq.w	term2
 	movea.l	d0,a0
 	lea	(lbL02C1D4-ds,a6),a4
@@ -50626,9 +50626,9 @@ lbC028D86	cmpi.b	#2,d1
 	jmp	(lbC02A422-ds,a6)
 
 lbC028DA4	bne.b	lbC028DB2
-	move.b	(lbB02EB56-ds,a6),(lbB02EB4D).l
-	subq.b	#1,(lbB02EB4D-ds,a6)
-lbC028DB2	bsr.w	lbC02777C
+	move.b	(lbB02EB56-ds,a6),(labelnumdupcnt).l
+	subq.b	#1,(labelnumdupcnt-ds,a6)
+lbC028DB2	bsr.w	getlabelbynum_qq
 	beq.w	term2
 	movea.l	d0,a0
 	lea	(lbL02C1D4-ds,a6),a4
@@ -52037,7 +52037,7 @@ lbC029D70	move.b	(lbB02EB56-ds,a6),(lbB02EB3D).l
 	tst.b	(lbB02EB73-ds,a6)
 	beq.b	lbC029DB6
 	movem.l	d0-d2/a2/a3,-(sp)
-	bsr.w	lbC02777C
+	bsr.w	getlabelbynum_qq
 	beq.b	lbC029DB2
 	bsr.w	lbC0275A2
 lbC029DB2	movem.l	(sp)+,d0-d2/a2/a3
@@ -54434,7 +54434,7 @@ lbB02EB49	dx.b	1
 lbB02EB4A	dx.b	1
 lbB02EB4B	dx.b	1
 lbB02EB4C	dx.b	1
-lbB02EB4D	dx.b	1
+labelnumdupcnt	dx.b	1
 lbB02EB4E	dx.b	1
 lbB02EB4F	dx.b	1
 lbB02EB50	dx.b	1
