@@ -7,7 +7,7 @@
 ;	vasmm68k_mot -nosym -quiet -ldots -wfail -opt-allbra -opt-clr -opt-lsl -opt-movem -opt-nmoveq -opt-pea -opt-size -Fhunkexe -o ReSource ReSource.asm
 
 VERSION MACRO
-	db	"6.6.2"
+	db	"6.6.3"
 	ENDM
 
 	IFND BARFLY
