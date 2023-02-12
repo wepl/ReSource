@@ -42758,7 +42758,8 @@ getlabelbynum	movem.l	d2/d3,-(sp)	;returns a0=label d1=len
 	movea.l	(stringPointer-ds,a6),a0
 	cmp.l	(8,a0,d2.l),d0
 	beq.b	.found
-.search	move.l	(a0,d2.l),d2	;successor; endless loop, d0=1b2ec d1=380 d2=0
+.search	move.l	(a0,d2.l),d2	;successor, endless loop, d0=1b2ec d1=380 d2=0
+	beq	.notfound
 	cmp.l	(8,a0,d2.l),d0
 	bne.b	.search
 .found	move.l	(4,a0,d2.l),d0
@@ -42767,8 +42768,16 @@ getlabelbynum	movem.l	d2/d3,-(sp)	;returns a0=label d1=len
 	lsr.l	#8,d0
 	movea.l	(strings-ds,a6),a0
 	adda.l	d0,a0
-	movem.l	(sp)+,d2/d3
+.quit	movem.l	(sp)+,d2/d3
 	rts
+
+; it's unclear why an endless loop happens sometimes here
+; seems to only occur with parameter d0=1b2ec
+; as a workaround we return '??' similar to getlabelbynum_qq
+.notfound	lea	.qq,a0	;string
+		moveq	#2,d1	;length
+		bra	.quit
+.qq		db	"??",0,0
 
 lbC0233B0	cmpi.b	#$20,d0
 	bcs.b	lbC0233C2
